@@ -1,23 +1,24 @@
-import logo from './logo.svg';
 import './App.css';
 
+import Keypad from './Keypad';
+import Observations from './Observations';
+import SpeciesPicker from './SpeciesPicker';
+import {checklist, observations} from './store/store'
+
 function App() {
+
+  const ck = checklist();
+  const obs = observations();
+  console.log(obs);
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
       </header>
+      <div>
+        <Observations observations={obs} />
+        <SpeciesPicker species={ck} />
+        <Keypad />
+      </div>
     </div>
   );
 }

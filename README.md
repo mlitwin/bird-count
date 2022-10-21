@@ -68,3 +68,12 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+
+#
+
+https://observable-hooks.js.org/guide/motivation.html#why-rxjs-in-hooks
+https://react-redux.js.org/tutorials/quick-start
+
+
+This: https://react-rxjs.org/docs/getting-started
