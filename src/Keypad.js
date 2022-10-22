@@ -15,7 +15,7 @@ function Keypad() {
 
   const onChange = input => {
     setInput(input);
-    console.log("Input changed", input);
+   // console.log("Input changed", input);
   };
 
   const onChangeInput = event => {

@@ -1,24 +1,24 @@
 import './App.css';
+import Tab from 'react-bootstrap/Tab';
+import Tabs from 'react-bootstrap/Tabs';
 
-import Keypad from './Keypad';
-import Observations from './Observations';
-import SpeciesPicker from './SpeciesPicker';
-import {checklist, observations} from './store/store'
+import ObservationEntry from './ObservationEntry';
+import ObservationHistory from './ObservationHistory';
 
 function App() {
 
-  const ck = checklist();
-  const obs = observations();
-  console.log(obs);
   return (
     <div className="App">
       <header className="App-header">
       </header>
-      <div>
-        <Observations observations={obs} />
-        <SpeciesPicker species={ck} />
-        <Keypad />
-      </div>
+      <Tabs>
+        <Tab eventKey="home" title="Home">
+          <ObservationEntry />
+        </Tab>
+        <Tab eventKey="history" title="History">
+          <ObservationHistory />
+        </Tab>
+      </Tabs>
     </div>
   );
 }

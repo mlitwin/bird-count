@@ -1,18 +1,21 @@
 import {addObservation} from './store/store';
+import Species from './common/Species';
+import ListGroup from 'react-bootstrap/ListGroup';
+import Button from 'react-bootstrap/Button';
+
 
 function chooseObservation(species) {
-   // console.log(species);
    addObservation(species);
 }
 
 function SpeciesPicker(props) {
-  const species = props.species.map(species => 
-    <li key={species.code}>{species.name} <button onClick={(e) => chooseObservation(species, e)}>+</button></li>
+  const speciesList = props.species.map(species => 
+    <ListGroup.Item key={species.code}><Species species={species} /> <Button onClick={(e) => chooseObservation(species, e)}>+</Button></ListGroup.Item>
   );
   return (
-    <ul className="SpeciesPicker">
-        {species}
-    </ul>
+    <ListGroup>
+        {speciesList}
+    </ListGroup>
   );
 }
 

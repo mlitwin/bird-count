@@ -1,12 +1,13 @@
+import ListGroup from 'react-bootstrap/ListGroup';
 
 function Observations(props) {
     const observations = props.observations.map(observation => 
-      <li key={observation.createdAt}>{observation.species.name}</li>
+      <ListGroup.Item key={observation.createdAt}>{observation.species.name}</ListGroup.Item>
     );
     return (
-      <ul className="Observations">
+      <ListGroup>
           {observations}
-      </ul>
+      </ListGroup>
     );
   }
   

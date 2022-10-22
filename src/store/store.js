@@ -16,7 +16,7 @@ const [checklistChange$, setChecklist] = createSignal();
 const [checklist, text$] = bind(checklistChange$, species);
 
 const [observationChange$, addObservation] = createSignal();
-//const [latestObservation, observations$] = bind(observationChange$, []);
+const [latestObservation] = bind(observationChange$, []);
 
 const [observationListChange$, setObservationList] = createSignal();
 const [observations, observations$] = bind(observationListChange$, []);
@@ -39,5 +39,6 @@ observationChange$.subscribe(observation => {
 export {
     checklist,
     addObservation,
+    latestObservation,
     observations
 }
