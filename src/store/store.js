@@ -1,7 +1,11 @@
+import { ajax } from 'rxjs/ajax';
+import { map, catchError, of } from 'rxjs';
+
 import { bind } from "@react-rxjs/core"
 import { createSignal } from "@react-rxjs/utils"
 
 // https://www.pwrc.usgs.gov/bbl/manual/speclist.cfm
+/*
 const species = [
     { code: 'WEGR',
       name: 'Western Grebe'
@@ -10,6 +14,11 @@ const species = [
     name: 'Clark\'s Grebe'
   } 
   ];
+  */
+
+import species from '../data/species.json';
+
+
 
 
 const [checklistChange$, setChecklist] = createSignal();

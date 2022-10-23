@@ -11,7 +11,7 @@ function App() {
     <div className="App">
       <header className="App-header">
       </header>
-      <Tabs>
+      <Tabs className="AppTabs">
         <Tab eventKey="home" title="Home">
           <ObservationEntry />
         </Tab>
