@@ -1,4 +1,6 @@
 import React, {  useRef, useState  } from 'react';
+import Button from 'react-bootstrap/Button';
+import ButtonGroup from 'react-bootstrap/ButtonGroup';
 
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
@@ -28,16 +30,25 @@ function Keypad() {
 
   return (
     <div className="Keypad">
-      <input
-        value={input}
-        placeholder={"Tap on the virtual keyboard to start"}
-        onChange={onChangeInput}
-      />
-      <Keyboard
-        keyboardRef={r => (keyboard.current = r)}
-        onChange={onChange}
-        layout={layout}
-      />
+        <div className="KeypadControls">
+            <div className="KeyboadInputArea">
+                <input
+                    value={input}
+                    placeholder={"Tap on the virtual keyboard to start"}
+                    onChange={onChangeInput}
+                />
+            </div>
+            <ButtonGroup vertical>
+                <Button>+</Button>
+                <Button>↑</Button>
+                <Button>↓</Button>
+            </ButtonGroup>
+       </div>
+       <Keyboard
+                keyboardRef={r => (keyboard.current = r)}
+                onChange={onChange}
+                layout={layout}
+            />
     </div>
   );
 }

@@ -58,12 +58,11 @@ let order = 1;
 function addSpecies(species) {
     let sp = {};
     const sciName = normalizeSciName(species.SCINAME);
-    sp.id = sciName;
     sp.taxonomicOrder = order;
     sp.code = species.SPEC
     sp.sciSpeciesName = sciName
     sp.sciName = sciName.replace(/ *\(.*\)$/, '');
-    sp.id = sp.sciName;
+    sp.id = `${sciName}-${species.SPEC}`;
     sp.sciCode = species.SPEC6;
     sp.type = speciesType(species.SP, sp);
     if (sp.type == 'hybrid') {
@@ -90,7 +89,7 @@ function addSpecies(species) {
     taxonomy.species.push(sp);
 
     let check = {};
-    check.id = sciName;
+    check.id = sp.id;
     check.name = species.COMMONNAME;
     check.sortOrder = order;
 
