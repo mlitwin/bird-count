@@ -9,8 +9,6 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
-      </header>
       <Tabs className="AppTabs">
         <Tab eventKey="home" title="Home">
           <ObservationEntry />

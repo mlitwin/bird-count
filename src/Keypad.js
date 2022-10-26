@@ -1,12 +1,13 @@
 import React, {  useRef, useState  } from 'react';
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
+import { propTypes } from 'react-bootstrap/esm/Image';
 
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
 import './Keypad.css';
 
-function Keypad() {
+function Keypad(props) {
   const [input, setInput] = useState("");
   const keyboard = useRef();
   const layout =  {
@@ -27,6 +28,9 @@ function Keypad() {
     keyboard.current.setInput(input);
   };
 
+  function changeActiveSpecies(delta) {
+    props.changeActive(delta)
+  }
 
   return (
     <div className="Keypad">
@@ -40,8 +44,8 @@ function Keypad() {
             </div>
             <ButtonGroup vertical>
                 <Button>+</Button>
-                <Button>↑</Button>
-                <Button>↓</Button>
+                <Button onClick={() => changeActiveSpecies(-1)}>↑</Button>
+                <Button onClick={() => changeActiveSpecies(1)}>↓</Button>
             </ButtonGroup>
        </div>
        <Keyboard
