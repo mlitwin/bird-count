@@ -5,3 +5,19 @@
   z-index: 10;
   background: white;
 }
+
+#root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 100vh;
+}
+
+.AppHeader {
+  flex-shrink: 0;
+}
+
+.AppContent {
+  flex-grow: 1;
+  overflow-y: scroll;
+}
