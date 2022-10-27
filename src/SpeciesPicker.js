@@ -2,6 +2,7 @@ import {addObservation} from './store/store';
 import Species from './common/Species';
 import ListGroup from 'react-bootstrap/ListGroup';
 import React, { useRef, useEffect } from "react";
+import scrollIntoView from 'scroll-into-view-if-needed'
 
 import './SpeciesPicker.css';
 
@@ -16,7 +17,11 @@ function SpeciesPicker(props) {
 
   useEffect(() => {
     if(activeRef.current) {
-       // activeRef.current.scrollIntoView();  
+        scrollIntoView(activeRef.current,  {
+            scrollMode: 'if-needed',
+            block: 'nearest',
+            inline: 'nearest',
+          });
     }
   });
 
