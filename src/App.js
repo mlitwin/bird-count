@@ -1,17 +1,15 @@
-import './App.css';
-import Tab from 'react-bootstrap/Tab';
-import Tabs from 'react-bootstrap/Tabs';
-import Nav from 'react-bootstrap/Nav';
+import "./App.css";
+import Tab from "react-bootstrap/Tab";
+import Tabs from "react-bootstrap/Tabs";
+import Nav from "react-bootstrap/Nav";
 
-import ObservationEntry from './ObservationEntry';
-import ObservationHistory from './ObservationHistory';
-import Species from './common/Species';
+import ObservationEntry from "./ObservationEntry";
+import ObservationHistory from "./ObservationHistory";
+import Species from "./common/Species";
 
-import {latestObservation} from './store/store'
-
+import { latestObservation } from "./store/store";
 
 function App() {
-
   const latest = latestObservation();
 
   return (
@@ -26,29 +24,15 @@ function App() {
         <Species species={latest} />
       </Nav>
       <Tab.Content className="AppContent">
-            <Tab.Pane eventKey="first">
-              <ObservationEntry />
-            </Tab.Pane>
-            <Tab.Pane eventKey="second">
-              <ObservationHistory />
-            </Tab.Pane>
-          </Tab.Content>
-    </Tab.Container>
-  )
-  /*
-  return (
-    <div className="App">
-      <Tabs className="AppTabs">
-        <Tab eventKey="home" title="Home">
+        <Tab.Pane eventKey="first">
           <ObservationEntry />
-        </Tab>
-        <Tab eventKey="history" title="History">
+        </Tab.Pane>
+        <Tab.Pane eventKey="second">
           <ObservationHistory />
-        </Tab>
-      </Tabs>
-    </div>
+        </Tab.Pane>
+      </Tab.Content>
+    </Tab.Container>
   );
-  */
 }
 
 export default App;

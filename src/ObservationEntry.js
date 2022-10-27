@@ -1,20 +1,16 @@
-import Navbar from 'react-bootstrap/Navbar';
-import Keypad from './Keypad';
-import SpeciesPicker from './SpeciesPicker';
-import {checklist, latestObservation} from './store/store'
-import Container from 'react-bootstrap/Container';
-import { Nav } from 'react-bootstrap';
-import { useState } from 'react';
-
+import Navbar from "react-bootstrap/Navbar";
+import Keypad from "./Keypad";
+import SpeciesPicker from "./SpeciesPicker";
+import { checklist } from "./store/store";
+import { useState } from "react";
 
 function ObservationEntry() {
-
   const [active, setActiveState] = useState(0);
 
   function changeActive(delta) {
     let newActive = active + delta;
     if (newActive < 0 || newActive >= ck.length) {
-        return;
+      return;
     }
     setActiveState(newActive);
   }
