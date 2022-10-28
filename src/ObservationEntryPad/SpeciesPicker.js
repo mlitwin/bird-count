@@ -1,5 +1,5 @@
-import { addObservation } from "./store/store";
-import Species from "./common/Species";
+import { addObservation } from "../store/store";
+import Species from "../common/Species";
 import ListGroup from "react-bootstrap/ListGroup";
 import React, { useRef, useEffect } from "react";
 import scrollIntoView from "scroll-into-view-if-needed";

@@ -1,9 +1,8 @@
 import "./App.css";
 import Tab from "react-bootstrap/Tab";
-import Tabs from "react-bootstrap/Tabs";
 import Nav from "react-bootstrap/Nav";
 
-import ObservationEntry from "./ObservationEntry";
+import ObservationEntryPad from "./ObservationEntryPad/ObservationEntryPad";
 import ObservationHistory from "./ObservationHistory";
 import Species from "./common/Species";
 
@@ -25,7 +24,7 @@ function App() {
       </Nav>
       <Tab.Content className="AppContent">
         <Tab.Pane eventKey="first">
-          <ObservationEntry />
+          <ObservationEntryPad />
         </Tab.Pane>
         <Tab.Pane eventKey="second">
           <ObservationHistory />

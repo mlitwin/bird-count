@@ -1,0 +1,12 @@
+.KeypadControls {
+    display: flex;
+    justify-content: space-between;
+}
+
+.KeyboadInputArea {
+    display: flex;
+}
+
+.KeyboadInputArea > input {
+    align-self: flex-end;
+}

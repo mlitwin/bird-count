@@ -1,10 +1,10 @@
 import Navbar from "react-bootstrap/Navbar";
 import Keypad from "./Keypad";
 import SpeciesPicker from "./SpeciesPicker";
-import { checklist } from "./store/store";
+import { checklist } from "../store/store";
 import { useState } from "react";
 
-function ObservationEntry() {
+function ObservationEntryPad() {
   const [active, setActiveState] = useState(0);
 
   function changeActive(delta) {
@@ -25,4 +25,4 @@ function ObservationEntry() {
   );
 }
 
-export default ObservationEntry;
+export default ObservationEntryPad;
