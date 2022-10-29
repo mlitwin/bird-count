@@ -19,11 +19,6 @@ function SpeciesPicker(props) {
     }
   });
 
-  function chooseObservation(species, index) {
-    addObservation(species);
-    props.setActive(index);
-  }  
-
   const speciesList = props.species.map((species, index) => {
     if (index === props.active) {
       return (
@@ -31,7 +26,7 @@ function SpeciesPicker(props) {
           ref={activeRef}
           key={species.id}
           className="active"
-          onClick={(e) => chooseObservation(species, index)}
+          onClick={(e) => props.chooseItem(index)}
         >
           <Species species={species} />
         </ListGroup.Item>
@@ -40,7 +35,7 @@ function SpeciesPicker(props) {
     return (
       <ListGroup.Item
         key={species.id}
-        onClick={(e) => chooseObservation(species, index)}
+        onClick={(e) => props.chooseItem(index)}
       >
         <Species species={species} />
       </ListGroup.Item>

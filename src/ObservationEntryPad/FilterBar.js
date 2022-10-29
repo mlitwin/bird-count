@@ -6,7 +6,7 @@ import "./FilterBar.css";
 function FilterBar(props) {
   return (
     <div className="KeypadControls">
-      <Button>ENTER</Button>
+      <Button onClick={(e) => props.chooseItem()}>ENTER</Button>
       <div className="FilterValue">&#8203;{props.filter}</div>
       <ButtonGroup className="FilterControls">
         <Button>BSP</Button>
