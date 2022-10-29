@@ -2,7 +2,7 @@ import Keypad from "./Keypad";
 import SpeciesPicker from "./SpeciesPicker";
 import FilterBar from "./FilterBar";
 import SpeciesNavigation from "./SpeciesNavigation";
-import { checklist, addObservation} from "../store/store";
+import { checklist, addObservation } from "../store/store";
 import { useState } from "react";
 
 import "./ObservationEntryPad.css";
@@ -12,7 +12,6 @@ function ObservationEntryPad() {
   const [filter, setFilter] = useState("");
   const ck = checklist();
 
-
   function changeActive(delta) {
     let newActive = active + delta;
     if (newActive < 0 || newActive >= ck.length) {
@@ -21,17 +20,14 @@ function ObservationEntryPad() {
     setActiveState(newActive);
   }
 
-  function setActive(newActive) {
-    setActiveState(newActive);
-  }
-
   function chooseItem(index) {
-    if(index === undefined) {
+    if (index === undefined) {
       index = active;
     }
     addObservation(ck[index]);
     setActiveState(index);
   }
+
 
   return (
     <div className="ObservationEntryPad">
@@ -42,10 +38,9 @@ function ObservationEntryPad() {
       <FilterBar
         filter={filter}
         setFilter={setFilter}
-        changeActive={changeActive}
         chooseItem={chooseItem}
       />
-      <Keypad setFilter={setFilter} />
+      <Keypad filter={filter} setFilter={setFilter} />
     </div>
   );
 }
