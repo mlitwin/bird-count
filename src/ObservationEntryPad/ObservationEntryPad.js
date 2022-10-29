@@ -19,12 +19,16 @@ function ObservationEntryPad() {
     setActiveState(newActive);
   }
 
+  function setActive(newActive) {
+    setActiveState(newActive);
+  }
+
   const ck = checklist();
   return (
     <div className="ObservationEntryPad">
       <div className="ObservationListArea">
         <SpeciesNavigation changeActive={changeActive}></SpeciesNavigation>
-        <SpeciesPicker species={ck} active={active} />
+        <SpeciesPicker species={ck} active={active} setActive={setActive} />
       </div>
       <FilterBar
         filter={filter}
