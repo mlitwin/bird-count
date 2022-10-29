@@ -46,7 +46,7 @@ function SpeciesPicker(props) {
     );
   });
   return (
-    <div className="speciesPicker">
+    <div className="SpeciesPicker">
       <ListGroup>{speciesList}</ListGroup>
     </div>
   );

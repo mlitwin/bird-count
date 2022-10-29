@@ -6,13 +6,3 @@
 .KeyboadInputArea {
     display: flex;
 }
-
-.KeyboadInputArea > input {
-    align-self: flex-end;
-}
-
-.ListInteractionButtons {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-}
