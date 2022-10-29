@@ -1,4 +1,5 @@
 .SpeciesNavigation {
     overflow: hidden;
     align-self: end;
+    padding-bottom: 5px;
 }

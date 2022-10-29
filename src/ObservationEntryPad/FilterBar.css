@@ -5,4 +5,8 @@
 
 .KeyboadInputArea {
     display: flex;
+    justify-content: space-between;
+}
+.FilterValue {
+    width: 6em;
 }
