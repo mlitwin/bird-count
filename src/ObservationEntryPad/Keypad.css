@@ -1,12 +1,7 @@
-.Keypad {
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
-}
-
 .KeypadControls {
     display: flex;
     justify-content: space-between;
+    position: relative;
 }
 
 .KeyboadInputArea {

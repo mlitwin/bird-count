@@ -4,8 +4,6 @@ import ButtonGroup from "react-bootstrap/ButtonGroup";
 import "./FilterBar.css";
 
 function FilterBar(props) {
-
-
   function changeActiveSpecies(delta) {
     props.changeActive(delta);
   }
@@ -15,20 +13,18 @@ function FilterBar(props) {
     props.setFilter(input);
   };
 
-
   return (
     <div className="KeypadControls">
       <div className="KeyboadInputArea">
-        <input
-          value={props.filter}
-          onChange={onChangeInput}
-        />
+        <input value={props.filter} onChange={onChangeInput} />
       </div>
-      <ButtonGroup vertical>
-        <Button>+</Button>
-        <Button onClick={() => changeActiveSpecies(-1)}>↑</Button>
-        <Button onClick={() => changeActiveSpecies(1)}>↓</Button>
-      </ButtonGroup>
+      <div className="ListInteractionButtons">
+        <ButtonGroup vertical>
+          <Button>+</Button>
+          <Button onClick={() => changeActiveSpecies(-1)}>↑</Button>
+          <Button onClick={() => changeActiveSpecies(1)}>↓</Button>
+        </ButtonGroup>
+      </div>
     </div>
   );
 }

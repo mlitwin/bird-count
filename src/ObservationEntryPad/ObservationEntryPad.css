@@ -1,0 +1,14 @@
+.ObservationEntryPad {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.ObservationEntryPad >  * {
+    flex-shrink: 0;
+}
+
+.ObservationEntryPad > .speciesPicker {
+    flex-shrink: unset;
+    flex-grow: 1;
+}

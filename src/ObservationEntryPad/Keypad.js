@@ -1,5 +1,4 @@
 import React, { useRef, useState } from "react";
-import FilterBar from "./FilterBar";
 import Keyboard from "react-simple-keyboard";
 import "react-simple-keyboard/build/css/index.css";
 import "./Keypad.css";
@@ -18,7 +17,6 @@ function Keypad(props) {
 
   return (
     <div className="Keypad">
-       <FilterBar filter={filter} setFilter={setFilter} changeActive={props.changeActive} />
        <Keyboard
         keyboardRef={(r) => (keyboard.current = r)}
         onChange={onChange}
