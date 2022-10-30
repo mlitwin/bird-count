@@ -43,6 +43,10 @@ function ObservationEntryPad() {
   }
 
   function chooseItem(index) {
+    if (species.length === 0) {
+      return;
+    }
+    
     if (index === undefined) {
       index = active;
     }
