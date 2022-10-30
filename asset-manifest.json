@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/bird-count/static/css/main.7f08b298.css",
-    "main.js": "/bird-count/static/js/main.bd8ff56d.js",
+    "main.css": "/bird-count/static/css/main.1e9e65e0.css",
+    "main.js": "/bird-count/static/js/main.74399c33.js",
     "static/js/787.c4776cff.chunk.js": "/bird-count/static/js/787.c4776cff.chunk.js",
     "index.html": "/bird-count/index.html",
-    "main.7f08b298.css.map": "/bird-count/static/css/main.7f08b298.css.map",
-    "main.bd8ff56d.js.map": "/bird-count/static/js/main.bd8ff56d.js.map",
+    "main.1e9e65e0.css.map": "/bird-count/static/css/main.1e9e65e0.css.map",
+    "main.74399c33.js.map": "/bird-count/static/js/main.74399c33.js.map",
     "787.c4776cff.chunk.js.map": "/bird-count/static/js/787.c4776cff.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.7f08b298.css",
-    "static/js/main.bd8ff56d.js"
+    "static/css/main.1e9e65e0.css",
+    "static/js/main.74399c33.js"
   ]
 }
