@@ -1,7 +1,8 @@
 {
-  "name": "my-app",
+  "name": "bird-count",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://mlitwin.github.io/bird-count",
   "dependencies": {
     "@react-rxjs/core": "^0.10.3",
     "@react-rxjs/utils": "^0.9.5",
@@ -13,6 +14,7 @@
     "@types/react": "^18.0.21",
     "@types/react-dom": "^18.0.6",
     "bootstrap": "^5.2.2",
+    "gh-pages": "^4.0.0",
     "react": "^18.2.0",
     "react-bootstrap": "^2.5.0",
     "react-dom": "^18.2.0",
@@ -24,6 +26,8 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

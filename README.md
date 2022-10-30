@@ -7,6 +7,13 @@ Learning project for a React application. Count how many of which birds you've s
 * Uses https://react-bootstrap.github.io/
     * What about https://mui.com/material-ui?
 
+
+## Deployment
+
+Github Pages via https://create-react-app.dev/docs/deployment/
+
+https://mlitwin.github.io/bird-count/
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
