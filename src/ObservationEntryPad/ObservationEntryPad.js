@@ -2,7 +2,7 @@ import Keypad from "./Keypad";
 import SpeciesPicker from "./SpeciesPicker";
 import FilterBar from "./FilterBar";
 import SpeciesNavigation from "./SpeciesNavigation";
-import { checklist, addObservation } from "../store/store";
+import { checklist, addObservation, recentObservations } from "../store/store";
 import { useState } from "react";
 
 import "./ObservationEntryPad.css";
@@ -12,9 +12,9 @@ function passessFilter(filter, species) {
     return true;
   }
   const f = filter.toUpperCase();
-  for(let i=0; i < species.abbreviations.length; i++) {
+  for (let i = 0; i < species.abbreviations.length; i++) {
     const abbrv = species.abbreviations[i];
-    if(abbrv.startsWith(f)) {
+    if (abbrv.startsWith(f)) {
       return true;
     }
   }
@@ -22,9 +22,7 @@ function passessFilter(filter, species) {
   return false;
 }
 
-function ObservationEntryPad() {
-  const [active, setActiveState] = useState(0);
-  const [filter, setFilter] = useState("");
+function computeChecklist(filter) {
   const ck = checklist();
   let species = [];
 
@@ -33,6 +31,40 @@ function ObservationEntryPad() {
       species.push(s);
     }
   });
+
+  // Recent ones first
+  const recent = recentObservations();
+  const recentOrder = {};
+  let recentIndex = 1;
+  recent.forEach((obs) => {
+    if (!(obs.species.id in recentOrder)) {
+      recentOrder[obs.species.id] = recentIndex;
+      recentIndex++;
+    }
+  });
+
+  species = species.sort((a, b) => {
+    let aIndex = a.sortOrder;
+    let bIndex = b.sortOrder;
+
+    if (a.id in recentOrder) {
+      aIndex = -(recent.length - recentOrder[a.id]);
+    }
+    if (b.id in recentOrder) {
+      bIndex = -(recent.length - recentOrder[b.id]);
+    }
+
+    return aIndex - bIndex;
+  });
+
+  return species;
+}
+
+function ObservationEntryPad() {
+  const [active, setActiveState] = useState(0);
+  const [filter, setFilter] = useState("");
+
+  const species = computeChecklist(filter);
 
   function changeActive(delta) {
     let newActive = active + delta;
@@ -63,7 +95,11 @@ function ObservationEntryPad() {
     <div className="ObservationEntryPad">
       <div className="ObservationListArea">
         <SpeciesNavigation changeActive={changeActive}></SpeciesNavigation>
-        <SpeciesPicker species={species} active={active} chooseItem={chooseItem} />
+        <SpeciesPicker
+          species={species}
+          active={active}
+          chooseItem={chooseItem}
+        />
       </div>
       <FilterBar
         filter={filter}
