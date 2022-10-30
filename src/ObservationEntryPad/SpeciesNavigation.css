@@ -1,5 +1,9 @@
 .SpeciesNavigation {
     overflow: hidden;
-    align-self: end;
+    display: flex;
     padding-bottom: 5px;
+}
+
+.SpeciesNavigation:first-child {
+    margin-top: auto;
 }
