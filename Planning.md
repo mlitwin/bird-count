@@ -28,3 +28,6 @@ Debugging here's what has happened
 * `Recent History Summary`
 * `Keypad Filter`
   * https://hodgef.com/simple-keyboard/demos/ ? https://www.npmjs.com/package/react-simple-keyboard
+
+# Bugs
+* Rotate / rotate back messed up height

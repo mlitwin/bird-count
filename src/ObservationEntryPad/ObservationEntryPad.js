@@ -42,16 +42,21 @@ function ObservationEntryPad() {
     setActiveState(newActive);
   }
 
+  function resetInput() {
+    setFilter("");
+    setActiveState(0);
+  }
+
   function chooseItem(index) {
     if (species.length === 0) {
       return;
     }
-    
+
     if (index === undefined) {
       index = active;
     }
     addObservation(species[index]);
-    setActiveState(index);
+    resetInput();
   }
 
   return (
