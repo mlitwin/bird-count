@@ -15,7 +15,7 @@ function addAbbeviations(species) {
 
   abbrv.push(species.code.toUpperCase());
   const name = species.name
-    .replaceAll(/[^\w- '\/]/g,"")
+    .replaceAll(/[^\w- '/]/g,"")
     .replaceAll(/[^\w]/g, " ")
     .split(/\s+/)
     .map(w => w[0])
@@ -34,14 +34,14 @@ checklistData.species.forEach(sp => {
 });
 
 
-const [checklistChange$, setChecklist] = createSignal();
-const [checklist, text$] = bind(checklistChange$, species);
+const [checklistChange$, _setChecklist] = createSignal();
+const [checklist, _checklist$] = bind(checklistChange$, species);
 
 const [observationChange$, addObservation] = createSignal();
 const [latestObservation] = bind(observationChange$, []);
 
 const [observationListChange$, setObservationList] = createSignal();
-const [observations, observations$] = bind(observationListChange$, []);
+const [observations, _observations$] = bind(observationListChange$, []);
 
 
 let observationList = [];

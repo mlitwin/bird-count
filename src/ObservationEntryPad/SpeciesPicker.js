@@ -3,8 +3,6 @@ import ListGroup from "react-bootstrap/ListGroup";
 import React, { useRef, useEffect } from "react";
 import { Virtuoso } from "react-virtuoso";
 
-import scrollIntoView from "scroll-into-view-if-needed";
-
 import "./SpeciesPicker.css";
 
 function SpeciesPicker(props) {

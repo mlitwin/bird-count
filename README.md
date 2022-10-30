@@ -1,3 +1,12 @@
+# bird-count
+
+Learning project for a React application. Count how many of which birds you've seen.
+
+* Use functional form for React components
+* https://react-rxjs.org/ for data model
+* Uses https://react-bootstrap.github.io/
+    * What about https://mui.com/material-ui?
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
