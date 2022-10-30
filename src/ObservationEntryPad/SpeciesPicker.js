@@ -1,49 +1,46 @@
 import Species from "../common/Species";
 import ListGroup from "react-bootstrap/ListGroup";
 import React, { useRef, useEffect } from "react";
+import { Virtuoso } from "react-virtuoso";
+
 import scrollIntoView from "scroll-into-view-if-needed";
 
 import "./SpeciesPicker.css";
 
 function SpeciesPicker(props) {
-  const activeRef = useRef();
+  const virtuoso = useRef(null);
+
 
   useEffect(() => {
-    if (activeRef.current) {
-      scrollIntoView(activeRef.current, {
-        scrollMode: "if-needed",
-        block: "nearest",
-        inline: "nearest",
+    if (virtuoso.current) {
+      virtuoso.current.scrollIntoView({
+        index: props.active,
+        behavior: 'auto'
       });
     }
   });
 
-  const speciesList = props.species.map((species, index) => {
-    if (index === props.active) {
-      return (
-        <ListGroup.Item
-          ref={activeRef}
-          key={species.id}
-          className="active"
-          onClick={(e) => props.chooseItem(index)}
-        >
-          <Species species={species} />
-        </ListGroup.Item>
-      );
-    }
+  function itemContent(index) {
+    const species = props.species[index];
     return (
       <ListGroup.Item
         key={species.id}
         onClick={(e) => props.chooseItem(index)}
+        className={index === props.active ? "active" : ""}
       >
         <Species species={species} />
       </ListGroup.Item>
     );
-  });
+  }
+
   return (
-    <div className="SpeciesPicker">
-      <ListGroup>{speciesList}</ListGroup>
-    </div>
+    <ListGroup className="SpeciesPicker">
+      <Virtuoso
+        ref={virtuoso}
+        totalCount={props.species.length}
+        itemContent={(index) => itemContent(index)}
+      />
+    </ListGroup>
   );
 }
 
