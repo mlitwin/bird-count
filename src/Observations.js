@@ -6,7 +6,7 @@ function Observations(props) {
       {observation.species.name}
     </ListGroup.Item>
   ));
-  return <ListGroup>{observations}</ListGroup>;
+  return <ListGroup className="oneColumnExpand">{observations}</ListGroup>;
 }
 
 export default Observations;

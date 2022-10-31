@@ -92,8 +92,8 @@ function ObservationEntryPad() {
   }
 
   return (
-    <div className="ObservationEntryPad">
-      <div className="ObservationListArea">
+    <div className="ObservationEntryPad oneColumn">
+      <div className="ObservationListArea oneColumnExpand">
         <SpeciesNavigation changeActive={changeActive}></SpeciesNavigation>
         <SpeciesPicker
           species={species}

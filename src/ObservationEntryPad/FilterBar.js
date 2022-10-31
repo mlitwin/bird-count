@@ -4,9 +4,8 @@ import Button from "react-bootstrap/Button";
 import "./FilterBar.css";
 
 function FilterBar(props) {
-
   function doBack() {
-    props.setFilter(props.filter.substring(0, props.filter.length -1));
+    props.setFilter(props.filter.substring(0, props.filter.length - 1));
   }
 
   function doClear() {
@@ -18,8 +17,8 @@ function FilterBar(props) {
       <Button onClick={(e) => props.chooseItem()}>ENTER</Button>
       <div className="FilterValue">&#8203;{props.filter}</div>
       <ButtonGroup className="FilterControls">
-        <Button onClick={(e)=> doBack()}>BSP</Button>
-        <Button onClick={(e)=> doClear()}>CLEAR</Button>
+        <Button onClick={(e) => doBack()}>BSP</Button>
+        <Button onClick={(e) => doClear()}>CLEAR</Button>
       </ButtonGroup>
     </div>
   );

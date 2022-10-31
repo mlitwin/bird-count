@@ -31,3 +31,10 @@ Debugging here's what has happened
 
 # Bugs
 * Rotate / rotate back messed up height
+
+
+https://pixnio.com/fauna-animals/birds/pigeons-pictures/pigeon-guillemot-marine-bird-cepphus-columba
+
+## Storage
+
+https://dexie.org/

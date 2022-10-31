@@ -24,3 +24,20 @@
 .AppContent > .tab-pane {
   height: 100%;
 }
+
+.oneColumn {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.oneColumn >  * {
+  flex-shrink: 0;
+}
+
+.oneColumn > .oneColumnExpand {
+  flex-shrink: unset;
+  flex-grow: 1;
+  display: flex;
+  overflow-y: hidden
+}
