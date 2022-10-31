@@ -44,6 +44,18 @@ try {
   }
 } catch (e) {}
 
+function computeRecentObservations(list, now) {
+  if (!now) {
+    now = Date.now();
+  }
+  const day = 24 * 60 * 60 * 1000;
+  const recentList = list
+    .filter((obs) => obs.createdAt >= now - day)
+    .sort((a, b) => b.createdAt - a.createdAt);
+
+  return recentList;
+}
+
 const [checklistChange$, _setChecklist] = createSignal();
 const [checklist, _checklist$] = bind(checklistChange$, species);
 
@@ -51,12 +63,17 @@ const [observationChange$, addObservation] = createSignal();
 const [latestObservation] = bind(observationChange$, []);
 
 const [observationListChange$, setObservationList] = createSignal();
-const [observations, _observations$] = bind(observationListChange$, observationList);
+const [observations, _observations$] = bind(
+  observationListChange$,
+  observationList
+);
 
 const [recentObservationListChange$, setRecentObservationList] = createSignal();
 
-const [recentObservations] = bind(recentObservationListChange$, []);
-
+const [recentObservations] = bind(
+  recentObservationListChange$,
+  computeRecentObservations(observationList)
+);
 
 function clearObservations() {
   window.localStorage.removeItem("observations");
@@ -65,7 +82,7 @@ function clearObservations() {
 }
 
 observationChange$.subscribe((observation) => {
-  const now = new Date();
+  const now = Date.now();
   observationList.push({
     id: uuidv4(),
     createdAt: now,
@@ -74,11 +91,7 @@ observationChange$.subscribe((observation) => {
   window.localStorage.setItem("observations", JSON.stringify(observationList));
   const newList = observationList.map((observation) => observation);
   setObservationList(newList);
-  const day = 24 * 60 * 60;
-  const recentList = newList
-    .filter((obs) => obs.createdAt >= now - day)
-    .sort((a, b) => b.createdAt - a.createdAt);
-  setRecentObservationList(recentList);
+  setRecentObservationList(computeRecentObservations(newList));
 });
 
 export {
@@ -87,5 +100,5 @@ export {
   latestObservation,
   observations,
   recentObservations,
-  clearObservations
+  clearObservations,
 };
