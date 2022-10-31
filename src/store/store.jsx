@@ -36,6 +36,14 @@ checklistData.species.forEach((sp) => {
   species.push(chsp);
 });
 
+let observationList = [];
+try {
+  const storage = window.localStorage.getItem("observations");
+  if (storage) {
+    observationList = JSON.parse(storage);
+  }
+} catch (e) {}
+
 const [checklistChange$, _setChecklist] = createSignal();
 const [checklist, _checklist$] = bind(checklistChange$, species);
 
@@ -43,13 +51,18 @@ const [observationChange$, addObservation] = createSignal();
 const [latestObservation] = bind(observationChange$, []);
 
 const [observationListChange$, setObservationList] = createSignal();
-const [observations, _observations$] = bind(observationListChange$, []);
+const [observations, _observations$] = bind(observationListChange$, observationList);
 
 const [recentObservationListChange$, setRecentObservationList] = createSignal();
 
 const [recentObservations] = bind(recentObservationListChange$, []);
 
-let observationList = [];
+
+function clearObservations() {
+  window.localStorage.removeItem("observations");
+  observationList = [];
+  setObservationList(observationList);
+}
 
 observationChange$.subscribe((observation) => {
   const now = new Date();
@@ -58,12 +71,21 @@ observationChange$.subscribe((observation) => {
     createdAt: now,
     species: observation,
   });
+  window.localStorage.setItem("observations", JSON.stringify(observationList));
   const newList = observationList.map((observation) => observation);
   setObservationList(newList);
-  const day = 24*60*60;
-  const recentList = newList.filter((obs) => obs.createdAt >= (now - day))
-    .sort((a,b) => b.createdAt - a.createdAt);
-  setRecentObservationList(recentList)
+  const day = 24 * 60 * 60;
+  const recentList = newList
+    .filter((obs) => obs.createdAt >= now - day)
+    .sort((a, b) => b.createdAt - a.createdAt);
+  setRecentObservationList(recentList);
 });
 
-export { checklist, addObservation, latestObservation, observations, recentObservations};
+export {
+  checklist,
+  addObservation,
+  latestObservation,
+  observations,
+  recentObservations,
+  clearObservations
+};
