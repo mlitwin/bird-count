@@ -13,6 +13,14 @@ function App() {
 
   return (
     <Tab.Container className="AppContainer" defaultActiveKey="first">
+      <Tab.Content className="AppContent">
+        <Tab.Pane eventKey="first">
+          <ObservationEntryPad />
+        </Tab.Pane>
+        <Tab.Pane eventKey="second">
+          <ObservationHistory />
+        </Tab.Pane>
+      </Tab.Content>
       <Nav className="AppHeader">
         <Nav.Item>
           <Nav.Link eventKey="first">Home</Nav.Link>
@@ -22,14 +30,6 @@ function App() {
         </Nav.Item>
         <Species species={latest} />
       </Nav>
-      <Tab.Content className="AppContent">
-        <Tab.Pane eventKey="first">
-          <ObservationEntryPad />
-        </Tab.Pane>
-        <Tab.Pane eventKey="second">
-          <ObservationHistory />
-        </Tab.Pane>
-      </Tab.Content>
     </Tab.Container>
   );
 }

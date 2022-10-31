@@ -90,16 +90,18 @@ function ObservationEntryPad() {
     addObservation(species[index]);
     resetInput();
   }
+  //        <SpeciesNavigation changeActive={changeActive}></SpeciesNavigation>
+
 
   return (
     <div className="ObservationEntryPad oneColumn">
       <div className="ObservationListArea oneColumnExpand">
-        <SpeciesNavigation changeActive={changeActive}></SpeciesNavigation>
-        <SpeciesPicker
+       <SpeciesPicker
           species={species}
           active={active}
           chooseItem={chooseItem}
         />
+
       </div>
       <FilterBar
         filter={filter}
