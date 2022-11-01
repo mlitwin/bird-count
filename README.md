@@ -95,3 +95,5 @@ https://react-redux.js.org/tutorials/quick-start
 This: https://react-rxjs.org/docs/getting-started
 
 https://gist.github.com/koistya/d7a507438c741ee6adb5 layout
+
+https://science.ebird.org/en/use-ebird-data/the-ebird-taxonomy
