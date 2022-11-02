@@ -14,16 +14,17 @@ let species = [];
 
 function addAbbeviations(species) {
   let abbrv = [];
+  const commonName = species.localizations.en.commonName.toUpperCase();
 
-  const name = species.localizations.en.commonName
+  const name = commonName
     .replaceAll(/[^\w- /]/g, "")
     .replaceAll(/[^\w]/g, " ")
     .split(/\s+/)
     .map((w) => w[0])
-    .join("")
-    .toUpperCase();
+    .join("");
 
   abbrv.push(name);
+  abbrv.push(commonName.replaceAll(/[^\w]/g, ""));
 
   species.abbreviations = abbrv;
 }
