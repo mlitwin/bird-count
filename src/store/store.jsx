@@ -3,7 +3,7 @@ import { createSignal } from "@react-rxjs/utils";
 import { v4 as uuidv4 } from "uuid";
 
 import taxonomy from "../data/taxonomy.json";
-import checklistData from "../data/checklist.json";
+import chk from "../data/checklist.json";
 
 const speciesTaxons = {};
 taxonomy.species.forEach((sp) => {
@@ -15,9 +15,8 @@ let species = [];
 function addAbbeviations(species) {
   let abbrv = [];
 
-  abbrv.push(species.code.toUpperCase());
-  const name = species.name
-    .replaceAll(/[^\w- '/]/g, "")
+  const name = species.localizations.en.commonName
+    .replaceAll(/[^\w- /]/g, "")
     .replaceAll(/[^\w]/g, " ")
     .split(/\s+/)
     .map((w) => w[0])
@@ -29,12 +28,13 @@ function addAbbeviations(species) {
   species.abbreviations = abbrv;
 }
 
-checklistData.species.forEach((sp) => {
-  const tax = speciesTaxons[sp.id];
+for(let id in chk.species) {
+  const sp = chk.species[id];
+  const tax = speciesTaxons[id];
   let chsp = { ...tax, ...sp };
   addAbbeviations(chsp);
   species.push(chsp);
-});
+}
 
 let observationList = [];
 try {
@@ -60,7 +60,7 @@ const [checklistChange$, _setChecklist] = createSignal();
 const [checklist, _checklist$] = bind(checklistChange$, species);
 
 const [observationChange$, addObservation] = createSignal();
-const [latestObservation] = bind(observationChange$, []);
+const [latestObservation] = bind(observationChange$, null);
 
 const [observationListChange$, setObservationList] = createSignal();
 const [observations, _observations$] = bind(

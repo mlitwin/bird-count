@@ -44,8 +44,8 @@ function computeChecklist(filter) {
   });
 
   species = species.sort((a, b) => {
-    let aIndex = a.sortOrder;
-    let bIndex = b.sortOrder;
+    let aIndex = a.taxonomicOrder;
+    let bIndex = b.taxonomicOrder;
 
     if (a.id in recentOrder) {
       aIndex = -(recent.length - recentOrder[a.id]);
@@ -90,8 +90,6 @@ function ObservationEntryPad() {
     addObservation(species[index]);
     resetInput();
   }
-  //        <SpeciesNavigation changeActive={changeActive}></SpeciesNavigation>
-
 
   return (
     <div className="ObservationEntryPad oneColumn">
