@@ -1,5 +1,6 @@
 const csv = require("csv-parser");
 const fs = require("fs");
+const { exit } = require("process");
 
 const taxonomy = {
   id: "ebird_taxonomy_v2022",
@@ -11,6 +12,13 @@ const checklist = {
   taxonomy: "ebird_taxonomy_v2022",
   species: {},
 };
+
+const CA = JSON.parse(fs.readFileSync('./eBird/CA.json'));
+CA.forEach(code => {
+    checklist.species[code] = {
+        reportable: true,
+      };
+});
 
 const bySciName = {};
 
@@ -54,9 +62,7 @@ function addSpecies(s) {
   sp.family = normalizeFamily(s.FAMILY);
   updateTypeToTaxon(sp);
   taxonomy.species.push(sp);
-  checklist.species[sp.id] = {
-    reportable: true,
-  };
+
   bySciName[sp.sciName] = sp;
 }
 
@@ -95,6 +101,8 @@ function createTaxon(sciName, type, sp) {
 
   return t;
 }
+
+
 
 fs.createReadStream("./eBird/ebird_taxonomy_v2022.csv")
   .pipe(csv())
