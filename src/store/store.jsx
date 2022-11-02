@@ -29,12 +29,27 @@ function addAbbeviations(species) {
   species.abbreviations = abbrv;
 }
 
-for(let id in chk.species) {
+function testFilter(sp) {
+  switch (sp.type) {
+    case "hybrid":
+    case "slash":
+    case "issf":
+    case "intergrade":
+    case "form":
+      return false;
+  }
+
+  return true;
+}
+
+for (let id in chk.species) {
   const sp = chk.species[id];
   const tax = speciesTaxons[id];
   let chsp = { ...tax, ...sp };
-  addAbbeviations(chsp);
-  species.push(chsp);
+  if (testFilter(chsp)) {
+    addAbbeviations(chsp);
+    species.push(chsp);
+  }
 }
 
 let observationList = [];
