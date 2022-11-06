@@ -1,7 +1,8 @@
 import { useSwipeable } from 'react-swipeable'
+import Species from './Species'
 
 
-function Species(props) {
+function Observation(props) {
     const config = {
         trackMouse: true,
         preventScrollOnSwipe: true
@@ -14,12 +15,11 @@ function Species(props) {
         ...config,
       });
     
-    const species = props.species;
-    const speciesName = species ? species.localizations.en.commonName : '';
+    const species = props.observation ? props.observation.species: null;
 
     return (
-        <span {...handlers} style={{ touchAction: 'pan-y' }}>{speciesName}</span>
+        <span {...handlers} style={{ touchAction: 'pan-y' }}><Species species={species}></Species></span>
     )
 }
 
-export default Species;
+export default Observation;

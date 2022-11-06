@@ -1,4 +1,4 @@
-import Species from './common/Species';
+import Observation from './common/Observation';
 import ListGroup from "react-bootstrap/ListGroup";
 import { Virtuoso } from "react-virtuoso";
 
@@ -7,7 +7,7 @@ function Observations(props) {
     const observation = props.observations[index];
     return (
       <ListGroup.Item key={observation.id}>
-        <Species species={observation.species} />
+        <Observation observation={observation} />
       </ListGroup.Item>
     );
   }

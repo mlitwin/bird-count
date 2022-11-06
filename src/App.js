@@ -4,7 +4,7 @@ import Nav from "react-bootstrap/Nav";
 
 import ObservationEntryPad from "./ObservationEntryPad/ObservationEntryPad";
 import ObservationHistory from "./ObservationHistory";
-import Species from "./common/Species";
+import Observation from "./common/Observation";
 
 import { latestObservation } from "./store/store";
 
@@ -28,7 +28,7 @@ function App() {
         <Nav.Item>
           <Nav.Link eventKey="second">History</Nav.Link>
         </Nav.Item>
-        <Species species={latest} />
+        <Observation observation={latest} />
       </Nav>
     </Tab.Container>
   );
