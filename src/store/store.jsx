@@ -1,6 +1,5 @@
 import { bind } from "@react-rxjs/core";
 import { createSignal } from "@react-rxjs/utils";
-import { v4 as uuidv4 } from "uuid";
 
 import taxonomy from "../data/taxonomy.json";
 import chk from "../data/checklist.json";
@@ -98,12 +97,7 @@ function clearObservations() {
 }
 
 observationChange$.subscribe((observation) => {
-  const now = Date.now();
-  observationList.push({
-    id: uuidv4(),
-    createdAt: now,
-    species: observation,
-  });
+  observationList.push(observation);
   window.localStorage.setItem("observations", JSON.stringify(observationList));
   const newList = observationList.map((observation) => observation);
   setObservationList(newList);

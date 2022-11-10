@@ -2,6 +2,7 @@ import Keypad from "./Keypad";
 import SpeciesPicker from "./SpeciesPicker";
 import FilterBar from "./FilterBar";
 import SpeciesNavigation from "./SpeciesNavigation";
+import { v4 as uuidv4 } from "uuid";
 import { checklist, addObservation, recentObservations } from "../store/store";
 import { useState } from "react";
 
@@ -87,7 +88,13 @@ function ObservationEntryPad() {
     if (index === undefined) {
       index = active;
     }
-    addObservation(species[index]);
+    const now = Date.now();
+    const observation = {
+      id: uuidv4(),
+      createdAt: now,
+      species: species[index],
+    };
+    addObservation(observation);
     resetInput();
   }
 
