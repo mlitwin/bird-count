@@ -2,8 +2,10 @@ import Keypad from "./Keypad";
 import SpeciesPicker from "./SpeciesPicker";
 import FilterBar from "./FilterBar";
 import SpeciesNavigation from "./SpeciesNavigation";
+import Observation from "../common/Observation";
+
 import { v4 as uuidv4 } from "uuid";
-import { checklist, addObservation, recentObservations } from "../store/store";
+import { checklist, addObservation, recentObservations, latestObservation } from "../store/store";
 import { useState } from "react";
 
 import "./ObservationEntryPad.css";
@@ -66,6 +68,8 @@ function ObservationEntryPad() {
   const [filter, setFilter] = useState("");
 
   const species = computeChecklist(filter);
+  const latest = latestObservation();
+
 
   function changeActive(delta) {
     let newActive = active + delta;
@@ -108,6 +112,7 @@ function ObservationEntryPad() {
         />
 
       </div>
+      <Observation observation={latest} />
       <FilterBar
         filter={filter}
         setFilter={setFilter}
