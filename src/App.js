@@ -4,12 +4,8 @@ import Nav from "react-bootstrap/Nav";
 
 import ObservationEntryPad from "./ObservationEntryPad/ObservationEntryPad";
 import ObservationHistory from "./ObservationHistory";
-import Observation from "./common/Observation";
-
-import { latestObservation } from "./store/store";
 
 function App() {
-  const latest = latestObservation();
 
   return (
     <Tab.Container className="AppContainer" defaultActiveKey="first">
@@ -28,7 +24,6 @@ function App() {
         <Nav.Item>
           <Nav.Link eventKey="second">History</Nav.Link>
         </Nav.Item>
-        <Observation observation={latest} />
       </Nav>
     </Tab.Container>
   );

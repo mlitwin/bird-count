@@ -1,6 +1,8 @@
 import { useSwipeable } from 'react-swipeable'
 import Species from './Species'
 
+import "./Observation.css";
+
 
 function Observation(props) {
     const config = {
@@ -16,9 +18,12 @@ function Observation(props) {
       });
     
     const species = props.observation ? props.observation.species: null;
+    const speciesHTML = (
+        <Species species={species}></Species>
+    );
 
     return (
-        <span {...handlers} style={{ touchAction: 'pan-y' }}><Species species={species}></Species></span>
+        <span className='Observation' {...handlers} style={{ touchAction: 'pan-y' }}>{speciesHTML}</span>
     )
 }
 

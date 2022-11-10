@@ -18,8 +18,9 @@ function SpeciesPicker(props) {
 
   useEffect(() => {
     if (virtuoso.current) {
-      virtuoso.current.scrollIntoView({
+      virtuoso.current.scrollToIndex({
         index: activeIndex,
+        align: 'start',
         behavior: 'auto'
       });
     }
