@@ -14,7 +14,7 @@ function FilterBar(props) {
 
   return (
     <div className="KeypadControls">
-      <Button onClick={(e) => props.chooseItem()}>ENTER</Button>
+      <Button className="enter" onClick={(e) => props.chooseItem()}>ENTER</Button>
       <div className="FilterValue">&#8203;{props.filter}</div>
       <ButtonGroup className="FilterControls">
         <Button onClick={(e) => doBack()}>BSP</Button>
