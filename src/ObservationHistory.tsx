@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { Button} from "react-bootstrap";
 import Observations from "./Observations";
 import { observations, clearObservations } from "./store/store";

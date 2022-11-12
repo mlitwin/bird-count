@@ -6,7 +6,7 @@ import Observation from "../common/ObservationEntry";
 
 import { v4 as uuidv4 } from "uuid";
 import { checklist, addObservation, recentObservations, latestObservation } from "../store/store";
-import { useState } from "react";
+import React, { useState } from "react";
 
 import "./ObservationEntryPad.css";
 

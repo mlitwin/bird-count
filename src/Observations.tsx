@@ -1,6 +1,7 @@
 import ObservationEntry from './common/ObservationEntry';
 import ListGroup from "react-bootstrap/ListGroup";
 import { Virtuoso } from "react-virtuoso";
+import * as React from 'react';
 
 function Observations(props) {
   function observationContent(index) {

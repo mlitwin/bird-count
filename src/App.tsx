@@ -1,3 +1,4 @@
+import React from "react";
 import "./App.css";
 import Tab from "react-bootstrap/Tab";
 import Nav from "react-bootstrap/Nav";
@@ -8,7 +9,7 @@ import ObservationHistory from "./ObservationHistory";
 function App() {
 
   return (
-    <Tab.Container className="AppContainer" defaultActiveKey="first">
+    <Tab.Container defaultActiveKey="first">
       <Tab.Content className="AppContent">
         <Tab.Pane eventKey="first">
           <ObservationEntryPad />
@@ -29,4 +30,4 @@ function App() {
   );
 }
 
-export default App;
+export {App};
