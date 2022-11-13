@@ -5,33 +5,63 @@ import SpeciesNavigation from "./ObservationEntryPad/SpeciesNavigation";
 import Observation from "./common/ObservationEntry";
 
 import { v4 as uuidv4 } from "uuid";
-import { checklist, addObservation, recentObservations, latestObservation } from "./store/store";
+import {
+  checklist,
+  addObservation,
+  recentObservations,
+  latestObservation,
+} from "./store/store";
 import React, { useState } from "react";
 
 import "./ObservationEntryPad.css";
 
-function passessFilter(filter, species) {
-  if (filter === "") {
-    return true;
-  }
-  const f = filter.toUpperCase();
-  for (let i = 0; i < species.abbreviations.length; i++) {
-    const abbrv = species.abbreviations[i];
-    if (abbrv.startsWith(f)) {
-      return true;
-    }
+function filterLevel(filter, species): number {
+  var ret: number = 0;
+
+  if (!species.standard) {
+    return 0;
   }
 
-  return false;
+  if (filter === "") {
+    return 1;
+  }
+
+  const f = filter.toUpperCase();
+
+  for (ret = 1; ret <= species.abbreviations.length; ret++) {
+    const abbrv = species.abbreviations[ret-1];
+    if (abbrv.startsWith(f)) {
+      return ret;
+    }
+  }
+  const name = species.localizations.en.commonName
+    .toUpperCase()
+    .replace(/[^A-Z]/g, "");
+
+  const nf = name.indexOf(f);
+  if (nf === 0) {
+    return ret;
+  }
+  ret++;
+  if (nf > 0) {
+    return ret;
+  }
+
+  ret = 0;
+
+  return ret;
 }
 
 function computeChecklist(filter) {
   const ck = checklist();
   let species = [];
+  const levels = {};
 
   ck.forEach((s) => {
-    if (passessFilter(filter, s)) {
+    const l = filterLevel(filter, s);
+    if (l > 0) {
       species.push(s);
+      levels[s.id] = l;
     }
   });
 
@@ -47,6 +77,11 @@ function computeChecklist(filter) {
   });
 
   species = species.sort((a, b) => {
+    const lcmp = levels[a.id] - levels[b.id];
+    if (lcmp !== 0) {
+      return lcmp;
+    }
+
     let aIndex = a.taxonomicOrder;
     let bIndex = b.taxonomicOrder;
 
@@ -69,7 +104,6 @@ function ObservationEntryPad() {
 
   const species = computeChecklist(filter);
   const latest = latestObservation();
-
 
   function changeActive(delta) {
     let newActive = active + delta;
@@ -105,12 +139,11 @@ function ObservationEntryPad() {
   return (
     <div className="ObservationEntryPad oneColumn">
       <div className="ObservationListArea oneColumnExpand">
-       <SpeciesPicker
+        <SpeciesPicker
           species={species}
           active={active}
           chooseItem={chooseItem}
         />
-
       </div>
       <Observation observation={latest} />
       <FilterBar

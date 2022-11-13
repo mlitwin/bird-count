@@ -16,15 +16,13 @@ function addAbbeviations(species) {
   const commonName = species.localizations.en.commonName.toUpperCase();
 
   const name = commonName
-    .replaceAll(/[^\w- /]/g, "")
-    .replaceAll(/[^\w]/g, " ")
+    .replaceAll(/[^-A-Za-z /]/g, "")
+    .replaceAll(/[^A-Za-z]/g, " ")
     .split(/\s+/)
     .map((w) => w[0])
     .join("");
 
   abbrv.push(name);
-  abbrv.push(commonName.replaceAll(/[^\w]/g, ""));
-
   species.abbreviations = abbrv;
 }
 
@@ -45,10 +43,9 @@ for (let id in chk.species) {
   const sp = chk.species[id];
   const tax = speciesTaxons[id];
   let chsp = { ...tax, ...sp };
-  if (testFilter(chsp)) {
-    addAbbeviations(chsp);
-    species.push(chsp);
-  }
+  chsp.standard = testFilter(chsp);
+  addAbbeviations(chsp);
+  species.push(chsp);
 }
 
 let observationList = [];
