@@ -3,7 +3,7 @@ import "./App.css";
 import Tab from "react-bootstrap/Tab";
 import Nav from "react-bootstrap/Nav";
 
-import ObservationEntryPad from "./ObservationEntryPad/ObservationEntryPad";
+import ObservationEntryPad from "./ObservationEntryPad";
 import ObservationHistory from "./ObservationHistory";
 
 function App() {
