@@ -1,11 +1,11 @@
-import Keypad from "./Keypad";
-import SpeciesPicker from "./SpeciesPicker";
-import FilterBar from "./FilterBar";
-import SpeciesNavigation from "./SpeciesNavigation";
-import Observation from "../common/ObservationEntry";
+import Keypad from "./ObservationEntryPad/Keypad";
+import SpeciesPicker from "./ObservationEntryPad/SpeciesPicker";
+import FilterBar from "./ObservationEntryPad/FilterBar";
+import SpeciesNavigation from "./ObservationEntryPad/SpeciesNavigation";
+import Observation from "./common/ObservationEntry";
 
 import { v4 as uuidv4 } from "uuid";
-import { checklist, addObservation, recentObservations, latestObservation } from "../store/store";
+import { checklist, addObservation, recentObservations, latestObservation } from "./store/store";
 import React, { useState } from "react";
 
 import "./ObservationEntryPad.css";
