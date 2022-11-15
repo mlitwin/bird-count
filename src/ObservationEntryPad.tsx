@@ -2,7 +2,7 @@ import Keypad from "./ObservationEntryPad/Keypad";
 import SpeciesPicker from "./ObservationEntryPad/SpeciesPicker";
 import FilterBar from "./ObservationEntryPad/FilterBar";
 import SpeciesNavigation from "./ObservationEntryPad/SpeciesNavigation";
-import Observation from "./common/ObservationEntry";
+import ObservationEntry from "./common/ObservationEntry";
 
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -29,7 +29,7 @@ function filterLevel(filter, species): number {
   const f = filter.toUpperCase();
 
   for (ret = 1; ret <= species.abbreviations.length; ret++) {
-    const abbrv = species.abbreviations[ret-1];
+    const abbrv = species.abbreviations[ret - 1];
     if (abbrv.startsWith(f)) {
       return ret;
     }
@@ -145,7 +145,7 @@ function ObservationEntryPad() {
           chooseItem={chooseItem}
         />
       </div>
-      <Observation observation={latest} />
+      <ObservationEntry observation={latest} />
       <FilterBar
         filter={filter}
         setFilter={setFilter}

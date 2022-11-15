@@ -4,6 +4,9 @@
   "private": true,
   "homepage": "https://mlitwin.github.io/bird-count",
   "dependencies": {
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
+    "@mui/material": "^5.10.13",
     "@react-rxjs/core": "^0.10.3",
     "@react-rxjs/utils": "^0.9.5",
     "@testing-library/jest-dom": "^5.16.5",

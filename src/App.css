@@ -7,10 +7,14 @@
 }
 
 #root {
+  height: 100%;
+  font-size: 125%;
+}
+
+.App {
   display: flex;
   flex-direction: column;
   height: 100%;
-  font-size: 125%;
 }
 
 .AppHeader {
@@ -22,7 +26,7 @@
   overflow-y: scroll;
 }
 
-.AppContent > .tab-pane {
+.AppContent > * {
   height: 100%;
 }
 
