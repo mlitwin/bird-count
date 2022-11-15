@@ -1,25 +1,29 @@
-import ObservationEntry from './common/ObservationEntry';
-import ListGroup from "react-bootstrap/ListGroup";
+import ObservationEntry from "./common/ObservationEntry";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
 import { Virtuoso } from "react-virtuoso";
-import * as React from 'react';
+import * as React from "react";
+import "./Observations.css";
 
 function Observations(props) {
   function observationContent(index) {
     const observation = props.observations[index];
     return (
-      <ListGroup.Item key={observation.id}>
+      <ListItem>
         <ObservationEntry observation={observation} />
-      </ListGroup.Item>
+      </ListItem>
     );
   }
 
   return (
-    <ListGroup className="oneColumnExpand">
-      <Virtuoso
-        totalCount={props.observations.length}
-        itemContent={(index) => observationContent(index)}
-      />
-    </ListGroup>
+    <div className="oneColumnExpand">
+      <List className="Observations">
+        <Virtuoso
+          totalCount={props.observations.length}
+          itemContent={(index) => observationContent(index)}
+        />
+      </List>
+    </div>
   );
 }
 

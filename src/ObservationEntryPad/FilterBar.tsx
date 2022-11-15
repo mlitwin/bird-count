@@ -1,6 +1,6 @@
 import React from "react";
-import { ButtonGroup } from "react-bootstrap";
-import Button from "react-bootstrap/Button";
+import Button from '@mui/material/Button';
+import ButtonGroup from '@mui/material/ButtonGroup';
 import "./FilterBar.css";
 
 function FilterBar(props) {
@@ -14,9 +14,9 @@ function FilterBar(props) {
 
   return (
     <div className="KeypadControls">
-      <Button className="enter" onClick={(e) => props.chooseItem()}>ENTER</Button>
+      <Button variant="contained" className="enter" onClick={(e) => props.chooseItem()}>ENTER</Button>
       <div className="FilterValue">&#8203;{props.filter}</div>
-      <ButtonGroup className="FilterControls">
+      <ButtonGroup variant="contained" className="FilterControls">
         <Button onClick={(e) => doBack()}>BSP</Button>
         <Button onClick={(e) => doClear()}>CLEAR</Button>
       </ButtonGroup>

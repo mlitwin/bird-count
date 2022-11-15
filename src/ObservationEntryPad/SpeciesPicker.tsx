@@ -1,6 +1,7 @@
 import Species from "../common/Species";
-import ListGroup from "react-bootstrap/ListGroup";
 import React, { useRef, useEffect } from "react";
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 import { Virtuoso } from "react-virtuoso";
 
 import "./SpeciesPicker.css";
@@ -31,20 +32,20 @@ function SpeciesPicker(props) {
     const reveseIndex = virtuosoListIndex(index);
     const species = props.species[reveseIndex];
     return (
-      <ListGroup.Item
+      <ListItem
         key={reveseIndex}
         onClick={(e) => props.chooseItem(reveseIndex)}
         className={reveseIndex === props.active ? "active" : ""}
       >
         <Species species={species} />
-      </ListGroup.Item>
+      </ListItem>
     );
   }
 
   const listKey = props.species.map((s,index) => s.id + index === activeIndex ? 'a': '').join('/');
 
   return (
-    <ListGroup className="SpeciesPicker">
+    <List className="SpeciesPicker">
       <Virtuoso
         key={listKey}
         ref={virtuoso}
@@ -53,7 +54,7 @@ function SpeciesPicker(props) {
         alignToBottom={true}
         itemContent={(index) => itemContent(index)}
       />
-    </ListGroup>
+    </List>
   );
 }
 
