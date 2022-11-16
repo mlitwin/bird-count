@@ -1,5 +1,7 @@
 :root {
   --doc-height: 100%;
+  margin: 0;
+  overscroll-behavior: none;
 }
 
 body {
@@ -14,9 +16,5 @@ body {
   padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 20px)
     env(safe-area-inset-bottom, 20px) env(safe-area-inset-left, 20px);
   overscroll-behavior: none;
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  box-sizing: border-box;
 }
