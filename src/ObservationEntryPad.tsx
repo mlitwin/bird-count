@@ -52,12 +52,16 @@ function filterLevel(filter, species): number {
   return ret;
 }
 
-function computeChecklist(filter) {
+function computeChecklist(filter, latest) {
   const ck = checklist();
   let species = [];
   const levels = {};
+  const latestId = latest ? latest.species.id : ""
 
   ck.forEach((s) => {
+    if(s.id === latestId) {
+      return;
+    }
     const l = filterLevel(filter, s);
     if (l > 0) {
       species.push(s);
@@ -101,9 +105,10 @@ function computeChecklist(filter) {
 function ObservationEntryPad() {
   const [active, setActiveState] = useState(0);
   const [filter, setFilter] = useState("");
-
-  const species = computeChecklist(filter);
   const latest = latestObservation();
+
+
+  const species = computeChecklist(filter, latest);
 
   function changeActive(delta) {
     let newActive = active + delta;
@@ -131,6 +136,7 @@ function ObservationEntryPad() {
       id: uuidv4(),
       createdAt: now,
       species: species[index],
+      count: 1
     };
     addObservation(observation);
     resetInput();
@@ -145,7 +151,7 @@ function ObservationEntryPad() {
           chooseItem={chooseItem}
         />
       </div>
-      <ObservationEntry observation={latest} />
+      <ObservationEntry observation={latest} initialMode="edit" />
       <FilterBar
         filter={filter}
         setFilter={setFilter}

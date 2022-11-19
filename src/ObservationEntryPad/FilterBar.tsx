@@ -14,8 +14,7 @@ function FilterBar(props) {
 
   return (
     <div className="KeypadControls">
-      <Button variant="contained" className="enter" onClick={(e) => props.chooseItem()}>ENTER</Button>
-      <div className="FilterValue">&#8203;{props.filter}</div>
+      <div className="FilterValue"><div>{props.filter}</div></div>
       <ButtonGroup variant="contained" className="FilterControls">
         <Button onClick={(e) => doBack()}>BSP</Button>
         <Button onClick={(e) => doClear()}>CLEAR</Button>

@@ -10,7 +10,7 @@ function Observations(props) {
     const observation = props.observations[index];
     return (
       <ListItem>
-        <ObservationEntry observation={observation} />
+        <ObservationEntry observation={observation} initialMode="display" />
       </ListItem>
     );
   }

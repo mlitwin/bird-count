@@ -1,3 +1,24 @@
 .Observation {
     min-height: 1em;
+    margin-bottom: 1em;
+}
+
+.ObservationCount {
+    margin-right: .5em;
+}
+
+.ObservationHeader {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1em;
+}
+
+
+.ObservationEditIcons {
+    display: flex;
+    justify-content: space-between;
+}
+
+.CountEntry {
+    display: flex;
 }
