@@ -5,4 +5,6 @@ class Observation {
   count: number
 }
 
-export { Observation };
+type Species = any;
+
+export { Observation, Species };

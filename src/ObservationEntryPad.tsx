@@ -2,7 +2,9 @@ import Keypad from "./ObservationEntryPad/Keypad";
 import SpeciesPicker from "./ObservationEntryPad/SpeciesPicker";
 import FilterBar from "./ObservationEntryPad/FilterBar";
 import SpeciesNavigation from "./ObservationEntryPad/SpeciesNavigation";
-import ObservationEntry from "./common/ObservationEntry";
+import { ObservationEntry, createObservation } from "./common/ObservationEntry";
+
+import { Observation } from "./model/types";
 
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -56,10 +58,10 @@ function computeChecklist(filter, latest) {
   const ck = checklist();
   let species = [];
   const levels = {};
-  const latestId = latest ? latest.species.id : ""
+  const latestId = latest ? latest.species.id : "";
 
   ck.forEach((s) => {
-    if(s.id === latestId) {
+    if (s.id === latestId) {
       return;
     }
     const l = filterLevel(filter, s);
@@ -105,18 +107,11 @@ function computeChecklist(filter, latest) {
 function ObservationEntryPad() {
   const [active, setActiveState] = useState(0);
   const [filter, setFilter] = useState("");
+  const [activeObservation, setActiveObservation] =
+    useState<null | Observation>(null);
   const latest = latestObservation();
 
-
   const species = computeChecklist(filter, latest);
-
-  function changeActive(delta) {
-    let newActive = active + delta;
-    if (newActive < 0 || newActive >= species.length) {
-      return;
-    }
-    setActiveState(newActive);
-  }
 
   function resetInput() {
     setFilter("");
@@ -131,16 +126,12 @@ function ObservationEntryPad() {
     if (index === undefined) {
       index = active;
     }
-    const now = Date.now();
-    const observation = {
-      id: uuidv4(),
-      createdAt: now,
-      species: species[index],
-      count: 1
-    };
-    addObservation(observation);
+    setActiveObservation(createObservation(species[index]));
+
+    //addObservation(observation);
     resetInput();
   }
+
 
   return (
     <div className="ObservationEntryPad oneColumn">
@@ -151,7 +142,10 @@ function ObservationEntryPad() {
           chooseItem={chooseItem}
         />
       </div>
-      <ObservationEntry observation={latest} initialMode="edit" />
+      <ObservationEntry
+        observation={activeObservation}
+        initialMode="edit"
+      />
       <FilterBar
         filter={filter}
         setFilter={setFilter}

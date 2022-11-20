@@ -1,7 +1,7 @@
-import React from "react";
-import Species from "./Species";
+import React, { useState, useEffect } from "react";
+import SpeciesName from "./SpeciesName";
 import MoreMenu from "./ObservationEntry/MoreMenu";
-import { Observation } from "model/types";
+import { Observation, Species } from "model/types";
 import IconButton from "@mui/material/IconButton";
 import {
   CheckCircleOutline,
@@ -9,35 +9,85 @@ import {
   RemoveCircleOutlined,
 } from "@mui/icons-material";
 
+import {
+  addObservation
+} from "../store/store";
+
+import { v4 as uuidv4 } from "uuid";
+
+
 import "./ObservationEntry.css";
+
+type Modes = "display" | "edit" | "create";
 
 interface ObservationProps {
   observation: Observation;
-  initialMode: "display" | "edit";
+  initialMode: Modes;
+}
+
+function createObservation(species: Species) {
+  const now = Date.now();
+  const observation = {
+    id: uuidv4(),
+    createdAt: now,
+    species,
+    count: 1
+  };
+  
+  return observation;
 }
 
 function ObservationEntry(props: ObservationProps) {
   const observation = props.observation;
+  const [mode, setMode] = useState<Modes>(props.initialMode);
+  const currentObservationId = observation ? observation.id : null;
+  const [observationId, setObservationId] = useState(currentObservationId);
+  const currentCount = observation ? observation.count : 0;
+  const [count, setCount] = useState(currentCount);
+
+
+  if (currentObservationId !== observationId) {
+    setMode(props.initialMode);
+    setObservationId(currentObservationId);
+    setCount(currentCount);
+  }
 
   if (!observation) {
-    return <div className="ObservationSummary"></div>;
+    return <div className="ObservationSummary placeholder"></div>;
+  }
+
+  if (mode === "display") {
+    return (
+      <div className="Observation display">
+        <div className="ObservationHeader">
+         <div className="ObservationCount">{observation.count}</div>
+          <SpeciesName species={observation.species}></SpeciesName>
+        </div>
+      </div>
+    );  
+  }
+
+  function doAccept() {
+    observation.count = count;
+    addObservation(observation);
+    setMode("display");
   }
 
   return (
-    <div className="Observation">
+    <div className={"Observation" + mode}>
       <div className="ObservationHeader">
-        <Species species={observation.species}></Species>
+        <SpeciesName species={observation.species}></SpeciesName>
       </div>
       <div className="ObservationEditIcons">
-        <IconButton>
+        <IconButton onClick={(e) => doAccept()}>
           <CheckCircleOutline fontSize="large" />
         </IconButton>
         <div className="CountEntry">
-          <div className="ObservationCount">{observation.count}</div>
-          <IconButton>
+          <div className="ObservationCount">{count}</div>
+          <IconButton onClick={(e) => setCount(count - 1)} disabled={count <= 1}>
             <RemoveCircleOutlined fontSize="large" />
           </IconButton>
-          <IconButton>
+          <IconButton onClick={(e) => setCount(count +1)}>
             <AddCircleOutline fontSize="large" />
           </IconButton>
         </div>
@@ -48,5 +98,5 @@ function ObservationEntry(props: ObservationProps) {
     </div>
   );
 }
-
 export default ObservationEntry;
+export  {ObservationEntry, createObservation};

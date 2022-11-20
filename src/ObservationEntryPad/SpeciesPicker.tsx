@@ -1,4 +1,4 @@
-import Species from "../common/Species";
+import SpeciesName from "../common/SpeciesName";
 import React, { useRef, useEffect } from "react";
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -37,7 +37,7 @@ function SpeciesPicker(props) {
         onClick={(e) => props.chooseItem(reveseIndex)}
         className={reveseIndex === props.active ? "active" : ""}
       >
-        <Species species={species} />
+        <SpeciesName species={species} />
       </ListItem>
     );
   }

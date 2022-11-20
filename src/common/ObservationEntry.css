@@ -1,6 +1,7 @@
-.Observation {
+.Observation.create {
     min-height: 1em;
     margin-bottom: 1em;
+    width: 100%;
 }
 
 .ObservationCount {
@@ -10,9 +11,11 @@
 .ObservationHeader {
     display: flex;
     justify-content: center;
-    margin-bottom: 1em;
 }
 
+.ObservationHeader.create {
+    margin-bottom: 1em;
+}
 
 .ObservationEditIcons {
     display: flex;
