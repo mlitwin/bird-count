@@ -18,11 +18,13 @@ import { v4 as uuidv4 } from "uuid";
 
 import "./ObservationEntry.css";
 
-type Modes = "display" | "edit" | "create";
+type Modes = "empty" | "display" | "edit" | "create";
+type Completion = "accept" | "cancel"
 
 interface ObservationProps {
   observation: Observation;
   initialMode: Modes;
+  onComplete?: (compltion: Completion) => void
 }
 
 function createObservation(species: Species) {
@@ -52,7 +54,7 @@ function ObservationEntry(props: ObservationProps) {
     setCount(currentCount);
   }
 
-  if (!observation) {
+  if (mode === "empty" || !observation) {
     return <div className="ObservationSummary placeholder"></div>;
   }
 
@@ -71,6 +73,21 @@ function ObservationEntry(props: ObservationProps) {
     observation.count = count;
     addObservation(observation);
     setMode("display");
+    if(props.onComplete) {
+      props.onComplete("accept");
+    }
+  }
+
+  function doCancel() {
+    if( mode === "create") {
+      setMode("empty");
+    } else {
+      setMode("display");
+    }
+
+    if(props.onComplete) {
+      props.onComplete("cancel");
+    }
   }
 
   return (
@@ -92,7 +109,7 @@ function ObservationEntry(props: ObservationProps) {
           </IconButton>
         </div>
         <div className="EntryControls">
-          <MoreMenu></MoreMenu>
+          <MoreMenu doCancel={doCancel}></MoreMenu>
         </div>
       </div>
     </div>

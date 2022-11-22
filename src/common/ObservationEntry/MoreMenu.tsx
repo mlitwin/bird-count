@@ -5,10 +5,11 @@ import Menu from "@mui/material/Menu";
 import { MoreHoriz } from "@mui/icons-material";
 
 const options = [
+  "Cancel",
   "Delete"
 ];
 
-export default function MoreMenu() {
+export default function MoreMenu(props) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedIndex, setSelectedIndex] = React.useState(1);
   const open = Boolean(anchorEl);
@@ -22,6 +23,11 @@ export default function MoreMenu() {
   ) => {
     setSelectedIndex(index);
     setAnchorEl(null);
+    switch(index) {
+      case 0:
+        props.doCancel();
+        break;
+    }
   };
 
   const handleClose = () => {

@@ -1,15 +1,12 @@
 import Keypad from "./ObservationEntryPad/Keypad";
 import SpeciesPicker from "./ObservationEntryPad/SpeciesPicker";
 import FilterBar from "./ObservationEntryPad/FilterBar";
-import SpeciesNavigation from "./ObservationEntryPad/SpeciesNavigation";
 import { ObservationEntry, createObservation } from "./common/ObservationEntry";
 
 import { Observation } from "./model/types";
 
-import { v4 as uuidv4 } from "uuid";
 import {
   checklist,
-  addObservation,
   recentObservations,
   latestObservation,
 } from "./store/store";
@@ -109,9 +106,8 @@ function ObservationEntryPad() {
   const [filter, setFilter] = useState("");
   const [activeObservation, setActiveObservation] =
     useState<null | Observation>(null);
-  const latest = latestObservation();
 
-  const species = computeChecklist(filter, latest);
+  const species = computeChecklist(filter, activeObservation);
 
   function resetInput() {
     setFilter("");
@@ -128,10 +124,12 @@ function ObservationEntryPad() {
     }
     setActiveObservation(createObservation(species[index]));
 
-    //addObservation(observation);
     resetInput();
   }
 
+  function onComplete() {
+    setActiveObservation(null);
+  }
 
   return (
     <div className="ObservationEntryPad oneColumn">
@@ -143,8 +141,9 @@ function ObservationEntryPad() {
         />
       </div>
       <ObservationEntry
+        onComplete={onComplete}
         observation={activeObservation}
-        initialMode="edit"
+        initialMode="create"
       />
       <FilterBar
         filter={filter}
