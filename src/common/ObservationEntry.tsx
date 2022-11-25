@@ -9,26 +9,23 @@ import {
   RemoveCircleOutlined,
 } from "@mui/icons-material";
 
-import {
-  addObservation
-} from "../store/store";
+import { addObservation } from "../store/store";
 
 import { v4 as uuidv4 } from "uuid";
-
 
 import "./ObservationEntry.css";
 
 type Modes = "empty" | "display" | "edit" | "create";
 
 interface IObservationEntryEvent {
-  type: "accept" | "cancel"
-  observation: Observation | null
+  type: "accept" | "cancel";
+  observation: Observation | null;
 }
 
 interface ObservationProps {
   initialMode: Modes;
   observation: Observation | Species;
-  onEvent?: (event: IObservationEntryEvent) => void
+  onEvent?: (event: IObservationEntryEvent) => void;
 }
 
 function createObservation(species: Species): Observation {
@@ -40,14 +37,16 @@ function createObservation(species: Species): Observation {
     duration: 0,
     species,
     count: 1,
-    parent: null
+    parent: null,
   };
-  
+
   return observation;
 }
 
-
-function createChildObservation(parent: Observation, count: number) : Observation {
+function createChildObservation(
+  parent: Observation,
+  count: number
+): Observation {
   const now = Date.now();
   const observation = {
     id: uuidv4(),
@@ -56,14 +55,16 @@ function createChildObservation(parent: Observation, count: number) : Observatio
     duration: 0,
     species: parent.species,
     count: count,
-    parent: parent
+    parent: parent,
   };
-  
+
   return observation;
 }
 
 function ObservationEntry(props: ObservationProps) {
-  const [observation, setObservation] = useState<Observation | null>(props.observation);
+  const [observation, setObservation] = useState<Observation | null>(
+    props.observation
+  );
   const [mode, setMode] = useState<Modes>(props.initialMode);
   const currentCount = observation ? observation.count : 0;
   const [count, setCount] = useState(currentCount);
@@ -76,15 +77,15 @@ function ObservationEntry(props: ObservationProps) {
     return (
       <div className="Observation display" onClick={onClick}>
         <div className="ObservationHeader">
-         <div className="ObservationCount">{observation.count}</div>
+          <div className="ObservationCount">{observation.count}</div>
           <SpeciesName species={observation.species}></SpeciesName>
         </div>
       </div>
-    );  
+    );
   }
 
   function doAccept() {
-    if(mode === "create") {
+    if (mode === "create") {
       observation.count = count;
       addObservation(observation);
     } else {
@@ -94,32 +95,32 @@ function ObservationEntry(props: ObservationProps) {
     }
     setMode("display");
 
-    if(props.onEvent) {
+    if (props.onEvent) {
       props.onEvent({
         type: "accept",
-        observation
-      })
+        observation,
+      });
     }
   }
 
   function doCancel() {
-    if( mode === "create") {
+    if (mode === "create") {
       setMode("empty");
       setObservation(null);
     } else {
       setMode("display");
     }
 
-    if(props.onEvent) {
+    if (props.onEvent) {
       props.onEvent({
         type: "cancel",
-        observation
-      })
+        observation,
+      });
     }
   }
 
   function onClick() {
-    if( mode === "display") {
+    if (mode === "display") {
       setMode("edit");
     }
   }
@@ -130,24 +131,27 @@ function ObservationEntry(props: ObservationProps) {
         <SpeciesName species={observation.species}></SpeciesName>
       </div>
       <div className="ObservationEditIcons">
-        <IconButton onClick={(e) => doAccept()}>
-          <CheckCircleOutline fontSize="large" />
-        </IconButton>
-        <div className="CountEntry">
-          <div className="ObservationCount">{count}</div>
-          <IconButton onClick={(e) => setCount(count - 1)} disabled={count <= 1}>
-            <RemoveCircleOutlined fontSize="large" />
-          </IconButton>
-          <IconButton onClick={(e) => setCount(count +1)}>
-            <AddCircleOutline fontSize="large" />
-          </IconButton>
-        </div>
         <div className="EntryControls">
           <MoreMenu doCancel={doCancel}></MoreMenu>
         </div>
+        <div className="CountEntry">
+          <div className="ObservationCount">{count}</div>
+          <IconButton
+            onClick={(e) => setCount(count - 1)}
+            disabled={count <= 1}
+          >
+            <RemoveCircleOutlined fontSize="large" />
+          </IconButton>
+          <IconButton onClick={(e) => setCount(count + 1)}>
+            <AddCircleOutline fontSize="large" />
+          </IconButton>
+        </div>
+        <IconButton onClick={(e) => doAccept()}>
+          <CheckCircleOutline fontSize="large" />
+        </IconButton>
       </div>
     </div>
   );
 }
 export default ObservationEntry;
-export  {ObservationEntry, createObservation};
+export { ObservationEntry, createObservation };

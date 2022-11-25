@@ -1,4 +1,4 @@
-.Observation.create {
+.Observation.create, .Observation.edit {
     min-height: 1em;
     margin-bottom: 1em;
     width: 100%;
