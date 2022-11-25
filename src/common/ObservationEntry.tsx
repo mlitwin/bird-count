@@ -74,7 +74,7 @@ function ObservationEntry(props: ObservationProps) {
 
   if (mode === "display") {
     return (
-      <div className="Observation display">
+      <div className="Observation display" onClick={onClick}>
         <div className="ObservationHeader">
          <div className="ObservationCount">{observation.count}</div>
           <SpeciesName species={observation.species}></SpeciesName>
@@ -84,8 +84,14 @@ function ObservationEntry(props: ObservationProps) {
   }
 
   function doAccept() {
-    observation.count = count;
-    addObservation(observation);
+    if(mode === "create") {
+      observation.count = count;
+      addObservation(observation);
+    } else {
+      const delta = count - observation.count;
+      const child = createChildObservation(observation, delta);
+      addObservation(child);
+    }
     setMode("display");
 
     if(props.onEvent) {
@@ -112,8 +118,14 @@ function ObservationEntry(props: ObservationProps) {
     }
   }
 
+  function onClick() {
+    if( mode === "display") {
+      setMode("edit");
+    }
+  }
+
   return (
-    <div className={"Observation" + mode}>
+    <div className={"Observation " + mode}>
       <div className="ObservationHeader">
         <SpeciesName species={observation.species}></SpeciesName>
       </div>
