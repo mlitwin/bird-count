@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import SpeciesName from "./SpeciesName";
 import MoreMenu from "./ObservationEntry/MoreMenu";
 import { Observation, Species } from "model/types";
@@ -19,40 +19,54 @@ import { v4 as uuidv4 } from "uuid";
 import "./ObservationEntry.css";
 
 type Modes = "empty" | "display" | "edit" | "create";
-type Completion = "accept" | "cancel"
 
-interface ObservationProps {
-  observation: Observation;
-  initialMode: Modes;
-  onComplete?: (compltion: Completion) => void
+interface IObservationEntryEvent {
+  type: "accept" | "cancel"
+  observation: Observation | null
 }
 
-function createObservation(species: Species) {
+interface ObservationProps {
+  initialMode: Modes;
+  observation: Observation | Species;
+  onEvent?: (event: IObservationEntryEvent) => void
+}
+
+function createObservation(species: Species): Observation {
   const now = Date.now();
   const observation = {
     id: uuidv4(),
     createdAt: now,
+    start: now,
+    duration: 0,
     species,
-    count: 1
+    count: 1,
+    parent: null
+  };
+  
+  return observation;
+}
+
+
+function createChildObservation(parent: Observation, count: number) : Observation {
+  const now = Date.now();
+  const observation = {
+    id: uuidv4(),
+    createdAt: now,
+    start: now,
+    duration: 0,
+    species: parent.species,
+    count: count,
+    parent: parent
   };
   
   return observation;
 }
 
 function ObservationEntry(props: ObservationProps) {
-  const observation = props.observation;
+  const [observation, setObservation] = useState<Observation | null>(props.observation);
   const [mode, setMode] = useState<Modes>(props.initialMode);
-  const currentObservationId = observation ? observation.id : null;
-  const [observationId, setObservationId] = useState(currentObservationId);
   const currentCount = observation ? observation.count : 0;
   const [count, setCount] = useState(currentCount);
-
-
-  if (currentObservationId !== observationId) {
-    setMode(props.initialMode);
-    setObservationId(currentObservationId);
-    setCount(currentCount);
-  }
 
   if (mode === "empty" || !observation) {
     return <div className="ObservationSummary placeholder"></div>;
@@ -73,20 +87,28 @@ function ObservationEntry(props: ObservationProps) {
     observation.count = count;
     addObservation(observation);
     setMode("display");
-    if(props.onComplete) {
-      props.onComplete("accept");
+
+    if(props.onEvent) {
+      props.onEvent({
+        type: "accept",
+        observation
+      })
     }
   }
 
   function doCancel() {
     if( mode === "create") {
       setMode("empty");
+      setObservation(null);
     } else {
       setMode("display");
     }
 
-    if(props.onComplete) {
-      props.onComplete("cancel");
+    if(props.onEvent) {
+      props.onEvent({
+        type: "cancel",
+        observation
+      })
     }
   }
 

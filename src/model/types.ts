@@ -1,8 +1,11 @@
 class Observation {
   id: string;
   createdAt: number;
+  start: number;
+  duration: number;
   species: any;
-  count: number
+  count: number;
+  parent: string | null | Observation
 }
 
 type Species = any;

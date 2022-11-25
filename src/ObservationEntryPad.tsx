@@ -5,11 +5,7 @@ import { ObservationEntry, createObservation } from "./common/ObservationEntry";
 
 import { Observation } from "./model/types";
 
-import {
-  checklist,
-  recentObservations,
-  latestObservation,
-} from "./store/store";
+import { checklist, recentObservations } from "./store/store";
 import React, { useState } from "react";
 
 import "./ObservationEntryPad.css";
@@ -127,7 +123,7 @@ function ObservationEntryPad() {
     resetInput();
   }
 
-  function onComplete() {
+  function onEvent() {
     setActiveObservation(null);
   }
 
@@ -141,7 +137,8 @@ function ObservationEntryPad() {
         />
       </div>
       <ObservationEntry
-        onComplete={onComplete}
+        key={activeObservation ? activeObservation.id : ""}
+        onEvent={onEvent}
         observation={activeObservation}
         initialMode="create"
       />
