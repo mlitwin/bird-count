@@ -1,15 +1,17 @@
 import { bind } from "@react-rxjs/core";
 import { createSignal } from "@react-rxjs/utils";
-import {Observation} from "../model/types";
+import {Observation, Taxonomy, Checklist, Species} from "../model/types";
 
-import taxonomy from "../data/taxonomy.json";
+import taxonomyJSON from "../data/taxonomy.json";
 import chk from "../data/checklist.json";
 
-const speciesTaxons = {};
-taxonomy.species.forEach((sp) => {
-  speciesTaxons[sp.id] = sp;
-});
+const taxonomy = new Taxonomy(taxonomyJSON.id);
+taxonomy.addSpecies(taxonomyJSON.species as Species[]);
 
+let curChecklist = new Checklist(taxonomy);
+curChecklist.setFilters(chk);
+
+/*
 let species = [];
 
 function addAbbeviations(species) {
@@ -42,12 +44,13 @@ function testFilter(sp) {
 
 for (let id in chk.species) {
   const sp = chk.species[id];
-  const tax = speciesTaxons[id];
+  const tax = taxonomy.speciesTaxons[id];
   let chsp = { ...tax, ...sp };
   chsp.standard = testFilter(chsp);
   addAbbeviations(chsp);
   species.push(chsp);
 }
+*/
 
 let observationList = [];
 try {
@@ -70,7 +73,7 @@ function computeRecentObservations(list, now?: number) {
 }
 
 const [checklistChange$, _setChecklist] = createSignal();
-const [checklist, _checklist$] = bind<any>(checklistChange$, species);
+const [checklist, _checklist$] = bind<any>(checklistChange$, curChecklist.species);
 
 const [observationChange$, addObservation] = createSignal<Observation>();
 const [latestObservation] = bind(observationChange$, null);

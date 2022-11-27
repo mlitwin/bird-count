@@ -24,7 +24,7 @@ interface IObservationEntryEvent {
 
 interface ObservationProps {
   initialMode: Modes;
-  observation: Observation | Species;
+  observation: Observation;
   onEvent?: (event: IObservationEntryEvent) => void;
 }
 
