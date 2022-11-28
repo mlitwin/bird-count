@@ -5,7 +5,7 @@ import { ObservationEntry, createObservation } from "./common/ObservationEntry";
 
 import { Observation } from "./model/types";
 
-import { checklist, recentObservations } from "./store/store";
+import { checklist, recentObservations} from "./store/store";
 import React, { useState } from "react";
 
 import "./ObservationEntryPad.css";
@@ -47,22 +47,23 @@ function filterLevel(filter, species): number {
   return ret;
 }
 
-function computeChecklist(filter, latest) {
-  const ck = checklist();
+function computeChecklist(ck, filter, latest) {
   let species = [];
   const levels = {};
   const latestId = latest ? latest.species.id : "";
 
-  ck.forEach((s) => {
-    if (s.id === latestId) {
-      return;
-    }
-    const l = filterLevel(filter, s);
-    if (l > 0) {
-      species.push(s);
-      levels[s.id] = l;
-    }
-  });
+  if (ck) {
+    ck.forEach((s) => {
+      if (s.id === latestId) {
+        return;
+      }
+      const l = filterLevel(filter, s);
+      if (l > 0) {
+        species.push(s);
+        levels[s.id] = l;
+      }
+    });
+  }
 
   // Recent ones first
   const recent = recentObservations();
@@ -103,7 +104,8 @@ function ObservationEntryPad() {
   const [activeObservation, setActiveObservation] =
     useState<null | Observation>(null);
 
-  const species = computeChecklist(filter, activeObservation);
+  const ck = checklist();
+  const species = computeChecklist(ck, filter, activeObservation);
 
   function resetInput() {
     setFilter("");

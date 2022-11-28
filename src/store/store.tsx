@@ -1,90 +1,36 @@
-import { bind } from "@react-rxjs/core";
+import { bind} from "@react-rxjs/core";
 import { createSignal } from "@react-rxjs/utils";
-import {Observation, Taxonomy, Checklist, Species} from "../model/types";
+import { Observation, Taxonomy, Checklist, Species } from "../model/types";
 
 import taxonomyJSON from "../data/taxonomy.json";
 import chk from "../data/checklist.json";
+
 
 const taxonomy = new Taxonomy(taxonomyJSON.id);
 taxonomy.addSpecies(taxonomyJSON.species as Species[]);
 
 let curChecklist = new Checklist(taxonomy);
 curChecklist.setFilters(chk);
-
-/*
-let species = [];
-
-function addAbbeviations(species) {
-  let abbrv = [];
-  const commonName = species.localizations.en.commonName.toUpperCase();
-
-  const name = commonName
-    .replaceAll(/[^-A-Za-z /]/g, "")
-    .replaceAll(/[^A-Za-z]/g, " ")
-    .split(/\s+/)
-    .map((w) => w[0])
-    .join("");
-
-  abbrv.push(name);
-  species.abbreviations = abbrv;
-}
-
-function testFilter(sp) {
-  switch (sp.type) {
-    case "hybrid":
-    case "slash":
-    case "issf":
-    case "intergrade":
-    case "form":
-      return false;
-  }
-
-  return true;
-}
-
-for (let id in chk.species) {
-  const sp = chk.species[id];
-  const tax = taxonomy.speciesTaxons[id];
-  let chsp = { ...tax, ...sp };
-  chsp.standard = testFilter(chsp);
-  addAbbeviations(chsp);
-  species.push(chsp);
-}
-*/
-
 let observationList = [];
-try {
-  const storage = window.localStorage.getItem("observations");
-  if (storage) {
-    observationList = JSON.parse(storage);
-  }
-} catch (e) {}
 
-function computeRecentObservations(list, now?: number) {
-  if (!now) {
-    now = Date.now();
-  }
-  const day = 24 * 60 * 60 * 1000;
-  const recentList = list
-    .filter((obs) => obs.createdAt >= now - day)
-    .sort((a, b) => b.createdAt - a.createdAt);
+const [checklistChange$, setChecklist] = createSignal<Species[]>();
+const [checklist, checklist$] = bind<Species[]>(checklistChange$, []);
 
-  return recentList;
-}
-
-const [checklistChange$, _setChecklist] = createSignal();
-const [checklist, _checklist$] = bind<any>(checklistChange$, curChecklist.species);
+checklist$.subscribe((c)=> {}); // Force subscription so we can be sure new events won't be lost. Must be me not undersanding ther React way ...
+setChecklist(curChecklist.species);
 
 const [observationChange$, addObservation] = createSignal<Observation>();
 const [latestObservation] = bind(observationChange$, null);
 
-const [observationListChange$, setObservationList] = createSignal<Observation[]>();
-const [observations, _observations$] = bind<Observation[]>(
+const [observationListChange$, setObservationList] =
+  createSignal<Observation[]>();
+const [observations] = bind<Observation[]>(
   observationListChange$,
   observationList
 );
 
-const [recentObservationListChange$, setRecentObservationList] = createSignal<Observation[]>();
+const [recentObservationListChange$, setRecentObservationList] =
+  createSignal<Observation[]>();
 
 const [recentObservations] = bind<any>(
   recentObservationListChange$,
@@ -104,6 +50,25 @@ observationChange$.subscribe((observation: Observation) => {
   setObservationList(newList);
   setRecentObservationList(computeRecentObservations(newList));
 });
+
+try {
+  const storage = window.localStorage.getItem("observations");
+  if (storage) {
+    observationList = JSON.parse(storage);
+  }
+} catch (e) {}
+
+function computeRecentObservations(list, now?: number) {
+  if (!now) {
+    now = Date.now();
+  }
+  const day = 24 * 60 * 60 * 1000;
+  const recentList = list
+    .filter((obs) => obs.createdAt >= now - day)
+    .sort((a, b) => b.createdAt - a.createdAt);
+
+  return recentList;
+}
 
 export {
   checklist,
