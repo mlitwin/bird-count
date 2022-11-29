@@ -28,15 +28,15 @@ const [observations, observations$] = bind<Observation[]>(
 
 observations$.subscribe(()=> {});
 
-
-function addObservation(obs: Observation) {
+// Pass in current observations to avoid call to observations() hook outside of React function
+function addObservation(curObservations: Observation[], obs: Observation) {
   if( obs.parent) {
     if(!obs.parent.children) {
       obs.parent.children = [];
     }
     obs.parent.children.push(obs);
   }
-  const newList = [...observationList, obs];
+  const newList = [...curObservations, obs];
 
   window.localStorage.setItem("observations", JSON.stringify(serializeObservations(newList)));
   setObservationList(newList);
@@ -44,10 +44,11 @@ function addObservation(obs: Observation) {
 }
 
 
-observationListChange$.subscribe((c)=> {console.log(c, observationList)}); 
 
 const [recentObservationListChange$, setRecentObservationList] =
   createSignal<Observation[]>();
+observationListChange$.subscribe(()=> {}); 
+
 
 const [recentObservations] = bind<any>(
   recentObservationListChange$,
@@ -56,8 +57,8 @@ const [recentObservations] = bind<any>(
 
 function clearObservations() {
   window.localStorage.removeItem("observations");
-  observationList = [];
-  setObservationList(observationList);
+  //observationList = [];
+  setObservationList([]);
 }
 
 function serializeObservations(obsList: Observation[]) {

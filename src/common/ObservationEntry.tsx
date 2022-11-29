@@ -9,7 +9,7 @@ import {
   RemoveCircleOutlined,
 } from "@mui/icons-material";
 
-import { addObservation } from "../store/store";
+import { observations, addObservation } from "../store/store";
 
 import { v4 as uuidv4 } from "uuid";
 
@@ -69,6 +69,7 @@ function ObservationEntry(props: ObservationProps) {
   const [mode, setMode] = useState<Modes>(props.initialMode);
   const currentCount = observation ? observation.count : 0;
   const [count, setCount] = useState(currentCount);
+  const curObservations = observations();
 
   if (mode === "empty" || !observation) {
     return <div className="ObservationSummary placeholder"></div>;
@@ -88,11 +89,11 @@ function ObservationEntry(props: ObservationProps) {
   function doAccept() {
     if (mode === "create") {
       observation.count = count;
-      addObservation(observation);
+      addObservation(curObservations, observation);
     } else {
       const delta = count - observation.count;
       const child = createChildObservation(observation, delta);
-      addObservation(child);
+      addObservation(curObservations, child);
     }
     setMode("display");
 
