@@ -30,17 +30,18 @@ interface ObservationProps {
 
 function createObservation(species: Species): Observation {
   const now = Date.now();
-  const observation = {
-    id: uuidv4(),
-    createdAt: now,
-    start: now,
-    duration: 0,
-    species,
-    count: 1,
-    parent: null,
-  };
+  let obs = new Observation();
 
-  return observation;
+  obs.id = uuidv4();
+  obs.createdAt= now;
+  obs.start = now;
+  obs.duration = 0
+  obs.species = species;
+  obs.count = 1
+  obs.parent = null
+  
+
+  return obs;
 }
 
 function createChildObservation(
@@ -48,17 +49,17 @@ function createChildObservation(
   count: number
 ): Observation {
   const now = Date.now();
-  const observation = {
-    id: uuidv4(),
-    createdAt: now,
-    start: now,
-    duration: 0,
-    species: parent.species,
-    count: count,
-    parent: parent,
-  };
+  let obs = new Observation();
 
-  return observation;
+  obs.id = uuidv4();
+  obs.createdAt= now;
+  obs.start = now;
+  obs.duration = 0
+  obs.species = parent.species;
+  obs.count = count;
+  obs.parent = parent
+
+  return obs;
 }
 
 function ObservationEntry(props: ObservationProps) {

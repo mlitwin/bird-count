@@ -19,15 +19,32 @@ const [checklist, checklist$] = bind<Species[]>(checklistChange$, []);
 checklist$.subscribe((c)=> {}); // Force subscription so we can be sure new events won't be lost. Must be me not undersanding ther React way ...
 setChecklist(curChecklist.species);
 
-const [observationChange$, addObservation] = createSignal<Observation>();
-const [latestObservation] = bind(observationChange$, null);
-
 const [observationListChange$, setObservationList] =
   createSignal<Observation[]>();
-const [observations] = bind<Observation[]>(
+const [observations, observations$] = bind<Observation[]>(
   observationListChange$,
   observationList
 );
+
+observations$.subscribe(()=> {});
+
+
+function addObservation(obs: Observation) {
+  if( obs.parent) {
+    if(!obs.parent.children) {
+      obs.parent.children = [];
+    }
+    obs.parent.children.push(obs);
+  }
+  const newList = [...observationList, obs];
+
+  window.localStorage.setItem("observations", JSON.stringify(serializeObservations(newList)));
+  setObservationList(newList);
+  setRecentObservationList(computeRecentObservations(newList));
+}
+
+
+observationListChange$.subscribe((c)=> {console.log(c, observationList)}); 
 
 const [recentObservationListChange$, setRecentObservationList] =
   createSignal<Observation[]>();
@@ -43,18 +60,41 @@ function clearObservations() {
   setObservationList(observationList);
 }
 
-observationChange$.subscribe((observation: Observation) => {
-  observationList.push(observation);
-  window.localStorage.setItem("observations", JSON.stringify(observationList));
-  const newList = observationList.map((observation) => observation);
-  setObservationList(newList);
-  setRecentObservationList(computeRecentObservations(newList));
-});
+function serializeObservations(obsList: Observation[]) {
+  const l = [];
+  obsList.forEach((obs)=> {
+    l.push(obs.toJSONObject());
+  });
+  return l;
+}
+
+function deserializeObservations(taxonomy: Taxonomy, json: any): Observation[] {
+  const l: Observation[] = [];
+  const lById: {[id: string]: Observation} = {};
+  json.forEach((o)=> {
+    let obs = new Observation();
+    obs.fromJSONObject(taxonomy, o);
+    l.push(obs);
+    lById[obs.id] = o;
+  });
+  l.forEach((obs)=> {
+    const parent = obs.parent;
+    if(parent) {
+      if(!parent.children) {
+        parent.children = [];
+      }
+      parent.children.push(obs);
+    }
+  });
+  return l;
+}
 
 try {
   const storage = window.localStorage.getItem("observations");
   if (storage) {
-    observationList = JSON.parse(storage);
+    const newList = deserializeObservations(taxonomy, JSON.parse(storage));
+   // observationList = newList;
+    setObservationList(newList);
   }
 } catch (e) {}
 
@@ -73,7 +113,6 @@ function computeRecentObservations(list, now?: number) {
 export {
   checklist,
   addObservation,
-  latestObservation,
   observations,
   recentObservations,
   clearObservations,

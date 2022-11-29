@@ -82,7 +82,30 @@ class Observation {
   duration: number;
   species: any;
   count: number;
-  parent: string | null | Observation;
+  parent: null | Observation;
+  children?: Observation[];
+
+  toJSONObject(): object {
+    return {
+      id: this.id,
+      createdAt: this.createdAt,
+      start: this.start,
+      duration: this.duration,
+      species: this.species.id,
+      count: this.count,
+      parent: this.parent ? this.parent.id : null,
+    };
+  }
+
+  fromJSONObject(taxonomy: Taxonomy, json: any) {
+    this.id = json.id;
+    this.createdAt = json.createdAt;
+    this.start = json.start;
+    this.duration = json.duration;
+    this.species = taxonomy.speciesTaxons[json.species];
+    this.count = json.count;
+    this.parent = null;
+  }
 }
 
 class ObservationSet extends Observation {
