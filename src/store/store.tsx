@@ -13,11 +13,11 @@ let curChecklist = new Checklist(taxonomy);
 curChecklist.setFilters(chk);
 let observationList = [];
 
-const [checklistChange$, setChecklist] = createSignal<Species[]>();
-const [checklist, checklist$] = bind<Species[]>(checklistChange$, []);
+const [checklistChange$, setChecklist] = createSignal<Checklist>();
+const [checklist, checklist$] = bind<Checklist>(checklistChange$, null);
 
 checklist$.subscribe((c)=> {}); // Force subscription so we can be sure new events won't be lost. Must be me not undersanding ther React way ...
-setChecklist(curChecklist.species);
+setChecklist(curChecklist);
 
 const [observationListChange$, setObservationList] =
   createSignal<Observation[]>();
@@ -94,7 +94,6 @@ try {
   const storage = window.localStorage.getItem("observations");
   if (storage) {
     const newList = deserializeObservations(taxonomy, JSON.parse(storage));
-   // observationList = newList;
     setObservationList(newList);
   }
 } catch (e) {}

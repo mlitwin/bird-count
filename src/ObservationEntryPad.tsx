@@ -53,7 +53,7 @@ function computeChecklist(ck, filter, latest) {
   const latestId = latest ? latest.species.id : "";
 
   if (ck) {
-    ck.forEach((s) => {
+    ck.species.forEach((s) => {
       if (s.id === latestId) {
         return;
       }
@@ -104,8 +104,7 @@ function ObservationEntryPad() {
   const [activeObservation, setActiveObservation] =
     useState<null | Observation>(null);
 
-  const ck = checklist();
-  const species = computeChecklist(ck, filter, activeObservation);
+  const species = computeChecklist(checklist(), filter, activeObservation);
 
   function resetInput() {
     setFilter("");
