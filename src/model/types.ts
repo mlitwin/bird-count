@@ -23,6 +23,23 @@ class Taxonomy {
       this.speciesTaxons[sp.id] = sp;
     });
   }
+
+  commonAncestor(a: Species, b: Species): Species {
+    let o = a;
+    const marked = {};
+    while(o) {
+      marked[o.id] = true;
+      o = this.speciesTaxons[o.parent];
+    }
+    o = b;
+    while(o) {
+     if(marked[o.id]) {
+      return o;
+     }
+     o = this.speciesTaxons[o.parent];
+    }
+    // notreached
+  }
 }
 
 function addAbbeviations(species) {
@@ -106,15 +123,59 @@ class Observation {
     this.count = json.count;
     this.parent = null;
   }
+
+  Assign(obs: Observation) {
+    this.id = obs.id;
+    this.createdAt = obs.createdAt;
+    this.start = obs.start;
+    this.duration = obs.duration;
+    this.species = obs.species;
+    this.count = obs.count;
+    this.parent = obs.parent;
+  }
+
+  Union(taxonomy: Taxonomy, obs: Observation) {
+    const thisend = this.start + this.duration;
+    const thatend = obs.start + obs.duration;
+    if (obs.start < this.start) {
+      this.start = obs.start;
+    }
+    const end = thisend > thatend ? thisend : thatend;
+    this.duration = end - this.start;
+    this.species = taxonomy.commonAncestor(this.species, obs.species);
+    this.count += obs.count;
+  }
+
+  UnionWithDescendent(obs: Observation) {
+    this.count += obs.count;
+  }
 }
 
 class ObservationSet extends Observation {
-  constructor(obs: Observation[]) {
+  taxonomy: Taxonomy;
+  constructor(taxonomy: Taxonomy, obs: Observation[]) {
     super();
+    this.taxonomy = taxonomy;
     this.setObservations(obs);
   }
   setObservations(obs: Observation[]) {
     this.observations = obs;
+    obs.forEach((obs, index) => {
+      const UnionWithDescendents = (parent: Observation) => {
+        if(parent.children) {
+          parent.children.forEach((child)=> {
+            this.UnionWithDescendent(child);
+            UnionWithDescendents(child)
+          });
+        }
+      }
+      if(index === 0) {
+        this.Assign(obs);
+      } else {
+        this.Union(this.taxonomy, obs);
+      }
+      UnionWithDescendents(obs);
+    });
   }
   observations: Observation[];
 }

@@ -1,10 +1,9 @@
-import { bind} from "@react-rxjs/core";
+import { bind } from "@react-rxjs/core";
 import { createSignal } from "@react-rxjs/utils";
 import { Observation, Taxonomy, Checklist, Species } from "../model/types";
 
 import taxonomyJSON from "../data/taxonomy.json";
 import chk from "../data/checklist.json";
-
 
 const taxonomy = new Taxonomy(taxonomyJSON.id);
 taxonomy.addSpecies(taxonomyJSON.species as Species[]);
@@ -16,7 +15,7 @@ let observationList = [];
 const [checklistChange$, setChecklist] = createSignal<Checklist>();
 const [checklist, checklist$] = bind<Checklist>(checklistChange$, null);
 
-checklist$.subscribe((c)=> {}); // Force subscription so we can be sure new events won't be lost. Must be me not undersanding ther React way ...
+checklist$.subscribe((c) => {}); // Force subscription so we can be sure new events won't be lost. Must be me not undersanding ther React way ...
 setChecklist(curChecklist);
 
 const [observationListChange$, setObservationList] =
@@ -26,29 +25,29 @@ const [observations, observations$] = bind<Observation[]>(
   observationList
 );
 
-observations$.subscribe(()=> {});
+observations$.subscribe(() => {});
 
 // Pass in current observations to avoid call to observations() hook outside of React function
 function addObservation(curObservations: Observation[], obs: Observation) {
-  if( obs.parent) {
-    if(!obs.parent.children) {
+  if (obs.parent) {
+    if (!obs.parent.children) {
       obs.parent.children = [];
     }
     obs.parent.children.push(obs);
   }
   const newList = [...curObservations, obs];
 
-  window.localStorage.setItem("observations", JSON.stringify(serializeObservations(newList)));
+  window.localStorage.setItem(
+    "observations",
+    JSON.stringify(serializeObservations(newList))
+  );
   setObservationList(newList);
   setRecentObservationList(computeRecentObservations(newList));
 }
 
-
-
 const [recentObservationListChange$, setRecentObservationList] =
   createSignal<Observation[]>();
-observationListChange$.subscribe(()=> {}); 
-
+observationListChange$.subscribe(() => {});
 
 const [recentObservations] = bind<any>(
   recentObservationListChange$,
@@ -63,7 +62,7 @@ function clearObservations() {
 
 function serializeObservations(obsList: Observation[]) {
   const l = [];
-  obsList.forEach((obs)=> {
+  obsList.forEach((obs) => {
     l.push(obs.toJSONObject());
   });
   return l;
@@ -71,17 +70,17 @@ function serializeObservations(obsList: Observation[]) {
 
 function deserializeObservations(taxonomy: Taxonomy, json: any): Observation[] {
   const l: Observation[] = [];
-  const lById: {[id: string]: Observation} = {};
-  json.forEach((o)=> {
+  const lById: { [id: string]: Observation } = {};
+  json.forEach((o) => {
     let obs = new Observation();
     obs.fromJSONObject(taxonomy, o);
     l.push(obs);
     lById[obs.id] = o;
   });
-  l.forEach((obs)=> {
+  l.forEach((obs) => {
     const parent = obs.parent;
-    if(parent) {
-      if(!parent.children) {
+    if (parent) {
+      if (!parent.children) {
         parent.children = [];
       }
       parent.children.push(obs);
