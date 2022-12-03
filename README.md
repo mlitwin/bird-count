@@ -2,17 +2,23 @@
 
 Learning project for a React application. Count how many of which birds you've seen.
 
-* Use functional form for React components
-* https://react-rxjs.org/ for data model
-* Uses https://react-bootstrap.github.io/
-    * What about https://mui.com/material-ui?
+## Features
 
+* Provides the author the opportunity to learn React! And [React-RxJS](https://react-rxjs.org)!
+* User interface designed around the authors idiosyncratic usage patterns!
+  * Trying to optimize for quick entry.
+* Uses taxonomies and data from [eBird](https://science.ebird.org/en/use-ebird-data/the-ebird-taxonomy)
+    * Provides an opportunity to think about the data structures from a computer science point of view.
+    
+## Implementation
+
+* Use Functional Forms for React components - an advantage of coming in late.
+* https://react-rxjs.org/ for data model.
+* Uses https://mui.com/material-ui for user interface.
 
 ## Deployment
 
-Github Pages via https://create-react-app.dev/docs/deployment/
-
-https://mlitwin.github.io/bird-count/
+`npm deploy`: [Create React App](https://create-react-app.dev/docs/deployment/) -> [Github Project Page](https://mlitwin.github.io/bird-count/)
 
 # Getting Started with Create React App
 
