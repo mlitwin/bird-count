@@ -1,9 +1,19 @@
+import React, { useState } from "react";
+import { BehaviorSubject  } from "rxjs";
+//import { BehaviorSubject as Observable } from "rxjs";
 import { bind } from "@react-rxjs/core";
 import { createSignal } from "@react-rxjs/utils";
-import { Observation, Taxonomy, Checklist, Species } from "../model/types";
+import {
+  Observation,
+  Taxonomy,
+  Checklist,
+  Species,
+  ObservationSet,
+} from "../model/types";
 
 import taxonomyJSON from "../data/taxonomy.json";
 import chk from "../data/checklist.json";
+import { withLatestFrom, map , switchMap, last} from "rxjs";
 
 const taxonomy = new Taxonomy(taxonomyJSON.id);
 taxonomy.addSpecies(taxonomyJSON.species as Species[]);
@@ -27,6 +37,12 @@ const [observations, observations$] = bind<Observation[]>(
 
 observations$.subscribe(() => {});
 
+const [observationAdded$, signalAddedObservation] = createSignal<Observation>();
+
+observationAdded$.subscribe((obs) => {
+  // console.log(obs);
+});
+
 // Pass in current observations to avoid call to observations() hook outside of React function
 function addObservation(curObservations: Observation[], obs: Observation) {
   if (obs.parent) {
@@ -43,6 +59,7 @@ function addObservation(curObservations: Observation[], obs: Observation) {
   );
   setObservationList(newList);
   setRecentObservationList(computeRecentObservations(newList));
+  signalAddedObservation(obs);
 }
 
 const [recentObservationListChange$, setRecentObservationList] =
@@ -109,10 +126,52 @@ function computeRecentObservations(list, now?: number) {
   return recentList;
 }
 
+/*
+
+function createObservationQuery(predicate: (Observation) => boolean) {
+  return observations$.pipe(
+    map((list) => {
+    //  console.log(list);
+      const obsSet = new ObservationSet(taxonomy, list);
+     // console.log(obsSet);
+      return obsSet;
+    }));
+}
+
+function useObservationQuery(predicate: (Observation) => boolean) {
+  
+
+  const [observable, observable$] = useState(createObservationQuery(predicate));
+  const handleNext = value => {
+    observable.next(value);
+  };
+
+  return [observable, handleNext];
+
+  return useState(createObservationQuery(predicate));
+
+ // query$.subscribe(()=>{});
+
+ // return [query];
+  /*
+
+observationAdded$.subscribe(obs => {
+  console.log(obs);
+})
+
+}*/
+
+function useObservationQuery(predicate: (Observation) => boolean) {
+  const obsSet = new ObservationSet(taxonomy, observations().filter(predicate));
+    const [query, setQuery] = useState(obsSet);
+
+    return query;
+}
 export {
   checklist,
   addObservation,
   observations,
   recentObservations,
   clearObservations,
+  useObservationQuery,
 };

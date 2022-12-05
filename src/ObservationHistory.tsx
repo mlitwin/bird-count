@@ -5,7 +5,8 @@ import { observations, clearObservations } from "./store/store";
 
 function ObservationHistory() {
   const obs = observations();
-  const mail = encodeURIComponent(JSON.stringify(obs, null, 2));
+  const olist = obs.map(o => o.toJSONObject());
+  const mail = encodeURIComponent(JSON.stringify(olist, null, 2));
   const mailto = `mailto:?body=${mail}&subject=Email the List`;
 
   function doClear() {

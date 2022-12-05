@@ -159,8 +159,10 @@ class ObservationSet extends Observation {
     this.setObservations(obs);
   }
   setObservations(obs: Observation[]) {
-    this.observations = obs;
-    obs.forEach((obs, index) => {
+   // console.log(`setObservations`)
+    this.observations = [];
+    obs.forEach((o, index) => {
+     // console.log(index, o)
       const UnionWithDescendents = (parent: Observation) => {
         if(parent.children) {
           parent.children.forEach((child)=> {
@@ -170,11 +172,12 @@ class ObservationSet extends Observation {
         }
       }
       if(index === 0) {
-        this.Assign(obs);
+        this.Assign(o);
       } else {
-        this.Union(this.taxonomy, obs);
+        this.Union(this.taxonomy, o);
       }
-      UnionWithDescendents(obs);
+      UnionWithDescendents(o);
+      this.observations.push(o);
     });
   }
   observations: Observation[];

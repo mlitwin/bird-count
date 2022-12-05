@@ -5,7 +5,7 @@ import { ObservationEntry, createObservation } from "./common/ObservationEntry";
 
 import { Observation } from "./model/types";
 
-import { checklist, recentObservations} from "./store/store";
+import { checklist, observations, recentObservations , addObservation} from "./store/store";
 import React, { useState } from "react";
 
 import "./ObservationEntryPad.css";
@@ -104,6 +104,8 @@ function ObservationEntryPad() {
   const [activeObservation, setActiveObservation] =
     useState<null | Observation>(null);
 
+  const currentObservations = observations();
+
   const species = computeChecklist(checklist(), filter, activeObservation);
 
   function resetInput() {
@@ -119,13 +121,31 @@ function ObservationEntryPad() {
     if (index === undefined) {
       index = active;
     }
-    setActiveObservation(createObservation(species[index]));
+
+    const newObservation = createObservation(species[index]);
+
+    addObservation(currentObservations, newObservation);
+    setActiveObservation(newObservation);
 
     resetInput();
   }
 
   function onEvent() {
     setActiveObservation(null);
+  }
+
+  function observationEntry() {
+    if (activeObservation === null) {
+      return <div className="ObservationSummary placeholder"></div>;
+    }
+    return (
+      <ObservationEntry
+        key={activeObservation.id}
+        onEvent={onEvent}
+        observation={activeObservation}
+        initialMode="edit"
+      />
+    );
   }
 
   return (
@@ -137,12 +157,7 @@ function ObservationEntryPad() {
           chooseItem={chooseItem}
         />
       </div>
-      <ObservationEntry
-        key={activeObservation ? activeObservation.id : ""}
-        onEvent={onEvent}
-        observation={activeObservation}
-        initialMode="create"
-      />
+      {observationEntry()}
       <FilterBar
         filter={filter}
         setFilter={setFilter}

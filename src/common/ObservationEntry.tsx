@@ -9,17 +9,17 @@ import {
   RemoveCircleOutlined,
 } from "@mui/icons-material";
 
-import { observations, addObservation } from "../store/store";
+import { observations, addObservation, useObservationQuery } from "../store/store";
 
 import { v4 as uuidv4 } from "uuid";
 
 import "./ObservationEntry.css";
 
-type Modes = "empty" | "display" | "edit" | "create";
+type Modes = "display" | "edit" | "create" ;
 
 interface IObservationEntryEvent {
   type: "accept" | "cancel";
-  observation: Observation | null;
+  observation: Observation;
 }
 
 interface ObservationProps {
@@ -63,24 +63,27 @@ function createChildObservation(
 }
 
 function ObservationEntry(props: ObservationProps) {
-  const [observation, setObservation] = useState<Observation | null>(
-    props.observation
-  );
+
   const [mode, setMode] = useState<Modes>(props.initialMode);
-  const currentCount = observation ? observation.count : 0;
-  const [count, setCount] = useState(currentCount);
+
   const curObservations = observations();
 
-  if (mode === "empty" || !observation) {
-    return <div className="ObservationSummary placeholder"></div>;
-  }
+  const query = useObservationQuery((obs)=> {
+    if (obs.id === props.observation.id ) return true;
+
+    if( obs.parent && obs.parent.id === props.observation.id) return true;
+
+    return false;
+  });
+
+  const [count, setCount] = useState(props.observation.count);
 
   if (mode === "display") {
     return (
       <div className="Observation display" onClick={onClick}>
         <div className="ObservationHeader">
-          <div className="ObservationCount">{observation.count}</div>
-          <SpeciesName species={observation.species}></SpeciesName>
+          <div className="ObservationCount">{query.count}</div>
+          <SpeciesName species={query.species}></SpeciesName>
         </div>
       </div>
     );
@@ -88,11 +91,11 @@ function ObservationEntry(props: ObservationProps) {
 
   function doAccept() {
     if (mode === "create") {
-      observation.count = count;
-      addObservation(curObservations, observation);
+      props.observation.count = count;
+      addObservation(curObservations, props.observation);
     } else {
-      const delta = count - observation.count;
-      const child = createChildObservation(observation, delta);
+      const delta = count - query.count;
+      const child = createChildObservation(props.observation, delta);
       addObservation(curObservations, child);
     }
     setMode("display");
@@ -100,23 +103,19 @@ function ObservationEntry(props: ObservationProps) {
     if (props.onEvent) {
       props.onEvent({
         type: "accept",
-        observation,
+        observation: props.observation,
       });
     }
   }
 
   function doCancel() {
-    if (mode === "create") {
-      setMode("empty");
-      setObservation(null);
-    } else {
-      setMode("display");
-    }
+
+    setMode("display");
 
     if (props.onEvent) {
       props.onEvent({
         type: "cancel",
-        observation,
+        observation: props.observation,
       });
     }
   }
@@ -127,10 +126,11 @@ function ObservationEntry(props: ObservationProps) {
     }
   }
 
+
   return (
     <div className={"Observation " + mode}>
       <div className="ObservationHeader">
-        <SpeciesName species={observation.species}></SpeciesName>
+        <SpeciesName species={query.species}></SpeciesName>
       </div>
       <div className="ObservationEditIcons">
         <div className="EntryControls">
