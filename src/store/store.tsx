@@ -24,8 +24,6 @@ class ObservationContext {
   checklist: Checklist;
 }
 
-const taxonomy = new Taxonomy((taxonomyJSON as any).id);
-taxonomy.addSpecies((taxonomyJSON as any).species as Species[]);
 
 function useObservationContext() {
   const [observationContext, setObservationContext] =
@@ -52,15 +50,6 @@ function useObservationContext() {
 
   return observationContext;
 }
-
-let curChecklist = new Checklist(taxonomy);
-curChecklist.setFilters(chk);
-
-const [checklistChange$, setChecklist] = createSignal<Checklist>();
-const [checklist, checklist$] = bind<Checklist>(checklistChange$, null);
-
-checklist$.subscribe((c) => {}); // Force subscription so we can be sure new events won't be lost. Must be me not undersanding ther React way ...
-setChecklist(curChecklist);
 
 const [observationListChange$, setObservationList] =
   createSignal<Observation[]>();
@@ -141,8 +130,6 @@ function deserializeObservations(taxonomy: Taxonomy, json: any): Observation[] {
   return l;
 }
 
-
-
 function computeRecentObservations(list: Observation[], now?: number) {
   if (!now) {
     now = Date.now();
@@ -156,13 +143,13 @@ function computeRecentObservations(list: Observation[], now?: number) {
 }
 
 function useObservationQuery(predicate: (Observation) => boolean) {
-  const obsSet = new ObservationSet(taxonomy, observations().filter(predicate));
+  const oc = useObservationContext();
+  const obsSet = new ObservationSet(oc.taxonomy, observations().filter(predicate));
   const [query, setQuery] = useState(obsSet);
 
   return query;
 }
 export {
-  checklist,
   addObservation,
   observations,
   recentObservations,
