@@ -9,13 +9,17 @@ import {
   RemoveCircleOutlined,
 } from "@mui/icons-material";
 
-import { observations, addObservation, useObservationQuery } from "../store/store";
+import {
+  observations,
+  addObservation,
+  useObservationQuery,
+} from "../store/store";
 
 import { v4 as uuidv4 } from "uuid";
 
 import "./ObservationEntry.css";
 
-type Modes = "display" | "edit" | "create" ;
+type Modes = "display" | "edit";
 
 interface IObservationEntryEvent {
   type: "accept" | "cancel";
@@ -33,13 +37,12 @@ function createObservation(species: Species): Observation {
   let obs = new Observation();
 
   obs.id = uuidv4();
-  obs.createdAt= now;
+  obs.createdAt = now;
   obs.start = now;
-  obs.duration = 0
+  obs.duration = 0;
   obs.species = species;
-  obs.count = 1
-  obs.parent = null
-  
+  obs.count = 1;
+  obs.parent = null;
 
   return obs;
 }
@@ -52,26 +55,25 @@ function createChildObservation(
   let obs = new Observation();
 
   obs.id = uuidv4();
-  obs.createdAt= now;
+  obs.createdAt = now;
   obs.start = now;
-  obs.duration = 0
+  obs.duration = 0;
   obs.species = parent.species;
   obs.count = count;
-  obs.parent = parent
+  obs.parent = parent;
 
   return obs;
 }
 
 function ObservationEntry(props: ObservationProps) {
-
   const [mode, setMode] = useState<Modes>(props.initialMode);
 
   const curObservations = observations();
 
-  const query = useObservationQuery((obs)=> {
-    if (obs.id === props.observation.id ) return true;
+  const query = useObservationQuery((obs) => {
+    if (obs.id === props.observation.id) return true;
 
-    if( obs.parent && obs.parent.id === props.observation.id) return true;
+    if (obs.parent && obs.parent.id === props.observation.id) return true;
 
     return false;
   });
@@ -90,14 +92,12 @@ function ObservationEntry(props: ObservationProps) {
   }
 
   function doAccept() {
-    if (mode === "create") {
-      props.observation.count = count;
-      addObservation(curObservations, props.observation);
-    } else {
-      const delta = count - query.count;
+    const delta = count - query.count;
+    if (delta !== 0) {
       const child = createChildObservation(props.observation, delta);
       addObservation(curObservations, child);
     }
+
     setMode("display");
 
     if (props.onEvent) {
@@ -109,7 +109,6 @@ function ObservationEntry(props: ObservationProps) {
   }
 
   function doCancel() {
-
     setMode("display");
 
     if (props.onEvent) {
@@ -125,7 +124,6 @@ function ObservationEntry(props: ObservationProps) {
       setMode("edit");
     }
   }
-
 
   return (
     <div className={"Observation " + mode}>
