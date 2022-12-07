@@ -1,6 +1,4 @@
-import React, { useState } from "react";
-import { BehaviorSubject  } from "rxjs";
-//import { BehaviorSubject as Observable } from "rxjs";
+import React, { useEffect, useState } from "react";
 import { bind } from "@react-rxjs/core";
 import { createSignal } from "@react-rxjs/utils";
 import {
@@ -13,14 +11,50 @@ import {
 
 import taxonomyJSON from "../data/taxonomy.json";
 import chk from "../data/checklist.json";
-import { withLatestFrom, map , switchMap, last} from "rxjs";
 
-const taxonomy = new Taxonomy(taxonomyJSON.id);
-taxonomy.addSpecies(taxonomyJSON.species as Species[]);
+class ObservationContext {
+  constructor() {
+    this.taxonomy = null;
+    this.checklist = null;
+  }
+  ready() {
+    return this.taxonomy != null && this.checklist != null;
+  }
+  taxonomy: Taxonomy;
+  checklist: Checklist;
+}
+
+const taxonomy = new Taxonomy((taxonomyJSON as any).id);
+taxonomy.addSpecies((taxonomyJSON as any).species as Species[]);
+
+function useObservationContext() {
+  const [observationContext, setObservationContext] =
+    useState<ObservationContext>(new ObservationContext());
+
+  useEffect(() => {
+    const oc = new ObservationContext();
+    oc.taxonomy = new Taxonomy((taxonomyJSON as any).id);
+    oc.taxonomy.addSpecies(
+      (taxonomyJSON as any).species as Species[]
+    );
+    oc.checklist = new Checklist(oc.taxonomy);
+    oc.checklist.setFilters(chk);
+    setObservationContext(oc);
+    try {
+      const storage = window.localStorage.getItem("observations");
+      if (storage) {
+        const newList = deserializeObservations(oc.taxonomy, JSON.parse(storage));
+        setObservationList(newList);
+        setRecentObservationList(computeRecentObservations(newList));
+      }
+    } catch (e) {}
+  }, []);
+
+  return observationContext;
+}
 
 let curChecklist = new Checklist(taxonomy);
 curChecklist.setFilters(chk);
-let observationList = [];
 
 const [checklistChange$, setChecklist] = createSignal<Checklist>();
 const [checklist, checklist$] = bind<Checklist>(checklistChange$, null);
@@ -32,7 +66,7 @@ const [observationListChange$, setObservationList] =
   createSignal<Observation[]>();
 const [observations, observations$] = bind<Observation[]>(
   observationListChange$,
-  observationList
+  []
 );
 
 observations$.subscribe(() => {});
@@ -66,14 +100,15 @@ const [recentObservationListChange$, setRecentObservationList] =
   createSignal<Observation[]>();
 observationListChange$.subscribe(() => {});
 
-const [recentObservations] = bind<any>(
+const [recentObservations, recentObservations$] = bind<any>(
   recentObservationListChange$,
-  computeRecentObservations(observationList)
+  []
 );
+recentObservations$.subscribe(()=> {});
+
 
 function clearObservations() {
   window.localStorage.removeItem("observations");
-  //observationList = [];
   setObservationList([]);
 }
 
@@ -106,15 +141,9 @@ function deserializeObservations(taxonomy: Taxonomy, json: any): Observation[] {
   return l;
 }
 
-try {
-  const storage = window.localStorage.getItem("observations");
-  if (storage) {
-    const newList = deserializeObservations(taxonomy, JSON.parse(storage));
-    setObservationList(newList);
-  }
-} catch (e) {}
 
-function computeRecentObservations(list, now?: number) {
+
+function computeRecentObservations(list: Observation[], now?: number) {
   if (!now) {
     now = Date.now();
   }
@@ -126,46 +155,11 @@ function computeRecentObservations(list, now?: number) {
   return recentList;
 }
 
-/*
-
-function createObservationQuery(predicate: (Observation) => boolean) {
-  return observations$.pipe(
-    map((list) => {
-    //  console.log(list);
-      const obsSet = new ObservationSet(taxonomy, list);
-     // console.log(obsSet);
-      return obsSet;
-    }));
-}
-
-function useObservationQuery(predicate: (Observation) => boolean) {
-  
-
-  const [observable, observable$] = useState(createObservationQuery(predicate));
-  const handleNext = value => {
-    observable.next(value);
-  };
-
-  return [observable, handleNext];
-
-  return useState(createObservationQuery(predicate));
-
- // query$.subscribe(()=>{});
-
- // return [query];
-  /*
-
-observationAdded$.subscribe(obs => {
-  console.log(obs);
-})
-
-}*/
-
 function useObservationQuery(predicate: (Observation) => boolean) {
   const obsSet = new ObservationSet(taxonomy, observations().filter(predicate));
-    const [query, setQuery] = useState(obsSet);
+  const [query, setQuery] = useState(obsSet);
 
-    return query;
+  return query;
 }
 export {
   checklist,
@@ -174,4 +168,5 @@ export {
   recentObservations,
   clearObservations,
   useObservationQuery,
+  useObservationContext,
 };
