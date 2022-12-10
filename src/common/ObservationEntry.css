@@ -6,6 +6,21 @@
     padding-top: 5px;
 }
 
+.Observation .Button {
+    padding: 5px;
+}
+
+.Observation .Button.PrimaryButton {
+    border: 1px solid;
+}
+
+.Observation.activeEdit .Button.PrimaryButton {
+    color: green;
+    border: 2px solid;
+}
+
+
+
 .ObservationCount {
     display: flex;
     align-items: center;

@@ -87,8 +87,9 @@ function ObservationEntryEdit(props) {
 
   const [count, setCount] = useState(query.count);
 
+  const delta = count - query.count;
+
   function doAccept() {
-    const delta = count - query.count;
     if (delta !== 0) {
       const child = createChildObservation(query.newObservationParent(), delta);
       addObservation(child);
@@ -115,8 +116,10 @@ function ObservationEntryEdit(props) {
     }
   }
 
+  const activeEdit = delta !== 0 ? "activeEdit" : "noActiveEdit";
+
   return (
-    <div className="Observation edit">
+    <div className={"Observation edit " + activeEdit}>
       <div className="ObservationHeader">
         <SpeciesName species={query.species}></SpeciesName>
       </div>
@@ -127,16 +130,20 @@ function ObservationEntryEdit(props) {
         <div className="CountEntry">
           <div className="ObservationCount">{count}</div>
           <IconButton
+            className="Button"
             onClick={(e) => setCount(count - 1)}
             disabled={count <= 1}
           >
             <RemoveCircleOutlined fontSize="large" />
           </IconButton>
-          <IconButton onClick={(e) => setCount(count + 1)}>
+          <IconButton className="Button" onClick={(e) => setCount(count + 1)}>
             <AddCircleOutline fontSize="large" />
           </IconButton>
         </div>
-        <IconButton onClick={(e) => doAccept()}>
+        <IconButton
+          className="Button PrimaryButton"
+          onClick={(e) => doAccept()}
+        >
           <CheckCircleOutline fontSize="large" />
         </IconButton>
       </div>
