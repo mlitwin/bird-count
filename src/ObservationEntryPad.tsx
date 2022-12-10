@@ -5,7 +5,7 @@ import { ObservationEntry, createObservation } from "./common/ObservationEntry";
 
 import { Observation } from "./model/types";
 
-import { observations, recentObservations , addObservation} from "./store/store";
+import { observations, recentObservations, useAddObservation} from "./store/store";
 import React, { useState } from "react";
 
 import "./ObservationEntryPad.css";
@@ -103,7 +103,7 @@ function ObservationEntryPad(props) {
   const [activeObservation, setActiveObservation] =
     useState<null | Observation>(null);
 
-  const currentObservations = observations();
+  const addObservation = useAddObservation();
   const recent = recentObservations();
   const checklist = props.observationContext.checklist;
 
@@ -125,7 +125,7 @@ function ObservationEntryPad(props) {
 
     const newObservation = createObservation(props.observationContext.taxonomy, species[index]);
 
-    addObservation(currentObservations, newObservation);
+    addObservation(newObservation);
     setActiveObservation(newObservation);
 
     resetInput();

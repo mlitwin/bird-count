@@ -9,11 +9,7 @@ import {
   RemoveCircleOutlined,
 } from "@mui/icons-material";
 
-import {
-  observations,
-  addObservation,
-  useObservationQuery,
-} from "../store/store";
+import { observations, useAddObservation } from "../store/store";
 
 import { v4 as uuidv4 } from "uuid";
 
@@ -67,7 +63,6 @@ function createChildObservation(
   return obs;
 }
 
-
 function ObservationEntryDisplay(props) {
   const count = props.query.count;
   const species = props.query.species;
@@ -88,7 +83,7 @@ function ObservationEntryDisplay(props) {
 
 function ObservationEntryEdit(props) {
   const query = props.query;
-  const curObservations = props.curObservations;
+  const addObservation = useAddObservation();
 
   const [count, setCount] = useState(query.count);
 
@@ -96,7 +91,7 @@ function ObservationEntryEdit(props) {
     const delta = count - query.count;
     if (delta !== 0) {
       const child = createChildObservation(query.newObservationParent(), delta);
-      addObservation(curObservations, child);
+      addObservation(child);
     }
 
     props.setMode("display");
@@ -152,8 +147,6 @@ function ObservationEntryEdit(props) {
 function ObservationEntry(props: ObservationProps) {
   const [mode, setMode] = useState<Modes>(props.initialMode);
 
-  const curObservations = observations();
-
   const query = new ObservationSet([props.observation]);
 
   if (mode === "display") {
@@ -170,9 +163,9 @@ function ObservationEntry(props: ObservationProps) {
       query={query}
       setMode={setMode}
       onEvent={props.onEvent}
-      curObservations={curObservations}
     ></ObservationEntryEdit>
   );
 }
+
 export default ObservationEntry;
 export { ObservationEntry, createObservation };

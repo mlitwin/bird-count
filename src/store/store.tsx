@@ -65,7 +65,6 @@ const [observationAdded$, signalAddedObservation] = createSignal<Observation>();
 observationAdded$.subscribe((obs) => {
 });
 
-// Pass in current observations to avoid call to observations() hook outside of React function
 function addObservation(curObservations: Observation[], newObservation: Observation) {
 
   const newList = curObservations.map(obs => {
@@ -93,6 +92,11 @@ function addObservation(curObservations: Observation[], newObservation: Observat
   setObservationList(newList);
   setRecentObservationList(computeRecentObservations(newList));
   signalAddedObservation(newObservation);
+}
+
+function useAddObservation() {
+  const currentObservations = observations();
+  return (obs: Observation) => {addObservation(currentObservations, obs)}
 }
 
 const [recentObservationListChange$, setRecentObservationList] =
@@ -155,29 +159,11 @@ function computeRecentObservations(list: Observation[], now?: number) {
   return recentList;
 }
 
-function useObservationQuery(predicate: (Observation) => boolean) {
-  const currentObservations = observations();
-  const obsSet = new ObservationSet(
-    currentObservations.filter(predicate)
-  );
-  const [query, setQuery] = useState(obsSet);
-
-  useEffect(() => {
-    const newObsSet = new ObservationSet(
-      currentObservations.filter(predicate)
-    );
-
-    setQuery(newObsSet);
-  }, [currentObservations, predicate]);
-
-  return query;
-}
 
 export {
-  addObservation,
+  useAddObservation,
   observations,
   recentObservations,
   clearObservations,
-  useObservationQuery,
   useObservationContext,
 };
