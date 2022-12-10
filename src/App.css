@@ -1,48 +1,47 @@
-
 .AppTabs {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: white;
 }
 
 #root {
-  height: 100%;
-  font-size: 150%;
+    height: 100%;
+    font-size: 150%;
 }
 
 .App {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .AppHeader {
-  flex-shrink: 0;
+    flex-shrink: 0;
 }
 
 .AppContent {
-  flex-grow: 1;
-  overflow-y: scroll;
+    flex-grow: 1;
+    overflow-y: scroll;
 }
 
 .AppContent > * {
-  height: 100%;
+    height: 100%;
 }
 
 .oneColumn {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
-.oneColumn >  * {
-  flex-shrink: 0;
+.oneColumn > * {
+    flex-shrink: 0;
 }
 
 .oneColumn > .oneColumnExpand {
-  flex-shrink: unset;
-  flex-grow: 1;
-  display: flex;
-  overflow-y: hidden
+    flex-shrink: unset;
+    flex-grow: 1;
+    display: flex;
+    overflow-y: hidden;
 }
