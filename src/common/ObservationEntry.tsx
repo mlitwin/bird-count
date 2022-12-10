@@ -9,7 +9,7 @@ import {
   RemoveCircleOutlined,
 } from "@mui/icons-material";
 
-import { observations, useAddObservation } from "../store/store";
+import { useAddObservation } from "../store/store";
 
 import { v4 as uuidv4 } from "uuid";
 
@@ -116,7 +116,7 @@ function ObservationEntryEdit(props) {
   }
 
   return (
-    <div className={"Observation"}>
+    <div className="Observation edit">
       <div className="ObservationHeader">
         <SpeciesName species={query.species}></SpeciesName>
       </div>

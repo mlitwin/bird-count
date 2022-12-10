@@ -3,7 +3,7 @@
     flex-grow: 1;
 }
 
-.SpeciesPicker li.active {
+.ObservationEntryPad.editNotActive .SpeciesPicker li.active {
     color: black;
     border-style: solid;
     border-color: gray;

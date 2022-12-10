@@ -5,7 +5,10 @@ import { ObservationEntry, createObservation } from "./common/ObservationEntry";
 
 import { Observation } from "./model/types";
 
-import { observations, recentObservations, useAddObservation} from "./store/store";
+import {
+  recentObservations,
+  useAddObservation,
+} from "./store/store";
 import React, { useState } from "react";
 
 import "./ObservationEntryPad.css";
@@ -107,7 +110,12 @@ function ObservationEntryPad(props) {
   const recent = recentObservations();
   const checklist = props.observationContext.checklist;
 
-  const species = computeChecklist(checklist, filter, recent, activeObservation);
+  const species = computeChecklist(
+    checklist,
+    filter,
+    recent,
+    activeObservation
+  );
 
   function resetInput() {
     setFilter("");
@@ -123,7 +131,10 @@ function ObservationEntryPad(props) {
       index = active;
     }
 
-    const newObservation = createObservation(props.observationContext.taxonomy, species[index]);
+    const newObservation = createObservation(
+      props.observationContext.taxonomy,
+      species[index]
+    );
 
     addObservation(newObservation);
     setActiveObservation(newObservation);
@@ -134,6 +145,8 @@ function ObservationEntryPad(props) {
   function onEvent() {
     setActiveObservation(null);
   }
+
+  const editActive = activeObservation ? "editActive" : "editNotActive";
 
   function observationEntry() {
     if (activeObservation === null) {
@@ -150,7 +163,7 @@ function ObservationEntryPad(props) {
   }
 
   return (
-    <div className="ObservationEntryPad oneColumn">
+    <div className={"ObservationEntryPad oneColumn " + editActive}>
       <div className="ObservationListArea oneColumnExpand">
         <SpeciesPicker
           species={species}
