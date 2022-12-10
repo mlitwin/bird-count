@@ -1,11 +1,8 @@
-import Taxonomy from "./taxonomy";
 import Observation from "./observation";
 
 class ObservationSet extends Observation {
-  taxonomy: Taxonomy;
-  constructor(taxonomy: Taxonomy, obs: Observation[]) {
+  constructor(obs: Observation[]) {
     super();
-    this.taxonomy = taxonomy;
     this.setObservations(obs);
   }
   setObservations(obs: Observation[]) {
@@ -29,6 +26,12 @@ class ObservationSet extends Observation {
     });
   }
   observations: Observation[];
+  newObservationParent(): Observation | null{
+    if (this.observations.length === 1) {
+        return this.observations[0];
+    }
+    return null;
+  }
 }
 
 export default ObservationSet;

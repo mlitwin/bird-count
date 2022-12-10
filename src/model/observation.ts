@@ -5,6 +5,7 @@ class Observation {
   createdAt: number;
   start: number;
   duration: number;
+  taxonomy: Taxonomy;
   species: any;
   count: number;
   parent: null | Observation;
@@ -16,6 +17,7 @@ class Observation {
       createdAt: this.createdAt,
       start: this.start,
       duration: this.duration,
+      taxonomy: this.taxonomy.id,
       species: this.species.id,
       count: this.count,
       parent: this.parent ? this.parent.id : null,
@@ -27,6 +29,7 @@ class Observation {
     this.createdAt = json.createdAt;
     this.start = json.start;
     this.duration = json.duration;
+    this.taxonomy = taxonomy;
     this.species = taxonomy.speciesTaxons[json.species];
     this.count = json.count;
     this.parent = null;
@@ -37,6 +40,7 @@ class Observation {
     this.createdAt = obs.createdAt;
     this.start = obs.start;
     this.duration = obs.duration;
+    this.taxonomy = obs.taxonomy;
     this.species = obs.species;
     this.count = obs.count;
     this.parent = obs.parent;

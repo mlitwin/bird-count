@@ -6,8 +6,11 @@ import * as React from "react";
 import "./Observations.css";
 
 function Observations(props) {
+
   function observationContent(index) {
     const observation = props.observations[index];
+    console.log(`observationContent ${observation.id} ${observation.children}`)
+
     return (
       <ListItem>
         <ObservationEntry observation={observation} initialMode="display" />

@@ -123,7 +123,7 @@ function ObservationEntryPad(props) {
       index = active;
     }
 
-    const newObservation = createObservation(species[index]);
+    const newObservation = createObservation(props.observationContext.taxonomy, species[index]);
 
     addObservation(currentObservations, newObservation);
     setActiveObservation(newObservation);

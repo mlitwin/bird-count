@@ -24,7 +24,6 @@ class ObservationContext {
   checklist: Checklist;
 }
 
-
 function useObservationContext() {
   const [observationContext, setObservationContext] =
     useState<ObservationContext>(new ObservationContext());
@@ -32,16 +31,17 @@ function useObservationContext() {
   useEffect(() => {
     const oc = new ObservationContext();
     oc.taxonomy = new Taxonomy((taxonomyJSON as any).id);
-    oc.taxonomy.addSpecies(
-      (taxonomyJSON as any).species as Species[]
-    );
+    oc.taxonomy.addSpecies((taxonomyJSON as any).species as Species[]);
     oc.checklist = new Checklist(oc.taxonomy);
     oc.checklist.setFilters(chk);
     setObservationContext(oc);
     try {
       const storage = window.localStorage.getItem("observations");
       if (storage) {
-        const newList = deserializeObservations(oc.taxonomy, JSON.parse(storage));
+        const newList = deserializeObservations(
+          oc.taxonomy,
+          JSON.parse(storage)
+        );
         setObservationList(newList);
         setRecentObservationList(computeRecentObservations(newList));
       }
@@ -63,18 +63,28 @@ observations$.subscribe(() => {});
 const [observationAdded$, signalAddedObservation] = createSignal<Observation>();
 
 observationAdded$.subscribe((obs) => {
-  // console.log(obs);
 });
 
 // Pass in current observations to avoid call to observations() hook outside of React function
-function addObservation(curObservations: Observation[], obs: Observation) {
-  if (obs.parent) {
-    if (!obs.parent.children) {
-      obs.parent.children = [];
+function addObservation(curObservations: Observation[], newObservation: Observation) {
+
+  const newList = curObservations.map(obs => {
+    if( newObservation.parent) {
+      if (obs.id === newObservation.parent.id) {
+        const o = new Observation();
+        o.Assign(obs);
+        o.children = obs.children;
+        if (!o.children) {
+          o.children = [];
+        }
+        o.children.push(newObservation);
+        return o;
+      }
     }
-    obs.parent.children.push(obs);
-  }
-  const newList = [...curObservations, obs];
+    return obs;
+  });
+
+  newList.push(newObservation);
 
   window.localStorage.setItem(
     "observations",
@@ -82,7 +92,7 @@ function addObservation(curObservations: Observation[], obs: Observation) {
   );
   setObservationList(newList);
   setRecentObservationList(computeRecentObservations(newList));
-  signalAddedObservation(obs);
+  signalAddedObservation(newObservation);
 }
 
 const [recentObservationListChange$, setRecentObservationList] =
@@ -93,8 +103,7 @@ const [recentObservations, recentObservations$] = bind<any>(
   recentObservationListChange$,
   []
 );
-recentObservations$.subscribe(()=> {});
-
+recentObservations$.subscribe(() => {});
 
 function clearObservations() {
   window.localStorage.removeItem("observations");
@@ -112,15 +121,19 @@ function serializeObservations(obsList: Observation[]) {
 function deserializeObservations(taxonomy: Taxonomy, json: any): Observation[] {
   const l: Observation[] = [];
   const lById: { [id: string]: Observation } = {};
+  const jById: { [id: string]: any } = {};
   json.forEach((o) => {
     let obs = new Observation();
     obs.fromJSONObject(taxonomy, o);
     l.push(obs);
-    lById[obs.id] = o;
+    lById[obs.id] = obs;
+    jById[o.id] = o;
   });
   l.forEach((obs) => {
-    const parent = obs.parent;
-    if (parent) {
+    const parentId = jById[obs.id].parent;
+    if (parentId) {
+      const parent = lById[parentId];
+      obs.parent = parent;
       if (!parent.children) {
         parent.children = [];
       }
@@ -143,12 +156,23 @@ function computeRecentObservations(list: Observation[], now?: number) {
 }
 
 function useObservationQuery(predicate: (Observation) => boolean) {
-  const oc = useObservationContext();
-  const obsSet = new ObservationSet(oc.taxonomy, observations().filter(predicate));
+  const currentObservations = observations();
+  const obsSet = new ObservationSet(
+    currentObservations.filter(predicate)
+  );
   const [query, setQuery] = useState(obsSet);
+
+  useEffect(() => {
+    const newObsSet = new ObservationSet(
+      currentObservations.filter(predicate)
+    );
+
+    setQuery(newObsSet);
+  }, [currentObservations, predicate]);
 
   return query;
 }
+
 export {
   addObservation,
   observations,

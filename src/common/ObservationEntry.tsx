@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import SpeciesName from "./SpeciesName";
 import MoreMenu from "./ObservationEntry/MoreMenu";
-import { Observation, Species } from "model/types";
+import { ObservationSet, Observation, Taxonomy, Species } from "model/types";
 import IconButton from "@mui/material/IconButton";
 import {
   CheckCircleOutline,
@@ -32,7 +32,7 @@ interface ObservationProps {
   onEvent?: (event: IObservationEntryEvent) => void;
 }
 
-function createObservation(species: Species): Observation {
+function createObservation(taxonomy: Taxonomy, species: Species): Observation {
   const now = Date.now();
   let obs = new Observation();
 
@@ -40,6 +40,7 @@ function createObservation(species: Species): Observation {
   obs.createdAt = now;
   obs.start = now;
   obs.duration = 0;
+  obs.taxonomy = taxonomy;
   obs.species = species;
   obs.count = 1;
   obs.parent = null;
@@ -58,6 +59,7 @@ function createChildObservation(
   obs.createdAt = now;
   obs.start = now;
   obs.duration = 0;
+  obs.taxonomy = parent.taxonomy;
   obs.species = parent.species;
   obs.count = count;
   obs.parent = parent;
@@ -65,40 +67,39 @@ function createChildObservation(
   return obs;
 }
 
-function ObservationEntry(props: ObservationProps) {
-  const [mode, setMode] = useState<Modes>(props.initialMode);
 
-  const curObservations = observations();
+function ObservationEntryDisplay(props) {
+  const count = props.query.count;
+  const species = props.query.species;
 
-  const query = useObservationQuery((obs) => {
-    if (obs.id === props.observation.id) return true;
-
-    if (obs.parent && obs.parent.id === props.observation.id) return true;
-
-    return false;
-  });
-
-  const [count, setCount] = useState(props.observation.count);
-
-  if (mode === "display") {
-    return (
-      <div className="Observation display" onClick={onClick}>
-        <div className="ObservationHeader">
-          <div className="ObservationCount">{query.count}</div>
-          <SpeciesName species={query.species}></SpeciesName>
-        </div>
-      </div>
-    );
+  function onClick() {
+    props.setMode("edit");
   }
+
+  return (
+    <div className="Observation display" onClick={onClick}>
+      <div className="ObservationHeader">
+        <div className="ObservationCount">{count}</div>
+        <SpeciesName species={species}></SpeciesName>
+      </div>
+    </div>
+  );
+}
+
+function ObservationEntryEdit(props) {
+  const query = props.query;
+  const curObservations = props.curObservations;
+
+  const [count, setCount] = useState(query.count);
 
   function doAccept() {
     const delta = count - query.count;
     if (delta !== 0) {
-      const child = createChildObservation(props.observation, delta);
+      const child = createChildObservation(query.newObservationParent(), delta);
       addObservation(curObservations, child);
     }
 
-    setMode("display");
+    props.setMode("display");
 
     if (props.onEvent) {
       props.onEvent({
@@ -109,7 +110,7 @@ function ObservationEntry(props: ObservationProps) {
   }
 
   function doCancel() {
-    setMode("display");
+    props.setMode("display");
 
     if (props.onEvent) {
       props.onEvent({
@@ -119,14 +120,8 @@ function ObservationEntry(props: ObservationProps) {
     }
   }
 
-  function onClick() {
-    if (mode === "display") {
-      setMode("edit");
-    }
-  }
-
   return (
-    <div className={"Observation " + mode}>
+    <div className={"Observation"}>
       <div className="ObservationHeader">
         <SpeciesName species={query.species}></SpeciesName>
       </div>
@@ -151,6 +146,32 @@ function ObservationEntry(props: ObservationProps) {
         </IconButton>
       </div>
     </div>
+  );
+}
+
+function ObservationEntry(props: ObservationProps) {
+  const [mode, setMode] = useState<Modes>(props.initialMode);
+
+  const curObservations = observations();
+
+  const query = new ObservationSet([props.observation]);
+
+  if (mode === "display") {
+    return (
+      <ObservationEntryDisplay
+        query={query}
+        setMode={setMode}
+      ></ObservationEntryDisplay>
+    );
+  }
+
+  return (
+    <ObservationEntryEdit
+      query={query}
+      setMode={setMode}
+      onEvent={props.onEvent}
+      curObservations={curObservations}
+    ></ObservationEntryEdit>
   );
 }
 export default ObservationEntry;
