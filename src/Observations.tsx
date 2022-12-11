@@ -60,7 +60,7 @@ function Observations(props) {
         )
     }
     function observationContent(observation) {
-        const date = dayjs.unix(observation.start).format('HH:mm')
+        const date = dayjs(observation.start).format('HH:mm')
 
         return (
             <ListItem>
