@@ -82,7 +82,6 @@ function Observations(props) {
         itemContent: (i, g) =>
             observationContent(hist[g].observations[i - hist[g].offset]),
         components: { TopItemList: React.Fragment },
-        alignToBottom: true,
     }
 
     if (props.observations.length > 0) {
