@@ -18,16 +18,18 @@ import './ObservationEntry.css'
 type Modes = 'display' | 'edit'
 
 interface IObservationEntryEvent {
-    type: 'edit' | 'accept' | 'cancel'
+    type: 'edit' | 'accept' | 'cancel' | 'delete'
     observation: ObservationSet
 }
+
+type ObservationEntryEventCallback = (event: IObservationEntryEvent) => void
 
 interface ObservationProps {
     initialMode: Modes
     observation: ObservationSet
     variant: 'create' | 'header' | 'entry'
     displayDate?: string
-    onEvent?: (event: IObservationEntryEvent) => void
+    onEvent?: ObservationEntryEventCallback
 }
 
 function createObservation(taxonomy: Taxonomy, species: Species): Observation {
@@ -97,7 +99,13 @@ function ObservationEntryDisplay(props) {
     )
 }
 
-function ObservationEntryEdit(props) {
+interface IObservationEntryEditProps {
+    query: ObservationSet
+    setMode: any
+    onEvent?: ObservationEntryEventCallback
+}
+
+function ObservationEntryEdit(props: IObservationEntryEditProps) {
     const query = props.query
     const addObservation = useAddObservation()
 
@@ -135,6 +143,33 @@ function ObservationEntryEdit(props) {
         }
     }
 
+    function doDelete() {
+        props.setMode('display')
+
+        const deleteObservations = query.observations.map((o) => {
+            const parentSet = new ObservationSet([o])
+            const newO = new Observation()
+            newO.Assign(o)
+            newO.createdAt = Date.now()
+            newO.id = uuidv4()
+            newO.count = -parentSet.count
+            newO.parent = o
+
+            return newO
+        })
+
+        deleteObservations.forEach((o) => {
+            addObservation(o)
+        })
+
+        if (props.onEvent) {
+            props.onEvent({
+                type: 'delete',
+                observation: query,
+            })
+        }
+    }
+
     const activeEdit = delta !== 0 ? 'activeEdit' : 'noActiveEdit'
 
     return (
@@ -144,7 +179,10 @@ function ObservationEntryEdit(props) {
             </div>
             <div className="ObservationEditIcons">
                 <div className="EntryControls">
-                    <MoreMenu doCancel={doCancel}></MoreMenu>
+                    <MoreMenu
+                        doCancel={doCancel}
+                        doDelete={doDelete}
+                    ></MoreMenu>
                 </div>
                 <div className="CountEntry">
                     <div className="ObservationCount">{count}</div>

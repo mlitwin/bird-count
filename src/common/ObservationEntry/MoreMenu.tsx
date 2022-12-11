@@ -8,7 +8,7 @@ const options = ['Cancel', 'Delete']
 
 export default function MoreMenu(props) {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
-    const [selectedIndex, setSelectedIndex] = React.useState(1)
+    const [selectedIndex, setSelectedIndex] = React.useState(0)
     const open = Boolean(anchorEl)
     const handleClickListItem = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget)
@@ -23,6 +23,9 @@ export default function MoreMenu(props) {
         switch (index) {
             case 0:
                 props.doCancel()
+                break
+            case 1:
+                props.doDelete()
                 break
         }
     }
