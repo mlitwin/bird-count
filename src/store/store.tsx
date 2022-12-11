@@ -1,13 +1,7 @@
 import { useEffect, useState } from 'react'
 import { bind } from '@react-rxjs/core'
 import { createSignal } from '@react-rxjs/utils'
-import {
-    Observation,
-    Taxonomy,
-    Checklist,
-    Species,
-    ObservationSet,
-} from '../model/types'
+import { Observation, Taxonomy, Checklist, Species } from '../model/types'
 
 import taxonomyJSON from '../data/taxonomy.json'
 import chk from '../data/checklist.json'

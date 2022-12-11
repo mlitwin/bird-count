@@ -3,7 +3,7 @@ import SpeciesPicker from './ObservationEntryPad/SpeciesPicker'
 import FilterBar from './ObservationEntryPad/FilterBar'
 import { ObservationEntry, createObservation } from './common/ObservationEntry'
 
-import { Observation } from './model/types'
+import { Observation, ObservationSet } from './model/types'
 
 import { recentObservations, useAddObservation } from './store/store'
 import React, { useState } from 'react'
@@ -147,13 +147,14 @@ function ObservationEntryPad(props) {
 
     function observationEntry() {
         if (activeObservation === null) {
-            return <div className="ObservationSummary placeholder"></div>
+            return <div className="ObservationSummaryPlaceholder"></div>
         }
         return (
             <ObservationEntry
+                variant="create"
                 key={activeObservation.id}
                 onEvent={onEvent}
-                observation={activeObservation}
+                observation={new ObservationSet([activeObservation])}
                 initialMode="edit"
             />
         )

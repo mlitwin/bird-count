@@ -18,13 +18,15 @@ import './ObservationEntry.css'
 type Modes = 'display' | 'edit'
 
 interface IObservationEntryEvent {
-    type: 'accept' | 'cancel'
-    observation: Observation
+    type: 'edit' | 'accept' | 'cancel'
+    observation: ObservationSet
 }
 
 interface ObservationProps {
     initialMode: Modes
-    observation: Observation
+    observation: ObservationSet
+    variant: 'create' | 'header' | 'entry'
+    displayDate?: string
     onEvent?: (event: IObservationEntryEvent) => void
 }
 
@@ -66,16 +68,30 @@ function createChildObservation(
 function ObservationEntryDisplay(props) {
     const count = props.query.count
     const species = props.query.species
+    const date = props.displayDate
 
     function onClick() {
         props.setMode('edit')
+
+        if (props.onEvent) {
+            props.onEvent({
+                type: 'edit',
+                observation: props.query,
+            })
+        }
     }
 
     return (
-        <div className="Observation display" onClick={onClick}>
-            <div className="ObservationHeader">
-                <div className="ObservationCount">{count}</div>
-                <SpeciesName species={species}></SpeciesName>
+        <div
+            className={'Observation display ' + props.variant}
+            onClick={onClick}
+        >
+            <div className="ObservationDisplay">
+                <div className="ObservationDate">{date}</div>
+                <div className="ObservationSummary">
+                    <div className="ObservationCount">{count}</div>
+                    <SpeciesName species={species}></SpeciesName>
+                </div>
             </div>
         </div>
     )
@@ -103,7 +119,7 @@ function ObservationEntryEdit(props) {
         if (props.onEvent) {
             props.onEvent({
                 type: 'accept',
-                observation: props.observation,
+                observation: query,
             })
         }
     }
@@ -114,7 +130,7 @@ function ObservationEntryEdit(props) {
         if (props.onEvent) {
             props.onEvent({
                 type: 'cancel',
-                observation: props.observation,
+                observation: query,
             })
         }
     }
@@ -160,13 +176,17 @@ function ObservationEntryEdit(props) {
 function ObservationEntry(props: ObservationProps) {
     const [mode, setMode] = useState<Modes>(props.initialMode)
 
-    const query = new ObservationSet([props.observation])
+    const query = props.observation
 
     if (mode === 'display') {
+        const displayDate = props.displayDate ? props.displayDate : ''
         return (
             <ObservationEntryDisplay
+                variant={props.variant}
                 query={query}
                 setMode={setMode}
+                displayDate={displayDate}
+                onEvent={props.onEvent}
             ></ObservationEntryDisplay>
         )
     }

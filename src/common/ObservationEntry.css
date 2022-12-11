@@ -19,6 +19,27 @@
     border: 2px solid;
 }
 
+.Observation.display {
+    width: 100%;
+}
+
+.ObservationDisplay {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.ObservationDate {
+    padding-right: 15px;
+    font-family: ui-monospace;
+}
+
+.ObservationSummary {
+    flex-grow: 1;
+    display: flex;
+}
+
 .ObservationCount {
     display: flex;
     align-items: center;
@@ -30,6 +51,12 @@
     justify-content: center;
     margin-bottom: 5px;
 }
+
+.Observation.header {
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+}
+
 .ObservationEditIcons {
     display: flex;
     justify-content: space-between;
