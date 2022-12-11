@@ -3,8 +3,8 @@ import { bind } from '@react-rxjs/core'
 import { createSignal } from '@react-rxjs/utils'
 import { Observation, Taxonomy, Checklist, Species } from '../model/types'
 
-//import taxonomyJSON from '../data/taxonomy.json'
-//import chk from '../data/checklist.json'
+import taxonomyJSON from '../data/taxonomy.json'
+import chk from '../data/checklist.json'
 
 class ObservationContext {
     constructor() {
@@ -23,35 +23,23 @@ function useObservationContext() {
         useState<ObservationContext>(new ObservationContext())
 
     useEffect(() => {
-        const fetchTaxomy = window
-            .fetch('./bird-count/data/taxonomy.json')
-            .then((response) => response.json())
-
-        const fetchChecklist = window
-            .fetch('./bird-count/data/checklist.json')
-            .then((response) => response.json())
-
-        Promise.all([fetchTaxomy, fetchChecklist]).then((data) => {
-            const [taxonomyJSON, chk] = data
-            const oc = new ObservationContext()
-
-            oc.taxonomy = new Taxonomy((taxonomyJSON as any).id)
-            oc.taxonomy.addSpecies((taxonomyJSON as any).species as Species[])
-            oc.checklist = new Checklist(oc.taxonomy)
-            oc.checklist.setFilters(chk)
-            setObservationContext(oc)
-            try {
-                const storage = window.localStorage.getItem('observations')
-                if (storage) {
-                    const newList = deserializeObservations(
-                        oc.taxonomy,
-                        JSON.parse(storage)
-                    )
-                    setObservationList(newList)
-                    setRecentObservationList(computeRecentObservations(newList))
-                }
-            } catch (e) {}
-        })
+        const oc = new ObservationContext()
+        oc.taxonomy = new Taxonomy((taxonomyJSON as any).id)
+        oc.taxonomy.addSpecies((taxonomyJSON as any).species as Species[])
+        oc.checklist = new Checklist(oc.taxonomy)
+        oc.checklist.setFilters(chk)
+        setObservationContext(oc)
+        try {
+            const storage = window.localStorage.getItem('observations')
+            if (storage) {
+                const newList = deserializeObservations(
+                    oc.taxonomy,
+                    JSON.parse(storage)
+                )
+                setObservationList(newList)
+                setRecentObservationList(computeRecentObservations(newList))
+            }
+        } catch (e) {}
     }, [])
 
     return observationContext

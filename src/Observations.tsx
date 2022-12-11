@@ -76,8 +76,6 @@ function Observations(props) {
 
     const hist = dayHistory(props.observations)
     const groupCounts = hist.map((g) => g.observations.length)
-    const virtuoso = useRef(null)
-
     const groupedVirtuosoProps: any = {
         groupCounts: groupCounts,
         groupContent: (index) => observationGroupContent(hist[index]),
@@ -90,6 +88,9 @@ function Observations(props) {
         groupedVirtuosoProps.initialTopMostItemIndex =
             props.observations.length - 1
     }
+
+    const virtuoso = useRef(null)
+
     useEffect(() => {
         if (virtuoso.current) {
             if (props.observations.length > 0) {

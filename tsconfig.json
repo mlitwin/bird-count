@@ -1,9 +1,8 @@
 {
-    "compilerOptions": {
-        "lib": ["dom"],
-        "baseUrl": "./src",
-        "jsx": "react",
-        "esModuleInterop": true,
-        "resolveJsonModule": true
-    }
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "jsx": "react",
+    "esModuleInterop": true,
+    "resolveJsonModule": true
+  }
 }

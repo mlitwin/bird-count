@@ -3,5 +3,5 @@ all: checklist
 .PHONY: checklist
 checklist:
 	node ebird.js
-	cp taxonomy.json ../public/data/
-	cp checklist.json ../public/data/
+	cp taxonomy.json ../src/data/
+	cp checklist.json ../src/data/
