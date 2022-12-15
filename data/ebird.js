@@ -27,7 +27,7 @@ checklist.species['caltow'] = {
 const bySciName = {}
 
 function normalizeSciName(sciName) {
-    return sciName.replace(/ sp\.$/, '')
+    return sciName.replace(/ sp\..*$/, '')
 }
 
 function normalizeFamily(sciName) {
