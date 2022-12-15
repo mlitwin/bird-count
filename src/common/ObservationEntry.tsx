@@ -9,7 +9,7 @@ import {
     RemoveCircleOutlined,
 } from '@mui/icons-material'
 
-import { useAddObservation } from '../store/store'
+import { getAppContext, useAddObservation } from '../store/store'
 
 import { v4 as uuidv4 } from 'uuid'
 
@@ -30,41 +30,6 @@ interface ObservationProps {
     variant: 'create' | 'header' | 'entry'
     displayDate?: string
     onEvent?: ObservationEntryEventCallback
-}
-
-function createObservation(taxonomy: Taxonomy, species: Species): Observation {
-    const now = Date.now()
-    let obs = new Observation()
-
-    obs.id = uuidv4()
-    obs.createdAt = now
-    obs.start = now
-    obs.duration = 0
-    obs.taxonomy = taxonomy
-    obs.species = species
-    obs.count = 1
-    obs.parent = null
-
-    return obs
-}
-
-function createChildObservation(
-    parent: Observation,
-    count: number
-): Observation {
-    const now = Date.now()
-    let obs = new Observation()
-
-    obs.id = uuidv4()
-    obs.createdAt = now
-    obs.start = now
-    obs.duration = 0
-    obs.taxonomy = parent.taxonomy
-    obs.species = parent.species
-    obs.count = count
-    obs.parent = parent
-
-    return obs
 }
 
 function ObservationEntryDisplay(props) {
@@ -110,15 +75,17 @@ function ObservationEntryEdit(props: IObservationEntryEditProps) {
     const addObservation = useAddObservation()
 
     const [count, setCount] = useState(query.count)
+    const ac = getAppContext()
 
     const delta = count - query.count
 
     function doAccept() {
         if (delta !== 0) {
-            const child = createChildObservation(
-                query.newObservationParent(),
-                delta
-            )
+            const child = ac.createObservation()
+            child.parent = query.newObservationParent()
+            child.species = child.parent.species
+            child.count = delta
+
             addObservation(child)
         }
 
@@ -239,4 +206,4 @@ function ObservationEntry(props: ObservationProps) {
 }
 
 export default ObservationEntry
-export { ObservationEntry, createObservation }
+export { ObservationEntry }

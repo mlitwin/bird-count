@@ -3,37 +3,32 @@ import { bind } from '@react-rxjs/core'
 import { createSignal } from '@react-rxjs/utils'
 import { Observation, Taxonomy, Checklist, Species } from '../model/types'
 
+import AppContext from './appContext'
+
 import taxonomyJSON from '../data/taxonomy.json'
 import chk from '../data/checklist.json'
 
-class ObservationContext {
-    constructor() {
-        this.taxonomy = null
-        this.checklist = null
-    }
-    ready() {
-        return this.taxonomy != null && this.checklist != null
-    }
-    taxonomy: Taxonomy
-    checklist: Checklist
+let globalAppContext: null | AppContext = null
+function getAppContext(): AppContext {
+    return globalAppContext as AppContext
 }
-
-function useObservationContext() {
-    const [observationContext, setObservationContext] =
-        useState<ObservationContext>(new ObservationContext())
+function useAppContext() {
+    const [appContext, setAppContext] = useState<AppContext>(new AppContext())
 
     useEffect(() => {
-        const oc = new ObservationContext()
-        oc.taxonomy = new Taxonomy((taxonomyJSON as any).id)
-        oc.taxonomy.addSpecies((taxonomyJSON as any).species as Species[])
-        oc.checklist = new Checklist(oc.taxonomy)
-        oc.checklist.setFilters(chk)
-        setObservationContext(oc)
+        const ac = new AppContext()
+
+        ac.taxonomy = new Taxonomy((taxonomyJSON as any).id)
+        ac.taxonomy.addSpecies((taxonomyJSON as any).species as Species[])
+        ac.checklist = new Checklist(ac.taxonomy)
+        ac.checklist.setFilters(chk)
+        setAppContext(ac)
+        globalAppContext = ac
         try {
             const storage = window.localStorage.getItem('observations')
             if (storage) {
                 const newList = deserializeObservations(
-                    oc.taxonomy,
+                    ac.taxonomy,
                     JSON.parse(storage)
                 )
                 setObservationList(newList)
@@ -42,7 +37,7 @@ function useObservationContext() {
         } catch (e) {}
     }, [])
 
-    return observationContext
+    return appContext
 }
 
 const [observationListChange$, setObservationList] =
@@ -161,5 +156,6 @@ export {
     observations,
     recentObservations,
     clearObservations,
-    useObservationContext,
+    useAppContext,
+    getAppContext,
 }

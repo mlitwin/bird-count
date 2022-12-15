@@ -1,10 +1,12 @@
 import Taxonomy from './taxonomy'
+import ObservationLocation from './location'
 
 class Observation {
     id: string
     createdAt: number
     start: number
     duration: number
+    location: ObservationLocation
     taxonomy: Taxonomy
     species: any
     count: number
@@ -17,6 +19,7 @@ class Observation {
             createdAt: this.createdAt,
             start: this.start,
             duration: this.duration,
+            location: this.location,
             taxonomy: this.taxonomy.id,
             species: this.species.id,
             count: this.count,
@@ -29,6 +32,9 @@ class Observation {
         this.createdAt = json.createdAt
         this.start = json.start
         this.duration = json.duration
+        this.location = json.location
+            ? json.location
+            : { latitude: NaN, longitude: NaN }
         this.taxonomy = taxonomy
         this.species = taxonomy.speciesTaxons[json.species]
         this.count = json.count
@@ -40,6 +46,7 @@ class Observation {
         this.createdAt = obs.createdAt
         this.start = obs.start
         this.duration = obs.duration
+        this.location = obs.location
         this.taxonomy = obs.taxonomy
         this.species = obs.species
         this.count = obs.count
@@ -53,6 +60,14 @@ class Observation {
             this.start = obs.start
         }
         const end = thisend > thatend ? thisend : thatend
+
+        if (this.location && obs.location) {
+            this.location.latitude =
+                (this.location.latitude + obs.location.latitude) / 2
+            this.location.longitude =
+                (this.location.longitude + obs.location.longitude) / 2
+        }
+
         this.duration = end - this.start
         this.species = taxonomy.commonAncestor(this.species, obs.species)
         this.count += obs.count

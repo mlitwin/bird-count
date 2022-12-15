@@ -1,31 +1,29 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import './App.css'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 
 import ObservationEntryPad from './ObservationEntryPad'
 import ObservationHistory from './ObservationHistory'
-import { useObservationContext } from 'store/store'
+import { useAppContext } from 'store/store'
 
 function App() {
     const [value, setValue] = React.useState(0)
-    const observationContext = useObservationContext()
+    const appContext = useAppContext()
 
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue)
     }
 
     function appContentHTML() {
-        if (!observationContext.ready()) {
+        if (!appContext.ready()) {
             return <React.Fragment>...</React.Fragment>
         }
 
         return (
             <React.Fragment>
                 <div hidden={value !== 0}>
-                    <ObservationEntryPad
-                        observationContext={observationContext}
-                    />
+                    <ObservationEntryPad />
                 </div>
                 <div hidden={value !== 1}>
                     <ObservationHistory />

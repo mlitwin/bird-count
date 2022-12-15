@@ -1,11 +1,15 @@
 import Keypad from './ObservationEntryPad/Keypad'
 import SpeciesPicker from './ObservationEntryPad/SpeciesPicker'
 import FilterBar from './ObservationEntryPad/FilterBar'
-import { ObservationEntry, createObservation } from './common/ObservationEntry'
+import { ObservationEntry } from './common/ObservationEntry'
 
 import { Observation, ObservationSet } from './model/types'
 
-import { recentObservations, useAddObservation } from './store/store'
+import {
+    getAppContext,
+    recentObservations,
+    useAddObservation,
+} from './store/store'
 import React, { useState } from 'react'
 
 import './ObservationEntryPad.css'
@@ -105,7 +109,8 @@ function ObservationEntryPad(props) {
 
     const addObservation = useAddObservation()
     const recent = recentObservations()
-    const checklist = props.observationContext.checklist
+    const ac = getAppContext()
+    const checklist = ac.checklist
 
     const species = computeChecklist(
         checklist,
@@ -128,10 +133,9 @@ function ObservationEntryPad(props) {
             index = active
         }
 
-        const newObservation = createObservation(
-            props.observationContext.taxonomy,
-            species[index]
-        )
+        const newObservation = ac.createObservation()
+        newObservation.species = species[index]
+        newObservation.count = 1
 
         addObservation(newObservation)
         setActiveObservation(newObservation)
