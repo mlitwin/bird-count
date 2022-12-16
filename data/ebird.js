@@ -27,7 +27,16 @@ checklist.species['caltow'] = {
 const bySciName = {}
 
 function normalizeSciName(sciName) {
-    return sciName.replace(/ sp\..*$/, '')
+    let ret = sciName.replace(/\[[^\]]*\]/, '')
+    ret = ret.replace(/\([^)]*\)/, '')
+    ret= ret.replace(/ sp\..*$/, '')
+
+    ret= ret.replace(/\//g, ' / ')
+    ret = ret.replace(/  +/g, ' ')
+
+    ret = ret.trim()
+
+    return ret;
 }
 
 function normalizeFamily(sciName) {
@@ -114,6 +123,7 @@ fs.createReadStream('./eBird/ebird_taxonomy_v2022.csv')
             const sp = taxonomy.species[i]
             const [parentSciName, parentType] = getParentSciName(sp)
             if (!parentSciName) {
+                sp.parent = null;
                 continue
             }
             if (!bySciName[parentSciName]) {

@@ -1,0 +1,41 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://antoninus.com/taxonomy.schema.json",
+    "title": "taxonomy",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "species": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/species" }
+        }
+    },
+    "required": ["id", "species"],
+
+    "$defs": {
+        "species": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "sciName": {
+                    "type": "string",
+                    "pattern": "^[A-Z][a-z]+( [A-Z]?[a-z/]+)*( v-[a-z]+)?$"
+                },
+                "taxonomicOrder": {
+                    "type": "number"
+                },
+                "parent": {
+                    "type": ["string", "null"]
+                }
+            },
+            "required": ["id", "type", "sciName", "taxonomicOrder", "parent"]
+        }
+    }
+}
