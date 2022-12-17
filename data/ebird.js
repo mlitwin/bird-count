@@ -23,12 +23,17 @@ checklist.species['caltow'] = {
     reportable: true,
 }
 
+checklist.species['rempar'] = {
+    reportable: true,
+}
+
 const bySciName = {}
 
 function normalizeSciName(sciName) {
     let ret = sciName.replace(/\[[^\]]*\]/, '')
-    ret = ret.replace(/\([^)]*\)/, '')
-    ret= ret.replace(/ sp\..*$/, '')
+    ret = ret.replace(/\([^)]*sp\.\)/, '')
+    ret= ret.replace(/ sp\..[^/]*$/, '')
+    ret= ret.replace(/ sp\.*$/, '')
 
     ret= ret.replace(/\//g, ' / ')
     ret = ret.replace(/  +/g, ' ')
@@ -75,7 +80,6 @@ function addSpecies(s) {
     updateTypeToTaxon(sp)
     taxonomy.species.push(sp)
 
-    bySciName[sp.sciName] = sp
 }
 
 function getParentSciName(sp) {
@@ -122,8 +126,8 @@ fs.createReadStream('./eBird/ebird_taxonomy_v2022.csv')
             const sp = taxonomy.species[i]
             const [parentSciName, parentType] = getParentSciName(sp)
             if (!parentSciName) {
-                console.log(sp)
                 sp.parent = null;
+                bySciName[sp.sciName] = sp
                 continue
             }
             if (!bySciName[parentSciName]) {
@@ -131,8 +135,12 @@ fs.createReadStream('./eBird/ebird_taxonomy_v2022.csv')
                 bySciName[parentSciName] = parent
                 taxonomy.species.splice(i + 1, 0, parent)
                 i += 2
+                sp.parent = parent;
+            } else {
+                sp.parent = bySciName[parentSciName].id
+                bySciName[sp.sciName] = sp
             }
-            sp.parent = bySciName[parentSciName].id
+
         }
         taxonomy.species.forEach((sp, index) => {
             sp.taxonomicOrder = index + 1

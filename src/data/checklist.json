@@ -2263,6 +2263,9 @@
     },
     "caltow": {
       "reportable": true
+    },
+    "rempar": {
+      "reportable": true
     }
   }
 }
