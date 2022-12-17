@@ -1,6 +1,5 @@
 const csv = require('csv-parser')
 const fs = require('fs')
-const { exit } = require('process')
 
 const taxonomy = {
     id: 'ebird_taxonomy_v2022',
@@ -89,7 +88,7 @@ function getParentSciName(sp) {
         case 'family':
             return [sp.order, 'order']
         case 'genus':
-            return [sp.family, 'family']
+            return [sp.family || sp.order || 'Aves', 'family']
         default: {
             const binomial = sp.sciName.split(' ')
             return [binomial[0], 'genus']
@@ -123,6 +122,7 @@ fs.createReadStream('./eBird/ebird_taxonomy_v2022.csv')
             const sp = taxonomy.species[i]
             const [parentSciName, parentType] = getParentSciName(sp)
             if (!parentSciName) {
+                console.log(sp)
                 sp.parent = null;
                 continue
             }
