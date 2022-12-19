@@ -26,7 +26,10 @@ function App() {
                     <ObservationEntryPad />
                 </div>
                 <div hidden={value !== 1}>
-                    <ObservationHistory />
+                    <ObservationHistory mode="summary" />
+                </div>
+                <div hidden={value !== 2}>
+                    <ObservationHistory mode="log" />
                 </div>
             </React.Fragment>
         )
@@ -41,7 +44,8 @@ function App() {
                 onChange={handleChange}
             >
                 <Tab label="Home" />
-                <Tab label="History" />
+                <Tab label="Summary" />
+                <Tab label="Log" />
             </Tabs>
             <div className="AppContent">{appContentHTML()}</div>
         </div>

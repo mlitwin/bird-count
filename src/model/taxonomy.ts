@@ -33,6 +33,17 @@ class Taxonomy {
         }
         // notreached
     }
+
+    speciesTaxon(taxon: Species): Species {
+        let sp = taxon
+        while (sp.type !== 'species') {
+            if (sp.parent === null) {
+                return taxon
+            }
+            sp = this.speciesTaxons[sp.parent]
+        }
+        return sp
+    }
 }
 
 export default Taxonomy

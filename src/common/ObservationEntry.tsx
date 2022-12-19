@@ -83,7 +83,7 @@ function ObservationEntryEdit(props: IObservationEntryEditProps) {
         if (delta !== 0) {
             const child = ac.createObservation()
             child.parent = query.newObservationParent()
-            child.species = child.parent.species
+            child.species = child.parent ? child.parent.species : query.species
             child.count = delta
 
             addObservation(child)
