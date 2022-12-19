@@ -2,3 +2,7 @@
     overflow-y: scroll;
     flex-grow: 1;
 }
+
+.Observations div[data-virtuoso-scroller='true'] > *:nth-child(2) {
+    position: absolute !important;
+}

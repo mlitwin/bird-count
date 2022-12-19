@@ -26,7 +26,7 @@ function ObservationList(props: IObservationListProps) {
         groupContent: (index) => props.observationGroupContent(data[index]),
         itemContent: (i, g) =>
             props.observationContent(data[g].observations[i - data[g].offset]),
-        components: { TopItemList: React.Fragment },
+        components: { TopItemList: 'div' },
     }
     const totalObservations = groupCounts.reduce((g, current) => g + current, 0)
 

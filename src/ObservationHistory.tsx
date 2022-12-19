@@ -1,6 +1,6 @@
 import * as React from 'react'
 import Button from '@mui/material/Button'
-import { Observation, ObservationSet, Species } from 'model/types'
+import { Observation, ObservationSet } from 'model/types'
 import ObservationList from './common/ObservationList'
 import ObservationEntry from './common/ObservationEntry'
 import ListItem from '@mui/material/ListItem'
@@ -77,7 +77,7 @@ function dayHistory(observations: Observation[]) {
 
 function daySummary(dayHistory) {
     const ac = getAppContext()
-    return dayHistory.map((g) => {
+    const ret = dayHistory.map((g) => {
         const ng = { ...g }
         const obsBySpecies: { [key: string]: ObservationSet } = {}
         ng.observations.forEach((obs) => {
@@ -96,8 +96,17 @@ function daySummary(dayHistory) {
         ng.observations = obsSummaries.sort(
             (a, b) => a.species.taxonomicOrder - b.species.taxonomicOrder
         )
+
         return ng
     })
+
+    let offset = 0
+    ret.forEach((g) => {
+        g.offset = offset
+        offset += g.observations.length
+    })
+
+    return ret
 }
 
 function ObservationHistory(props) {
