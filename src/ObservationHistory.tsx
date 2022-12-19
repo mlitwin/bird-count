@@ -1,7 +1,7 @@
 import * as React from 'react'
 import Button from '@mui/material/Button'
 import { Observation, ObservationSet } from 'model/types'
-import ObservationList from './common/ObservationList'
+import { ObservationList, IObservationGroup } from './common/ObservationList'
 import ObservationEntry from './common/ObservationEntry'
 import ListItem from '@mui/material/ListItem'
 import { getAppContext } from './store/store'
@@ -38,7 +38,15 @@ function observationContent(observation) {
     )
 }
 
-function dayHistory(observations: Observation[]) {
+function setGroupOffsets(data: IObservationGroup[]) {
+    let offset = 0
+    data.forEach((g) => {
+        g.offset = offset
+        offset += g.observations.length
+    })
+}
+
+function dayHistory(observations: Observation[]): IObservationGroup[] {
     const o = {}
 
     observations.forEach((obs) => {
@@ -51,31 +59,30 @@ function dayHistory(observations: Observation[]) {
         o[day].push(obs)
     })
 
-    let offset = 0
+    const observationKeys = Object.keys(o).sort((a, b) => {
+        return Number(a) - Number(b)
+    })
 
-    const ret = Object.keys(o)
-        .sort((a, b) => {
-            return Number(a) - Number(b)
-        })
-        .map((g) => {
-            const group = {
-                date: Number(g),
-                summary: new ObservationSet(o[g]),
-                offset: offset,
-                observations: o[g]
-                    .sort((a, b) => {
-                        return a.start - b.start
-                    })
-                    .map((obs) => new ObservationSet([obs])),
-            }
-            offset += group.observations.length
+    const ret = []
+    observationKeys.forEach((g) => {
+        const group = {
+            date: Number(g),
+            summary: new ObservationSet(o[g]),
+            observations: o[g]
+                .sort((a, b) => {
+                    return a.start - b.start
+                })
+                .map((obs) => new ObservationSet([obs])),
+        }
 
-            return group
-        })
+        ret.push(group)
+    })
+
+    setGroupOffsets(ret)
     return ret
 }
 
-function daySummary(dayHistory) {
+function daySummary(dayHistory: IObservationGroup[]): IObservationGroup[] {
     const ac = getAppContext()
     const ret = dayHistory.map((g) => {
         const ng = { ...g }
@@ -100,12 +107,7 @@ function daySummary(dayHistory) {
         return ng
     })
 
-    let offset = 0
-    ret.forEach((g) => {
-        g.offset = offset
-        offset += g.observations.length
-    })
-
+    setGroupOffsets(ret)
     return ret
 }
 

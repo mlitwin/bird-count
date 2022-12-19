@@ -57,4 +57,4 @@ function ObservationList(props: IObservationListProps) {
     )
 }
 
-export default ObservationList
+export { ObservationList, IObservationGroup }
