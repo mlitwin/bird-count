@@ -72,7 +72,8 @@ function dayHistory(observations: Observation[]): IObservationGroup[] {
                 .sort((a, b) => {
                     return a.start - b.start
                 })
-                .map((obs) => new ObservationSet([obs])),
+                .map((obs) => new ObservationSet([obs]))
+                .filter((o) => o.count > 0),
         }
 
         ret.push(group)
