@@ -1,6 +1,6 @@
 import * as React from 'react'
 import Button from '@mui/material/Button'
-import { Observation, ObservationSet } from 'model/types'
+import { Taxonomy, Observation, ObservationSet } from 'model/types'
 import { ObservationList, IObservationGroup } from './common/ObservationList'
 import ObservationEntry from './common/ObservationEntry'
 import ListItem from '@mui/material/ListItem'
@@ -19,6 +19,7 @@ function observationGroupContent(group) {
                 observation={group.summary}
                 initialMode="display"
                 displayDate={date}
+                displaySummary={group.statistics}
             />
         </ListItem>
     )
@@ -68,6 +69,7 @@ function dayHistory(observations: Observation[]): IObservationGroup[] {
         const group = {
             date: Number(g),
             summary: new ObservationSet(o[g]),
+            statistics: '',
             observations: o[g]
                 .sort((a, b) => {
                     return a.start - b.start
@@ -80,6 +82,24 @@ function dayHistory(observations: Observation[]): IObservationGroup[] {
     })
 
     setGroupOffsets(ret)
+    return ret
+}
+
+function countSpecies(taxonomy: Taxonomy, observations: Observation[]): number {
+    let ret = 0
+
+    const counted: { [id: string]: Boolean } = {}
+
+    observations.forEach((obs) => {
+        let t = obs.species.id
+        if (!counted[t]) {
+            ret++
+            while (t && !counted[t]) {
+                counted[t] = true
+                t = taxonomy.speciesTaxons[t].parent
+            }
+        }
+    })
     return ret
 }
 
@@ -104,6 +124,10 @@ function daySummary(dayHistory: IObservationGroup[]): IObservationGroup[] {
         ng.observations = obsSummaries.sort(
             (a, b) => a.species.taxonomicOrder - b.species.taxonomicOrder
         )
+
+        const speciesCount = countSpecies(ac.taxonomy, ng.observations)
+
+        ng.statistics = `${speciesCount} species`
 
         return ng
     })

@@ -7,6 +7,7 @@ import './ObservationList.css'
 interface IObservationGroup {
     date: number
     summary: ObservationSet
+    statistics: string
     offset: number
     observations: ObservationSet[]
 }

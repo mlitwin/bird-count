@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import SpeciesName from './SpeciesName'
 import MoreMenu from './ObservationEntry/MoreMenu'
-import { ObservationSet, Observation, Taxonomy, Species } from 'model/types'
+import { ObservationSet, Observation } from 'model/types'
 import IconButton from '@mui/material/IconButton'
 import {
     CheckCircleOutline,
@@ -29,6 +29,7 @@ interface ObservationProps {
     observation: ObservationSet
     variant: 'create' | 'header' | 'entry'
     displayDate?: string
+    displaySummary?: string
     onEvent?: ObservationEntryEventCallback
 }
 
@@ -59,6 +60,7 @@ function ObservationEntryDisplay(props) {
                     <div className="ObservationCount">{count}</div>
                     <SpeciesName species={species}></SpeciesName>
                 </div>
+                <div>{props.displaySummary}</div>
             </div>
         </div>
     )
@@ -185,12 +187,14 @@ function ObservationEntry(props: ObservationProps) {
 
     if (mode === 'display') {
         const displayDate = props.displayDate ? props.displayDate : ''
+        const displaySummary = props.displaySummary ? props.displaySummary : ''
         return (
             <ObservationEntryDisplay
                 variant={props.variant}
                 query={query}
                 setMode={setMode}
                 displayDate={displayDate}
+                displaySummary={displaySummary}
                 onEvent={props.onEvent}
             ></ObservationEntryDisplay>
         )
