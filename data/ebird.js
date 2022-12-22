@@ -6,25 +6,28 @@ const taxonomy = {
     species: [],
 }
 
-const checklist = {
-    id: 'ebird_taxonomy_v2022:default',
-    taxonomy: 'ebird_taxonomy_v2022',
-    species: {},
-}
-
-const CA = JSON.parse(fs.readFileSync('./eBird/CA.json'))
-CA.forEach((code) => {
-    checklist.species[code] = {
-        reportable: true,
+function createDefaultChecklist(taxonomy) {
+    const checklist = {
+        id: 'ebird_taxonomy_v2022:default',
+        taxonomy: 'ebird_taxonomy_v2022',
+        species: {},
     }
-})
 
-checklist.species['caltow'] = {
-    reportable: true,
-}
+    taxonomy.species.forEach((sp) => {
+        checklist.species[sp.id] = {
+            commonness: 0,
+        }
+    })
 
-checklist.species['rempar'] = {
-    reportable: true,
+    const CA = JSON.parse(fs.readFileSync('./eBird/CA.json'))
+    CA.forEach((code) => {
+        checklist.species[code].commonness = 1
+    })
+    ;['caltow', 'rempar', 'wrenti'].forEach((code) => {
+        checklist.species[code].commonness = 2
+    })
+
+    return checklist
 }
 
 const bySciName = {}
@@ -32,15 +35,15 @@ const bySciName = {}
 function normalizeSciName(sciName) {
     let ret = sciName.replace(/\[[^\]]*\]/, '')
     ret = ret.replace(/\([^)]*sp\.\)/, '')
-    ret= ret.replace(/ sp\..[^/]*$/, '')
-    ret= ret.replace(/ sp\.*$/, '')
+    ret = ret.replace(/ sp\..[^/]*$/, '')
+    ret = ret.replace(/ sp\.*$/, '')
 
-    ret= ret.replace(/\//g, ' / ')
+    ret = ret.replace(/\//g, ' / ')
     ret = ret.replace(/  +/g, ' ')
 
     ret = ret.trim()
 
-    return ret;
+    return ret
 }
 
 function normalizeFamily(sciName) {
@@ -79,7 +82,6 @@ function addSpecies(s) {
     sp.family = normalizeFamily(s.FAMILY)
     updateTypeToTaxon(sp)
     taxonomy.species.push(sp)
-
 }
 
 function getParentSciName(sp) {
@@ -126,7 +128,7 @@ fs.createReadStream('./eBird/ebird_taxonomy_v2022.csv')
             const sp = taxonomy.species[i]
             const [parentSciName, parentType] = getParentSciName(sp)
             if (!parentSciName) {
-                sp.parent = null;
+                sp.parent = null
                 bySciName[sp.sciName] = sp
                 continue
             }
@@ -135,18 +137,19 @@ fs.createReadStream('./eBird/ebird_taxonomy_v2022.csv')
                 bySciName[parentSciName] = parent
                 taxonomy.species.splice(i + 1, 0, parent)
                 i += 2
-                sp.parent = parent;
+                sp.parent = parent
             } else {
                 sp.parent = bySciName[parentSciName].id
                 bySciName[sp.sciName] = sp
             }
-
         }
         taxonomy.species.forEach((sp, index) => {
             sp.taxonomicOrder = index + 1
             delete sp.order
             delete sp.family
         })
+
+        const checklist = createDefaultChecklist(taxonomy)
 
         fs.writeFileSync('./taxonomy.json', JSON.stringify(taxonomy, null, 2))
         fs.writeFileSync('./checklist.json', JSON.stringify(checklist, null, 2))

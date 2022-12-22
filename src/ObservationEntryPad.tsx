@@ -14,25 +14,24 @@ import React, { useState } from 'react'
 
 import './ObservationEntryPad.css'
 
-function filterLevel(filter, species): number {
+function filterSortIndex(filter, species) {
     var ret: number = 0
 
-    if (!species.standard) {
-        return 0
-    }
-
     if (filter === '') {
-        return 1
+        return ret
     }
-
     const f = filter.toUpperCase()
 
-    for (ret = 1; ret <= species.abbreviations.length; ret++) {
-        const abbrv = species.abbreviations[ret - 1]
+    ret--
+
+    for (let i = 1; i <= species.abbreviations.length; i++) {
+        const abbrv = species.abbreviations[i - 1]
         if (abbrv.startsWith(f)) {
             return ret
         }
     }
+
+    ret--
     const name = species.localizations.en.commonName
         .toUpperCase()
         .replace(/[^A-Z]/g, '')
@@ -41,19 +40,23 @@ function filterLevel(filter, species): number {
     if (nf === 0) {
         return ret
     }
-    ret++
+    ret--
     if (nf > 0) {
         return ret
     }
 
-    ret = 0
+    return 0
+}
 
-    return ret
+function standardSortLevel(species) {
+    return species.commonness
 }
 
 function computeChecklist(ck, filter, recent, latest) {
     let species = []
-    const levels = {}
+    const filterSort = {}
+    const standardSort = {}
+    const recentSort = {}
     const latestId = latest ? latest.species.id : ''
 
     if (ck) {
@@ -61,41 +64,36 @@ function computeChecklist(ck, filter, recent, latest) {
             if (s.id === latestId) {
                 return
             }
-            const l = filterLevel(filter, s)
-            if (l > 0) {
+            const st = standardSortLevel(s)
+            if (st === 0) {
+                return
+            }
+            const l = filterSortIndex(filter, s)
+            filterSort[s.id] = l
+            standardSort[s.id] = st
+            recentSort[s.id] = 0
+
+            if (!filter || l !== 0) {
                 species.push(s)
-                levels[s.id] = l
             }
         })
     }
 
-    // Recent ones first
-    const recentOrder = {}
     let recentIndex = 1
     recent.forEach((obs) => {
-        if (!(obs.species.id in recentOrder)) {
-            recentOrder[obs.species.id] = recentIndex
+        const id = obs.species.id
+        if (!recentSort[id]) {
+            recentSort[id] = recentIndex
             recentIndex++
         }
     })
 
     species = species.sort((a, b) => {
-        const lcmp = levels[a.id] - levels[b.id]
-        if (lcmp !== 0) {
-            return lcmp
-        }
-
-        let aIndex = a.taxonomicOrder
-        let bIndex = b.taxonomicOrder
-
-        if (a.id in recentOrder) {
-            aIndex = -(recent.length - recentOrder[a.id])
-        }
-        if (b.id in recentOrder) {
-            bIndex = -(recent.length - recentOrder[b.id])
-        }
-
-        return aIndex - bIndex
+        return (
+            filterSort[b.id] - filterSort[a.id] ||
+            standardSort[b.id] - standardSort[a.id] ||
+            recentSort[b.id] - recentSort[a.id]
+        )
     })
 
     return species
