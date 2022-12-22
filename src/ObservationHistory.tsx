@@ -173,6 +173,17 @@ function ObservationHistoryLog(olist, data) {
 }
 
 function ObservationHistorySummary(data) {
+    const olist = []
+    data.forEach((g) => {
+        g.observations.forEach((o) =>
+            olist.push({
+                start: new Date(o.start).toString(),
+                species: o.species.localizations.en.commonName,
+            })
+        )
+    })
+    const mail = encodeURIComponent(JSON.stringify(olist, null, 2))
+    const mailto = `mailto:?body=${mail}&subject=Email the summary`
     return (
         <div className="oneColumn">
             <ObservationList
@@ -180,6 +191,7 @@ function ObservationHistorySummary(data) {
                 observationGroupContent={observationGroupContent}
                 observationContent={observationContent}
             />
+            <a href={mailto}>Email the Summary</a>
         </div>
     )
 }

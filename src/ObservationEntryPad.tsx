@@ -65,15 +65,15 @@ function computeChecklist(ck, filter, recent, latest) {
                 return
             }
             const st = standardSortLevel(s)
-            if (st === 0) {
+            if (st < filter.commonness) {
                 return
             }
-            const l = filterSortIndex(filter, s)
+            const l = filterSortIndex(filter.text, s)
             filterSort[s.id] = l
             standardSort[s.id] = st
             recentSort[s.id] = 0
 
-            if (!filter || l !== 0) {
+            if (!filter.text || l !== 0) {
                 species.push(s)
             }
         })
@@ -99,9 +99,19 @@ function computeChecklist(ck, filter, recent, latest) {
     return species
 }
 
+interface IFilter {
+    text: string
+    commonness: number
+}
+
+const defaultFilter = {
+    text: '',
+    commonness: 1,
+}
+
 function ObservationEntryPad(props) {
     const [active, setActiveState] = useState(0)
-    const [filter, setFilter] = useState('')
+    const [filter, setFilter] = useState<IFilter>(defaultFilter)
     const [activeObservation, setActiveObservation] =
         useState<null | Observation>(null)
 
@@ -118,7 +128,7 @@ function ObservationEntryPad(props) {
     )
 
     function resetInput() {
-        setFilter('')
+        setFilter(defaultFilter)
         setActiveState(0)
     }
 

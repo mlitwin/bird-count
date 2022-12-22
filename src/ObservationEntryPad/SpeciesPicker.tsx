@@ -32,7 +32,6 @@ function SpeciesPicker(props) {
             <ListItem
                 key={reveseIndex}
                 onClick={(e) => props.chooseItem(reveseIndex)}
-                className={reveseIndex === props.active ? 'active' : ''}
             >
                 <SpeciesName species={species} />
             </ListItem>
