@@ -6,6 +6,16 @@ import { Virtuoso } from 'react-virtuoso'
 
 import './SpeciesPicker.css'
 
+function setScrollPosition(virtuoso) {
+    if (virtuoso.current) {
+        virtuoso.current.scrollToIndex({
+            index: 'LAST',
+            align: 'start',
+            behavior: 'auto',
+        })
+    }
+}
+
 function SpeciesPicker(props) {
     const virtuoso = useRef(null)
 
@@ -15,15 +25,18 @@ function SpeciesPicker(props) {
 
     const lastIndex = props.species.length - 1
 
+    /* Safari workaround.
+        On initial load, the last item renders as expected, but
+        then somehow it restarts from item 1 (second item) - scrolls almost to the top
+        chrome doesn't.
+    */
     useEffect(() => {
-        if (virtuoso.current && lastIndex >= 0) {
-            virtuoso.current.scrollToIndex({
-                index: lastIndex,
-                align: 'start',
-                behavior: 'auto',
-            })
-        }
-    }, [props.species])
+        setTimeout(() => setScrollPosition(virtuoso), 100)
+    }, [])
+
+    useEffect(() => {
+        setScrollPosition(virtuoso)
+    }, [props.species, lastIndex])
 
     function itemContent(index) {
         const reveseIndex = virtuosoListIndex(index)
@@ -38,15 +51,23 @@ function SpeciesPicker(props) {
         )
     }
 
-    const listKey = props.species.map((s) => s.id).join('/')
+    function itemKey(index) {
+        const reveseIndex = virtuosoListIndex(index)
+        const species = props.species[reveseIndex]
+        return species.id
+    }
 
     return (
         <List className="SpeciesPicker">
             <Virtuoso
-                key={listKey}
                 ref={virtuoso}
                 totalCount={props.species.length}
-                initialTopMostItemIndex={lastIndex}
+                initialTopMostItemIndex={{
+                    index: 'LAST',
+                    align: 'start',
+                    behavior: 'auto',
+                }}
+                computeItemKey={itemKey}
                 alignToBottom={true}
                 itemContent={(index) => itemContent(index)}
             />
