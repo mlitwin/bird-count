@@ -106,7 +106,7 @@ interface IFilter {
 
 const defaultFilter = {
     text: '',
-    commonness: 1,
+    commonness: 2,
 }
 
 function ObservationEntryPad(props) {
