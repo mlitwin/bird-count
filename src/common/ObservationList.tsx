@@ -27,7 +27,6 @@ function ObservationList(props: IObservationListProps) {
         groupContent: (index) => props.observationGroupContent(data[index]),
         itemContent: (i, g) =>
             props.observationContent(data[g].observations[i - data[g].offset]),
-        components: { TopItemList: 'div' },
     }
     const totalObservations = groupCounts.reduce((g, current) => g + current, 0)
 
@@ -38,15 +37,11 @@ function ObservationList(props: IObservationListProps) {
     const virtuoso = useRef(null)
 
     useEffect(() => {
-        if (virtuoso.current) {
-            if (totalObservations > 0) {
-                virtuoso.current.scrollToIndex({
-                    index: totalObservations - 1,
-                    align: 'start',
-                    behavior: 'auto',
-                })
-            }
-        }
+        virtuoso?.current.scrollToIndex({
+            index: 'LAST',
+            align: 'start',
+            behavior: 'auto',
+        })
     })
 
     return (
