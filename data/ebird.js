@@ -19,12 +19,16 @@ function createDefaultChecklist(taxonomy) {
         }
     })
 
-    const CA = JSON.parse(fs.readFileSync('./eBird/CA.json'))
-    CA.forEach((code) => {
+    const US = JSON.parse(fs.readFileSync('./eBird/US.json'))
+    US.forEach((code) => {
         checklist.species[code].commonness = 1
     })
-    ;['caltow', 'rempar', 'wrenti'].forEach((code) => {
+    const US_CA = JSON.parse(fs.readFileSync('./eBird/US-CA-041.json'))
+    US_CA.forEach((code) => {
         checklist.species[code].commonness = 2
+    })
+    ;['caltow', 'rempar', 'annhum', 'amecro', 'amerob', ].forEach((code) => {
+        checklist.species[code].commonness = 3
     })
 
     return checklist

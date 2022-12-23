@@ -21,7 +21,7 @@
       "commonness": 0
     },
     "grerhe1": {
-      "commonness": 0
+      "commonness": 1
     },
     "lesrhe2": {
       "commonness": 0
@@ -177,7 +177,7 @@
       "commonness": 0
     },
     "chitin1": {
-      "commonness": 0
+      "commonness": 1
     },
     "brutin1": {
       "commonness": 0
@@ -309,7 +309,7 @@
       "commonness": 0
     },
     "maggoo1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Anseranas": {
       "commonness": 0
@@ -321,16 +321,16 @@
       "commonness": 0
     },
     "plwduc1": {
-      "commonness": 0
+      "commonness": 1
     },
     "wfwduc1": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00721": {
       "commonness": 0
     },
     "bbwduc": {
-      "commonness": 1
+      "commonness": 2
     },
     "bkbwhd1": {
       "commonness": 0
@@ -339,7 +339,7 @@
       "commonness": 0
     },
     "wiwduc1": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00775": {
       "commonness": 0
@@ -381,16 +381,16 @@
       "commonness": 1
     },
     "empgoo": {
-      "commonness": 1
+      "commonness": 2
     },
     "snogoo": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00991": {
       "commonness": 0
     },
     "rosgoo": {
-      "commonness": 1
+      "commonness": 2
     },
     "sxrgoo1": {
       "commonness": 0
@@ -399,7 +399,7 @@
       "commonness": 0
     },
     "gragoo": {
-      "commonness": 1
+      "commonness": 2
     },
     "gragoo2": {
       "commonness": 0
@@ -414,7 +414,7 @@
       "commonness": 0
     },
     "swagoo1": {
-      "commonness": 1
+      "commonness": 2
     },
     "swagoo2": {
       "commonness": 0
@@ -423,7 +423,7 @@
       "commonness": 0
     },
     "gwfgoo": {
-      "commonness": 1
+      "commonness": 2
     },
     "gwfgoo1": {
       "commonness": 0
@@ -450,7 +450,7 @@
       "commonness": 0
     },
     "lwfgoo": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00707": {
       "commonness": 0
@@ -474,7 +474,7 @@
       "commonness": 0
     },
     "brant": {
-      "commonness": 1
+      "commonness": 2
     },
     "dabbra1": {
       "commonness": 0
@@ -525,7 +525,7 @@
       "commonness": 0
     },
     "cacgoo1": {
-      "commonness": 1
+      "commonness": 2
     },
     "alcgoo1": {
       "commonness": 0
@@ -558,7 +558,7 @@
       "commonness": 0
     },
     "cangoo": {
-      "commonness": 1
+      "commonness": 2
     },
     "cangoo4": {
       "commonness": 0
@@ -603,7 +603,7 @@
       "commonness": 0
     },
     "hawgoo": {
-      "commonness": 0
+      "commonness": 1
     },
     "rebgoo1": {
       "commonness": 1
@@ -636,13 +636,13 @@
       "commonness": 0
     },
     "buwgoo1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Cyanochen": {
       "commonness": 0
     },
     "mutswa": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00366": {
       "commonness": 0
@@ -657,16 +657,16 @@
       "commonness": 0
     },
     "blnswa2": {
-      "commonness": 0
+      "commonness": 1
     },
     "truswa": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00832": {
       "commonness": 0
     },
     "tunswa": {
-      "commonness": 1
+      "commonness": 2
     },
     "tunswa1": {
       "commonness": 0
@@ -699,7 +699,7 @@
       "commonness": 0
     },
     "cosswa1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Coscoroba": {
       "commonness": 0
@@ -720,7 +720,7 @@
       "commonness": 0
     },
     "origoo1": {
-      "commonness": 0
+      "commonness": 1
     },
     "andgoo1": {
       "commonness": 0
@@ -729,7 +729,7 @@
       "commonness": 0
     },
     "uplgoo1": {
-      "commonness": 0
+      "commonness": 1
     },
     "uplgoo2": {
       "commonness": 0
@@ -750,7 +750,7 @@
       "commonness": 0
     },
     "radshe1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Radjah": {
       "commonness": 0
@@ -780,7 +780,7 @@
       "commonness": 0
     },
     "parshe1": {
-      "commonness": 0
+      "commonness": 1
     },
     "comshe": {
       "commonness": 1
@@ -858,7 +858,7 @@
       "commonness": 0
     },
     "wooduc": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00940": {
       "commonness": 0
@@ -867,13 +867,13 @@
       "commonness": 0
     },
     "manduc": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00833": {
       "commonness": 0
     },
     "manduc1": {
-      "commonness": 0
+      "commonness": 1
     },
     "finduc1": {
       "commonness": 0
@@ -909,22 +909,22 @@
       "commonness": 1
     },
     "gargan": {
-      "commonness": 1
+      "commonness": 2
     },
     "hottea1": {
-      "commonness": 0
+      "commonness": 1
     },
     "siltea1": {
-      "commonness": 0
+      "commonness": 1
     },
     "puntea1": {
       "commonness": 0
     },
     "buwtea": {
-      "commonness": 1
+      "commonness": 2
     },
     "cintea": {
-      "commonness": 1
+      "commonness": 2
     },
     "bwxtea1": {
       "commonness": 0
@@ -942,7 +942,7 @@
       "commonness": 0
     },
     "norsho": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00836": {
       "commonness": 0
@@ -954,7 +954,7 @@
       "commonness": 0
     },
     "gadwal": {
-      "commonness": 1
+      "commonness": 2
     },
     "gadwal1": {
       "commonness": 0
@@ -975,13 +975,13 @@
       "commonness": 0
     },
     "eurwig": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00723": {
       "commonness": 0
     },
     "amewig": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00877": {
       "commonness": 0
@@ -1023,25 +1023,25 @@
       "commonness": 0
     },
     "layduc": {
-      "commonness": 0
+      "commonness": 1
     },
     "hawduc": {
-      "commonness": 0
+      "commonness": 1
     },
     "phiduc1": {
-      "commonness": 0
+      "commonness": 1
     },
     "isbduc1": {
       "commonness": 0
     },
     "spbduc": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00830": {
       "commonness": 0
     },
     "mallar3": {
-      "commonness": 1
+      "commonness": 2
     },
     "mallar2": {
       "commonness": 0
@@ -1095,7 +1095,7 @@
       "commonness": 0
     },
     "mexduc": {
-      "commonness": 0
+      "commonness": 1
     },
     "mallar4": {
       "commonness": 0
@@ -1158,10 +1158,10 @@
       "commonness": 0
     },
     "rebduc1": {
-      "commonness": 0
+      "commonness": 1
     },
     "norpin": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00837": {
       "commonness": 0
@@ -1185,7 +1185,7 @@
       "commonness": 0
     },
     "yebpin1": {
-      "commonness": 0
+      "commonness": 1
     },
     "yebpin2": {
       "commonness": 0
@@ -1194,7 +1194,7 @@
       "commonness": 0
     },
     "gnwtea": {
-      "commonness": 1
+      "commonness": 2
     },
     "egwtea1": {
       "commonness": 0
@@ -1284,7 +1284,7 @@
       "commonness": 0
     },
     "chetea1": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00925": {
       "commonness": 0
@@ -1326,7 +1326,7 @@
       "commonness": 0
     },
     "martea1": {
-      "commonness": 1
+      "commonness": 0
     },
     "Marmaronetta": {
       "commonness": 0
@@ -1353,13 +1353,13 @@
       "commonness": 0
     },
     "robpoc1": {
-      "commonness": 0
+      "commonness": 1
     },
     "canvas": {
-      "commonness": 1
+      "commonness": 2
     },
     "redhea": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00879": {
       "commonness": 0
@@ -1377,7 +1377,7 @@
       "commonness": 0
     },
     "rinduc": {
-      "commonness": 1
+      "commonness": 2
     },
     "x01001": {
       "commonness": 0
@@ -1389,7 +1389,7 @@
       "commonness": 0
     },
     "ferduc": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00374": {
       "commonness": 0
@@ -1401,7 +1401,7 @@
       "commonness": 0
     },
     "baepoc1": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00838": {
       "commonness": 0
@@ -1416,7 +1416,7 @@
       "commonness": 0
     },
     "tufduc": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00375": {
       "commonness": 0
@@ -1440,7 +1440,7 @@
       "commonness": 0
     },
     "gresca": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00680": {
       "commonness": 0
@@ -1452,7 +1452,7 @@
       "commonness": 0
     },
     "lessca": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00678": {
       "commonness": 0
@@ -1497,7 +1497,7 @@
       "commonness": 1
     },
     "kineid": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00942": {
       "commonness": 0
@@ -1539,22 +1539,22 @@
       "commonness": 0
     },
     "harduc": {
-      "commonness": 1
+      "commonness": 2
     },
     "Histrionicus": {
       "commonness": 0
     },
     "sursco": {
-      "commonness": 1
+      "commonness": 2
     },
     "whwsco3": {
       "commonness": 0
     },
     "whwsco2": {
-      "commonness": 1
+      "commonness": 2
     },
     "whwsco1": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00882": {
       "commonness": 0
@@ -1569,7 +1569,7 @@
       "commonness": 1
     },
     "blksco2": {
-      "commonness": 1
+      "commonness": 2
     },
     "dawsco": {
       "commonness": 0
@@ -1581,16 +1581,16 @@
       "commonness": 0
     },
     "lotduc": {
-      "commonness": 1
+      "commonness": 2
     },
     "Clangula": {
       "commonness": 0
     },
     "buffle": {
-      "commonness": 1
+      "commonness": 2
     },
     "comgol": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00655": {
       "commonness": 0
@@ -1599,7 +1599,7 @@
       "commonness": 0
     },
     "bargol": {
-      "commonness": 1
+      "commonness": 2
     },
     "cxbgol1": {
       "commonness": 0
@@ -1614,7 +1614,7 @@
       "commonness": 0
     },
     "hoomer": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00202": {
       "commonness": 0
@@ -1644,7 +1644,7 @@
       "commonness": 0
     },
     "commer": {
-      "commonness": 1
+      "commonness": 2
     },
     "goosan1": {
       "commonness": 0
@@ -1668,7 +1668,7 @@
       "commonness": 0
     },
     "rebmer": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00614": {
       "commonness": 0
@@ -1701,10 +1701,10 @@
       "commonness": 0
     },
     "masduc": {
-      "commonness": 0
+      "commonness": 1
     },
     "rudduc": {
-      "commonness": 1
+      "commonness": 2
     },
     "andduc1": {
       "commonness": 0
@@ -1851,7 +1851,7 @@
       "commonness": 0
     },
     "placha": {
-      "commonness": 0
+      "commonness": 1
     },
     "grhcha1": {
       "commonness": 0
@@ -2232,16 +2232,16 @@
       "commonness": 0
     },
     "scaqua": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00688": {
       "commonness": 0
     },
     "elequa": {
-      "commonness": 0
+      "commonness": 1
     },
     "calqua": {
-      "commonness": 1
+      "commonness": 2
     },
     "x01011": {
       "commonness": 0
@@ -2268,7 +2268,7 @@
       "commonness": 0
     },
     "monqua": {
-      "commonness": 0
+      "commonness": 1
     },
     "monqua1": {
       "commonness": 0
@@ -2490,7 +2490,7 @@
       "commonness": 0
     },
     "wiltur": {
-      "commonness": 1
+      "commonness": 2
     },
     "wiltur1": {
       "commonness": 0
@@ -2517,7 +2517,7 @@
       "commonness": 1
     },
     "gusgro": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00608": {
       "commonness": 0
@@ -2562,7 +2562,7 @@
       "commonness": 0
     },
     "lepchi": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00668": {
       "commonness": 0
@@ -2667,10 +2667,10 @@
       "commonness": 0
     },
     "reephe1": {
-      "commonness": 0
+      "commonness": 1
     },
     "mikphe1": {
-      "commonness": 0
+      "commonness": 1
     },
     "ellphe1": {
       "commonness": 0
@@ -2694,7 +2694,7 @@
       "commonness": 0
     },
     "rinphe1": {
-      "commonness": 1
+      "commonness": 2
     },
     "rinphe2": {
       "commonness": 1
@@ -2745,7 +2745,7 @@
       "commonness": 0
     },
     "kalphe": {
-      "commonness": 0
+      "commonness": 1
     },
     "silphe": {
       "commonness": 1
@@ -2763,7 +2763,7 @@
       "commonness": 0
     },
     "salphe1": {
-      "commonness": 0
+      "commonness": 1
     },
     "salphe3": {
       "commonness": 0
@@ -2802,13 +2802,13 @@
       "commonness": 0
     },
     "compea": {
-      "commonness": 1
+      "commonness": 2
     },
     "indpea1": {
       "commonness": 0
     },
     "grepea1": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00380": {
       "commonness": 0
@@ -2907,7 +2907,7 @@
       "commonness": 0
     },
     "redjun": {
-      "commonness": 1
+      "commonness": 2
     },
     "redjun1": {
       "commonness": 0
@@ -2937,7 +2937,7 @@
       "commonness": 0
     },
     "gryfra": {
-      "commonness": 0
+      "commonness": 1
     },
     "swafra1": {
       "commonness": 0
@@ -2949,7 +2949,7 @@
       "commonness": 0
     },
     "blkfra": {
-      "commonness": 0
+      "commonness": 1
     },
     "blkfra1": {
       "commonness": 0
@@ -3042,7 +3042,7 @@
       "commonness": 0
     },
     "himsno": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00936": {
       "commonness": 0
@@ -3189,7 +3189,7 @@
       "commonness": 0
     },
     "ercfra": {
-      "commonness": 0
+      "commonness": 1
     },
     "djifra1": {
       "commonness": 0
@@ -3276,7 +3276,7 @@
       "commonness": 0
     },
     "grefla3": {
-      "commonness": 0
+      "commonness": 1
     },
     "x01039": {
       "commonness": 0
@@ -3285,7 +3285,7 @@
       "commonness": 0
     },
     "lesfla1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Phoeniconaias": {
       "commonness": 0
@@ -3339,10 +3339,10 @@
       "commonness": 0
     },
     "leagre": {
-      "commonness": 0
+      "commonness": 1
     },
     "pibgre": {
-      "commonness": 1
+      "commonness": 2
     },
     "atigre1": {
       "commonness": 0
@@ -3369,16 +3369,16 @@
       "commonness": 0
     },
     "horgre": {
-      "commonness": 1
+      "commonness": 2
     },
     "rengre": {
-      "commonness": 1
+      "commonness": 2
     },
     "grcgre1": {
       "commonness": 0
     },
     "eargre": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00229": {
       "commonness": 0
@@ -3405,10 +3405,10 @@
       "commonness": 0
     },
     "wesgre": {
-      "commonness": 1
+      "commonness": 2
     },
     "clagre": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00427": {
       "commonness": 0
@@ -3426,7 +3426,7 @@
       "commonness": 0
     },
     "rocpig": {
-      "commonness": 1
+      "commonness": 2
     },
     "rocpig2": {
       "commonness": 0
@@ -3444,7 +3444,7 @@
       "commonness": 0
     },
     "spepig1": {
-      "commonness": 0
+      "commonness": 1
     },
     "whcpig1": {
       "commonness": 0
@@ -3459,7 +3459,7 @@
       "commonness": 0
     },
     "cowpig1": {
-      "commonness": 1
+      "commonness": 0
     },
     "comwop1": {
       "commonness": 0
@@ -3579,7 +3579,7 @@
       "commonness": 0
     },
     "scnpig1": {
-      "commonness": 0
+      "commonness": 1
     },
     "picpig2": {
       "commonness": 0
@@ -3597,16 +3597,16 @@
       "commonness": 0
     },
     "whcpig2": {
-      "commonness": 0
+      "commonness": 1
     },
     "rebpig1": {
-      "commonness": 0
+      "commonness": 1
     },
     "plapig": {
       "commonness": 0
     },
     "batpig1": {
-      "commonness": 1
+      "commonness": 2
     },
     "batpig2": {
       "commonness": 0
@@ -3681,7 +3681,7 @@
       "commonness": 0
     },
     "eutdov": {
-      "commonness": 0
+      "commonness": 1
     },
     "dutdov1": {
       "commonness": 0
@@ -3690,7 +3690,7 @@
       "commonness": 0
     },
     "ortdov": {
-      "commonness": 1
+      "commonness": 2
     },
     "iscdov1": {
       "commonness": 0
@@ -3699,7 +3699,7 @@
       "commonness": 0
     },
     "eucdov": {
-      "commonness": 1
+      "commonness": 2
     },
     "eurcod2": {
       "commonness": 0
@@ -3711,7 +3711,7 @@
       "commonness": 0
     },
     "afcdov1": {
-      "commonness": 1
+      "commonness": 2
     },
     "afrcod1": {
       "commonness": 0
@@ -3732,7 +3732,7 @@
       "commonness": 0
     },
     "rindov": {
-      "commonness": 0
+      "commonness": 1
     },
     "vindov1": {
       "commonness": 0
@@ -3864,7 +3864,7 @@
       "commonness": 0
     },
     "namdov1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Oena": {
       "commonness": 0
@@ -3996,10 +3996,10 @@
       "commonness": 0
     },
     "diadov1": {
-      "commonness": 0
+      "commonness": 1
     },
     "zebdov": {
-      "commonness": 0
+      "commonness": 1
     },
     "peadov1": {
       "commonness": 0
@@ -4023,7 +4023,7 @@
       "commonness": 0
     },
     "rugdov": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00852": {
       "commonness": 0
@@ -4098,7 +4098,7 @@
       "commonness": 0
     },
     "ruqdov": {
-      "commonness": 0
+      "commonness": 1
     },
     "rudqud1": {
       "commonness": 0
@@ -4116,7 +4116,7 @@
       "commonness": 0
     },
     "kwqdov": {
-      "commonness": 0
+      "commonness": 1
     },
     "brqdov1": {
       "commonness": 0
@@ -4128,7 +4128,7 @@
       "commonness": 0
     },
     "whtdov": {
-      "commonness": 0
+      "commonness": 1
     },
     "whtdov1": {
       "commonness": 0
@@ -4227,10 +4227,10 @@
       "commonness": 0
     },
     "whwdov": {
-      "commonness": 1
+      "commonness": 2
     },
     "zendov": {
-      "commonness": 0
+      "commonness": 1
     },
     "galdov1": {
       "commonness": 0
@@ -4239,7 +4239,7 @@
       "commonness": 0
     },
     "moudov": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00767": {
       "commonness": 0
@@ -4341,7 +4341,7 @@
       "commonness": 0
     },
     "vicpig1": {
-      "commonness": 0
+      "commonness": 1
     },
     "crowne1": {
       "commonness": 0
@@ -4989,7 +4989,7 @@
       "commonness": 0
     },
     "chbsan": {
-      "commonness": 0
+      "commonness": 1
     },
     "chbsan1": {
       "commonness": 0
@@ -5250,7 +5250,7 @@
       "commonness": 0
     },
     "whctur1": {
-      "commonness": 0
+      "commonness": 1
     },
     "whctur3": {
       "commonness": 0
@@ -5304,7 +5304,7 @@
       "commonness": 0
     },
     "grygab1": {
-      "commonness": 0
+      "commonness": 1
     },
     "wbgbir1": {
       "commonness": 0
@@ -5337,7 +5337,7 @@
       "commonness": 0
     },
     "smbani": {
-      "commonness": 0
+      "commonness": 1
     },
     "grbani": {
       "commonness": 1
@@ -5373,7 +5373,7 @@
       "commonness": 0
     },
     "greroa": {
-      "commonness": 0
+      "commonness": 2
     },
     "y00957": {
       "commonness": 0
@@ -5688,10 +5688,10 @@
       "commonness": 0
     },
     "dabcuc1": {
-      "commonness": 0
+      "commonness": 1
     },
     "yebcuc": {
-      "commonness": 1
+      "commonness": 2
     },
     "pebcuc1": {
       "commonness": 0
@@ -5700,13 +5700,13 @@
       "commonness": 0
     },
     "mancuc": {
-      "commonness": 0
+      "commonness": 1
     },
     "coccuc1": {
       "commonness": 0
     },
     "bkbcuc": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00616": {
       "commonness": 0
@@ -6033,7 +6033,7 @@
       "commonness": 0
     },
     "oricuc2": {
-      "commonness": 0
+      "commonness": 1
     },
     "y01094": {
       "commonness": 0
@@ -6174,13 +6174,13 @@
       "commonness": 0
     },
     "lesnig": {
-      "commonness": 1
+      "commonness": 2
     },
     "comnig": {
-      "commonness": 1
+      "commonness": 2
     },
     "antnig": {
-      "commonness": 0
+      "commonness": 1
     },
     "y01174": {
       "commonness": 0
@@ -6255,7 +6255,7 @@
       "commonness": 0
     },
     "compau": {
-      "commonness": 0
+      "commonness": 1
     },
     "scrnig1": {
       "commonness": 0
@@ -6342,13 +6342,13 @@
       "commonness": 0
     },
     "compoo": {
-      "commonness": 1
+      "commonness": 2
     },
     "Phalaenoptilus": {
       "commonness": 0
     },
     "chwwid": {
-      "commonness": 1
+      "commonness": 2
     },
     "rufnig1": {
       "commonness": 0
@@ -6378,7 +6378,7 @@
       "commonness": 0
     },
     "bucnig": {
-      "commonness": 0
+      "commonness": 1
     },
     "easwpw1": {
       "commonness": 1
@@ -6387,7 +6387,7 @@
       "commonness": 0
     },
     "souwpw1": {
-      "commonness": 0
+      "commonness": 2
     },
     "whpwil": {
       "commonness": 0
@@ -6417,7 +6417,7 @@
       "commonness": 0
     },
     "grynig1": {
-      "commonness": 0
+      "commonness": 1
     },
     "granig": {
       "commonness": 0
@@ -6639,7 +6639,7 @@
       "commonness": 0
     },
     "blkswi": {
-      "commonness": 1
+      "commonness": 2
     },
     "blkswi1": {
       "commonness": 0
@@ -6777,10 +6777,10 @@
       "commonness": 0
     },
     "chiswi": {
-      "commonness": 1
+      "commonness": 2
     },
     "vauswi": {
-      "commonness": 1
+      "commonness": 2
     },
     "vauswi1": {
       "commonness": 0
@@ -6819,7 +6819,7 @@
       "commonness": 0
     },
     "whtnee": {
-      "commonness": 0
+      "commonness": 1
     },
     "sibnee1": {
       "commonness": 0
@@ -6945,7 +6945,7 @@
       "commonness": 0
     },
     "marswi": {
-      "commonness": 0
+      "commonness": 1
     },
     "caiswi1": {
       "commonness": 0
@@ -7095,7 +7095,7 @@
       "commonness": 0
     },
     "whtswi": {
-      "commonness": 1
+      "commonness": 2
     },
     "whtswi1": {
       "commonness": 0
@@ -7137,7 +7137,7 @@
       "commonness": 0
     },
     "anpswi": {
-      "commonness": 0
+      "commonness": 1
     },
     "pygswi1": {
       "commonness": 0
@@ -7485,7 +7485,7 @@
       "commonness": 0
     },
     "gnbman": {
-      "commonness": 0
+      "commonness": 1
     },
     "verman1": {
       "commonness": 0
@@ -8121,7 +8121,7 @@
       "commonness": 0
     },
     "plcsta": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00863": {
       "commonness": 0
@@ -8157,7 +8157,7 @@
       "commonness": 0
     },
     "buthum": {
-      "commonness": 0
+      "commonness": 1
     },
     "wbmgem1": {
       "commonness": 0
@@ -8283,7 +8283,7 @@
       "commonness": 0
     },
     "luchum": {
-      "commonness": 0
+      "commonness": 1
     },
     "beahum1": {
       "commonness": 0
@@ -8292,10 +8292,10 @@
       "commonness": 0
     },
     "rthhum": {
-      "commonness": 1
+      "commonness": 2
     },
     "bkchum": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00946": {
       "commonness": 0
@@ -8307,7 +8307,7 @@
       "commonness": 0
     },
     "bahwoo": {
-      "commonness": 0
+      "commonness": 1
     },
     "inawoo2": {
       "commonness": 0
@@ -8325,7 +8325,7 @@
       "commonness": 0
     },
     "annhum": {
-      "commonness": 1
+      "commonness": 3
     },
     "x00690": {
       "commonness": 0
@@ -8334,7 +8334,7 @@
       "commonness": 0
     },
     "coshum": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00737": {
       "commonness": 0
@@ -8352,7 +8352,7 @@
       "commonness": 0
     },
     "calhum": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00768": {
       "commonness": 0
@@ -8361,7 +8361,7 @@
       "commonness": 0
     },
     "rufhum": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00738": {
       "commonness": 0
@@ -8373,7 +8373,7 @@
       "commonness": 0
     },
     "allhum": {
-      "commonness": 0
+      "commonness": 2
     },
     "x00691": {
       "commonness": 0
@@ -8445,7 +8445,7 @@
       "commonness": 0
     },
     "brbhum": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00676": {
       "commonness": 0
@@ -8535,7 +8535,7 @@
       "commonness": 0
     },
     "whehum": {
-      "commonness": 0
+      "commonness": 1
     },
     "xanhum": {
       "commonness": 1
@@ -8805,7 +8805,7 @@
       "commonness": 0
     },
     "vichum": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00633": {
       "commonness": 0
@@ -8841,7 +8841,7 @@
       "commonness": 0
     },
     "berhum": {
-      "commonness": 0
+      "commonness": 1
     },
     "berhum1": {
       "commonness": 0
@@ -8886,7 +8886,7 @@
       "commonness": 0
     },
     "cinhum1": {
-      "commonness": 0
+      "commonness": 1
     },
     "cinhum2": {
       "commonness": 0
@@ -8895,7 +8895,7 @@
       "commonness": 0
     },
     "bubhum": {
-      "commonness": 0
+      "commonness": 1
     },
     "bubhum1": {
       "commonness": 0
@@ -9150,7 +9150,7 @@
       "commonness": 0
     },
     "ridrai1": {
-      "commonness": 0
+      "commonness": 2
     },
     "clarai3": {
       "commonness": 0
@@ -9222,7 +9222,7 @@
       "commonness": 0
     },
     "virrai": {
-      "commonness": 1
+      "commonness": 2
     },
     "virrai2": {
       "commonness": 0
@@ -9426,7 +9426,7 @@
       "commonness": 0
     },
     "pabcra": {
-      "commonness": 0
+      "commonness": 1
     },
     "Mustelirallus": {
       "commonness": 0
@@ -9438,7 +9438,7 @@
       "commonness": 0
     },
     "sporai": {
-      "commonness": 0
+      "commonness": 1
     },
     "blarai1": {
       "commonness": 0
@@ -9456,7 +9456,7 @@
       "commonness": 0
     },
     "giwrai1": {
-      "commonness": 0
+      "commonness": 1
     },
     "brwrai1": {
       "commonness": 0
@@ -9465,7 +9465,7 @@
       "commonness": 0
     },
     "rnwrai1": {
-      "commonness": 0
+      "commonness": 1
     },
     "runwor1": {
       "commonness": 0
@@ -9510,7 +9510,7 @@
       "commonness": 0
     },
     "sora": {
-      "commonness": 1
+      "commonness": 2
     },
     "spocra1": {
       "commonness": 0
@@ -9537,10 +9537,10 @@
       "commonness": 0
     },
     "commoo3": {
-      "commonness": 0
+      "commonness": 1
     },
     "comgal1": {
-      "commonness": 1
+      "commonness": 2
     },
     "commoo2": {
       "commonness": 0
@@ -9591,7 +9591,7 @@
       "commonness": 0
     },
     "hawcoo": {
-      "commonness": 0
+      "commonness": 1
     },
     "hawcoo1": {
       "commonness": 0
@@ -9600,7 +9600,7 @@
       "commonness": 0
     },
     "y00475": {
-      "commonness": 1
+      "commonness": 2
     },
     "amecoo": {
       "commonness": 0
@@ -9636,7 +9636,7 @@
       "commonness": 1
     },
     "azugal1": {
-      "commonness": 0
+      "commonness": 1
     },
     "marswa1": {
       "commonness": 0
@@ -9672,7 +9672,7 @@
       "commonness": 0
     },
     "purswa3": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00844": {
       "commonness": 0
@@ -9780,7 +9780,7 @@
       "commonness": 0
     },
     "baicra1": {
-      "commonness": 0
+      "commonness": 1
     },
     "baicra2": {
       "commonness": 0
@@ -9849,7 +9849,7 @@
       "commonness": 0
     },
     "yelrai": {
-      "commonness": 1
+      "commonness": 2
     },
     "yelrai1": {
       "commonness": 0
@@ -9903,7 +9903,7 @@
       "commonness": 0
     },
     "blkrai": {
-      "commonness": 1
+      "commonness": 2
     },
     "blkrai1": {
       "commonness": 0
@@ -9942,7 +9942,7 @@
       "commonness": 0
     },
     "sungre1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Heliornis": {
       "commonness": 0
@@ -9951,7 +9951,7 @@
       "commonness": 0
     },
     "limpki": {
-      "commonness": 0
+      "commonness": 1
     },
     "limpki1": {
       "commonness": 0
@@ -10002,7 +10002,7 @@
       "commonness": 0
     },
     "grccra1": {
-      "commonness": 0
+      "commonness": 1
     },
     "blccra1": {
       "commonness": 0
@@ -10014,7 +10014,7 @@
       "commonness": 1
     },
     "blucra2": {
-      "commonness": 0
+      "commonness": 1
     },
     "Anthropoides": {
       "commonness": 0
@@ -10032,7 +10032,7 @@
       "commonness": 0
     },
     "sancra": {
-      "commonness": 1
+      "commonness": 2
     },
     "sancra1": {
       "commonness": 0
@@ -10068,7 +10068,7 @@
       "commonness": 0
     },
     "hoocra1": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00884": {
       "commonness": 0
@@ -10134,7 +10134,7 @@
       "commonness": 0
     },
     "dstkne": {
-      "commonness": 0
+      "commonness": 1
     },
     "petkne1": {
       "commonness": 0
@@ -10167,7 +10167,7 @@
       "commonness": 0
     },
     "bkwsti": {
-      "commonness": 0
+      "commonness": 1
     },
     "piesti1": {
       "commonness": 0
@@ -10188,7 +10188,7 @@
       "commonness": 0
     },
     "bknsti": {
-      "commonness": 1
+      "commonness": 2
     },
     "bknsti1": {
       "commonness": 0
@@ -10221,7 +10221,7 @@
       "commonness": 0
     },
     "ameavo": {
-      "commonness": 1
+      "commonness": 2
     },
     "Recurvirostra": {
       "commonness": 0
@@ -10287,7 +10287,7 @@
       "commonness": 0
     },
     "blkoys": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00006": {
       "commonness": 0
@@ -10302,16 +10302,16 @@
       "commonness": 0
     },
     "bkbplo": {
-      "commonness": 1
+      "commonness": 2
     },
     "eugplo": {
       "commonness": 1
     },
     "amgplo": {
-      "commonness": 1
+      "commonness": 2
     },
     "pagplo": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00222": {
       "commonness": 0
@@ -10338,7 +10338,7 @@
       "commonness": 0
     },
     "spwlap1": {
-      "commonness": 0
+      "commonness": 1
     },
     "rivlap1": {
       "commonness": 0
@@ -10404,7 +10404,7 @@
       "commonness": 0
     },
     "soulap1": {
-      "commonness": 0
+      "commonness": 1
     },
     "soulap2": {
       "commonness": 0
@@ -10431,7 +10431,7 @@
       "commonness": 0
     },
     "lesplo": {
-      "commonness": 1
+      "commonness": 2
     },
     "lessap1": {
       "commonness": 0
@@ -10440,7 +10440,7 @@
       "commonness": 0
     },
     "grsplo": {
-      "commonness": 0
+      "commonness": 2
     },
     "y00648": {
       "commonness": 0
@@ -10449,7 +10449,7 @@
       "commonness": 0
     },
     "colplo1": {
-      "commonness": 0
+      "commonness": 1
     },
     "punplo1": {
       "commonness": 0
@@ -10485,7 +10485,7 @@
       "commonness": 0
     },
     "snoplo5": {
-      "commonness": 1
+      "commonness": 2
     },
     "snoplo3": {
       "commonness": 0
@@ -10503,10 +10503,10 @@
       "commonness": 1
     },
     "corplo": {
-      "commonness": 1
+      "commonness": 2
     },
     "semplo": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00845": {
       "commonness": 0
@@ -10521,7 +10521,7 @@
       "commonness": 0
     },
     "lirplo": {
-      "commonness": 0
+      "commonness": 1
     },
     "lirplo1": {
       "commonness": 0
@@ -10551,16 +10551,16 @@
       "commonness": 0
     },
     "killde": {
-      "commonness": 1
+      "commonness": 2
     },
     "mouplo": {
-      "commonness": 1
+      "commonness": 2
     },
     "oriplo1": {
       "commonness": 0
     },
     "eurdot": {
-      "commonness": 1
+      "commonness": 2
     },
     "sthplo1": {
       "commonness": 0
@@ -10695,7 +10695,7 @@
       "commonness": 0
     },
     "norjac": {
-      "commonness": 0
+      "commonness": 1
     },
     "watjac1": {
       "commonness": 0
@@ -10725,10 +10725,10 @@
       "commonness": 0
     },
     "brtcur": {
-      "commonness": 1
+      "commonness": 2
     },
     "whimbr": {
-      "commonness": 1
+      "commonness": 2
     },
     "whimbr3": {
       "commonness": 0
@@ -10746,19 +10746,19 @@
       "commonness": 0
     },
     "litcur": {
-      "commonness": 0
+      "commonness": 1
     },
     "eskcur": {
       "commonness": 1
     },
     "lobcur": {
-      "commonness": 1
+      "commonness": 2
     },
     "faecur": {
       "commonness": 1
     },
     "slbcur": {
-      "commonness": 1
+      "commonness": 0
     },
     "eurcur": {
       "commonness": 1
@@ -10773,7 +10773,7 @@
       "commonness": 0
     },
     "batgod": {
-      "commonness": 1
+      "commonness": 2
     },
     "batgod1": {
       "commonness": 0
@@ -10800,7 +10800,7 @@
       "commonness": 0
     },
     "hudgod": {
-      "commonness": 1
+      "commonness": 2
     },
     "x01025": {
       "commonness": 0
@@ -10809,7 +10809,7 @@
       "commonness": 0
     },
     "margod": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00381": {
       "commonness": 0
@@ -10818,10 +10818,10 @@
       "commonness": 0
     },
     "rudtur": {
-      "commonness": 1
+      "commonness": 2
     },
     "blktur": {
-      "commonness": 1
+      "commonness": 2
     },
     "Arenaria": {
       "commonness": 0
@@ -10842,16 +10842,16 @@
       "commonness": 0
     },
     "grekno": {
-      "commonness": 0
+      "commonness": 1
     },
     "redkno": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00382": {
       "commonness": 0
     },
     "surfbi": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00733": {
       "commonness": 0
@@ -10860,25 +10860,25 @@
       "commonness": 0
     },
     "ruff": {
-      "commonness": 1
+      "commonness": 2
     },
     "brbsan": {
-      "commonness": 0
+      "commonness": 1
     },
     "shtsan": {
-      "commonness": 1
+      "commonness": 2
     },
     "stisan": {
-      "commonness": 1
+      "commonness": 2
     },
     "cursan": {
-      "commonness": 1
+      "commonness": 2
     },
     "temsti": {
       "commonness": 1
     },
     "lotsti": {
-      "commonness": 0
+      "commonness": 1
     },
     "spbsan1": {
       "commonness": 1
@@ -10887,10 +10887,10 @@
       "commonness": 1
     },
     "sander": {
-      "commonness": 1
+      "commonness": 2
     },
     "dunlin": {
-      "commonness": 1
+      "commonness": 2
     },
     "dunlin1": {
       "commonness": 0
@@ -10914,7 +10914,7 @@
       "commonness": 0
     },
     "rocsan": {
-      "commonness": 1
+      "commonness": 2
     },
     "rocsan2": {
       "commonness": 0
@@ -10932,7 +10932,7 @@
       "commonness": 0
     },
     "pursan": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00433": {
       "commonness": 0
@@ -10941,31 +10941,31 @@
       "commonness": 0
     },
     "baisan": {
-      "commonness": 1
+      "commonness": 2
     },
     "litsti": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00497": {
       "commonness": 0
     },
     "leasan": {
-      "commonness": 1
+      "commonness": 2
     },
     "whrsan": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00430": {
       "commonness": 0
     },
     "bubsan": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00431": {
       "commonness": 0
     },
     "pecsan": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00705": {
       "commonness": 0
@@ -10974,13 +10974,13 @@
       "commonness": 0
     },
     "semsan": {
-      "commonness": 1
+      "commonness": 2
     },
     "x01042": {
       "commonness": 0
     },
     "wessan": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00496": {
       "commonness": 0
@@ -10995,7 +10995,7 @@
       "commonness": 0
     },
     "shbdow": {
-      "commonness": 1
+      "commonness": 2
     },
     "shbdow1": {
       "commonness": 0
@@ -11007,7 +11007,7 @@
       "commonness": 0
     },
     "lobdow": {
-      "commonness": 1
+      "commonness": 2
     },
     "dowitc": {
       "commonness": 0
@@ -11022,7 +11022,7 @@
       "commonness": 0
     },
     "eurwoo": {
-      "commonness": 0
+      "commonness": 1
     },
     "amawoo1": {
       "commonness": 0
@@ -11076,7 +11076,7 @@
       "commonness": 0
     },
     "solsni1": {
-      "commonness": 0
+      "commonness": 1
     },
     "latsni1": {
       "commonness": 0
@@ -11094,7 +11094,7 @@
       "commonness": 0
     },
     "wilsni1": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00477": {
       "commonness": 0
@@ -11118,7 +11118,7 @@
       "commonness": 0
     },
     "pitsni": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00847": {
       "commonness": 0
@@ -11148,13 +11148,13 @@
       "commonness": 0
     },
     "wilpha": {
-      "commonness": 1
+      "commonness": 2
     },
     "renpha": {
-      "commonness": 1
+      "commonness": 2
     },
     "redpha1": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00635": {
       "commonness": 0
@@ -11163,10 +11163,10 @@
       "commonness": 0
     },
     "comsan": {
-      "commonness": 0
+      "commonness": 1
     },
     "sposan": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00668": {
       "commonness": 0
@@ -11175,10 +11175,10 @@
       "commonness": 0
     },
     "grnsan": {
-      "commonness": 0
+      "commonness": 1
     },
     "solsan": {
-      "commonness": 1
+      "commonness": 2
     },
     "solsan1": {
       "commonness": 0
@@ -11190,7 +11190,7 @@
       "commonness": 1
     },
     "wantat1": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00495": {
       "commonness": 0
@@ -11199,7 +11199,7 @@
       "commonness": 1
     },
     "greyel": {
-      "commonness": 1
+      "commonness": 2
     },
     "comgre": {
       "commonness": 1
@@ -11211,7 +11211,7 @@
       "commonness": 0
     },
     "willet1": {
-      "commonness": 1
+      "commonness": 2
     },
     "willet2": {
       "commonness": 0
@@ -11220,7 +11220,7 @@
       "commonness": 0
     },
     "lesyel": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00476": {
       "commonness": 0
@@ -11367,7 +11367,7 @@
       "commonness": 0
     },
     "oripra": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00775": {
       "commonness": 0
@@ -11412,7 +11412,7 @@
       "commonness": 0
     },
     "sopsku1": {
-      "commonness": 1
+      "commonness": 2
     },
     "brnsku3": {
       "commonness": 0
@@ -11430,16 +11430,16 @@
       "commonness": 0
     },
     "pomjae": {
-      "commonness": 1
+      "commonness": 2
     },
     "parjae": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00479": {
       "commonness": 0
     },
     "lotjae": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00480": {
       "commonness": 0
@@ -11463,10 +11463,10 @@
       "commonness": 0
     },
     "commur": {
-      "commonness": 1
+      "commonness": 2
     },
     "thbmur": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00793": {
       "commonness": 0
@@ -11502,7 +11502,7 @@
       "commonness": 0
     },
     "piggui": {
-      "commonness": 1
+      "commonness": 2
     },
     "piggui2": {
       "commonness": 0
@@ -11520,25 +11520,25 @@
       "commonness": 0
     },
     "lobmur": {
-      "commonness": 1
+      "commonness": 2
     },
     "marmur": {
-      "commonness": 1
+      "commonness": 2
     },
     "kitmur": {
       "commonness": 1
     },
     "xanmur2": {
-      "commonness": 1
+      "commonness": 2
     },
     "xanmur1": {
-      "commonness": 1
+      "commonness": 2
     },
     "xanmur": {
       "commonness": 0
     },
     "cramur": {
-      "commonness": 0
+      "commonness": 2
     },
     "y00777": {
       "commonness": 0
@@ -11547,7 +11547,7 @@
       "commonness": 0
     },
     "ancmur": {
-      "commonness": 1
+      "commonness": 2
     },
     "japmur1": {
       "commonness": 0
@@ -11562,25 +11562,25 @@
       "commonness": 0
     },
     "casauk": {
-      "commonness": 1
+      "commonness": 2
     },
     "parauk": {
-      "commonness": 1
+      "commonness": 2
     },
     "leaauk": {
-      "commonness": 0
+      "commonness": 1
     },
     "whiauk": {
-      "commonness": 0
+      "commonness": 1
     },
     "creauk": {
-      "commonness": 1
+      "commonness": 2
     },
     "Aethia": {
       "commonness": 0
     },
     "rhiauk": {
-      "commonness": 1
+      "commonness": 2
     },
     "Cerorhinca": {
       "commonness": 0
@@ -11595,10 +11595,10 @@
       "commonness": 1
     },
     "horpuf": {
-      "commonness": 1
+      "commonness": 2
     },
     "tufpuf": {
-      "commonness": 1
+      "commonness": 2
     },
     "puffin1": {
       "commonness": 0
@@ -11607,13 +11607,13 @@
       "commonness": 0
     },
     "swtgul1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Creagrus": {
       "commonness": 0
     },
     "bklkit": {
-      "commonness": 1
+      "commonness": 2
     },
     "bklkit1": {
       "commonness": 0
@@ -11622,7 +11622,7 @@
       "commonness": 0
     },
     "relkit": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00697": {
       "commonness": 0
@@ -11637,7 +11637,7 @@
       "commonness": 0
     },
     "sabgul": {
-      "commonness": 1
+      "commonness": 2
     },
     "Xema": {
       "commonness": 0
@@ -11652,7 +11652,7 @@
       "commonness": 0
     },
     "bongul": {
-      "commonness": 1
+      "commonness": 2
     },
     "andgul1": {
       "commonness": 0
@@ -11670,7 +11670,7 @@
       "commonness": 0
     },
     "silgul2": {
-      "commonness": 0
+      "commonness": 1
     },
     "silgul1": {
       "commonness": 0
@@ -11682,7 +11682,7 @@
       "commonness": 0
     },
     "grhgul": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00385": {
       "commonness": 0
@@ -11694,7 +11694,7 @@
       "commonness": 0
     },
     "bkhgul": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00778": {
       "commonness": 0
@@ -11712,7 +11712,7 @@
       "commonness": 0
     },
     "litgul": {
-      "commonness": 1
+      "commonness": 2
     },
     "Hydrocoloeus": {
       "commonness": 0
@@ -11730,13 +11730,13 @@
       "commonness": 0
     },
     "laugul": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00392": {
       "commonness": 0
     },
     "fragul": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00794": {
       "commonness": 0
@@ -11766,13 +11766,13 @@
       "commonness": 0
     },
     "gbhgul2": {
-      "commonness": 0
+      "commonness": 1
     },
     "audgul1": {
       "commonness": 0
     },
     "belgul": {
-      "commonness": 0
+      "commonness": 1
     },
     "olrgul1": {
       "commonness": 0
@@ -11784,7 +11784,7 @@
       "commonness": 0
     },
     "heegul": {
-      "commonness": 1
+      "commonness": 2
     },
     "mewgul": {
       "commonness": 1
@@ -11808,13 +11808,13 @@
       "commonness": 0
     },
     "mewgul2": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00441": {
       "commonness": 0
     },
     "ribgul": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00641": {
       "commonness": 0
@@ -11835,16 +11835,16 @@
       "commonness": 0
     },
     "wesgul": {
-      "commonness": 1
+      "commonness": 2
     },
     "yefgul": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00683": {
       "commonness": 0
     },
     "calgul": {
-      "commonness": 1
+      "commonness": 2
     },
     "calgul1": {
       "commonness": 0
@@ -11853,7 +11853,7 @@
       "commonness": 0
     },
     "hergul": {
-      "commonness": 1
+      "commonness": 2
     },
     "amhgul1": {
       "commonness": 0
@@ -11907,7 +11907,7 @@
       "commonness": 0
     },
     "y00478": {
-      "commonness": 1
+      "commonness": 2
     },
     "thagul": {
       "commonness": 0
@@ -11934,7 +11934,7 @@
       "commonness": 0
     },
     "lbbgul": {
-      "commonness": 1
+      "commonness": 2
     },
     "lbbgul1": {
       "commonness": 0
@@ -11973,13 +11973,13 @@
       "commonness": 0
     },
     "slbgul": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00434": {
       "commonness": 0
     },
     "glwgul": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00051": {
       "commonness": 0
@@ -11997,7 +11997,7 @@
       "commonness": 0
     },
     "glagul": {
-      "commonness": 1
+      "commonness": 2
     },
     "nelgul": {
       "commonness": 0
@@ -12051,10 +12051,10 @@
       "commonness": 0
     },
     "brnnod": {
-      "commonness": 0
+      "commonness": 1
     },
     "blknod": {
-      "commonness": 0
+      "commonness": 1
     },
     "blknod3": {
       "commonness": 0
@@ -12078,13 +12078,13 @@
       "commonness": 0
     },
     "bugnod": {
-      "commonness": 0
+      "commonness": 1
     },
     "Anous": {
       "commonness": 0
     },
     "whiter": {
-      "commonness": 0
+      "commonness": 1
     },
     "whiter3": {
       "commonness": 0
@@ -12099,10 +12099,10 @@
       "commonness": 0
     },
     "sooter1": {
-      "commonness": 1
+      "commonness": 2
     },
     "gybter1": {
-      "commonness": 0
+      "commonness": 1
     },
     "briter1": {
       "commonness": 1
@@ -12111,7 +12111,7 @@
       "commonness": 0
     },
     "aleter1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Onychoprion": {
       "commonness": 0
@@ -12120,7 +12120,7 @@
       "commonness": 0
     },
     "leater1": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00661": {
       "commonness": 0
@@ -12153,7 +12153,7 @@
       "commonness": 0
     },
     "labter1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Phaetusa": {
       "commonness": 0
@@ -12171,16 +12171,16 @@
       "commonness": 0
     },
     "caster1": {
-      "commonness": 1
+      "commonness": 2
     },
     "incter1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Larosterna": {
       "commonness": 0
     },
     "blkter": {
-      "commonness": 1
+      "commonness": 2
     },
     "blkter1": {
       "commonness": 0
@@ -12192,7 +12192,7 @@
       "commonness": 1
     },
     "whiter2": {
-      "commonness": 0
+      "commonness": 1
     },
     "blfter1": {
       "commonness": 0
@@ -12210,7 +12210,7 @@
       "commonness": 0
     },
     "comter": {
-      "commonness": 1
+      "commonness": 2
     },
     "comter1": {
       "commonness": 0
@@ -12225,7 +12225,7 @@
       "commonness": 0
     },
     "arcter": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00910": {
       "commonness": 0
@@ -12249,7 +12249,7 @@
       "commonness": 0
     },
     "forter": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00727": {
       "commonness": 0
@@ -12279,7 +12279,7 @@
       "commonness": 1
     },
     "grcter1": {
-      "commonness": 0
+      "commonness": 1
     },
     "santer1": {
       "commonness": 1
@@ -12297,7 +12297,7 @@
       "commonness": 0
     },
     "eleter1": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00438": {
       "commonness": 0
@@ -12336,7 +12336,7 @@
       "commonness": 0
     },
     "blkski": {
-      "commonness": 1
+      "commonness": 2
     },
     "blkski1": {
       "commonness": 0
@@ -12408,7 +12408,7 @@
       "commonness": 1
     },
     "rettro": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00473": {
       "commonness": 0
@@ -12423,22 +12423,22 @@
       "commonness": 0
     },
     "retloo": {
-      "commonness": 1
+      "commonness": 2
     },
     "arcloo": {
-      "commonness": 1
+      "commonness": 2
     },
     "pacloo": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00219": {
       "commonness": 0
     },
     "comloo": {
-      "commonness": 1
+      "commonness": 2
     },
     "yebloo": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00220": {
       "commonness": 0
@@ -12555,7 +12555,7 @@
       "commonness": 0
     },
     "whcalb1": {
-      "commonness": 0
+      "commonness": 1
     },
     "whcalb2": {
       "commonness": 0
@@ -12564,10 +12564,10 @@
       "commonness": 0
     },
     "salalb1": {
-      "commonness": 0
+      "commonness": 1
     },
     "shyalb2": {
-      "commonness": 0
+      "commonness": 2
     },
     "shyalb": {
       "commonness": 0
@@ -12588,7 +12588,7 @@
       "commonness": 0
     },
     "limalb1": {
-      "commonness": 0
+      "commonness": 2
     },
     "Phoebetria": {
       "commonness": 0
@@ -12603,7 +12603,7 @@
       "commonness": 0
     },
     "wanalb": {
-      "commonness": 0
+      "commonness": 1
     },
     "wanalb1": {
       "commonness": 0
@@ -12627,16 +12627,16 @@
       "commonness": 0
     },
     "layalb": {
-      "commonness": 1
+      "commonness": 2
     },
     "bkfalb": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00017": {
       "commonness": 0
     },
     "shtalb": {
-      "commonness": 1
+      "commonness": 2
     },
     "Phoebastria": {
       "commonness": 0
@@ -12645,7 +12645,7 @@
       "commonness": 0
     },
     "wispet": {
-      "commonness": 1
+      "commonness": 2
     },
     "wilstp2": {
       "commonness": 0
@@ -12690,7 +12690,7 @@
       "commonness": 0
     },
     "bbspet1": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00388": {
       "commonness": 0
@@ -12705,7 +12705,7 @@
       "commonness": 0
     },
     "bripet": {
-      "commonness": 0
+      "commonness": 1
     },
     "eurstp1": {
       "commonness": 0
@@ -12714,13 +12714,13 @@
       "commonness": 0
     },
     "ftspet": {
-      "commonness": 1
+      "commonness": 2
     },
     "rispet1": {
-      "commonness": 0
+      "commonness": 1
     },
     "lcspet": {
-      "commonness": 1
+      "commonness": 2
     },
     "leastp3": {
       "commonness": 0
@@ -12729,7 +12729,7 @@
       "commonness": 0
     },
     "leastp5": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00937": {
       "commonness": 0
@@ -12747,10 +12747,10 @@
       "commonness": 0
     },
     "swspet": {
-      "commonness": 0
+      "commonness": 1
     },
     "asspet": {
-      "commonness": 0
+      "commonness": 2
     },
     "barpet": {
       "commonness": 1
@@ -12774,10 +12774,10 @@
       "commonness": 0
     },
     "wrspet": {
-      "commonness": 0
+      "commonness": 2
     },
     "bkspet": {
-      "commonness": 0
+      "commonness": 2
     },
     "guspet": {
       "commonness": 0
@@ -12792,10 +12792,10 @@
       "commonness": 0
     },
     "trspet": {
-      "commonness": 0
+      "commonness": 1
     },
     "lsspet": {
-      "commonness": 0
+      "commonness": 2
     },
     "oceano1": {
       "commonness": 0
@@ -12819,7 +12819,7 @@
       "commonness": 0
     },
     "norgip1": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00228": {
       "commonness": 0
@@ -12828,7 +12828,7 @@
       "commonness": 0
     },
     "norful": {
-      "commonness": 1
+      "commonness": 2
     },
     "norful4": {
       "commonness": 0
@@ -12879,13 +12879,13 @@
       "commonness": 0
     },
     "grwpet2": {
-      "commonness": 0
+      "commonness": 2
     },
     "grwpet1": {
       "commonness": 0
     },
     "kerpet": {
-      "commonness": 0
+      "commonness": 1
     },
     "magpet1": {
       "commonness": 0
@@ -12894,22 +12894,22 @@
       "commonness": 1
     },
     "herpet2": {
-      "commonness": 0
+      "commonness": 1
     },
     "herpet": {
       "commonness": 0
     },
     "murpet": {
-      "commonness": 1
+      "commonness": 2
     },
     "solpet1": {
-      "commonness": 0
+      "commonness": 1
     },
     "henpet1": {
       "commonness": 0
     },
     "madpet": {
-      "commonness": 0
+      "commonness": 1
     },
     "feapet1": {
       "commonness": 1
@@ -12933,7 +12933,7 @@
       "commonness": 0
     },
     "motpet": {
-      "commonness": 1
+      "commonness": 2
     },
     "berpet": {
       "commonness": 1
@@ -12957,7 +12957,7 @@
       "commonness": 0
     },
     "jufpet": {
-      "commonness": 0
+      "commonness": 1
     },
     "atlpet1": {
       "commonness": 0
@@ -12966,28 +12966,28 @@
       "commonness": 0
     },
     "hawpet1": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00472": {
       "commonness": 0
     },
     "whnpet": {
-      "commonness": 0
+      "commonness": 1
     },
     "y01135": {
       "commonness": 0
     },
     "bonpet": {
-      "commonness": 0
+      "commonness": 1
     },
     "bkwpet": {
-      "commonness": 0
+      "commonness": 1
     },
     "chapet1": {
       "commonness": 0
     },
     "coopet": {
-      "commonness": 1
+      "commonness": 2
     },
     "maspet3": {
       "commonness": 0
@@ -13011,7 +13011,7 @@
       "commonness": 0
     },
     "stepet": {
-      "commonness": 0
+      "commonness": 1
     },
     "pycpet1": {
       "commonness": 0
@@ -13062,10 +13062,10 @@
       "commonness": 0
     },
     "bulpet": {
-      "commonness": 0
+      "commonness": 1
     },
     "joupet": {
-      "commonness": 0
+      "commonness": 1
     },
     "sshpet1": {
       "commonness": 0
@@ -13080,7 +13080,7 @@
       "commonness": 0
     },
     "tahpet1": {
-      "commonness": 0
+      "commonness": 1
     },
     "becpet1": {
       "commonness": 0
@@ -13095,13 +13095,13 @@
       "commonness": 0
     },
     "whcpet1": {
-      "commonness": 0
+      "commonness": 2
     },
     "spepet1": {
       "commonness": 0
     },
     "parpet1": {
-      "commonness": 0
+      "commonness": 2
     },
     "wespet1": {
       "commonness": 0
@@ -13110,7 +13110,7 @@
       "commonness": 0
     },
     "strshe": {
-      "commonness": 0
+      "commonness": 2
     },
     "corshe": {
       "commonness": 1
@@ -13122,19 +13122,19 @@
       "commonness": 0
     },
     "cavshe1": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00676": {
       "commonness": 0
     },
     "pifshe": {
-      "commonness": 1
+      "commonness": 2
     },
     "flfshe": {
-      "commonness": 1
+      "commonness": 2
     },
     "greshe": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00606": {
       "commonness": 0
@@ -13143,16 +13143,16 @@
       "commonness": 0
     },
     "wetshe": {
-      "commonness": 0
+      "commonness": 1
     },
     "bulshe": {
-      "commonness": 1
+      "commonness": 2
     },
     "sooshe": {
-      "commonness": 1
+      "commonness": 2
     },
     "shtshe": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00020": {
       "commonness": 0
@@ -13161,7 +13161,7 @@
       "commonness": 0
     },
     "chrshe": {
-      "commonness": 0
+      "commonness": 1
     },
     "audshe3": {
       "commonness": 0
@@ -13173,7 +13173,7 @@
       "commonness": 0
     },
     "manshe": {
-      "commonness": 1
+      "commonness": 2
     },
     "levshe1": {
       "commonness": 0
@@ -13194,7 +13194,7 @@
       "commonness": 0
     },
     "towshe2": {
-      "commonness": 0
+      "commonness": 1
     },
     "towshe": {
       "commonness": 0
@@ -13209,7 +13209,7 @@
       "commonness": 0
     },
     "bkvshe": {
-      "commonness": 0
+      "commonness": 2
     },
     "flushe1": {
       "commonness": 0
@@ -13311,7 +13311,7 @@
       "commonness": 0
     },
     "wonsto2": {
-      "commonness": 0
+      "commonness": 1
     },
     "wonsto1": {
       "commonness": 0
@@ -13332,7 +13332,7 @@
       "commonness": 0
     },
     "blnsto1": {
-      "commonness": 0
+      "commonness": 1
     },
     "sabsto1": {
       "commonness": 0
@@ -13341,7 +13341,7 @@
       "commonness": 0
     },
     "jabiru": {
-      "commonness": 0
+      "commonness": 1
     },
     "Jabiru": {
       "commonness": 0
@@ -13362,7 +13362,7 @@
       "commonness": 0
     },
     "woosto": {
-      "commonness": 1
+      "commonness": 2
     },
     "milsto1": {
       "commonness": 0
@@ -13389,7 +13389,7 @@
       "commonness": 0
     },
     "lesfri": {
-      "commonness": 0
+      "commonness": 1
     },
     "lesfri1": {
       "commonness": 0
@@ -13401,13 +13401,13 @@
       "commonness": 0
     },
     "magfri": {
-      "commonness": 1
+      "commonness": 2
     },
     "chifri1": {
       "commonness": 0
     },
     "grefri": {
-      "commonness": 0
+      "commonness": 1
     },
     "frigat": {
       "commonness": 0
@@ -13419,19 +13419,19 @@
       "commonness": 1
     },
     "nazboo1": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00474": {
       "commonness": 0
     },
     "bfoboo": {
-      "commonness": 0
+      "commonness": 2
     },
     "perboo1": {
       "commonness": 0
     },
     "brnboo": {
-      "commonness": 1
+      "commonness": 2
     },
     "brnboo1": {
       "commonness": 0
@@ -13452,7 +13452,7 @@
       "commonness": 0
     },
     "refboo": {
-      "commonness": 1
+      "commonness": 2
     },
     "refboo1": {
       "commonness": 0
@@ -13473,7 +13473,7 @@
       "commonness": 0
     },
     "norgan": {
-      "commonness": 1
+      "commonness": 2
     },
     "capgan1": {
       "commonness": 0
@@ -13491,7 +13491,7 @@
       "commonness": 1
     },
     "darter3": {
-      "commonness": 0
+      "commonness": 1
     },
     "darter2": {
       "commonness": 0
@@ -13527,13 +13527,13 @@
       "commonness": 0
     },
     "bracor": {
-      "commonness": 1
+      "commonness": 2
     },
     "refcor": {
-      "commonness": 0
+      "commonness": 1
     },
     "pelcor": {
-      "commonness": 1
+      "commonness": 2
     },
     "palcor1": {
       "commonness": 0
@@ -13623,7 +13623,7 @@
       "commonness": 0
     },
     "doccor": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00694": {
       "commonness": 0
@@ -13710,10 +13710,10 @@
       "commonness": 0
     },
     "amwpel": {
-      "commonness": 1
+      "commonness": 2
     },
     "brnpel": {
-      "commonness": 1
+      "commonness": 2
     },
     "brnpel2": {
       "commonness": 0
@@ -13737,7 +13737,7 @@
       "commonness": 0
     },
     "pibpel1": {
-      "commonness": 0
+      "commonness": 1
     },
     "spbpel1": {
       "commonness": 0
@@ -13776,10 +13776,10 @@
       "commonness": 0
     },
     "amebit": {
-      "commonness": 1
+      "commonness": 2
     },
     "grebit1": {
-      "commonness": 0
+      "commonness": 1
     },
     "ausbit1": {
       "commonness": 0
@@ -13794,7 +13794,7 @@
       "commonness": 0
     },
     "yelbit": {
-      "commonness": 0
+      "commonness": 1
     },
     "litbit1": {
       "commonness": 0
@@ -13833,7 +13833,7 @@
       "commonness": 0
     },
     "leabit": {
-      "commonness": 1
+      "commonness": 2
     },
     "stbbit1": {
       "commonness": 0
@@ -13848,7 +13848,7 @@
       "commonness": 0
     },
     "btther1": {
-      "commonness": 0
+      "commonness": 1
     },
     "tigerh1": {
       "commonness": 0
@@ -13866,7 +13866,7 @@
       "commonness": 0
     },
     "grbher3": {
-      "commonness": 1
+      "commonness": 2
     },
     "grbher": {
       "commonness": 0
@@ -13929,7 +13929,7 @@
       "commonness": 0
     },
     "greegr": {
-      "commonness": 1
+      "commonness": 2
     },
     "greegr1": {
       "commonness": 0
@@ -13950,7 +13950,7 @@
       "commonness": 0
     },
     "integr": {
-      "commonness": 0
+      "commonness": 1
     },
     "integr1": {
       "commonness": 0
@@ -13971,7 +13971,7 @@
       "commonness": 0
     },
     "chiegr": {
-      "commonness": 0
+      "commonness": 1
     },
     "litegr": {
       "commonness": 1
@@ -14004,19 +14004,19 @@
       "commonness": 0
     },
     "snoegr": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00697": {
       "commonness": 0
     },
     "libher": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00615": {
       "commonness": 0
     },
     "triher": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00730": {
       "commonness": 0
@@ -14043,7 +14043,7 @@
       "commonness": 0
     },
     "categr": {
-      "commonness": 1
+      "commonness": 2
     },
     "categr1": {
       "commonness": 0
@@ -14070,7 +14070,7 @@
       "commonness": 0
     },
     "chpher1": {
-      "commonness": 0
+      "commonness": 1
     },
     "japher1": {
       "commonness": 0
@@ -14085,7 +14085,7 @@
       "commonness": 0
     },
     "grnher": {
-      "commonness": 1
+      "commonness": 2
     },
     "grnher1": {
       "commonness": 0
@@ -14145,7 +14145,7 @@
       "commonness": 0
     },
     "bcnher": {
-      "commonness": 1
+      "commonness": 2
     },
     "bkcnih1": {
       "commonness": 0
@@ -14169,7 +14169,7 @@
       "commonness": 0
     },
     "ycnher": {
-      "commonness": 1
+      "commonness": 2
     },
     "yecnih1": {
       "commonness": 0
@@ -14226,10 +14226,10 @@
       "commonness": 0
     },
     "whiibi": {
-      "commonness": 1
+      "commonness": 2
     },
     "scaibi": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00428": {
       "commonness": 0
@@ -14241,7 +14241,7 @@
       "commonness": 1
     },
     "whfibi": {
-      "commonness": 1
+      "commonness": 2
     },
     "gxwibi1": {
       "commonness": 0
@@ -14301,7 +14301,7 @@
       "commonness": 0
     },
     "sacibi2": {
-      "commonness": 0
+      "commonness": 2
     },
     "sacibi3": {
       "commonness": 0
@@ -14373,7 +14373,7 @@
       "commonness": 0
     },
     "eurspo1": {
-      "commonness": 0
+      "commonness": 1
     },
     "royspo1": {
       "commonness": 0
@@ -14403,13 +14403,13 @@
       "commonness": 0
     },
     "calcon": {
-      "commonness": 0
+      "commonness": 1
     },
     "Gymnogyps": {
       "commonness": 0
     },
     "andcon1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Vultur": {
       "commonness": 0
@@ -14421,13 +14421,13 @@
       "commonness": 0
     },
     "blkvul": {
-      "commonness": 1
+      "commonness": 2
     },
     "Coragyps": {
       "commonness": 0
     },
     "turvul": {
-      "commonness": 1
+      "commonness": 2
     },
     "turvul2": {
       "commonness": 0
@@ -14463,7 +14463,7 @@
       "commonness": 0
     },
     "osprey": {
-      "commonness": 1
+      "commonness": 2
     },
     "osprey3": {
       "commonness": 0
@@ -14502,7 +14502,7 @@
       "commonness": 0
     },
     "whtkit": {
-      "commonness": 1
+      "commonness": 2
     },
     "lewkit1": {
       "commonness": 0
@@ -14556,7 +14556,7 @@
       "commonness": 0
     },
     "hobkit": {
-      "commonness": 0
+      "commonness": 1
     },
     "hobkit1": {
       "commonness": 0
@@ -14979,7 +14979,7 @@
       "commonness": 0
     },
     "goleag": {
-      "commonness": 1
+      "commonness": 2
     },
     "weteag1": {
       "commonness": 0
@@ -15045,7 +15045,7 @@
       "commonness": 0
     },
     "snakit": {
-      "commonness": 0
+      "commonness": 1
     },
     "Rostrhamus": {
       "commonness": 0
@@ -15057,7 +15057,7 @@
       "commonness": 0
     },
     "dotkit1": {
-      "commonness": 0
+      "commonness": 1
     },
     "rutkit1": {
       "commonness": 0
@@ -15066,7 +15066,7 @@
       "commonness": 0
     },
     "miskit": {
-      "commonness": 1
+      "commonness": 2
     },
     "plukit1": {
       "commonness": 0
@@ -15093,7 +15093,7 @@
       "commonness": 0
     },
     "wemhar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "afmhar1": {
       "commonness": 0
@@ -15135,7 +15135,7 @@
       "commonness": 0
     },
     "norhar2": {
-      "commonness": 1
+      "commonness": 2
     },
     "norhar": {
       "commonness": 0
@@ -15213,7 +15213,7 @@
       "commonness": 0
     },
     "grfhaw1": {
-      "commonness": 0
+      "commonness": 1
     },
     "fragos2": {
       "commonness": 0
@@ -15309,7 +15309,7 @@
       "commonness": 0
     },
     "eurspa1": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00842": {
       "commonness": 0
@@ -15324,7 +15324,7 @@
       "commonness": 0
     },
     "shshaw": {
-      "commonness": 1
+      "commonness": 2
     },
     "shshaw1": {
       "commonness": 0
@@ -15345,7 +15345,7 @@
       "commonness": 0
     },
     "coohaw": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00612": {
       "commonness": 0
@@ -15375,7 +15375,7 @@
       "commonness": 0
     },
     "norgos": {
-      "commonness": 1
+      "commonness": 2
     },
     "norgos1": {
       "commonness": 0
@@ -15429,7 +15429,7 @@
       "commonness": 0
     },
     "blakit1": {
-      "commonness": 0
+      "commonness": 1
     },
     "blkkit1": {
       "commonness": 0
@@ -15459,7 +15459,7 @@
       "commonness": 0
     },
     "baleag": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00944": {
       "commonness": 0
@@ -15468,7 +15468,7 @@
       "commonness": 0
     },
     "whteag": {
-      "commonness": 0
+      "commonness": 1
     },
     "pafeag1": {
       "commonness": 0
@@ -15504,7 +15504,7 @@
       "commonness": 0
     },
     "crahaw": {
-      "commonness": 0
+      "commonness": 1
     },
     "crahaw1": {
       "commonness": 0
@@ -15528,7 +15528,7 @@
       "commonness": 0
     },
     "comblh1": {
-      "commonness": 0
+      "commonness": 2
     },
     "cobhaw": {
       "commonness": 0
@@ -15543,13 +15543,13 @@
       "commonness": 0
     },
     "savhaw1": {
-      "commonness": 0
+      "commonness": 1
     },
     "whnhaw2": {
       "commonness": 0
     },
     "grbhaw1": {
-      "commonness": 0
+      "commonness": 1
     },
     "grbhaw2": {
       "commonness": 0
@@ -15576,7 +15576,7 @@
       "commonness": 0
     },
     "roahaw": {
-      "commonness": 0
+      "commonness": 1
     },
     "roahaw2": {
       "commonness": 0
@@ -15606,10 +15606,10 @@
       "commonness": 0
     },
     "whthaw": {
-      "commonness": 0
+      "commonness": 1
     },
     "rebhaw2": {
-      "commonness": 0
+      "commonness": 1
     },
     "punhaw1": {
       "commonness": 0
@@ -15672,7 +15672,7 @@
       "commonness": 0
     },
     "gryhaw2": {
-      "commonness": 0
+      "commonness": 1
     },
     "gryhaw3": {
       "commonness": 0
@@ -15681,7 +15681,7 @@
       "commonness": 0
     },
     "reshaw": {
-      "commonness": 1
+      "commonness": 2
     },
     "reshaw5": {
       "commonness": 0
@@ -15702,7 +15702,7 @@
       "commonness": 0
     },
     "brwhaw": {
-      "commonness": 1
+      "commonness": 2
     },
     "brwhaw1": {
       "commonness": 0
@@ -15717,28 +15717,28 @@
       "commonness": 0
     },
     "hawhaw": {
-      "commonness": 0
+      "commonness": 1
     },
     "shthaw": {
-      "commonness": 0
+      "commonness": 1
     },
     "whthaw1": {
       "commonness": 0
     },
     "swahaw": {
-      "commonness": 1
+      "commonness": 2
     },
     "galhaw1": {
       "commonness": 0
     },
     "zothaw": {
-      "commonness": 1
+      "commonness": 2
     },
     "ruthaw1": {
       "commonness": 0
     },
     "rethaw": {
-      "commonness": 1
+      "commonness": 2
     },
     "wrthaw1": {
       "commonness": 0
@@ -15786,7 +15786,7 @@
       "commonness": 0
     },
     "rolhaw": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00788": {
       "commonness": 0
@@ -15795,7 +15795,7 @@
       "commonness": 0
     },
     "ferhaw": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00930": {
       "commonness": 0
@@ -15852,7 +15852,7 @@
       "commonness": 0
     },
     "lolbuz1": {
-      "commonness": 0
+      "commonness": 1
     },
     "lolbuz2": {
       "commonness": 0
@@ -15960,7 +15960,7 @@
       "commonness": 0
     },
     "brnowl": {
-      "commonness": 1
+      "commonness": 2
     },
     "barowl2": {
       "commonness": 0
@@ -16212,7 +16212,7 @@
       "commonness": 0
     },
     "orsowl": {
-      "commonness": 0
+      "commonness": 1
     },
     "orisco1": {
       "commonness": 0
@@ -16266,7 +16266,7 @@
       "commonness": 0
     },
     "whsowl1": {
-      "commonness": 0
+      "commonness": 1
     },
     "whtsco1": {
       "commonness": 0
@@ -16341,7 +16341,7 @@
       "commonness": 0
     },
     "wesowl1": {
-      "commonness": 1
+      "commonness": 2
     },
     "wessco1": {
       "commonness": 0
@@ -16431,10 +16431,10 @@
       "commonness": 0
     },
     "snoowl1": {
-      "commonness": 1
+      "commonness": 2
     },
     "grhowl": {
-      "commonness": 1
+      "commonness": 2
     },
     "grhowl2": {
       "commonness": 0
@@ -16473,7 +16473,7 @@
       "commonness": 0
     },
     "eueowl1": {
-      "commonness": 0
+      "commonness": 1
     },
     "bubo1": {
       "commonness": 0
@@ -16569,7 +16569,7 @@
       "commonness": 0
     },
     "nopowl": {
-      "commonness": 1
+      "commonness": 2
     },
     "moupyo1": {
       "commonness": 0
@@ -16620,7 +16620,7 @@
       "commonness": 0
     },
     "fepowl": {
-      "commonness": 0
+      "commonness": 1
     },
     "ferpyo1": {
       "commonness": 0
@@ -16701,7 +16701,7 @@
       "commonness": 0
     },
     "elfowl": {
-      "commonness": 0
+      "commonness": 1
     },
     "Micrathene": {
       "commonness": 0
@@ -16749,7 +16749,7 @@
       "commonness": 0
     },
     "burowl": {
-      "commonness": 1
+      "commonness": 2
     },
     "burowl2": {
       "commonness": 0
@@ -16776,7 +16776,7 @@
       "commonness": 0
     },
     "motowl": {
-      "commonness": 0
+      "commonness": 1
     },
     "motowl1": {
       "commonness": 0
@@ -16836,7 +16836,7 @@
       "commonness": 0
     },
     "spoowl": {
-      "commonness": 1
+      "commonness": 2
     },
     "spoowl2": {
       "commonness": 0
@@ -16848,7 +16848,7 @@
       "commonness": 0
     },
     "brdowl": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00439": {
       "commonness": 0
@@ -16899,7 +16899,7 @@
       "commonness": 0
     },
     "loeowl": {
-      "commonness": 1
+      "commonness": 2
     },
     "loeowl1": {
       "commonness": 0
@@ -16917,10 +16917,10 @@
       "commonness": 0
     },
     "styowl1": {
-      "commonness": 0
+      "commonness": 1
     },
     "sheowl": {
-      "commonness": 1
+      "commonness": 2
     },
     "sheowl2": {
       "commonness": 0
@@ -16962,7 +16962,7 @@
       "commonness": 0
     },
     "nswowl": {
-      "commonness": 1
+      "commonness": 2
     },
     "nswowl1": {
       "commonness": 0
@@ -17046,7 +17046,7 @@
       "commonness": 0
     },
     "norboo1": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00785": {
       "commonness": 0
@@ -17175,7 +17175,7 @@
       "commonness": 0
     },
     "earque": {
-      "commonness": 0
+      "commonness": 1
     },
     "Euptilotis": {
       "commonness": 0
@@ -17298,7 +17298,7 @@
       "commonness": 0
     },
     "eletro": {
-      "commonness": 0
+      "commonness": 1
     },
     "eletro1": {
       "commonness": 0
@@ -17391,7 +17391,7 @@
       "commonness": 0
     },
     "hoopoe": {
-      "commonness": 0
+      "commonness": 1
     },
     "eurhoo1": {
       "commonness": 0
@@ -17547,7 +17547,7 @@
       "commonness": 0
     },
     "rebhor1": {
-      "commonness": 0
+      "commonness": 1
     },
     "tockus1": {
       "commonness": 0
@@ -17679,7 +17679,7 @@
       "commonness": 0
     },
     "orphor1": {
-      "commonness": 0
+      "commonness": 1
     },
     "y01097": {
       "commonness": 0
@@ -18069,7 +18069,7 @@
       "commonness": 0
     },
     "laukoo1": {
-      "commonness": 0
+      "commonness": 1
     },
     "blwkoo1": {
       "commonness": 0
@@ -18417,7 +18417,7 @@
       "commonness": 0
     },
     "rinkin1": {
-      "commonness": 0
+      "commonness": 1
     },
     "rinkin3": {
       "commonness": 0
@@ -18426,7 +18426,7 @@
       "commonness": 0
     },
     "belkin1": {
-      "commonness": 1
+      "commonness": 2
     },
     "Megaceryle": {
       "commonness": 0
@@ -18438,13 +18438,13 @@
       "commonness": 0
     },
     "amakin1": {
-      "commonness": 0
+      "commonness": 1
     },
     "ampkin1": {
       "commonness": 0
     },
     "grnkin": {
-      "commonness": 0
+      "commonness": 1
     },
     "garkin1": {
       "commonness": 0
@@ -18555,7 +18555,7 @@
       "commonness": 0
     },
     "ncbeat1": {
-      "commonness": 1
+      "commonness": 0
     },
     "scbeat1": {
       "commonness": 0
@@ -18573,7 +18573,7 @@
       "commonness": 0
     },
     "librol2": {
-      "commonness": 0
+      "commonness": 1
     },
     "librol1": {
       "commonness": 0
@@ -18606,7 +18606,7 @@
       "commonness": 0
     },
     "blbrol1": {
-      "commonness": 0
+      "commonness": 1
     },
     "roller1": {
       "commonness": 0
@@ -19593,7 +19593,7 @@
       "commonness": 0
     },
     "kebtou1": {
-      "commonness": 0
+      "commonness": 1
     },
     "chotou1": {
       "commonness": 0
@@ -19704,7 +19704,7 @@
       "commonness": 0
     },
     "eurwry": {
-      "commonness": 0
+      "commonness": 1
     },
     "runwry1": {
       "commonness": 0
@@ -19884,13 +19884,13 @@
       "commonness": 0
     },
     "wilsap": {
-      "commonness": 1
+      "commonness": 2
     },
     "yebsap": {
-      "commonness": 1
+      "commonness": 2
     },
     "rensap": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00634": {
       "commonness": 0
@@ -19899,7 +19899,7 @@
       "commonness": 0
     },
     "rebsap": {
-      "commonness": 1
+      "commonness": 2
     },
     "rebsap1": {
       "commonness": 0
@@ -19929,7 +19929,7 @@
       "commonness": 0
     },
     "lewwoo": {
-      "commonness": 1
+      "commonness": 2
     },
     "guawoo1": {
       "commonness": 0
@@ -19938,10 +19938,10 @@
       "commonness": 0
     },
     "rehwoo": {
-      "commonness": 1
+      "commonness": 2
     },
     "acowoo": {
-      "commonness": 1
+      "commonness": 2
     },
     "acowoo1": {
       "commonness": 0
@@ -19986,7 +19986,7 @@
       "commonness": 0
     },
     "gilwoo": {
-      "commonness": 0
+      "commonness": 1
     },
     "hofwoo1": {
       "commonness": 0
@@ -19995,7 +19995,7 @@
       "commonness": 0
     },
     "gofwoo": {
-      "commonness": 0
+      "commonness": 1
     },
     "gofwoo1": {
       "commonness": 0
@@ -20202,7 +20202,7 @@
       "commonness": 0
     },
     "grswoo": {
-      "commonness": 0
+      "commonness": 1
     },
     "grswoo3": {
       "commonness": 0
@@ -20262,7 +20262,7 @@
       "commonness": 0
     },
     "dowwoo": {
-      "commonness": 1
+      "commonness": 2
     },
     "dowwoo1": {
       "commonness": 0
@@ -20274,13 +20274,13 @@
       "commonness": 0
     },
     "nutwoo": {
-      "commonness": 0
+      "commonness": 2
     },
     "x00662": {
       "commonness": 0
     },
     "labwoo": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00801": {
       "commonness": 0
@@ -20295,10 +20295,10 @@
       "commonness": 0
     },
     "recwoo": {
-      "commonness": 0
+      "commonness": 1
     },
     "haiwoo": {
-      "commonness": 1
+      "commonness": 2
     },
     "haiwoo2": {
       "commonness": 0
@@ -20328,7 +20328,7 @@
       "commonness": 0
     },
     "whhwoo": {
-      "commonness": 1
+      "commonness": 2
     },
     "smbwoo1": {
       "commonness": 0
@@ -20337,7 +20337,7 @@
       "commonness": 0
     },
     "ariwoo": {
-      "commonness": 0
+      "commonness": 1
     },
     "rerwoo1": {
       "commonness": 0
@@ -20472,7 +20472,7 @@
       "commonness": 0
     },
     "ivbwoo": {
-      "commonness": 0
+      "commonness": 1
     },
     "ivbwoo3": {
       "commonness": 0
@@ -20760,7 +20760,7 @@
       "commonness": 0
     },
     "pilwoo": {
-      "commonness": 1
+      "commonness": 2
     },
     "blbwoo3": {
       "commonness": 0
@@ -20916,7 +20916,7 @@
       "commonness": 0
     },
     "norfli": {
-      "commonness": 1
+      "commonness": 2
     },
     "norfli2": {
       "commonness": 0
@@ -20937,7 +20937,7 @@
       "commonness": 0
     },
     "gilfli": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00924": {
       "commonness": 0
@@ -21012,7 +21012,7 @@
       "commonness": 0
     },
     "coffal1": {
-      "commonness": 0
+      "commonness": 1
     },
     "sbffal1": {
       "commonness": 0
@@ -21048,7 +21048,7 @@
       "commonness": 0
     },
     "y00678": {
-      "commonness": 1
+      "commonness": 2
     },
     "crecar1": {
       "commonness": 0
@@ -21066,7 +21066,7 @@
       "commonness": 0
     },
     "yehcar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "blacar1": {
       "commonness": 0
@@ -21123,7 +21123,7 @@
       "commonness": 0
     },
     "eurkes": {
-      "commonness": 1
+      "commonness": 2
     },
     "eurkes2": {
       "commonness": 0
@@ -21168,7 +21168,7 @@
       "commonness": 0
     },
     "amekes": {
-      "commonness": 1
+      "commonness": 2
     },
     "amekes1": {
       "commonness": 0
@@ -21213,7 +21213,7 @@
       "commonness": 0
     },
     "reffal1": {
-      "commonness": 0
+      "commonness": 1
     },
     "amufal1": {
       "commonness": 0
@@ -21228,7 +21228,7 @@
       "commonness": 0
     },
     "merlin": {
-      "commonness": 1
+      "commonness": 2
     },
     "merlin1": {
       "commonness": 0
@@ -21246,7 +21246,7 @@
       "commonness": 0
     },
     "eurhob": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00402": {
       "commonness": 0
@@ -21273,28 +21273,28 @@
       "commonness": 0
     },
     "aplfal": {
-      "commonness": 0
+      "commonness": 1
     },
     "batfal1": {
-      "commonness": 0
+      "commonness": 1
     },
     "orbfal1": {
       "commonness": 0
     },
     "lanfal1": {
-      "commonness": 0
+      "commonness": 1
     },
     "lagfal1": {
       "commonness": 0
     },
     "sakfal1": {
-      "commonness": 0
+      "commonness": 1
     },
     "gyrfal": {
       "commonness": 1
     },
     "perfal": {
-      "commonness": 1
+      "commonness": 2
     },
     "perfal1": {
       "commonness": 0
@@ -21339,7 +21339,7 @@
       "commonness": 0
     },
     "prafal": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00698": {
       "commonness": 0
@@ -21432,7 +21432,7 @@
       "commonness": 0
     },
     "galah": {
-      "commonness": 0
+      "commonness": 1
     },
     "lobcor1": {
       "commonness": 0
@@ -21441,7 +21441,7 @@
       "commonness": 0
     },
     "litcor2": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00953": {
       "commonness": 0
@@ -21453,7 +21453,7 @@
       "commonness": 0
     },
     "tancoc1": {
-      "commonness": 0
+      "commonness": 1
     },
     "corell1": {
       "commonness": 0
@@ -21462,7 +21462,7 @@
       "commonness": 0
     },
     "yeccoc1": {
-      "commonness": 0
+      "commonness": 1
     },
     "yeccoc6": {
       "commonness": 0
@@ -21477,7 +21477,7 @@
       "commonness": 0
     },
     "succoc": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00920": {
       "commonness": 0
@@ -21486,10 +21486,10 @@
       "commonness": 0
     },
     "saccoc": {
-      "commonness": 0
+      "commonness": 1
     },
     "whicoc1": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00404": {
       "commonness": 0
@@ -21633,7 +21633,7 @@
       "commonness": 0
     },
     "eclpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "eclpar1": {
       "commonness": 0
@@ -21690,19 +21690,19 @@
       "commonness": 0
     },
     "alepar2": {
-      "commonness": 0
+      "commonness": 1
     },
     "seypar2": {
       "commonness": 0
     },
     "rorpar": {
-      "commonness": 1
+      "commonness": 2
     },
     "y01061": {
       "commonness": 0
     },
     "maupar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "slhpar1": {
       "commonness": 0
@@ -21711,7 +21711,7 @@
       "commonness": 0
     },
     "plhpar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "x01023": {
       "commonness": 0
@@ -21723,7 +21723,7 @@
       "commonness": 0
     },
     "malpar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "laypar1": {
       "commonness": 0
@@ -21732,7 +21732,7 @@
       "commonness": 0
     },
     "rebpar4": {
-      "commonness": 0
+      "commonness": 1
     },
     "nicpar1": {
       "commonness": 0
@@ -21939,7 +21939,7 @@
       "commonness": 0
     },
     "criros2": {
-      "commonness": 0
+      "commonness": 1
     },
     "criros1": {
       "commonness": 0
@@ -21957,7 +21957,7 @@
       "commonness": 0
     },
     "easros1": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00807": {
       "commonness": 0
@@ -22074,7 +22074,7 @@
       "commonness": 0
     },
     "budger": {
-      "commonness": 1
+      "commonness": 2
     },
     "budger1": {
       "commonness": 0
@@ -22194,7 +22194,7 @@
       "commonness": 0
     },
     "chalor1": {
-      "commonness": 0
+      "commonness": 1
     },
     "punlor1": {
       "commonness": 0
@@ -22224,7 +22224,7 @@
       "commonness": 0
     },
     "duslor1": {
-      "commonness": 0
+      "commonness": 1
     },
     "carlor1": {
       "commonness": 0
@@ -22278,7 +22278,7 @@
       "commonness": 0
     },
     "redlor1": {
-      "commonness": 0
+      "commonness": 1
     },
     "blwlor1": {
       "commonness": 0
@@ -22308,7 +22308,7 @@
       "commonness": 0
     },
     "railor5": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00809": {
       "commonness": 0
@@ -22419,7 +22419,7 @@
       "commonness": 1
     },
     "yeclov": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00671": {
       "commonness": 0
@@ -22428,10 +22428,10 @@
       "commonness": 0
     },
     "lillov1": {
-      "commonness": 0
+      "commonness": 1
     },
     "blclov1": {
-      "commonness": 0
+      "commonness": 1
     },
     "lovebi1": {
       "commonness": 0
@@ -22440,7 +22440,7 @@
       "commonness": 0
     },
     "grepar": {
-      "commonness": 0
+      "commonness": 1
     },
     "grypar1": {
       "commonness": 0
@@ -22473,7 +22473,7 @@
       "commonness": 0
     },
     "meypar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "ruepar1": {
       "commonness": 0
@@ -22485,13 +22485,13 @@
       "commonness": 0
     },
     "rebpar1": {
-      "commonness": 1
+      "commonness": 0
     },
     "senpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "yefpar4": {
-      "commonness": 0
+      "commonness": 1
     },
     "poicep1": {
       "commonness": 0
@@ -22533,7 +22533,7 @@
       "commonness": 0
     },
     "barpar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "rufpar1": {
       "commonness": 0
@@ -22575,10 +22575,10 @@
       "commonness": 0
     },
     "whwpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "yecpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "wwxpar1": {
       "commonness": 0
@@ -22659,7 +22659,7 @@
       "commonness": 0
     },
     "schpar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "spfpar1": {
       "commonness": 0
@@ -22671,7 +22671,7 @@
       "commonness": 0
     },
     "blhpar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "buhpar1": {
       "commonness": 0
@@ -22680,7 +22680,7 @@
       "commonness": 0
     },
     "whcpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "brwpar1": {
       "commonness": 0
@@ -22716,19 +22716,19 @@
       "commonness": 0
     },
     "respar2": {
-      "commonness": 0
+      "commonness": 1
     },
     "recpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "licpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00958": {
       "commonness": 0
     },
     "relpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "relpar10": {
       "commonness": 0
@@ -22758,10 +22758,10 @@
       "commonness": 0
     },
     "yenpar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "yehpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "yehpar2": {
       "commonness": 0
@@ -22776,22 +22776,22 @@
       "commonness": 0
     },
     "ywcpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "yespar1": {
       "commonness": 0
     },
     "bufpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "blbpar1": {
       "commonness": 0
     },
     "whfpar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "yelpar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "yebpar1": {
       "commonness": 0
@@ -22812,13 +22812,13 @@
       "commonness": 0
     },
     "hispar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "purpar1": {
       "commonness": 0
     },
     "meapar": {
-      "commonness": 0
+      "commonness": 1
     },
     "meapar1": {
       "commonness": 0
@@ -22842,7 +22842,7 @@
       "commonness": 0
     },
     "orwpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "scnpar1": {
       "commonness": 0
@@ -22878,22 +22878,22 @@
       "commonness": 0
     },
     "grrpar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "spepar1": {
       "commonness": 0
     },
     "pacpar2": {
-      "commonness": 0
+      "commonness": 1
     },
     "yefpar2": {
-      "commonness": 0
+      "commonness": 1
     },
     "forpus1": {
       "commonness": 0
     },
     "blhpar4": {
-      "commonness": 0
+      "commonness": 1
     },
     "whbpar1": {
       "commonness": 0
@@ -22923,7 +22923,7 @@
       "commonness": 0
     },
     "mabpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "mabpar2": {
       "commonness": 0
@@ -23028,7 +23028,7 @@
       "commonness": 0
     },
     "blcpar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "whnpar1": {
       "commonness": 0
@@ -23061,7 +23061,7 @@
       "commonness": 0
     },
     "burpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "burpar1": {
       "commonness": 0
@@ -23076,19 +23076,19 @@
       "commonness": 0
     },
     "hyamac1": {
-      "commonness": 0
+      "commonness": 1
     },
     "glamac1": {
       "commonness": 0
     },
     "indmac1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Anodorhynchus": {
       "commonness": 0
     },
     "thbpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "mafpar1": {
       "commonness": 0
@@ -23097,7 +23097,7 @@
       "commonness": 0
     },
     "oltpar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "oltpar2": {
       "commonness": 0
@@ -23106,10 +23106,10 @@
       "commonness": 0
     },
     "orfpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "pefpar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "brtpar1": {
       "commonness": 0
@@ -23124,25 +23124,25 @@
       "commonness": 0
     },
     "carpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "Conuropsis": {
       "commonness": 0
     },
     "duhpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "bkhpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "sunpar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "subpar1": {
       "commonness": 0
     },
     "janpar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "gocpar2": {
       "commonness": 0
@@ -23172,13 +23172,13 @@
       "commonness": 0
     },
     "baymac": {
-      "commonness": 0
+      "commonness": 1
     },
     "bltmac1": {
       "commonness": 0
     },
     "chfmac1": {
-      "commonness": 0
+      "commonness": 1
     },
     "cubmac1": {
       "commonness": 0
@@ -23187,13 +23187,13 @@
       "commonness": 0
     },
     "milmac": {
-      "commonness": 0
+      "commonness": 2
     },
     "grgmac": {
-      "commonness": 0
+      "commonness": 1
     },
     "scamac1": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00888": {
       "commonness": 0
@@ -23202,7 +23202,7 @@
       "commonness": 0
     },
     "ragmac1": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00406": {
       "commonness": 0
@@ -23226,13 +23226,13 @@
       "commonness": 0
     },
     "golpar3": {
-      "commonness": 0
+      "commonness": 1
     },
     "Guaruba": {
       "commonness": 0
     },
     "bucpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "bucpar1": {
       "commonness": 0
@@ -23244,7 +23244,7 @@
       "commonness": 0
     },
     "resmac2": {
-      "commonness": 0
+      "commonness": 1
     },
     "resmac1": {
       "commonness": 0
@@ -23262,7 +23262,7 @@
       "commonness": 0
     },
     "grnpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "grnpar1": {
       "commonness": 0
@@ -23283,13 +23283,13 @@
       "commonness": 0
     },
     "crfpar": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00959": {
       "commonness": 0
     },
     "scfpar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "scfpar2": {
       "commonness": 0
@@ -23310,19 +23310,19 @@
       "commonness": 0
     },
     "rempar": {
-      "commonness": 2
+      "commonness": 3
     },
     "y00794": {
       "commonness": 0
     },
     "whepar2": {
-      "commonness": 0
+      "commonness": 1
     },
     "cubpar2": {
       "commonness": 0
     },
     "hispar": {
-      "commonness": 0
+      "commonness": 1
     },
     "purpar2": {
       "commonness": 0
@@ -23805,7 +23805,7 @@
       "commonness": 0
     },
     "barant1": {
-      "commonness": 0
+      "commonness": 1
     },
     "barant4": {
       "commonness": 0
@@ -27750,7 +27750,7 @@
       "commonness": 0
     },
     "mastit1": {
-      "commonness": 0
+      "commonness": 1
     },
     "whttit2": {
       "commonness": 0
@@ -27873,7 +27873,7 @@
       "commonness": 0
     },
     "grcbec1": {
-      "commonness": 0
+      "commonness": 1
     },
     "gycbec2": {
       "commonness": 0
@@ -27888,7 +27888,7 @@
       "commonness": 0
     },
     "rotbec": {
-      "commonness": 0
+      "commonness": 1
     },
     "jambec1": {
       "commonness": 0
@@ -28581,7 +28581,7 @@
       "commonness": 0
     },
     "nobtyr": {
-      "commonness": 0
+      "commonness": 1
     },
     "sobtyr1": {
       "commonness": 0
@@ -28755,7 +28755,7 @@
       "commonness": 0
     },
     "greela": {
-      "commonness": 0
+      "commonness": 1
     },
     "greela2": {
       "commonness": 0
@@ -28812,7 +28812,7 @@
       "commonness": 0
     },
     "whcela1": {
-      "commonness": 0
+      "commonness": 1
     },
     "whcela2": {
       "commonness": 0
@@ -29127,7 +29127,7 @@
       "commonness": 0
     },
     "tuffly": {
-      "commonness": 0
+      "commonness": 1
     },
     "tuffly1": {
       "commonness": 0
@@ -29145,13 +29145,13 @@
       "commonness": 0
     },
     "olsfly": {
-      "commonness": 1
+      "commonness": 2
     },
     "ochpew1": {
       "commonness": 0
     },
     "grepew": {
-      "commonness": 0
+      "commonness": 1
     },
     "grepew1": {
       "commonness": 0
@@ -29181,7 +29181,7 @@
       "commonness": 0
     },
     "wewpew": {
-      "commonness": 1
+      "commonness": 2
     },
     "tropew4": {
       "commonness": 0
@@ -29190,7 +29190,7 @@
       "commonness": 0
     },
     "eawpew": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00858": {
       "commonness": 0
@@ -29199,7 +29199,7 @@
       "commonness": 0
     },
     "cubpew1": {
-      "commonness": 0
+      "commonness": 1
     },
     "hispew1": {
       "commonness": 0
@@ -29232,7 +29232,7 @@
       "commonness": 0
     },
     "yebfly": {
-      "commonness": 1
+      "commonness": 2
     },
     "acafly": {
       "commonness": 1
@@ -29241,7 +29241,7 @@
       "commonness": 1
     },
     "wilfly": {
-      "commonness": 1
+      "commonness": 2
     },
     "wilfly1": {
       "commonness": 0
@@ -29259,16 +29259,16 @@
       "commonness": 0
     },
     "leafly": {
-      "commonness": 1
+      "commonness": 2
     },
     "hamfly": {
-      "commonness": 1
+      "commonness": 2
     },
     "gryfly": {
-      "commonness": 1
+      "commonness": 2
     },
     "dusfly": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00014": {
       "commonness": 0
@@ -29277,10 +29277,10 @@
       "commonness": 0
     },
     "pinfly1": {
-      "commonness": 0
+      "commonness": 1
     },
     "pasfly": {
-      "commonness": 1
+      "commonness": 2
     },
     "corfly": {
       "commonness": 1
@@ -29295,7 +29295,7 @@
       "commonness": 0
     },
     "bubfly": {
-      "commonness": 0
+      "commonness": 1
     },
     "blcfly1": {
       "commonness": 0
@@ -29304,7 +29304,7 @@
       "commonness": 0
     },
     "blkpho": {
-      "commonness": 1
+      "commonness": 2
     },
     "blkpho1": {
       "commonness": 0
@@ -29313,13 +29313,13 @@
       "commonness": 0
     },
     "easpho": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00621": {
       "commonness": 0
     },
     "saypho": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00635": {
       "commonness": 0
@@ -29352,7 +29352,7 @@
       "commonness": 0
     },
     "verfly": {
-      "commonness": 1
+      "commonness": 2
     },
     "verfly5": {
       "commonness": 0
@@ -29820,7 +29820,7 @@
       "commonness": 0
     },
     "ducfly": {
-      "commonness": 0
+      "commonness": 2
     },
     "ducfly3": {
       "commonness": 0
@@ -29871,10 +29871,10 @@
       "commonness": 0
     },
     "astfly": {
-      "commonness": 1
+      "commonness": 2
     },
     "nutfly": {
-      "commonness": 0
+      "commonness": 1
     },
     "nutfly1": {
       "commonness": 0
@@ -29886,10 +29886,10 @@
       "commonness": 0
     },
     "grcfly": {
-      "commonness": 1
+      "commonness": 2
     },
     "bncfly": {
-      "commonness": 0
+      "commonness": 1
     },
     "bncfly1": {
       "commonness": 0
@@ -29913,7 +29913,7 @@
       "commonness": 0
     },
     "lasfly": {
-      "commonness": 0
+      "commonness": 1
     },
     "stofly1": {
       "commonness": 0
@@ -29964,7 +29964,7 @@
       "commonness": 0
     },
     "socfly1": {
-      "commonness": 0
+      "commonness": 1
     },
     "socfly3": {
       "commonness": 0
@@ -30033,7 +30033,7 @@
       "commonness": 0
     },
     "subfly": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00607": {
       "commonness": 0
@@ -30042,7 +30042,7 @@
       "commonness": 0
     },
     "pirfly1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Legatus": {
       "commonness": 0
@@ -30051,7 +30051,7 @@
       "commonness": 1
     },
     "croslf1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Empidonomus": {
       "commonness": 0
@@ -30069,25 +30069,25 @@
       "commonness": 0
     },
     "trokin": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00740": {
       "commonness": 0
     },
     "coukin": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00325": {
       "commonness": 0
     },
     "caskin": {
-      "commonness": 1
+      "commonness": 2
     },
     "thbkin": {
       "commonness": 1
     },
     "weskin": {
-      "commonness": 1
+      "commonness": 2
     },
     "x01035": {
       "commonness": 0
@@ -30099,7 +30099,7 @@
       "commonness": 0
     },
     "easkin": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00718": {
       "commonness": 0
@@ -30111,7 +30111,7 @@
       "commonness": 0
     },
     "logkin": {
-      "commonness": 0
+      "commonness": 1
     },
     "logkin3": {
       "commonness": 0
@@ -30126,7 +30126,7 @@
       "commonness": 0
     },
     "sctfly": {
-      "commonness": 1
+      "commonness": 2
     },
     "x01036": {
       "commonness": 0
@@ -32457,7 +32457,7 @@
       "commonness": 0
     },
     "whevir": {
-      "commonness": 1
+      "commonness": 2
     },
     "whevir1": {
       "commonness": 0
@@ -32466,7 +32466,7 @@
       "commonness": 0
     },
     "thbvir": {
-      "commonness": 0
+      "commonness": 1
     },
     "manvir1": {
       "commonness": 0
@@ -32493,7 +32493,7 @@
       "commonness": 0
     },
     "cubvir1": {
-      "commonness": 0
+      "commonness": 1
     },
     "purvir1": {
       "commonness": 0
@@ -32502,7 +32502,7 @@
       "commonness": 0
     },
     "belvir": {
-      "commonness": 1
+      "commonness": 2
     },
     "belvir1": {
       "commonness": 0
@@ -32514,10 +32514,10 @@
       "commonness": 0
     },
     "gryvir": {
-      "commonness": 0
+      "commonness": 1
     },
     "hutvir": {
-      "commonness": 1
+      "commonness": 2
     },
     "hutvir1": {
       "commonness": 0
@@ -32526,7 +32526,7 @@
       "commonness": 0
     },
     "yetvir": {
-      "commonness": 1
+      "commonness": 2
     },
     "yewvir1": {
       "commonness": 0
@@ -32535,7 +32535,7 @@
       "commonness": 0
     },
     "casvir": {
-      "commonness": 1
+      "commonness": 2
     },
     "casvir1": {
       "commonness": 0
@@ -32544,7 +32544,7 @@
       "commonness": 0
     },
     "buhvir": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00411": {
       "commonness": 0
@@ -32553,7 +32553,7 @@
       "commonness": 0
     },
     "plsvir": {
-      "commonness": 1
+      "commonness": 2
     },
     "pluvir1": {
       "commonness": 0
@@ -32574,10 +32574,10 @@
       "commonness": 0
     },
     "phivir": {
-      "commonness": 1
+      "commonness": 2
     },
     "warvir": {
-      "commonness": 1
+      "commonness": 2
     },
     "eawvir1": {
       "commonness": 0
@@ -32592,7 +32592,7 @@
       "commonness": 0
     },
     "reevir1": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00741": {
       "commonness": 0
@@ -32619,19 +32619,19 @@
       "commonness": 0
     },
     "yegvir": {
-      "commonness": 1
+      "commonness": 2
     },
     "y01145": {
       "commonness": 0
     },
     "bkwvir": {
-      "commonness": 0
+      "commonness": 1
     },
     "y01146": {
       "commonness": 0
     },
     "yucvir": {
-      "commonness": 0
+      "commonness": 1
     },
     "vireo2": {
       "commonness": 0
@@ -34800,7 +34800,7 @@
       "commonness": 0
     },
     "elepai": {
-      "commonness": 0
+      "commonness": 1
     },
     "elepai1": {
       "commonness": 0
@@ -34812,10 +34812,10 @@
       "commonness": 0
     },
     "elepai5": {
-      "commonness": 0
+      "commonness": 1
     },
     "elepai4": {
-      "commonness": 0
+      "commonness": 1
     },
     "Chasiempis": {
       "commonness": 0
@@ -35220,7 +35220,7 @@
       "commonness": 0
     },
     "brnshr": {
-      "commonness": 1
+      "commonness": 2
     },
     "brnshr1": {
       "commonness": 0
@@ -35274,10 +35274,10 @@
       "commonness": 0
     },
     "logshr": {
-      "commonness": 1
+      "commonness": 2
     },
     "norshr4": {
-      "commonness": 1
+      "commonness": 2
     },
     "norshr2": {
       "commonness": 0
@@ -35340,7 +35340,7 @@
       "commonness": 0
     },
     "magshr1": {
-      "commonness": 0
+      "commonness": 1
     },
     "taifis1": {
       "commonness": 0
@@ -35475,10 +35475,10 @@
       "commonness": 0
     },
     "btmjay": {
-      "commonness": 0
+      "commonness": 1
     },
     "wtmjay1": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00443": {
       "commonness": 0
@@ -35490,7 +35490,7 @@
       "commonness": 0
     },
     "brnjay": {
-      "commonness": 0
+      "commonness": 1
     },
     "Psilorhinus": {
       "commonness": 0
@@ -35502,7 +35502,7 @@
       "commonness": 0
     },
     "grnjay": {
-      "commonness": 0
+      "commonness": 1
     },
     "grnjay1": {
       "commonness": 0
@@ -35514,13 +35514,13 @@
       "commonness": 0
     },
     "sabjay": {
-      "commonness": 0
+      "commonness": 1
     },
     "yucjay1": {
       "commonness": 0
     },
     "pubjay1": {
-      "commonness": 0
+      "commonness": 1
     },
     "purjay1": {
       "commonness": 0
@@ -35559,13 +35559,13 @@
       "commonness": 0
     },
     "pinjay": {
-      "commonness": 1
+      "commonness": 2
     },
     "Gymnorhinus": {
       "commonness": 0
     },
     "stejay": {
-      "commonness": 1
+      "commonness": 2
     },
     "stejay1": {
       "commonness": 0
@@ -35592,10 +35592,10 @@
       "commonness": 1
     },
     "issjay": {
-      "commonness": 0
+      "commonness": 1
     },
     "cowscj1": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00964": {
       "commonness": 0
@@ -35619,7 +35619,7 @@
       "commonness": 0
     },
     "mexjay4": {
-      "commonness": 0
+      "commonness": 1
     },
     "mexjay1": {
       "commonness": 0
@@ -35643,7 +35643,7 @@
       "commonness": 0
     },
     "eurjay1": {
-      "commonness": 0
+      "commonness": 1
     },
     "eurjay2": {
       "commonness": 0
@@ -35685,7 +35685,7 @@
       "commonness": 0
     },
     "azwmag2": {
-      "commonness": 0
+      "commonness": 1
     },
     "azwmag1": {
       "commonness": 0
@@ -35802,7 +35802,7 @@
       "commonness": 0
     },
     "eurmag1": {
-      "commonness": 0
+      "commonness": 1
     },
     "eurmag2": {
       "commonness": 0
@@ -35820,7 +35820,7 @@
       "commonness": 1
     },
     "yebmag": {
-      "commonness": 0
+      "commonness": 2
     },
     "pica1": {
       "commonness": 0
@@ -35847,7 +35847,7 @@
       "commonness": 0
     },
     "clanut": {
-      "commonness": 1
+      "commonness": 2
     },
     "eurnut1": {
       "commonness": 0
@@ -35898,7 +35898,7 @@
       "commonness": 0
     },
     "houcro1": {
-      "commonness": 0
+      "commonness": 1
     },
     "neccro1": {
       "commonness": 0
@@ -35949,7 +35949,7 @@
       "commonness": 0
     },
     "amecro": {
-      "commonness": 1
+      "commonness": 3
     },
     "palcro2": {
       "commonness": 0
@@ -35970,7 +35970,7 @@
       "commonness": 0
     },
     "tamcro": {
-      "commonness": 0
+      "commonness": 1
     },
     "sincro1": {
       "commonness": 0
@@ -35985,7 +35985,7 @@
       "commonness": 0
     },
     "hawcro": {
-      "commonness": 0
+      "commonness": 1
     },
     "chirav": {
       "commonness": 1
@@ -36000,7 +36000,7 @@
       "commonness": 0
     },
     "hoocro1": {
-      "commonness": 0
+      "commonness": 1
     },
     "hoocro2": {
       "commonness": 0
@@ -36066,13 +36066,13 @@
       "commonness": 0
     },
     "whnrav1": {
-      "commonness": 0
+      "commonness": 1
     },
     "thbrav1": {
       "commonness": 0
     },
     "comrav": {
-      "commonness": 1
+      "commonness": 2
     },
     "raven": {
       "commonness": 0
@@ -36675,7 +36675,7 @@
       "commonness": 0
     },
     "mouchi": {
-      "commonness": 1
+      "commonness": 2
     },
     "mouchi3": {
       "commonness": 0
@@ -36690,10 +36690,10 @@
       "commonness": 0
     },
     "mexchi": {
-      "commonness": 0
+      "commonness": 1
     },
     "chbchi": {
-      "commonness": 1
+      "commonness": 2
     },
     "x01012": {
       "commonness": 0
@@ -36723,7 +36723,7 @@
       "commonness": 0
     },
     "azutit2": {
-      "commonness": 0
+      "commonness": 1
     },
     "azutit1": {
       "commonness": 0
@@ -36741,13 +36741,13 @@
       "commonness": 0
     },
     "britit": {
-      "commonness": 0
+      "commonness": 1
     },
     "oaktit": {
-      "commonness": 0
+      "commonness": 2
     },
     "juntit1": {
-      "commonness": 0
+      "commonness": 1
     },
     "y01149": {
       "commonness": 0
@@ -36768,7 +36768,7 @@
       "commonness": 0
     },
     "blctit4": {
-      "commonness": 0
+      "commonness": 1
     },
     "bcxtit1": {
       "commonness": 0
@@ -36801,7 +36801,7 @@
       "commonness": 0
     },
     "gretit4": {
-      "commonness": 0
+      "commonness": 1
     },
     "japtit4": {
       "commonness": 0
@@ -36894,7 +36894,7 @@
       "commonness": 0
     },
     "verdin": {
-      "commonness": 0
+      "commonness": 1
     },
     "Auriparus": {
       "commonness": 0
@@ -37242,7 +37242,7 @@
       "commonness": 0
     },
     "horlar": {
-      "commonness": 1
+      "commonness": 2
     },
     "horlar5": {
       "commonness": 0
@@ -37434,7 +37434,7 @@
       "commonness": 0
     },
     "skylar": {
-      "commonness": 1
+      "commonness": 2
     },
     "skylar1": {
       "commonness": 0
@@ -38442,7 +38442,7 @@
       "commonness": 0
     },
     "thbwar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Arundinax": {
       "commonness": 0
@@ -38484,7 +38484,7 @@
       "commonness": 0
     },
     "ictwar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00644": {
       "commonness": 0
@@ -38505,7 +38505,7 @@
       "commonness": 0
     },
     "sedwar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "padwar1": {
       "commonness": 0
@@ -38523,7 +38523,7 @@
       "commonness": 0
     },
     "blrwar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00751": {
       "commonness": 0
@@ -38628,7 +38628,7 @@
       "commonness": 0
     },
     "miller": {
-      "commonness": 0
+      "commonness": 1
     },
     "miller1": {
       "commonness": 0
@@ -38703,10 +38703,10 @@
       "commonness": 0
     },
     "pagwar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "migwar": {
-      "commonness": 0
+      "commonness": 1
     },
     "plewar1": {
       "commonness": 0
@@ -38718,13 +38718,13 @@
       "commonness": 0
     },
     "lanwar": {
-      "commonness": 0
+      "commonness": 1
     },
     "baswar1": {
       "commonness": 0
     },
     "eurwar2": {
-      "commonness": 0
+      "commonness": 1
     },
     "savwar1": {
       "commonness": 0
@@ -39081,7 +39081,7 @@
       "commonness": 0
     },
     "bawswa1": {
-      "commonness": 0
+      "commonness": 1
     },
     "bawswa3": {
       "commonness": 0
@@ -39129,7 +39129,7 @@
       "commonness": 0
     },
     "nrwswa": {
-      "commonness": 1
+      "commonness": 2
     },
     "nrwswa1": {
       "commonness": 0
@@ -39144,7 +39144,7 @@
       "commonness": 0
     },
     "purmar": {
-      "commonness": 1
+      "commonness": 2
     },
     "purmar1": {
       "commonness": 0
@@ -39153,7 +39153,7 @@
       "commonness": 0
     },
     "cubmar": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00805": {
       "commonness": 0
@@ -39171,10 +39171,10 @@
       "commonness": 0
     },
     "gybmar": {
-      "commonness": 0
+      "commonness": 1
     },
     "soumar": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00745": {
       "commonness": 0
@@ -39189,7 +39189,7 @@
       "commonness": 0
     },
     "brcmar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "bncmar1": {
       "commonness": 0
@@ -39201,7 +39201,7 @@
       "commonness": 0
     },
     "treswa": {
-      "commonness": 1
+      "commonness": 2
     },
     "tumswa1": {
       "commonness": 0
@@ -39219,13 +39219,13 @@
       "commonness": 0
     },
     "manswa1": {
-      "commonness": 0
+      "commonness": 1
     },
     "golswa1": {
       "commonness": 0
     },
     "vigswa": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00715": {
       "commonness": 0
@@ -39240,7 +39240,7 @@
       "commonness": 0
     },
     "bahswa": {
-      "commonness": 0
+      "commonness": 1
     },
     "tachyc1": {
       "commonness": 0
@@ -39261,7 +39261,7 @@
       "commonness": 0
     },
     "banswa": {
-      "commonness": 1
+      "commonness": 2
     },
     "y01086": {
       "commonness": 0
@@ -39318,7 +39318,7 @@
       "commonness": 0
     },
     "barswa": {
-      "commonness": 1
+      "commonness": 2
     },
     "barswa2": {
       "commonness": 0
@@ -39468,7 +39468,7 @@
       "commonness": 0
     },
     "cliswa": {
-      "commonness": 1
+      "commonness": 2
     },
     "cliswa2": {
       "commonness": 0
@@ -39519,7 +39519,7 @@
       "commonness": 0
     },
     "cohmar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "comhom1": {
       "commonness": 0
@@ -39918,7 +39918,7 @@
       "commonness": 0
     },
     "colfin1": {
-      "commonness": 1
+      "commonness": 0
     },
     "Spizixos": {
       "commonness": 0
@@ -39939,10 +39939,10 @@
       "commonness": 0
     },
     "revbul": {
-      "commonness": 0
+      "commonness": 1
     },
     "rewbul": {
-      "commonness": 0
+      "commonness": 1
     },
     "x01024": {
       "commonness": 0
@@ -39996,7 +39996,7 @@
       "commonness": 0
     },
     "whebul1": {
-      "commonness": 0
+      "commonness": 1
     },
     "x01044": {
       "commonness": 0
@@ -40347,7 +40347,7 @@
       "commonness": 0
     },
     "woowar": {
-      "commonness": 0
+      "commonness": 1
     },
     "webwar1": {
       "commonness": 0
@@ -40389,7 +40389,7 @@
       "commonness": 0
     },
     "palwar5": {
-      "commonness": 0
+      "commonness": 1
     },
     "ganlew1": {
       "commonness": 0
@@ -40428,7 +40428,7 @@
       "commonness": 0
     },
     "duswar": {
-      "commonness": 0
+      "commonness": 2
     },
     "y00749": {
       "commonness": 0
@@ -40449,7 +40449,7 @@
       "commonness": 0
     },
     "wlwwar": {
-      "commonness": 0
+      "commonness": 2
     },
     "mouchi2": {
       "commonness": 0
@@ -40464,7 +40464,7 @@
       "commonness": 0
     },
     "comchi1": {
-      "commonness": 0
+      "commonness": 1
     },
     "comchi3": {
       "commonness": 0
@@ -40608,7 +40608,7 @@
       "commonness": 0
     },
     "arcwar2": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00815": {
       "commonness": 0
@@ -40857,7 +40857,7 @@
       "commonness": 0
     },
     "jabwar": {
-      "commonness": 0
+      "commonness": 1
     },
     "jabwar7": {
       "commonness": 0
@@ -40986,7 +40986,7 @@
       "commonness": 0
     },
     "bushti": {
-      "commonness": 1
+      "commonness": 2
     },
     "bushti1": {
       "commonness": 0
@@ -41049,7 +41049,7 @@
       "commonness": 0
     },
     "leswhi4": {
-      "commonness": 0
+      "commonness": 1
     },
     "leswhi2": {
       "commonness": 0
@@ -41379,7 +41379,7 @@
       "commonness": 0
     },
     "vitpar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "astpar1": {
       "commonness": 0
@@ -41580,19 +41580,19 @@
       "commonness": 0
     },
     "swiwhe1": {
-      "commonness": 0
+      "commonness": 1
     },
     "mouble1": {
       "commonness": 0
     },
     "warwhe1": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00424": {
       "commonness": 0
     },
     "indwhe1": {
-      "commonness": 0
+      "commonness": 1
     },
     "y01105": {
       "commonness": 0
@@ -42720,7 +42720,7 @@
       "commonness": 0
     },
     "reblei": {
-      "commonness": 0
+      "commonness": 1
     },
     "siemes1": {
       "commonness": 0
@@ -42924,7 +42924,7 @@
       "commonness": 0
     },
     "melthr": {
-      "commonness": 0
+      "commonness": 1
     },
     "taihwa1": {
       "commonness": 0
@@ -42945,7 +42945,7 @@
       "commonness": 0
     },
     "whclau2": {
-      "commonness": 0
+      "commonness": 1
     },
     "sumlau1": {
       "commonness": 0
@@ -43041,7 +43041,7 @@
       "commonness": 0
     },
     "gnlthr": {
-      "commonness": 0
+      "commonness": 1
     },
     "y01002": {
       "commonness": 0
@@ -43092,10 +43092,10 @@
       "commonness": 0
     },
     "ruckin": {
-      "commonness": 1
+      "commonness": 2
     },
     "gockin": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00425": {
       "commonness": 0
@@ -43197,7 +43197,7 @@
       "commonness": 0
     },
     "rebnut": {
-      "commonness": 1
+      "commonness": 2
     },
     "whcnut1": {
       "commonness": 0
@@ -43206,7 +43206,7 @@
       "commonness": 0
     },
     "whbnut": {
-      "commonness": 1
+      "commonness": 2
     },
     "whbnut2": {
       "commonness": 0
@@ -43218,10 +43218,10 @@
       "commonness": 0
     },
     "pygnut": {
-      "commonness": 1
+      "commonness": 2
     },
     "bnhnut": {
-      "commonness": 0
+      "commonness": 1
     },
     "bnhnut2": {
       "commonness": 0
@@ -43287,7 +43287,7 @@
       "commonness": 0
     },
     "brncre": {
-      "commonness": 1
+      "commonness": 2
     },
     "brncre1": {
       "commonness": 0
@@ -43428,7 +43428,7 @@
       "commonness": 0
     },
     "buggna": {
-      "commonness": 1
+      "commonness": 2
     },
     "buggna2": {
       "commonness": 0
@@ -43440,13 +43440,13 @@
       "commonness": 0
     },
     "bktgna": {
-      "commonness": 0
+      "commonness": 1
     },
     "calgna": {
-      "commonness": 0
+      "commonness": 1
     },
     "bkcgna": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00643": {
       "commonness": 0
@@ -43461,7 +43461,7 @@
       "commonness": 0
     },
     "rocwre": {
-      "commonness": 1
+      "commonness": 2
     },
     "rocwre1": {
       "commonness": 0
@@ -43506,7 +43506,7 @@
       "commonness": 0
     },
     "canwre": {
-      "commonness": 1
+      "commonness": 2
     },
     "Catherpes": {
       "commonness": 0
@@ -43527,7 +43527,7 @@
       "commonness": 0
     },
     "houwre": {
-      "commonness": 1
+      "commonness": 2
     },
     "houwre1": {
       "commonness": 0
@@ -43611,7 +43611,7 @@
       "commonness": 0
     },
     "pacwre1": {
-      "commonness": 1
+      "commonness": 2
     },
     "winwre1": {
       "commonness": 0
@@ -43620,7 +43620,7 @@
       "commonness": 0
     },
     "winwre3": {
-      "commonness": 1
+      "commonness": 2
     },
     "winwre": {
       "commonness": 0
@@ -43635,7 +43635,7 @@
       "commonness": 0
     },
     "sedwre1": {
-      "commonness": 1
+      "commonness": 2
     },
     "sedwre": {
       "commonness": 0
@@ -43671,7 +43671,7 @@
       "commonness": 0
     },
     "marwre": {
-      "commonness": 1
+      "commonness": 2
     },
     "marwre1": {
       "commonness": 0
@@ -43710,7 +43710,7 @@
       "commonness": 0
     },
     "bewwre": {
-      "commonness": 1
+      "commonness": 2
     },
     "bewwre3": {
       "commonness": 0
@@ -43761,7 +43761,7 @@
       "commonness": 0
     },
     "cacwre": {
-      "commonness": 0
+      "commonness": 1
     },
     "cacwre2": {
       "commonness": 0
@@ -43860,7 +43860,7 @@
       "commonness": 0
     },
     "sinwre1": {
-      "commonness": 0
+      "commonness": 1
     },
     "banwre1": {
       "commonness": 0
@@ -44064,7 +44064,7 @@
       "commonness": 0
     },
     "amedip": {
-      "commonness": 1
+      "commonness": 2
     },
     "amedip1": {
       "commonness": 0
@@ -44310,7 +44310,7 @@
       "commonness": 0
     },
     "eursta": {
-      "commonness": 1
+      "commonness": 2
     },
     "sposta1": {
       "commonness": 0
@@ -44367,7 +44367,7 @@
       "commonness": 0
     },
     "balmyn1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Leucopsar": {
       "commonness": 0
@@ -44388,7 +44388,7 @@
       "commonness": 0
     },
     "brasta1": {
-      "commonness": 0
+      "commonness": 1
     },
     "chtsta2": {
       "commonness": 0
@@ -44649,7 +44649,7 @@
       "commonness": 0
     },
     "ltgsta1": {
-      "commonness": 0
+      "commonness": 1
     },
     "megsta1": {
       "commonness": 0
@@ -44676,7 +44676,7 @@
       "commonness": 0
     },
     "supsta1": {
-      "commonness": 0
+      "commonness": 1
     },
     "chbsta1": {
       "commonness": 0
@@ -44709,7 +44709,7 @@
       "commonness": 0
     },
     "pugsta1": {
-      "commonness": 0
+      "commonness": 1
     },
     "capgls1": {
       "commonness": 0
@@ -44724,7 +44724,7 @@
       "commonness": 0
     },
     "blumoc": {
-      "commonness": 0
+      "commonness": 1
     },
     "bawmoc1": {
       "commonness": 0
@@ -44733,13 +44733,13 @@
       "commonness": 0
     },
     "blacat1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Melanoptila": {
       "commonness": 0
     },
     "grycat": {
-      "commonness": 1
+      "commonness": 2
     },
     "Dumetella": {
       "commonness": 0
@@ -44796,10 +44796,10 @@
       "commonness": 0
     },
     "brnthr": {
-      "commonness": 1
+      "commonness": 2
     },
     "lobthr": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00971": {
       "commonness": 0
@@ -44811,19 +44811,19 @@
       "commonness": 0
     },
     "benthr": {
-      "commonness": 0
+      "commonness": 2
     },
     "y00330": {
       "commonness": 0
     },
     "grathr1": {
-      "commonness": 0
+      "commonness": 1
     },
     "calthr": {
-      "commonness": 0
+      "commonness": 2
     },
     "lecthr": {
-      "commonness": 0
+      "commonness": 1
     },
     "lecthr1": {
       "commonness": 0
@@ -44832,7 +44832,7 @@
       "commonness": 0
     },
     "crithr": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00470": {
       "commonness": 0
@@ -44841,7 +44841,7 @@
       "commonness": 0
     },
     "sagthr": {
-      "commonness": 1
+      "commonness": 2
     },
     "Oreoscoptes": {
       "commonness": 0
@@ -44865,7 +44865,7 @@
       "commonness": 0
     },
     "bahmoc": {
-      "commonness": 0
+      "commonness": 1
     },
     "galmoc1": {
       "commonness": 0
@@ -44880,13 +44880,13 @@
       "commonness": 0
     },
     "lotmoc1": {
-      "commonness": 0
+      "commonness": 1
     },
     "socmoc1": {
       "commonness": 0
     },
     "tromoc": {
-      "commonness": 0
+      "commonness": 1
     },
     "tromoc1": {
       "commonness": 0
@@ -44895,7 +44895,7 @@
       "commonness": 0
     },
     "normoc": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00907": {
       "commonness": 0
@@ -44928,13 +44928,13 @@
       "commonness": 0
     },
     "wesblu": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00972": {
       "commonness": 0
     },
     "moublu": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00864": {
       "commonness": 0
@@ -44970,10 +44970,10 @@
       "commonness": 0
     },
     "towsol": {
-      "commonness": 1
+      "commonness": 2
     },
     "brbsol1": {
-      "commonness": 0
+      "commonness": 1
     },
     "cubsol1": {
       "commonness": 0
@@ -45009,19 +45009,19 @@
       "commonness": 0
     },
     "kamao": {
-      "commonness": 0
+      "commonness": 1
     },
     "amaui": {
       "commonness": 0
     },
     "olomao": {
-      "commonness": 0
+      "commonness": 1
     },
     "omao": {
-      "commonness": 0
+      "commonness": 1
     },
     "puaioh": {
-      "commonness": 0
+      "commonness": 1
     },
     "Myadestes": {
       "commonness": 0
@@ -45156,13 +45156,13 @@
       "commonness": 0
     },
     "varthr": {
-      "commonness": 1
+      "commonness": 2
     },
     "bbnthr1": {
       "commonness": 0
     },
     "obnthr1": {
-      "commonness": 0
+      "commonness": 1
     },
     "orbnit1": {
       "commonness": 0
@@ -45192,7 +45192,7 @@
       "commonness": 0
     },
     "bhnthr1": {
-      "commonness": 0
+      "commonness": 1
     },
     "spnthr1": {
       "commonness": 0
@@ -45201,10 +45201,10 @@
       "commonness": 0
     },
     "veery": {
-      "commonness": 1
+      "commonness": 2
     },
     "gycthr": {
-      "commonness": 1
+      "commonness": 2
     },
     "bicthr": {
       "commonness": 1
@@ -45216,7 +45216,7 @@
       "commonness": 0
     },
     "swathr": {
-      "commonness": 1
+      "commonness": 2
     },
     "swathr1": {
       "commonness": 0
@@ -45225,7 +45225,7 @@
       "commonness": 0
     },
     "herthr": {
-      "commonness": 1
+      "commonness": 2
     },
     "herthr1": {
       "commonness": 0
@@ -45240,7 +45240,7 @@
       "commonness": 0
     },
     "woothr": {
-      "commonness": 1
+      "commonness": 2
     },
     "Hylocichla": {
       "commonness": 0
@@ -45273,7 +45273,7 @@
       "commonness": 0
     },
     "aztthr": {
-      "commonness": 0
+      "commonness": 1
     },
     "Ridgwayia": {
       "commonness": 0
@@ -45399,7 +45399,7 @@
       "commonness": 0
     },
     "misthr1": {
-      "commonness": 1
+      "commonness": 0
     },
     "sonthr1": {
       "commonness": 1
@@ -45432,7 +45432,7 @@
       "commonness": 0
     },
     "eurbla": {
-      "commonness": 1
+      "commonness": 0
     },
     "pabthr1": {
       "commonness": 0
@@ -45456,7 +45456,7 @@
       "commonness": 0
     },
     "whtrob1": {
-      "commonness": 0
+      "commonness": 1
     },
     "whtthr1": {
       "commonness": 0
@@ -45477,7 +45477,7 @@
       "commonness": 0
     },
     "clcrob": {
-      "commonness": 0
+      "commonness": 1
     },
     "baerob1": {
       "commonness": 0
@@ -45543,7 +45543,7 @@
       "commonness": 0
     },
     "amerob": {
-      "commonness": 1
+      "commonness": 3
     },
     "amerob3": {
       "commonness": 0
@@ -45561,7 +45561,7 @@
       "commonness": 0
     },
     "rubrob": {
-      "commonness": 0
+      "commonness": 1
     },
     "rubrob1": {
       "commonness": 0
@@ -45657,7 +45657,7 @@
       "commonness": 0
     },
     "relthr1": {
-      "commonness": 0
+      "commonness": 1
     },
     "relthr5": {
       "commonness": 0
@@ -45717,7 +45717,7 @@
       "commonness": 0
     },
     "eyethr": {
-      "commonness": 0
+      "commonness": 1
     },
     "y01053": {
       "commonness": 0
@@ -45900,7 +45900,7 @@
       "commonness": 1
     },
     "dusthr1": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00973": {
       "commonness": 0
@@ -45915,10 +45915,10 @@
       "commonness": 0
     },
     "gysfly1": {
-      "commonness": 0
+      "commonness": 1
     },
     "dasfly": {
-      "commonness": 0
+      "commonness": 1
     },
     "y01085": {
       "commonness": 0
@@ -45927,7 +45927,7 @@
       "commonness": 0
     },
     "asbfly": {
-      "commonness": 0
+      "commonness": 1
     },
     "asbfly2": {
       "commonness": 0
@@ -45969,7 +45969,7 @@
       "commonness": 0
     },
     "spofly1": {
-      "commonness": 0
+      "commonness": 1
     },
     "spofly2": {
       "commonness": 0
@@ -46224,7 +46224,7 @@
       "commonness": 0
     },
     "whrsha": {
-      "commonness": 0
+      "commonness": 1
     },
     "whrsha1": {
       "commonness": 0
@@ -46596,7 +46596,7 @@
       "commonness": 0
     },
     "eurrob1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Erithacus": {
       "commonness": 0
@@ -46800,7 +46800,7 @@
       "commonness": 0
     },
     "rutrob1": {
-      "commonness": 0
+      "commonness": 1
     },
     "ruhrob1": {
       "commonness": 0
@@ -46827,7 +46827,7 @@
       "commonness": 0
     },
     "sibrob": {
-      "commonness": 0
+      "commonness": 1
     },
     "Larvivora": {
       "commonness": 0
@@ -47046,7 +47046,7 @@
       "commonness": 0
     },
     "narfly2": {
-      "commonness": 0
+      "commonness": 1
     },
     "narfly3": {
       "commonness": 0
@@ -47058,7 +47058,7 @@
       "commonness": 0
     },
     "mugfly": {
-      "commonness": 0
+      "commonness": 1
     },
     "slbfly1": {
       "commonness": 0
@@ -47091,13 +47091,13 @@
       "commonness": 0
     },
     "taifly1": {
-      "commonness": 0
+      "commonness": 1
     },
     "kasfly1": {
       "commonness": 0
     },
     "rebfly": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00821": {
       "commonness": 0
@@ -47205,7 +47205,7 @@
       "commonness": 0
     },
     "comred2": {
-      "commonness": 0
+      "commonness": 1
     },
     "comred5": {
       "commonness": 0
@@ -47283,7 +47283,7 @@
       "commonness": 0
     },
     "rtrthr1": {
-      "commonness": 0
+      "commonness": 1
     },
     "burthr": {
       "commonness": 0
@@ -47337,7 +47337,7 @@
       "commonness": 0
     },
     "sibsto1": {
-      "commonness": 0
+      "commonness": 1
     },
     "sibsto2": {
       "commonness": 0
@@ -47358,7 +47358,7 @@
       "commonness": 0
     },
     "stonec7": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00427": {
       "commonness": 0
@@ -47478,7 +47478,7 @@
       "commonness": 0
     },
     "norwhe": {
-      "commonness": 1
+      "commonness": 2
     },
     "norwhe2": {
       "commonness": 0
@@ -47529,7 +47529,7 @@
       "commonness": 0
     },
     "piewhe1": {
-      "commonness": 0
+      "commonness": 1
     },
     "piewhe2": {
       "commonness": 0
@@ -47637,10 +47637,10 @@
       "commonness": 0
     },
     "bohwax": {
-      "commonness": 1
+      "commonness": 2
     },
     "cedwax": {
-      "commonness": 1
+      "commonness": 2
     },
     "waxwin": {
       "commonness": 0
@@ -47658,7 +47658,7 @@
       "commonness": 0
     },
     "kauoo": {
-      "commonness": 0
+      "commonness": 1
     },
     "oahoo": {
       "commonness": 0
@@ -47688,7 +47688,7 @@
       "commonness": 0
     },
     "grsfly1": {
-      "commonness": 0
+      "commonness": 1
     },
     "ltsfly1": {
       "commonness": 0
@@ -47697,7 +47697,7 @@
       "commonness": 0
     },
     "phaino": {
-      "commonness": 1
+      "commonness": 2
     },
     "Phainopepla": {
       "commonness": 0
@@ -48708,7 +48708,7 @@
       "commonness": 0
     },
     "goflea1": {
-      "commonness": 0
+      "commonness": 1
     },
     "y01012": {
       "commonness": 0
@@ -48735,7 +48735,7 @@
       "commonness": 0
     },
     "oliwar": {
-      "commonness": 0
+      "commonness": 1
     },
     "Peucedramus": {
       "commonness": 0
@@ -48966,10 +48966,10 @@
       "commonness": 0
     },
     "gopwea1": {
-      "commonness": 0
+      "commonness": 1
     },
     "tagwea1": {
-      "commonness": 0
+      "commonness": 1
     },
     "prgwea1": {
       "commonness": 0
@@ -48996,10 +48996,10 @@
       "commonness": 0
     },
     "afmwea": {
-      "commonness": 0
+      "commonness": 1
     },
     "vimwea1": {
-      "commonness": 0
+      "commonness": 1
     },
     "tanmaw1": {
       "commonness": 0
@@ -49038,7 +49038,7 @@
       "commonness": 0
     },
     "vilwea1": {
-      "commonness": 0
+      "commonness": 2
     },
     "vilwea2": {
       "commonness": 0
@@ -49065,7 +49065,7 @@
       "commonness": 0
     },
     "blhwea1": {
-      "commonness": 0
+      "commonness": 1
     },
     "gobwea1": {
       "commonness": 0
@@ -49164,7 +49164,7 @@
       "commonness": 0
     },
     "rebque1": {
-      "commonness": 1
+      "commonness": 0
     },
     "quelea1": {
       "commonness": 0
@@ -49176,7 +49176,7 @@
       "commonness": 0
     },
     "redfod1": {
-      "commonness": 0
+      "commonness": 1
     },
     "rehfod3": {
       "commonness": 0
@@ -49212,22 +49212,22 @@
       "commonness": 0
     },
     "orabis1": {
-      "commonness": 1
+      "commonness": 2
     },
     "redbis": {
       "commonness": 1
     },
     "zanbis1": {
-      "commonness": 0
+      "commonness": 1
     },
     "blwbis1": {
-      "commonness": 0
+      "commonness": 1
     },
     "blabis1": {
       "commonness": 0
     },
     "yecbis": {
-      "commonness": 0
+      "commonness": 1
     },
     "fifbis1": {
       "commonness": 0
@@ -49248,7 +49248,7 @@
       "commonness": 0
     },
     "whwwid1": {
-      "commonness": 0
+      "commonness": 1
     },
     "yeswid2": {
       "commonness": 0
@@ -49263,7 +49263,7 @@
       "commonness": 0
     },
     "recwid3": {
-      "commonness": 0
+      "commonness": 1
     },
     "recwid1": {
       "commonness": 0
@@ -49308,7 +49308,7 @@
       "commonness": 0
     },
     "diafir1": {
-      "commonness": 0
+      "commonness": 1
     },
     "reefir1": {
       "commonness": 0
@@ -49329,7 +49329,7 @@
       "commonness": 0
     },
     "rebfir1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Neochmia": {
       "commonness": 0
@@ -49404,13 +49404,13 @@
       "commonness": 0
     },
     "broman1": {
-      "commonness": 0
+      "commonness": 1
     },
     "magman1": {
-      "commonness": 0
+      "commonness": 1
     },
     "bawman1": {
-      "commonness": 0
+      "commonness": 1
     },
     "bawman2": {
       "commonness": 0
@@ -49428,10 +49428,10 @@
       "commonness": 0
     },
     "afrsil1": {
-      "commonness": 0
+      "commonness": 1
     },
     "indsil": {
-      "commonness": 0
+      "commonness": 1
     },
     "Euodice": {
       "commonness": 0
@@ -49461,7 +49461,7 @@
       "commonness": 0
     },
     "nutman": {
-      "commonness": 1
+      "commonness": 2
     },
     "scbmun1": {
       "commonness": 0
@@ -49488,7 +49488,7 @@
       "commonness": 0
     },
     "trimun": {
-      "commonness": 0
+      "commonness": 1
     },
     "trimun1": {
       "commonness": 0
@@ -49497,7 +49497,7 @@
       "commonness": 0
     },
     "chemun": {
-      "commonness": 0
+      "commonness": 1
     },
     "chemun1": {
       "commonness": 0
@@ -49515,7 +49515,7 @@
       "commonness": 0
     },
     "whhmun1": {
-      "commonness": 0
+      "commonness": 1
     },
     "pahmun1": {
       "commonness": 0
@@ -49725,7 +49725,7 @@
       "commonness": 0
     },
     "lavwax": {
-      "commonness": 0
+      "commonness": 1
     },
     "bltwax1": {
       "commonness": 0
@@ -49746,7 +49746,7 @@
       "commonness": 0
     },
     "orcwax": {
-      "commonness": 0
+      "commonness": 1
     },
     "anawax1": {
       "commonness": 0
@@ -49770,10 +49770,10 @@
       "commonness": 0
     },
     "bkrwax": {
-      "commonness": 0
+      "commonness": 1
     },
     "crrwax1": {
-      "commonness": 0
+      "commonness": 1
     },
     "arawax1": {
       "commonness": 0
@@ -49803,7 +49803,7 @@
       "commonness": 0
     },
     "cutthr1": {
-      "commonness": 0
+      "commonness": 1
     },
     "rehfin1": {
       "commonness": 0
@@ -49815,7 +49815,7 @@
       "commonness": 0
     },
     "zebwax2": {
-      "commonness": 0
+      "commonness": 1
     },
     "redava": {
       "commonness": 1
@@ -49839,13 +49839,13 @@
       "commonness": 0
     },
     "bubcor1": {
-      "commonness": 0
+      "commonness": 1
     },
     "reccor": {
       "commonness": 1
     },
     "blccor1": {
-      "commonness": 0
+      "commonness": 1
     },
     "cordon1": {
       "commonness": 0
@@ -49884,7 +49884,7 @@
       "commonness": 0
     },
     "grwpyt1": {
-      "commonness": 0
+      "commonness": 1
     },
     "orwpyt1": {
       "commonness": 0
@@ -49917,7 +49917,7 @@
       "commonness": 0
     },
     "pettwi1": {
-      "commonness": 0
+      "commonness": 1
     },
     "pittwi1": {
       "commonness": 0
@@ -49932,10 +49932,10 @@
       "commonness": 0
     },
     "rebfir2": {
-      "commonness": 0
+      "commonness": 1
     },
     "afffin": {
-      "commonness": 0
+      "commonness": 1
     },
     "jamfir1": {
       "commonness": 0
@@ -49977,7 +49977,7 @@
       "commonness": 0
     },
     "pitwhy": {
-      "commonness": 0
+      "commonness": 2
     },
     "nopwhy1": {
       "commonness": 0
@@ -49986,13 +49986,13 @@
       "commonness": 0
     },
     "topwhy1": {
-      "commonness": 0
+      "commonness": 1
     },
     "btpwhy1": {
-      "commonness": 0
+      "commonness": 1
     },
     "eapwhy1": {
-      "commonness": 0
+      "commonness": 1
     },
     "stbwhy1": {
       "commonness": 0
@@ -50004,7 +50004,7 @@
       "commonness": 0
     },
     "vilind": {
-      "commonness": 0
+      "commonness": 1
     },
     "pawind1": {
       "commonness": 0
@@ -50112,7 +50112,7 @@
       "commonness": 0
     },
     "houspa": {
-      "commonness": 1
+      "commonness": 2
     },
     "houspa13": {
       "commonness": 0
@@ -50226,7 +50226,7 @@
       "commonness": 0
     },
     "sugspa1": {
-      "commonness": 0
+      "commonness": 1
     },
     "argspa2": {
       "commonness": 0
@@ -50313,7 +50313,7 @@
       "commonness": 0
     },
     "grywag": {
-      "commonness": 0
+      "commonness": 1
     },
     "eaywag1": {
       "commonness": 0
@@ -50370,7 +50370,7 @@
       "commonness": 0
     },
     "eaywag": {
-      "commonness": 1
+      "commonness": 2
     },
     "eaywag2": {
       "commonness": 0
@@ -50412,7 +50412,7 @@
       "commonness": 0
     },
     "whiwag": {
-      "commonness": 1
+      "commonness": 2
     },
     "whiwag1": {
       "commonness": 0
@@ -50574,19 +50574,19 @@
       "commonness": 0
     },
     "trepip": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00672": {
       "commonness": 0
     },
     "olbpip": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00758": {
       "commonness": 0
     },
     "pecpip": {
-      "commonness": 0
+      "commonness": 1
     },
     "pecpip1": {
       "commonness": 0
@@ -50595,7 +50595,7 @@
       "commonness": 0
     },
     "retpip": {
-      "commonness": 1
+      "commonness": 2
     },
     "watpip1": {
       "commonness": 0
@@ -50625,7 +50625,7 @@
       "commonness": 0
     },
     "amepip": {
-      "commonness": 1
+      "commonness": 2
     },
     "sibpip1": {
       "commonness": 0
@@ -50919,7 +50919,7 @@
       "commonness": 0
     },
     "evegro": {
-      "commonness": 1
+      "commonness": 2
     },
     "evegro1": {
       "commonness": 0
@@ -50952,13 +50952,13 @@
       "commonness": 0
     },
     "poouli": {
-      "commonness": 0
+      "commonness": 1
     },
     "Melamprosops": {
       "commonness": 0
     },
     "akikik": {
-      "commonness": 0
+      "commonness": 1
     },
     "Oreomystis": {
       "commonness": 0
@@ -50970,22 +50970,22 @@
       "commonness": 0
     },
     "mauala": {
-      "commonness": 0
+      "commonness": 1
     },
     "Paroreomyza": {
       "commonness": 0
     },
     "palila": {
-      "commonness": 0
+      "commonness": 1
     },
     "Loxioides": {
       "commonness": 0
     },
     "layfin": {
-      "commonness": 0
+      "commonness": 1
     },
     "nihfin": {
-      "commonness": 0
+      "commonness": 1
     },
     "Telespiza": {
       "commonness": 0
@@ -51012,7 +51012,7 @@
       "commonness": 0
     },
     "crehon": {
-      "commonness": 0
+      "commonness": 1
     },
     "Palmeria": {
       "commonness": 0
@@ -51021,10 +51021,10 @@
       "commonness": 0
     },
     "apapan": {
-      "commonness": 0
+      "commonness": 1
     },
     "iiwi": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00828": {
       "commonness": 0
@@ -51042,7 +51042,7 @@
       "commonness": 0
     },
     "ou": {
-      "commonness": 0
+      "commonness": 1
     },
     "Psittirostra": {
       "commonness": 0
@@ -51054,13 +51054,13 @@
       "commonness": 0
     },
     "maupar": {
-      "commonness": 0
+      "commonness": 1
     },
     "Pseudonestor": {
       "commonness": 0
     },
     "nukupu2": {
-      "commonness": 0
+      "commonness": 1
     },
     "nukupu3": {
       "commonness": 0
@@ -51069,7 +51069,7 @@
       "commonness": 0
     },
     "akiapo": {
-      "commonness": 0
+      "commonness": 1
     },
     "Hemignathus": {
       "commonness": 0
@@ -51090,13 +51090,13 @@
       "commonness": 0
     },
     "aniani": {
-      "commonness": 0
+      "commonness": 1
     },
     "Magumma": {
       "commonness": 0
     },
     "hawama": {
-      "commonness": 0
+      "commonness": 1
     },
     "hawama1": {
       "commonness": 0
@@ -51105,10 +51105,10 @@
       "commonness": 0
     },
     "oahama": {
-      "commonness": 0
+      "commonness": 1
     },
     "kauama": {
-      "commonness": 0
+      "commonness": 1
     },
     "Chlorodrepanis": {
       "commonness": 0
@@ -51120,19 +51120,19 @@
       "commonness": 0
     },
     "hawcre": {
-      "commonness": 0
+      "commonness": 1
     },
     "akekee": {
-      "commonness": 0
+      "commonness": 1
     },
     "akepa1": {
-      "commonness": 0
+      "commonness": 1
     },
     "akepa2": {
       "commonness": 0
     },
     "akepa3": {
-      "commonness": 0
+      "commonness": 1
     },
     "Loxops": {
       "commonness": 0
@@ -51141,7 +51141,7 @@
       "commonness": 0
     },
     "comros": {
-      "commonness": 0
+      "commonness": 1
     },
     "scafin1": {
       "commonness": 0
@@ -51225,7 +51225,7 @@
       "commonness": 0
     },
     "palros2": {
-      "commonness": 0
+      "commonness": 1
     },
     "thbros1": {
       "commonness": 0
@@ -51363,7 +51363,7 @@
       "commonness": 0
     },
     "asrfin1": {
-      "commonness": 0
+      "commonness": 1
     },
     "gcrfin": {
       "commonness": 1
@@ -51384,19 +51384,19 @@
       "commonness": 0
     },
     "bkrfin": {
-      "commonness": 0
+      "commonness": 1
     },
     "x01003": {
       "commonness": 0
     },
     "bcrfin": {
-      "commonness": 0
+      "commonness": 1
     },
     "rosfin": {
       "commonness": 0
     },
     "houfin": {
-      "commonness": 1
+      "commonness": 2
     },
     "houfin1": {
       "commonness": 0
@@ -51405,7 +51405,7 @@
       "commonness": 0
     },
     "purfin": {
-      "commonness": 1
+      "commonness": 2
     },
     "purfin1": {
       "commonness": 0
@@ -51420,7 +51420,7 @@
       "commonness": 0
     },
     "casfin": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00762": {
       "commonness": 0
@@ -51477,10 +51477,10 @@
       "commonness": 0
     },
     "whrsee": {
-      "commonness": 0
+      "commonness": 1
     },
     "yefcan": {
-      "commonness": 1
+      "commonness": 2
     },
     "afrcit1": {
       "commonness": 0
@@ -51504,7 +51504,7 @@
       "commonness": 0
     },
     "bltcan1": {
-      "commonness": 0
+      "commonness": 1
     },
     "reisee2": {
       "commonness": 0
@@ -51540,7 +51540,7 @@
       "commonness": 0
     },
     "strsee1": {
-      "commonness": 0
+      "commonness": 1
     },
     "yebsee2": {
       "commonness": 0
@@ -51600,7 +51600,7 @@
       "commonness": 0
     },
     "eurlin1": {
-      "commonness": 0
+      "commonness": 1
     },
     "y01057": {
       "commonness": 0
@@ -51615,7 +51615,7 @@
       "commonness": 0
     },
     "comred": {
-      "commonness": 1
+      "commonness": 2
     },
     "comred3": {
       "commonness": 0
@@ -51654,7 +51654,7 @@
       "commonness": 0
     },
     "redcro": {
-      "commonness": 1
+      "commonness": 2
     },
     "redcro11": {
       "commonness": 0
@@ -51747,7 +51747,7 @@
       "commonness": 0
     },
     "redcro9": {
-      "commonness": 0
+      "commonness": 1
     },
     "y01058": {
       "commonness": 0
@@ -51780,7 +51780,7 @@
       "commonness": 0
     },
     "eurgol": {
-      "commonness": 1
+      "commonness": 2
     },
     "eurgol1": {
       "commonness": 0
@@ -51795,7 +51795,7 @@
       "commonness": 0
     },
     "eurser1": {
-      "commonness": 0
+      "commonness": 1
     },
     "y01059": {
       "commonness": 0
@@ -51846,7 +51846,7 @@
       "commonness": 1
     },
     "pinsis": {
-      "commonness": 1
+      "commonness": 2
     },
     "pinsis1": {
       "commonness": 0
@@ -51876,16 +51876,16 @@
       "commonness": 0
     },
     "lesgol": {
-      "commonness": 1
+      "commonness": 2
     },
     "x01006": {
       "commonness": 0
     },
     "lawgol": {
-      "commonness": 0
+      "commonness": 2
     },
     "amegfi": {
-      "commonness": 1
+      "commonness": 2
     },
     "x01007": {
       "commonness": 0
@@ -51912,7 +51912,7 @@
       "commonness": 0
     },
     "redsis1": {
-      "commonness": 0
+      "commonness": 1
     },
     "thbsis1": {
       "commonness": 0
@@ -51930,7 +51930,7 @@
       "commonness": 0
     },
     "blasis1": {
-      "commonness": 0
+      "commonness": 1
     },
     "yersis1": {
       "commonness": 0
@@ -51954,16 +51954,16 @@
       "commonness": 0
     },
     "laplon": {
-      "commonness": 1
+      "commonness": 2
     },
     "chclon": {
-      "commonness": 1
+      "commonness": 2
     },
     "smilon": {
-      "commonness": 1
+      "commonness": 2
     },
     "mcclon": {
-      "commonness": 1
+      "commonness": 2
     },
     "Rhynchophanes": {
       "commonness": 0
@@ -51972,7 +51972,7 @@
       "commonness": 0
     },
     "snobun": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00919": {
       "commonness": 0
@@ -52056,7 +52056,7 @@
       "commonness": 0
     },
     "yellow2": {
-      "commonness": 0
+      "commonness": 1
     },
     "pinbun": {
       "commonness": 1
@@ -52134,16 +52134,16 @@
       "commonness": 0
     },
     "yetbun1": {
-      "commonness": 0
+      "commonness": 1
     },
     "ocrbun1": {
       "commonness": 0
     },
     "palbun": {
-      "commonness": 0
+      "commonness": 1
     },
     "reebun": {
-      "commonness": 0
+      "commonness": 1
     },
     "y01015": {
       "commonness": 0
@@ -52152,7 +52152,7 @@
       "commonness": 1
     },
     "litbun": {
-      "commonness": 0
+      "commonness": 1
     },
     "rusbun": {
       "commonness": 1
@@ -52179,7 +52179,7 @@
       "commonness": 0
     },
     "grybun": {
-      "commonness": 0
+      "commonness": 1
     },
     "emberi1": {
       "commonness": 0
@@ -52284,7 +52284,7 @@
       "commonness": 0
     },
     "ruwspa": {
-      "commonness": 0
+      "commonness": 1
     },
     "citspa1": {
       "commonness": 0
@@ -52299,7 +52299,7 @@
       "commonness": 0
     },
     "botspa": {
-      "commonness": 0
+      "commonness": 1
     },
     "botspa1": {
       "commonness": 0
@@ -52308,7 +52308,7 @@
       "commonness": 0
     },
     "casspa": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00646": {
       "commonness": 0
@@ -52320,7 +52320,7 @@
       "commonness": 0
     },
     "graspa": {
-      "commonness": 1
+      "commonness": 2
     },
     "graspa1": {
       "commonness": 0
@@ -52332,7 +52332,7 @@
       "commonness": 0
     },
     "olispa": {
-      "commonness": 0
+      "commonness": 1
     },
     "olispa1": {
       "commonness": 0
@@ -52356,19 +52356,19 @@
       "commonness": 0
     },
     "chispa": {
-      "commonness": 1
+      "commonness": 2
     },
     "clcspa": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00198": {
       "commonness": 0
     },
     "bkcspa": {
-      "commonness": 0
+      "commonness": 2
     },
     "fiespa": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00976": {
       "commonness": 0
@@ -52377,7 +52377,7 @@
       "commonness": 0
     },
     "brespa": {
-      "commonness": 1
+      "commonness": 2
     },
     "brespa1": {
       "commonness": 0
@@ -52392,31 +52392,31 @@
       "commonness": 0
     },
     "worspa": {
-      "commonness": 0
+      "commonness": 1
     },
     "spizel1": {
       "commonness": 0
     },
     "fisspa": {
-      "commonness": 0
+      "commonness": 1
     },
     "Amphispizopsis": {
       "commonness": 0
     },
     "bktspa": {
-      "commonness": 1
+      "commonness": 2
     },
     "Amphispiza": {
       "commonness": 0
     },
     "larspa": {
-      "commonness": 1
+      "commonness": 2
     },
     "Chondestes": {
       "commonness": 0
     },
     "larbun": {
-      "commonness": 1
+      "commonness": 2
     },
     "Calamospiza": {
       "commonness": 0
@@ -52518,13 +52518,13 @@
       "commonness": 0
     },
     "amtspa": {
-      "commonness": 1
+      "commonness": 2
     },
     "spizel": {
       "commonness": 0
     },
     "foxspa": {
-      "commonness": 1
+      "commonness": 2
     },
     "foxsp2": {
       "commonness": 0
@@ -52542,7 +52542,7 @@
       "commonness": 0
     },
     "daejun": {
-      "commonness": 1
+      "commonness": 2
     },
     "daejun5": {
       "commonness": 0
@@ -52587,7 +52587,7 @@
       "commonness": 0
     },
     "yeejun": {
-      "commonness": 0
+      "commonness": 1
     },
     "yeejun1": {
       "commonness": 0
@@ -52611,7 +52611,7 @@
       "commonness": 0
     },
     "rucspa1": {
-      "commonness": 0
+      "commonness": 1
     },
     "rucspa6": {
       "commonness": 0
@@ -52620,7 +52620,7 @@
       "commonness": 0
     },
     "whcspa": {
-      "commonness": 1
+      "commonness": 2
     },
     "whcspa2": {
       "commonness": 0
@@ -52647,13 +52647,13 @@
       "commonness": 0
     },
     "gocspa": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00053": {
       "commonness": 0
     },
     "harspa": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00752": {
       "commonness": 0
@@ -52665,7 +52665,7 @@
       "commonness": 0
     },
     "whtspa": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00451": {
       "commonness": 0
@@ -52686,7 +52686,7 @@
       "commonness": 1
     },
     "belspa2": {
-      "commonness": 1
+      "commonness": 2
     },
     "belspa1": {
       "commonness": 0
@@ -52707,19 +52707,19 @@
       "commonness": 0
     },
     "strspa1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Oriturus": {
       "commonness": 0
     },
     "vesspa": {
-      "commonness": 1
+      "commonness": 2
     },
     "Pooecetes": {
       "commonness": 0
     },
     "lecspa": {
-      "commonness": 1
+      "commonness": 2
     },
     "seaspa": {
       "commonness": 1
@@ -52737,7 +52737,7 @@
       "commonness": 0
     },
     "nstspa": {
-      "commonness": 1
+      "commonness": 2
     },
     "nstspa1": {
       "commonness": 0
@@ -52761,7 +52761,7 @@
       "commonness": 0
     },
     "savspa": {
-      "commonness": 1
+      "commonness": 2
     },
     "savspa4": {
       "commonness": 0
@@ -52806,7 +52806,7 @@
       "commonness": 0
     },
     "sonspa": {
-      "commonness": 1
+      "commonness": 2
     },
     "sonspa2": {
       "commonness": 0
@@ -52836,13 +52836,13 @@
       "commonness": 0
     },
     "linspa": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00474": {
       "commonness": 0
     },
     "swaspa": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00702": {
       "commonness": 0
@@ -52869,13 +52869,13 @@
       "commonness": 0
     },
     "cantow": {
-      "commonness": 0
+      "commonness": 1
     },
     "whttow1": {
       "commonness": 0
     },
     "abetow": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00870": {
       "commonness": 0
@@ -52884,7 +52884,7 @@
       "commonness": 0
     },
     "caltow": {
-      "commonness": 2
+      "commonness": 3
     },
     "wegspa1": {
       "commonness": 0
@@ -52905,7 +52905,7 @@
       "commonness": 0
     },
     "rucspa": {
-      "commonness": 0
+      "commonness": 2
     },
     "oaxspa1": {
       "commonness": 0
@@ -52914,10 +52914,10 @@
       "commonness": 0
     },
     "gnttow": {
-      "commonness": 1
+      "commonness": 2
     },
     "spotow": {
-      "commonness": 1
+      "commonness": 2
     },
     "spotow1": {
       "commonness": 0
@@ -53166,7 +53166,7 @@
       "commonness": 0
     },
     "wesspi": {
-      "commonness": 0
+      "commonness": 1
     },
     "wesspi2": {
       "commonness": 0
@@ -53226,7 +53226,7 @@
       "commonness": 0
     },
     "yebcha": {
-      "commonness": 1
+      "commonness": 2
     },
     "yebcha1": {
       "commonness": 0
@@ -53235,19 +53235,19 @@
       "commonness": 0
     },
     "yehbla": {
-      "commonness": 1
+      "commonness": 2
     },
     "Xanthocephalus": {
       "commonness": 0
     },
     "boboli": {
-      "commonness": 1
+      "commonness": 2
     },
     "Dolichonyx": {
       "commonness": 0
     },
     "wesmea": {
-      "commonness": 1
+      "commonness": 2
     },
     "easmea": {
       "commonness": 1
@@ -53265,7 +53265,7 @@
       "commonness": 0
     },
     "lilmea2": {
-      "commonness": 0
+      "commonness": 1
     },
     "y01183": {
       "commonness": 0
@@ -53328,7 +53328,7 @@
       "commonness": 0
     },
     "creoro1": {
-      "commonness": 0
+      "commonness": 1
     },
     "chhoro1": {
       "commonness": 0
@@ -53430,7 +53430,7 @@
       "commonness": 0
     },
     "bkvori": {
-      "commonness": 0
+      "commonness": 1
     },
     "bawori1": {
       "commonness": 0
@@ -53439,7 +53439,7 @@
       "commonness": 0
     },
     "orcori": {
-      "commonness": 1
+      "commonness": 2
     },
     "orcori2": {
       "commonness": 0
@@ -53448,7 +53448,7 @@
       "commonness": 0
     },
     "hooori": {
-      "commonness": 1
+      "commonness": 2
     },
     "hooori2": {
       "commonness": 0
@@ -53478,7 +53478,7 @@
       "commonness": 0
     },
     "epaori1": {
-      "commonness": 0
+      "commonness": 1
     },
     "epaori2": {
       "commonness": 0
@@ -53496,7 +53496,7 @@
       "commonness": 0
     },
     "ventro1": {
-      "commonness": 0
+      "commonness": 1
     },
     "camtro1": {
       "commonness": 0
@@ -53508,7 +53508,7 @@
       "commonness": 0
     },
     "stbori": {
-      "commonness": 0
+      "commonness": 1
     },
     "stbori1": {
       "commonness": 0
@@ -53523,7 +53523,7 @@
       "commonness": 0
     },
     "bulori": {
-      "commonness": 1
+      "commonness": 2
     },
     "oraori1": {
       "commonness": 0
@@ -53535,13 +53535,13 @@
       "commonness": 0
     },
     "spbori": {
-      "commonness": 0
+      "commonness": 1
     },
     "altori": {
-      "commonness": 0
+      "commonness": 1
     },
     "audori": {
-      "commonness": 0
+      "commonness": 1
     },
     "audori1": {
       "commonness": 0
@@ -53553,7 +53553,7 @@
       "commonness": 0
     },
     "balori": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00013": {
       "commonness": 0
@@ -53562,7 +53562,7 @@
       "commonness": 0
     },
     "blbori1": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00903": {
       "commonness": 0
@@ -53571,7 +53571,7 @@
       "commonness": 0
     },
     "scoori": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00478": {
       "commonness": 0
@@ -53589,7 +53589,7 @@
       "commonness": 0
     },
     "rewbla": {
-      "commonness": 1
+      "commonness": 2
     },
     "rewbla1": {
       "commonness": 0
@@ -53604,13 +53604,13 @@
       "commonness": 0
     },
     "tribla": {
-      "commonness": 0
+      "commonness": 2
     },
     "y00651": {
       "commonness": 0
     },
     "tasbla": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00926": {
       "commonness": 0
@@ -53643,7 +53643,7 @@
       "commonness": 0
     },
     "bnhcow": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00336": {
       "commonness": 0
@@ -53673,16 +53673,16 @@
       "commonness": 0
     },
     "rusbla": {
-      "commonness": 1
+      "commonness": 2
     },
     "brebla": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00227": {
       "commonness": 0
     },
     "comgra": {
-      "commonness": 1
+      "commonness": 2
     },
     "comgra1": {
       "commonness": 0
@@ -53691,7 +53691,7 @@
       "commonness": 0
     },
     "botgra": {
-      "commonness": 0
+      "commonness": 1
     },
     "botgra1": {
       "commonness": 0
@@ -53703,7 +53703,7 @@
       "commonness": 0
     },
     "grtgra": {
-      "commonness": 1
+      "commonness": 2
     },
     "grtgra1": {
       "commonness": 0
@@ -53856,13 +53856,13 @@
       "commonness": 0
     },
     "ovenbi1": {
-      "commonness": 1
+      "commonness": 2
     },
     "Seiurus": {
       "commonness": 0
     },
     "woewar1": {
-      "commonness": 1
+      "commonness": 2
     },
     "Helmitheros": {
       "commonness": 0
@@ -53877,7 +53877,7 @@
       "commonness": 1
     },
     "norwat": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00598": {
       "commonness": 0
@@ -53886,13 +53886,13 @@
       "commonness": 0
     },
     "bacwar": {
-      "commonness": 0
+      "commonness": 1
     },
     "gowwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "buwwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00669": {
       "commonness": 0
@@ -53907,13 +53907,13 @@
       "commonness": 0
     },
     "bawwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "Mniotilta": {
       "commonness": 0
     },
     "prowar": {
-      "commonness": 1
+      "commonness": 2
     },
     "Protonotaria": {
       "commonness": 0
@@ -53925,7 +53925,7 @@
       "commonness": 0
     },
     "crcwar": {
-      "commonness": 0
+      "commonness": 1
     },
     "fltwar1": {
       "commonness": 0
@@ -53934,10 +53934,10 @@
       "commonness": 0
     },
     "tenwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "orcwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "orcwar5": {
       "commonness": 0
@@ -53955,13 +53955,13 @@
       "commonness": 0
     },
     "colwar": {
-      "commonness": 0
+      "commonness": 1
     },
     "lucwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "naswar": {
-      "commonness": 1
+      "commonness": 2
     },
     "naswar1": {
       "commonness": 0
@@ -53976,7 +53976,7 @@
       "commonness": 0
     },
     "virwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00638": {
       "commonness": 0
@@ -53991,10 +53991,10 @@
       "commonness": 0
     },
     "conwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "gycyel": {
-      "commonness": 0
+      "commonness": 1
     },
     "masyel2": {
       "commonness": 0
@@ -54009,10 +54009,10 @@
       "commonness": 0
     },
     "macwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "mouwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00746": {
       "commonness": 0
@@ -54030,7 +54030,7 @@
       "commonness": 0
     },
     "kenwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00747": {
       "commonness": 0
@@ -54060,7 +54060,7 @@
       "commonness": 0
     },
     "comyel": {
-      "commonness": 1
+      "commonness": 2
     },
     "comyel1": {
       "commonness": 0
@@ -54111,25 +54111,25 @@
       "commonness": 0
     },
     "hoowar": {
-      "commonness": 1
+      "commonness": 2
     },
     "amered": {
-      "commonness": 1
+      "commonness": 2
     },
     "kirwar": {
       "commonness": 1
     },
     "camwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "cerwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00480": {
       "commonness": 0
     },
     "norpar": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00750": {
       "commonness": 0
@@ -54138,7 +54138,7 @@
       "commonness": 0
     },
     "tropar": {
-      "commonness": 0
+      "commonness": 1
     },
     "tropar1": {
       "commonness": 0
@@ -54168,7 +54168,7 @@
       "commonness": 0
     },
     "magwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00820": {
       "commonness": 0
@@ -54177,16 +54177,16 @@
       "commonness": 0
     },
     "babwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "bkbwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00821": {
       "commonness": 0
     },
     "yelwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "yelwar1": {
       "commonness": 0
@@ -54213,13 +54213,13 @@
       "commonness": 0
     },
     "chswar": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00772": {
       "commonness": 0
     },
     "bkpwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00894": {
       "commonness": 0
@@ -54228,7 +54228,7 @@
       "commonness": 0
     },
     "btbwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00482": {
       "commonness": 0
@@ -54243,7 +54243,7 @@
       "commonness": 0
     },
     "palwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "palwar3": {
       "commonness": 0
@@ -54258,7 +54258,7 @@
       "commonness": 0
     },
     "pinwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00433": {
       "commonness": 0
@@ -54267,7 +54267,7 @@
       "commonness": 0
     },
     "yerwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "myrwar": {
       "commonness": 0
@@ -54294,7 +54294,7 @@
       "commonness": 0
     },
     "yetwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "yetwar1": {
       "commonness": 0
@@ -54315,7 +54315,7 @@
       "commonness": 0
     },
     "prawar": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00719": {
       "commonness": 0
@@ -54342,7 +54342,7 @@
       "commonness": 0
     },
     "btywar": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00895": {
       "commonness": 0
@@ -54351,7 +54351,7 @@
       "commonness": 0
     },
     "towwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00624": {
       "commonness": 0
@@ -54363,7 +54363,7 @@
       "commonness": 0
     },
     "herwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00059": {
       "commonness": 0
@@ -54378,10 +54378,10 @@
       "commonness": 0
     },
     "gchwar": {
-      "commonness": 0
+      "commonness": 1
     },
     "btnwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00486": {
       "commonness": 0
@@ -54393,10 +54393,10 @@
       "commonness": 0
     },
     "fatwar": {
-      "commonness": 0
+      "commonness": 1
     },
     "rucwar": {
-      "commonness": 0
+      "commonness": 1
     },
     "rucwar2": {
       "commonness": 0
@@ -54426,7 +54426,7 @@
       "commonness": 0
     },
     "gcrwar": {
-      "commonness": 0
+      "commonness": 1
     },
     "gocwar1": {
       "commonness": 0
@@ -54561,10 +54561,10 @@
       "commonness": 0
     },
     "canwar": {
-      "commonness": 1
+      "commonness": 2
     },
     "wlswar": {
-      "commonness": 1
+      "commonness": 2
     },
     "wilwar1": {
       "commonness": 0
@@ -54576,10 +54576,10 @@
       "commonness": 0
     },
     "refwar": {
-      "commonness": 0
+      "commonness": 1
     },
     "redwar1": {
-      "commonness": 0
+      "commonness": 1
     },
     "redwar2": {
       "commonness": 0
@@ -54594,10 +54594,10 @@
       "commonness": 0
     },
     "paired": {
-      "commonness": 1
+      "commonness": 2
     },
     "sltred": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00896": {
       "commonness": 0
@@ -54696,19 +54696,19 @@
       "commonness": 0
     },
     "sumtan": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00924": {
       "commonness": 0
     },
     "scatan": {
-      "commonness": 1
+      "commonness": 2
     },
     "y00925": {
       "commonness": 0
     },
     "westan": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00824": {
       "commonness": 0
@@ -54717,7 +54717,7 @@
       "commonness": 0
     },
     "flctan": {
-      "commonness": 0
+      "commonness": 1
     },
     "x00826": {
       "commonness": 0
@@ -54804,7 +54804,7 @@
       "commonness": 0
     },
     "crcgro": {
-      "commonness": 0
+      "commonness": 1
     },
     "Rhodothraupis": {
       "commonness": 0
@@ -54834,7 +54834,7 @@
       "commonness": 0
     },
     "yelgro": {
-      "commonness": 0
+      "commonness": 1
     },
     "yelgro2": {
       "commonness": 0
@@ -54864,7 +54864,7 @@
       "commonness": 0
     },
     "robgro": {
-      "commonness": 1
+      "commonness": 2
     },
     "x01002": {
       "commonness": 0
@@ -54873,7 +54873,7 @@
       "commonness": 0
     },
     "bkhgro": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00448": {
       "commonness": 0
@@ -54951,7 +54951,7 @@
       "commonness": 0
     },
     "blubun": {
-      "commonness": 0
+      "commonness": 1
     },
     "blubun1": {
       "commonness": 0
@@ -54963,13 +54963,13 @@
       "commonness": 0
     },
     "blugrb1": {
-      "commonness": 1
+      "commonness": 2
     },
     "lazbun": {
-      "commonness": 1
+      "commonness": 2
     },
     "indbun": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00872": {
       "commonness": 0
@@ -54984,13 +54984,13 @@
       "commonness": 0
     },
     "orbbun1": {
-      "commonness": 0
+      "commonness": 1
     },
     "varbun": {
       "commonness": 1
     },
     "paibun": {
-      "commonness": 1
+      "commonness": 2
     },
     "x00918": {
       "commonness": 0
@@ -55002,7 +55002,7 @@
       "commonness": 0
     },
     "dickci": {
-      "commonness": 1
+      "commonness": 2
     },
     "Spiza": {
       "commonness": 0
@@ -55056,7 +55056,7 @@
       "commonness": 0
     },
     "yebcar": {
-      "commonness": 0
+      "commonness": 1
     },
     "paroar1": {
       "commonness": 0
@@ -55290,7 +55290,7 @@
       "commonness": 0
     },
     "whltan1": {
-      "commonness": 0
+      "commonness": 1
     },
     "restan1": {
       "commonness": 0
@@ -55347,7 +55347,7 @@
       "commonness": 0
     },
     "sibtan2": {
-      "commonness": 0
+      "commonness": 1
     },
     "mactan1": {
       "commonness": 0
@@ -55566,7 +55566,7 @@
       "commonness": 0
     },
     "bugtan": {
-      "commonness": 0
+      "commonness": 1
     },
     "bugtan1": {
       "commonness": 0
@@ -55734,7 +55734,7 @@
       "commonness": 0
     },
     "partan1": {
-      "commonness": 0
+      "commonness": 1
     },
     "oprtan1": {
       "commonness": 0
@@ -55860,7 +55860,7 @@
       "commonness": 0
     },
     "bludac1": {
-      "commonness": 0
+      "commonness": 1
     },
     "virdac1": {
       "commonness": 0
@@ -55878,10 +55878,10 @@
       "commonness": 0
     },
     "purhon1": {
-      "commonness": 0
+      "commonness": 1
     },
     "relhon1": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00654": {
       "commonness": 0
@@ -56397,7 +56397,7 @@
       "commonness": 0
     },
     "saffin": {
-      "commonness": 0
+      "commonness": 1
     },
     "saffin1": {
       "commonness": 0
@@ -56406,7 +56406,7 @@
       "commonness": 0
     },
     "gryfin1": {
-      "commonness": 0
+      "commonness": 1
     },
     "grayef1": {
       "commonness": 0
@@ -56457,16 +56457,16 @@
       "commonness": 0
     },
     "blbgra1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Volatinia": {
       "commonness": 0
     },
     "lessee2": {
-      "commonness": 1
+      "commonness": 0
     },
     "linsee1": {
-      "commonness": 0
+      "commonness": 1
     },
     "y00699": {
       "commonness": 0
@@ -56481,10 +56481,10 @@
       "commonness": 0
     },
     "pabsee1": {
-      "commonness": 0
+      "commonness": 1
     },
     "chtsee1": {
-      "commonness": 0
+      "commonness": 1
     },
     "drasee1": {
       "commonness": 0
@@ -56565,10 +56565,10 @@
       "commonness": 0
     },
     "whcsee1": {
-      "commonness": 0
+      "commonness": 1
     },
     "whcsee2": {
-      "commonness": 0
+      "commonness": 1
     },
     "whcsee": {
       "commonness": 0
@@ -56670,7 +56670,7 @@
       "commonness": 0
     },
     "banana": {
-      "commonness": 0
+      "commonness": 1
     },
     "banana4": {
       "commonness": 0
@@ -56706,7 +56706,7 @@
       "commonness": 0
     },
     "yefgra1": {
-      "commonness": 0
+      "commonness": 1
     },
     "Tiaris": {
       "commonness": 0
@@ -56724,7 +56724,7 @@
       "commonness": 0
     },
     "cubbul1": {
-      "commonness": 0
+      "commonness": 1
     },
     "cubbul2": {
       "commonness": 0
@@ -56745,7 +56745,7 @@
       "commonness": 0
     },
     "cubgra": {
-      "commonness": 0
+      "commonness": 1
     },
     "Phonipara": {
       "commonness": 0
@@ -56763,7 +56763,7 @@
       "commonness": 0
     },
     "bkfgra": {
-      "commonness": 0
+      "commonness": 1
     },
     "Melanospiza": {
       "commonness": 0
