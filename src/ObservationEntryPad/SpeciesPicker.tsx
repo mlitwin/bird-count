@@ -13,17 +13,17 @@ function SpeciesPicker(props) {
         return props.species.length - index - 1
     }
 
-    const activeIndex = virtuosoListIndex(props.active)
+    const lastIndex = props.species.length - 1
 
     useEffect(() => {
-        if (virtuoso.current) {
+        if (virtuoso.current && lastIndex >= 0) {
             virtuoso.current.scrollToIndex({
-                index: activeIndex,
+                index: lastIndex,
                 align: 'start',
                 behavior: 'auto',
             })
         }
-    })
+    }, [props.species])
 
     function itemContent(index) {
         const reveseIndex = virtuosoListIndex(index)
@@ -38,9 +38,7 @@ function SpeciesPicker(props) {
         )
     }
 
-    const listKey = props.species
-        .map((s, index) => (s.id + index === activeIndex ? 'a' : ''))
-        .join('/')
+    const listKey = props.species.map((s) => s.id).join('/')
 
     return (
         <List className="SpeciesPicker">
@@ -48,7 +46,7 @@ function SpeciesPicker(props) {
                 key={listKey}
                 ref={virtuoso}
                 totalCount={props.species.length}
-                initialTopMostItemIndex={activeIndex}
+                initialTopMostItemIndex={lastIndex}
                 alignToBottom={true}
                 itemContent={(index) => itemContent(index)}
             />
