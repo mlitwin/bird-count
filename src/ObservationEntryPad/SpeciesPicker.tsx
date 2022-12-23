@@ -23,20 +23,9 @@ function SpeciesPicker(props) {
         return props.species.length - index - 1
     }
 
-    const lastIndex = props.species.length - 1
-
-    /* Safari workaround.
-        On initial load, the last item renders as expected, but
-        then somehow it restarts from item 1 (second item) - scrolls almost to the top
-        chrome doesn't.
-    */
-    useEffect(() => {
-        setTimeout(() => setScrollPosition(virtuoso), 100)
-    }, [])
-
     useEffect(() => {
         setScrollPosition(virtuoso)
-    }, [props.species, lastIndex])
+    }, [props.species])
 
     function itemContent(index) {
         const reveseIndex = virtuosoListIndex(index)
@@ -61,6 +50,7 @@ function SpeciesPicker(props) {
         <List className="SpeciesPicker">
             <Virtuoso
                 ref={virtuoso}
+                style={{ height: '100%' }}
                 totalCount={props.species.length}
                 initialTopMostItemIndex={{
                     index: 'LAST',
