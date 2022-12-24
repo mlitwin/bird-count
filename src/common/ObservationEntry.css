@@ -1,3 +1,26 @@
+.ObservatioSwiper {
+    display: flex;
+    width: 100%;
+}
+
+.ObservatioSwiper .last {
+    display: flex;
+    overflow: hidden;
+    width: 0px;
+    max-width: max-content;
+    white-space: nowrap;
+}
+
+.ObservatioSwiper .DeleteObservatiobButton {
+    background-color: red;
+    color: white;
+}
+
+/*
+.ObservatioSwiper.last .last {
+    transition: width 0.5s;
+}
+*/
 .Observation.edit {
     min-height: 1em;
     margin-bottom: 1em;

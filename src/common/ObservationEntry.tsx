@@ -1,13 +1,15 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import SpeciesName from './SpeciesName'
 import MoreMenu from './ObservationEntry/MoreMenu'
 import { ObservationSet, Observation } from 'model/types'
 import IconButton from '@mui/material/IconButton'
+import Button from '@mui/material/Button'
 import {
     CheckCircleOutline,
     AddCircleOutline,
     RemoveCircleOutlined,
 } from '@mui/icons-material'
+import { useSwipeable } from 'react-swipeable'
 
 import { getAppContext, useAddObservation } from '../store/store'
 
@@ -34,9 +36,46 @@ interface ObservationProps {
 }
 
 function ObservationEntryDisplay(props) {
+    const query = props.query
     const count = props.query.count
     const species = props.query.species
     const date = props.displayDate
+    const addObservation = useAddObservation()
+
+    const last = useRef(null)
+    const [activeSlide, setActiveSlide] = useState('middle')
+    const [lastWidth, setLastWidth] = useState(0)
+    const [lastContentWidth, setLastContentWidth] = useState(0)
+
+    const handlers = useSwipeable({
+        onSwipeStart: (eventData) => {
+            if (activeSlide === 'last') {
+                setLastContentWidth(last.current.offsetWidth)
+            }
+        },
+        onSwiping: (eventData) => {
+            if (activeSlide === 'middle') {
+                const w = Math.floor(-eventData.deltaX)
+                setLastWidth(Math.max(w, 0))
+            }
+            if (activeSlide === 'last') {
+                // console.log(lastContentWidth, eventData)
+                const w = Math.floor(lastContentWidth - eventData.deltaX)
+
+                setLastWidth(Math.max(w, 0))
+            }
+        },
+        onSwiped: (eventData) => {
+            const offsetWidth = last?.current.offsetWidth
+            const scrollWidth = last?.current.scrollWidth
+            if (offsetWidth < scrollWidth) {
+                setLastWidth(0)
+                setActiveSlide('middle')
+            } else {
+                setActiveSlide('last')
+            }
+        },
+    })
 
     function onClick() {
         props.setMode('edit')
@@ -49,18 +88,55 @@ function ObservationEntryDisplay(props) {
         }
     }
 
+    function doDelete() {
+        props.setMode('display')
+
+        const deleteObservations = query.observations.map((o) => {
+            const parentSet = new ObservationSet([o])
+            const newO = new Observation()
+            newO.Assign(o)
+            newO.createdAt = Date.now()
+            newO.id = uuidv4()
+            newO.count = -parentSet.count
+            newO.parent = o
+
+            return newO
+        })
+
+        deleteObservations.forEach((o) => {
+            addObservation(o)
+        })
+
+        if (props.onEvent) {
+            props.onEvent({
+                type: 'delete',
+                observation: query,
+            })
+        }
+    }
+
     return (
-        <div
-            className={'Observation display ' + props.variant}
-            onClick={onClick}
-        >
-            <div className="ObservationDisplay">
-                <div className="ObservationDate">{date}</div>
-                <div className="ObservationSummary">
-                    <div className="ObservationCount">{count}</div>
-                    <SpeciesName species={species}></SpeciesName>
+        <div className={`ObservatioSwiper ${activeSlide}`} {...handlers}>
+            <div
+                className={'Observation display ' + props.variant}
+                onClick={onClick}
+            >
+                <div className="ObservationDisplay">
+                    <div className="ObservationDate">{date}</div>
+                    <div className="ObservationSummary">
+                        <div className="ObservationCount">{count}</div>
+                        <SpeciesName species={species}></SpeciesName>
+                    </div>
+                    <div>{props.displaySummary}</div>
                 </div>
-                <div>{props.displaySummary}</div>
+            </div>
+            <div className="last" ref={last} style={{ width: lastWidth }}>
+                <Button
+                    className="DeleteObservatiobButton"
+                    onClick={(e) => doDelete()}
+                >
+                    Delete
+                </Button>
             </div>
         </div>
     )
@@ -68,6 +144,7 @@ function ObservationEntryDisplay(props) {
 
 interface IObservationEntryEditProps {
     query: ObservationSet
+    variant: string
     setMode: any
     onEvent?: ObservationEntryEventCallback
 }
@@ -82,7 +159,9 @@ function ObservationEntryEdit(props: IObservationEntryEditProps) {
     const delta = count - query.count
 
     function doAccept() {
-        if (delta !== 0) {
+        if (props.variant === 'create') {
+            addObservation(query)
+        } else if (delta !== 0) {
             const child = ac.createObservation()
             child.parent = query.newObservationParent()
             child.species = child.parent ? child.parent.species : query.species
@@ -139,7 +218,10 @@ function ObservationEntryEdit(props: IObservationEntryEditProps) {
         }
     }
 
-    const activeEdit = delta !== 0 ? 'activeEdit' : 'noActiveEdit'
+    const activeEdit =
+        props.variant === 'create' || delta !== 0
+            ? 'activeEdit'
+            : 'noActiveEdit'
 
     return (
         <div className={'Observation edit ' + activeEdit}>
@@ -190,6 +272,7 @@ function ObservationEntry(props: ObservationProps) {
         const displaySummary = props.displaySummary ? props.displaySummary : ''
         return (
             <ObservationEntryDisplay
+                key={query.id}
                 variant={props.variant}
                 query={query}
                 setMode={setMode}
@@ -203,6 +286,7 @@ function ObservationEntry(props: ObservationProps) {
     return (
         <ObservationEntryEdit
             query={query}
+            variant={props.variant}
             setMode={setMode}
             onEvent={props.onEvent}
         ></ObservationEntryEdit>

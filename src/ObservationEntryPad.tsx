@@ -145,7 +145,6 @@ function ObservationEntryPad(props) {
         newObservation.species = species[index]
         newObservation.count = 1
 
-        addObservation(newObservation)
         setActiveObservation(newObservation)
 
         resetInput()
