@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react'
 import SpeciesName from './SpeciesName'
-import MoreMenu from './ObservationEntry/MoreMenu'
 import { ObservationSet, Observation } from 'model/types'
 import IconButton from '@mui/material/IconButton'
 import Button from '@mui/material/Button'
@@ -8,6 +7,7 @@ import {
     CheckCircleOutline,
     AddCircleOutline,
     RemoveCircleOutlined,
+    CancelOutlined,
 } from '@mui/icons-material'
 import { useSwipeable } from 'react-swipeable'
 
@@ -191,33 +191,6 @@ function ObservationEntryEdit(props: IObservationEntryEditProps) {
         }
     }
 
-    function doDelete() {
-        props.setMode('display')
-
-        const deleteObservations = query.observations.map((o) => {
-            const parentSet = new ObservationSet([o])
-            const newO = new Observation()
-            newO.Assign(o)
-            newO.createdAt = Date.now()
-            newO.id = uuidv4()
-            newO.count = -parentSet.count
-            newO.parent = o
-
-            return newO
-        })
-
-        deleteObservations.forEach((o) => {
-            addObservation(o)
-        })
-
-        if (props.onEvent) {
-            props.onEvent({
-                type: 'delete',
-                observation: query,
-            })
-        }
-    }
-
     const activeEdit =
         props.variant === 'create' || delta !== 0
             ? 'activeEdit'
@@ -230,10 +203,9 @@ function ObservationEntryEdit(props: IObservationEntryEditProps) {
             </div>
             <div className="ObservationEditIcons">
                 <div className="EntryControls">
-                    <MoreMenu
-                        doCancel={doCancel}
-                        doDelete={doDelete}
-                    ></MoreMenu>
+                    <IconButton className="Button" onClick={(e) => doCancel()}>
+                        <CancelOutlined fontSize="large" />
+                    </IconButton>
                 </div>
                 <div className="CountEntry">
                     <div className="ObservationCount">{count}</div>

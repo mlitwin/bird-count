@@ -18,31 +18,41 @@ interface IObservationListProps {
     observationContent: (item: any) => JSX.Element
 }
 
+function EmptyObservationList() {
+    return (
+        <div className="oneColumnExpand">
+            <List className="Observations"></List>
+        </div>
+    )
+}
+
 function ObservationList(props: IObservationListProps) {
     const data = props.data
+    const virtuoso = useRef(null)
+    useEffect(() => {
+        if (virtuoso && virtuoso.current) {
+            virtuoso.current.scrollToIndex({
+                index: 'LAST',
+                align: 'start',
+                behavior: 'auto',
+            })
+        }
+    })
 
     const groupCounts = data.map((g) => g.observations.length)
+    const totalObservations = groupCounts.reduce((g, current) => g + current, 0)
+
+    if (totalObservations === 0) {
+        return EmptyObservationList()
+    }
+
     const groupedVirtuosoProps: any = {
         groupCounts: groupCounts,
         groupContent: (index) => props.observationGroupContent(data[index]),
         itemContent: (i, g) =>
             props.observationContent(data[g].observations[i - data[g].offset]),
+        initialTopMostItemIndex: totalObservations - 1,
     }
-    const totalObservations = groupCounts.reduce((g, current) => g + current, 0)
-
-    if (totalObservations > 0) {
-        groupedVirtuosoProps.initialTopMostItemIndex = totalObservations - 1
-    }
-
-    const virtuoso = useRef(null)
-
-    useEffect(() => {
-        virtuoso?.current.scrollToIndex({
-            index: 'LAST',
-            align: 'start',
-            behavior: 'auto',
-        })
-    })
 
     return (
         <div className="oneColumnExpand">
