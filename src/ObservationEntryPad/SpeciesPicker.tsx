@@ -46,9 +46,12 @@ function SpeciesPicker(props) {
         return species.id
     }
 
+    const listKey = props.species.map((s) => s.id).join(':')
+
     return (
         <List className="SpeciesPicker">
             <Virtuoso
+                key={listKey}
                 ref={virtuoso}
                 style={{ height: '100%' }}
                 totalCount={props.species.length}
