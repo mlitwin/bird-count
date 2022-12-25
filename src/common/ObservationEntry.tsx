@@ -59,7 +59,6 @@ function ObservationEntryDisplay(props) {
                 setLastWidth(Math.max(w, 0))
             }
             if (activeSlide === 'last') {
-                // console.log(lastContentWidth, eventData)
                 const w = Math.floor(lastContentWidth - eventData.deltaX)
 
                 setLastWidth(Math.max(w, 0))
@@ -75,6 +74,7 @@ function ObservationEntryDisplay(props) {
                 setActiveSlide('last')
             }
         },
+        trackMouse: true,
     })
 
     function onClick() {

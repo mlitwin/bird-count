@@ -17,4 +17,5 @@ body {
         env(safe-area-inset-bottom, 20px) env(safe-area-inset-left, 20px);
     overscroll-behavior: none;
     box-sizing: border-box;
+    overflow: hidden;
 }
