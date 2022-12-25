@@ -23,6 +23,11 @@ function SpeciesPicker(props) {
         return props.species.length - index - 1
     }
 
+    // Needed for Safari - initialTopMostItemIndex doesn't seem to work?
+    useEffect(() => {
+        setTimeout(() => setScrollPosition(virtuoso), 100)
+    }, [props.species])
+
     useEffect(() => {
         setScrollPosition(virtuoso)
     }, [props.species])

@@ -75,6 +75,7 @@ function ObservationEntryDisplay(props) {
             }
         },
         trackMouse: true,
+        preventScrollOnSwipe: true,
     })
 
     function onClick() {
