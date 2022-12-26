@@ -42,9 +42,11 @@ function SpeciesPicker(props) {
     const listKey = species.map((s) => s.id).join(':')
 
     return (
-        <List key={listKey} className="SpeciesPicker">
-            {species.map((sp, index) => itemContent(sp, index, bottomEl))}
-        </List>
+        <div className="SpeciesPicker">
+            <List key={listKey} className="SpeciesList">
+                {species.map((sp, index) => itemContent(sp, index, bottomEl))}
+            </List>
+        </div>
     )
 }
 

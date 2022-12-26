@@ -1,16 +1,10 @@
 .SpeciesPicker {
-    overflow-y: scroll;
-    flex-grow: 1;
     display: flex;
+    flex-grow: 1;
     flex-direction: column;
     justify-content: flex-end;
 }
 
-.ObservationEntryPad.editNotActive .SpeciesPicker li.active {
-    color: black;
-    border-style: solid;
-    border-color: gray;
-    border-width: 4px;
-    border-radius: 2px;
-    box-sizing: border-box;
+.SpeciesList {
+    overflow-y: scroll;
 }
