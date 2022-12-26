@@ -2,73 +2,48 @@ import SpeciesName from '../common/SpeciesName'
 import React, { useRef, useEffect } from 'react'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
-import { Virtuoso } from 'react-virtuoso'
 
 import './SpeciesPicker.css'
 
-function setScrollPosition(virtuoso) {
-    if (virtuoso.current) {
-        virtuoso.current.scrollToIndex({
-            index: 'LAST',
-            align: 'start',
-            behavior: 'auto',
-        })
+function setScrollPositionToEnd(bottomEl) {
+    if (bottomEl.current) {
+        bottomEl.current.scrollIntoView(false)
     }
 }
 
 function SpeciesPicker(props) {
-    const virtuoso = useRef(null)
+    const bottomEl = useRef(null)
+    const maxSpeciesInPicker = 100
+    const species = props.species.slice(0, maxSpeciesInPicker).reverse()
 
-    function virtuosoListIndex(index) {
-        return props.species.length - index - 1
-    }
-
-    // Needed for Safari - initialTopMostItemIndex doesn't seem to work?
     useEffect(() => {
-        setTimeout(() => setScrollPosition(virtuoso), 100)
+        setScrollPositionToEnd(bottomEl)
     })
 
     useEffect(() => {
-        setScrollPosition(virtuoso)
-    }, [props.species])
+        setScrollPositionToEnd(bottomEl)
+    }, [species])
 
-    function itemContent(index) {
-        const reveseIndex = virtuosoListIndex(index)
-        const species = props.species[reveseIndex]
+    function itemContent(sp, index, bottomEl) {
+        const itemProps: any = {
+            key: `${sp.id}:${index}`,
+            onClick: (e) => props.chooseItem(sp),
+        }
+        if (index === species.length - 1) {
+            itemProps.ref = bottomEl
+        }
         return (
-            <ListItem
-                key={reveseIndex}
-                onClick={(e) => props.chooseItem(reveseIndex)}
-            >
-                <SpeciesName species={species} />
+            <ListItem {...itemProps}>
+                <SpeciesName species={sp} />
             </ListItem>
         )
     }
 
-    function itemKey(index) {
-        const reveseIndex = virtuosoListIndex(index)
-        const species = props.species[reveseIndex]
-        return species.id
-    }
-
-    const listKey = props.species.map((s) => s.id).join(':')
+    const listKey = species.map((s) => s.id).join(':')
 
     return (
-        <List className="SpeciesPicker">
-            <Virtuoso
-                key={listKey}
-                ref={virtuoso}
-                style={{ height: '100%' }}
-                totalCount={props.species.length}
-                initialTopMostItemIndex={{
-                    index: 'LAST',
-                    align: 'start',
-                    behavior: 'auto',
-                }}
-                computeItemKey={itemKey}
-                alignToBottom={true}
-                itemContent={(index) => itemContent(index)}
-            />
+        <List key={listKey} className="SpeciesPicker">
+            {species.map((sp, index) => itemContent(sp, index, bottomEl))}
         </List>
     )
 }

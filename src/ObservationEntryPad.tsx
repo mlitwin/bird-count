@@ -5,11 +5,7 @@ import { ObservationEntry } from './common/ObservationEntry'
 
 import { Observation, ObservationSet } from './model/types'
 
-import {
-    getAppContext,
-    recentObservations,
-    useAddObservation,
-} from './store/store'
+import { getAppContext, recentObservations } from './store/store'
 import React, { useState } from 'react'
 
 import './ObservationEntryPad.css'
@@ -110,12 +106,10 @@ const defaultFilter = {
 }
 
 function ObservationEntryPad(props) {
-    const [active, setActiveState] = useState(0)
     const [filter, setFilter] = useState<IFilter>(defaultFilter)
     const [activeObservation, setActiveObservation] =
         useState<null | Observation>(null)
 
-    const addObservation = useAddObservation()
     const recent = recentObservations()
     const ac = getAppContext()
     const checklist = ac.checklist
@@ -129,20 +123,11 @@ function ObservationEntryPad(props) {
 
     function resetInput() {
         setFilter(defaultFilter)
-        setActiveState(0)
     }
 
-    function chooseItem(index) {
-        if (species.length === 0) {
-            return
-        }
-
-        if (index === undefined) {
-            index = active
-        }
-
+    function chooseItem(sp) {
         const newObservation = ac.createObservation()
-        newObservation.species = species[index]
+        newObservation.species = sp
         newObservation.count = 1
 
         setActiveObservation(newObservation)
@@ -174,18 +159,10 @@ function ObservationEntryPad(props) {
     return (
         <div className={'ObservationEntryPad oneColumn ' + editActive}>
             <div className="ObservationListArea oneColumnExpand">
-                <SpeciesPicker
-                    species={species}
-                    active={active}
-                    chooseItem={chooseItem}
-                />
+                <SpeciesPicker species={species} chooseItem={chooseItem} />
             </div>
             {observationEntry()}
-            <FilterBar
-                filter={filter}
-                setFilter={setFilter}
-                chooseItem={chooseItem}
-            />
+            <FilterBar filter={filter} setFilter={setFilter} />
             <Keypad filter={filter} setFilter={setFilter} />
         </div>
     )

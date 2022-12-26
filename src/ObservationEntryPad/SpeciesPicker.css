@@ -1,6 +1,9 @@
 .SpeciesPicker {
     overflow-y: scroll;
     flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
 }
 
 .ObservationEntryPad.editNotActive .SpeciesPicker li.active {
