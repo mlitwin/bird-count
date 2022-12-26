@@ -37,6 +37,13 @@ function Keypad(props) {
                 keyboardRef={(r) => (keyboard.current = r)}
                 onKeyPress={onKeyPress}
                 layout={layout}
+                buttonAttributes={[
+                    {
+                        attribute: 'data-type',
+                        value: 'control',
+                        buttons: `${bsp} ${clr}`,
+                    },
+                ]}
             />
         </div>
     )
