@@ -35,13 +35,7 @@ interface ObservationProps {
     onEvent?: ObservationEntryEventCallback
 }
 
-function ObservationEntryDisplay(props) {
-    const query = props.query
-    const count = props.query.count
-    const species = props.query.species
-    const date = props.displayDate
-    const addObservation = useAddObservation()
-
+function useRevealSwiper() {
     const last = useRef(null)
     const [activeSlide, setActiveSlide] = useState('middle')
     const [lastWidth, setLastWidth] = useState(0)
@@ -78,6 +72,27 @@ function ObservationEntryDisplay(props) {
         preventScrollOnSwipe: true,
         delta: 20,
     })
+
+    const lastProps = {
+        ref: last,
+        style: {
+            width: lastWidth,
+        },
+    }
+    const swiperProps = {
+        className: `ObservatioSwiper ${activeSlide}`,
+    }
+    return [handlers, swiperProps, lastProps]
+}
+
+function ObservationEntryDisplay(props) {
+    const query = props.query
+    const count = props.query.count
+    const species = props.query.species
+    const date = props.displayDate
+    const addObservation = useAddObservation()
+
+    const [handlers, swiperProps, lastProps] = useRevealSwiper()
 
     function onClick() {
         props.setMode('edit')
@@ -118,7 +133,7 @@ function ObservationEntryDisplay(props) {
     }
 
     return (
-        <div className={`ObservatioSwiper ${activeSlide}`} {...handlers}>
+        <div {...swiperProps} {...handlers}>
             <div
                 className={'Observation display ' + props.variant}
                 onClick={onClick}
@@ -132,7 +147,7 @@ function ObservationEntryDisplay(props) {
                     <div>{props.displaySummary}</div>
                 </div>
             </div>
-            <div className="last" ref={last} style={{ width: lastWidth }}>
+            <div className="last" {...lastProps}>
                 <Button
                     className="DeleteObservatiobButton"
                     onClick={(e) => doDelete()}
