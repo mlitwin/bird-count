@@ -20,6 +20,11 @@
     flex-shrink: 0;
 }
 
+.AppNav {
+    display: flex;
+    justify-content: space-between;
+}
+
 .AppContent {
     flex-grow: 1;
     overflow-y: scroll;

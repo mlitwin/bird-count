@@ -48,7 +48,7 @@ function standardSortLevel(species) {
     return species.commonness
 }
 
-function computeChecklist(ck, filter, recent, latest) {
+function computeChecklist(ck, filter, commonness, recent, latest) {
     let species = []
     const filterSort = {}
     const standardSort = {}
@@ -61,7 +61,7 @@ function computeChecklist(ck, filter, recent, latest) {
                 return
             }
             const st = standardSortLevel(s)
-            if (st < filter.commonness) {
+            if (st < commonness) {
                 return
             }
             const l = filterSortIndex(filter.text, s)
@@ -97,12 +97,10 @@ function computeChecklist(ck, filter, recent, latest) {
 
 interface IFilter {
     text: string
-    commonness: number
 }
 
 const defaultFilter = {
     text: '',
-    commonness: 2,
 }
 
 function ObservationEntryPad(props) {
@@ -117,6 +115,7 @@ function ObservationEntryPad(props) {
     const species = computeChecklist(
         checklist,
         filter,
+        props.commonnessSetting,
         recent,
         activeObservation
     )

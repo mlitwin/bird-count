@@ -1,11 +1,7 @@
 .KeypadControls {
     display: flex;
-    justify-content: space-between;
-}
-
-.Commonness {
-    margin-left: 15px;
-    margin-right: 40px;
+    justify-content: space-around;
+    padding-bottom: 5px;
 }
 
 .KeyboadInputArea {
@@ -19,4 +15,8 @@
     min-width: 6em;
     display: flex;
     height: 100%;
+}
+
+.FilterValue.prompt {
+    color: gray;
 }
