@@ -152,6 +152,7 @@ function ObservationEntryPad(props) {
                 onEvent={onEvent}
                 observation={new ObservationSet([activeObservation])}
                 initialMode="edit"
+                isScrolling={props.isScrolling}
             />
         )
     }

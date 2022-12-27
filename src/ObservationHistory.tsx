@@ -10,7 +10,7 @@ import { observations, clearObservations } from './store/store'
 
 import dayjs from 'dayjs'
 
-function observationGroupContent(group) {
+function observationGroupContent(group, isScrolling) {
     const date = dayjs.unix(group.date).format('ddd MM/D/YY')
     return (
         <ListItem>
@@ -20,11 +20,12 @@ function observationGroupContent(group) {
                 initialMode="display"
                 displayDate={date}
                 displaySummary={group.statistics}
+                isScrolling={isScrolling}
             />
         </ListItem>
     )
 }
-function observationContent(observation) {
+function observationContent(observation, isScrolling) {
     const date = dayjs(observation.start).format('HH:mm')
 
     return (
@@ -34,6 +35,7 @@ function observationContent(observation) {
                 observation={observation}
                 initialMode="display"
                 displayDate={date}
+                isScrolling={isScrolling}
             />
         </ListItem>
     )

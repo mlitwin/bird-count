@@ -1,7 +1,7 @@
 import { ObservationSet } from 'model/types'
 import List from '@mui/material/List'
 import { GroupedVirtuoso } from 'react-virtuoso'
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import './ObservationList.css'
 
 interface IObservationGroup {
@@ -14,8 +14,8 @@ interface IObservationGroup {
 
 interface IObservationListProps {
     data: IObservationGroup[]
-    observationGroupContent: (group: any) => JSX.Element
-    observationContent: (item: any) => JSX.Element
+    observationGroupContent: (group: any, isScrolling: boolean) => JSX.Element
+    observationContent: (item: any, isScrolling: boolean) => JSX.Element
 }
 
 function EmptyObservationList() {
@@ -28,6 +28,8 @@ function EmptyObservationList() {
 
 function ObservationList(props: IObservationListProps) {
     const data = props.data
+    const [isScrolling, setIsScrolling] = useState(false)
+
     const virtuoso = useRef(null)
     useEffect(() => {
         if (virtuoso && virtuoso.current) {
@@ -37,7 +39,7 @@ function ObservationList(props: IObservationListProps) {
                 behavior: 'auto',
             })
         }
-    })
+    }, [data])
 
     const groupCounts = data.map((g) => g.observations.length)
     const totalObservations = groupCounts.reduce((g, current) => g + current, 0)
@@ -48,10 +50,15 @@ function ObservationList(props: IObservationListProps) {
 
     const groupedVirtuosoProps: any = {
         groupCounts: groupCounts,
-        groupContent: (index) => props.observationGroupContent(data[index]),
+        groupContent: (index) =>
+            props.observationGroupContent(data[index], isScrolling),
         itemContent: (i, g) =>
-            props.observationContent(data[g].observations[i - data[g].offset]),
+            props.observationContent(
+                data[g].observations[i - data[g].offset],
+                isScrolling
+            ),
         initialTopMostItemIndex: totalObservations - 1,
+        isScrolling: setIsScrolling,
     }
 
     return (

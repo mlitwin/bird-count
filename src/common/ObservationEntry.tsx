@@ -33,40 +33,69 @@ interface ObservationProps {
     displayDate?: string
     displaySummary?: string
     onEvent?: ObservationEntryEventCallback
+    isScrolling: boolean
 }
 
-function useRevealSwiper() {
+function useRevealSwiper(cancel: boolean) {
     const last = useRef(null)
     const [activeSlide, setActiveSlide] = useState('middle')
     const [lastWidth, setLastWidth] = useState(0)
     const [lastContentWidth, setLastContentWidth] = useState(0)
+    const [canceled, setCanceled] = useState(false)
+
+    function setWidth(width) {
+        setLastWidth(Math.max(width, 0))
+    }
+
+    function endSwipe() {
+        const offsetWidth = last?.current.offsetWidth
+        const scrollWidth = last?.current.scrollWidth
+        if (canceled) {
+            setCanceled(false)
+        }
+        if (offsetWidth < scrollWidth) {
+            setLastWidth(0)
+            setActiveSlide('middle')
+        } else {
+            setActiveSlide('last')
+        }
+    }
+
+    function doCancel() {
+        if (cancel) {
+            setCanceled(true)
+            endSwipe()
+        }
+        return cancel
+    }
 
     const handlers = useSwipeable({
         onSwipeStart: (eventData) => {
+            if (doCancel()) {
+                return
+            }
             if (activeSlide === 'last') {
                 setLastContentWidth(last.current.offsetWidth)
             }
         },
         onSwiping: (eventData) => {
+            if (canceled) {
+                return
+            }
+            if (doCancel()) {
+                return
+            }
             if (activeSlide === 'middle') {
                 const w = Math.floor(-eventData.deltaX)
-                setLastWidth(Math.max(w, 0))
+                setWidth(w)
             }
             if (activeSlide === 'last') {
                 const w = Math.floor(lastContentWidth - eventData.deltaX)
-
-                setLastWidth(Math.max(w, 0))
+                setWidth(w)
             }
         },
         onSwiped: (eventData) => {
-            const offsetWidth = last?.current.offsetWidth
-            const scrollWidth = last?.current.scrollWidth
-            if (offsetWidth < scrollWidth) {
-                setLastWidth(0)
-                setActiveSlide('middle')
-            } else {
-                setActiveSlide('last')
-            }
+            endSwipe()
         },
         trackMouse: true,
         preventScrollOnSwipe: true,
@@ -92,7 +121,9 @@ function ObservationEntryDisplay(props) {
     const date = props.displayDate
     const addObservation = useAddObservation()
 
-    const [handlers, swiperProps, lastProps] = useRevealSwiper()
+    const [handlers, swiperProps, lastProps] = useRevealSwiper(
+        props.isScrolling
+    )
 
     function onClick() {
         props.setMode('edit')
@@ -268,6 +299,7 @@ function ObservationEntry(props: ObservationProps) {
                 displayDate={displayDate}
                 displaySummary={displaySummary}
                 onEvent={props.onEvent}
+                isScrolling={props.isScrolling}
             ></ObservationEntryDisplay>
         )
     }
