@@ -1,0 +1,19 @@
+.ObservationHistorySummary {
+    padding: 20px;
+}
+
+.ObservationHistorySummary .Controls {
+    display: flex;
+    justify-content: space-between;
+}
+
+.DateRangePicker > div {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.DateRangeNavigator {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+}

@@ -7,6 +7,7 @@ import Tab from '@mui/material/Tab'
 
 import ObservationEntryPad from './ObservationEntryPad'
 import ObservationHistory from './ObservationHistory'
+import ObservationSummary from './ObservationSummary'
 import Settings from './Settings'
 import { useAppContext } from 'store/store'
 
@@ -33,7 +34,7 @@ function App() {
                     />
                 </div>
                 <div hidden={value !== 1}>
-                    <ObservationHistory mode="summary" />
+                    <ObservationSummary />
                 </div>
                 <div hidden={value !== 2}>
                     <ObservationHistory mode="log" />
