@@ -1,10 +1,9 @@
 import * as React from 'react'
 import Button from '@mui/material/Button'
-import { Taxonomy, Observation, ObservationSet } from 'model/types'
+import { Observation, ObservationSet } from 'model/types'
 import { ObservationList, IObservationGroup } from './common/ObservationList'
 import ObservationEntry from './common/ObservationEntry'
 import ListItem from '@mui/material/ListItem'
-import { getAppContext } from './store/store'
 
 import { observations, clearObservations } from './store/store'
 
@@ -87,66 +86,11 @@ function dayHistory(observations: Observation[]): IObservationGroup[] {
     return ret
 }
 
-function countSpecies(taxonomy: Taxonomy, observations: Observation[]): number {
-    let ret = 0
-
-    const counted: { [id: string]: Boolean } = {}
-
-    observations.forEach((obs) => {
-        let t = obs.species.id
-        if (!counted[t]) {
-            ret++
-            while (t && !counted[t]) {
-                counted[t] = true
-                t = taxonomy.speciesTaxons[t].parent
-            }
-        }
-    })
-    return ret
-}
-
-function daySummary(dayHistory: IObservationGroup[]): IObservationGroup[] {
-    const ac = getAppContext()
-    const ret = dayHistory.map((g) => {
-        const ng = { ...g }
-        const obsBySpecies: { [key: string]: ObservationSet } = {}
-        ng.observations.forEach((obs) => {
-            const sp = ac.taxonomy.speciesTaxon(obs.species)
-            if (!obsBySpecies[sp.id]) {
-                obsBySpecies[sp.id] = new ObservationSet([obs])
-            } else {
-                obsBySpecies[sp.id].Union(ac.taxonomy, obs)
-            }
-        })
-        const obsSummaries: ObservationSet[] = []
-        for (let k in obsBySpecies) {
-            obsSummaries.push(obsBySpecies[k])
-        }
-
-        ng.observations = obsSummaries.sort(
-            (a, b) => a.species.taxonomicOrder - b.species.taxonomicOrder
-        )
-
-        const speciesCount = countSpecies(ac.taxonomy, ng.observations)
-
-        ng.statistics = `${speciesCount} species`
-
-        return ng
-    })
-
-    setGroupOffsets(ret)
-    return ret
-}
-
 function ObservationHistory(props) {
     const obs = observations()
     const parentObs = obs.filter((o) => o.parent == null)
     const olist = parentObs.map((o) => o.toJSONObject())
     const data = dayHistory(parentObs)
-
-    if (props.mode === 'summary') {
-        return ObservationHistorySummary(daySummary(data))
-    }
 
     return ObservationHistoryLog(olist, data)
 }
@@ -170,30 +114,6 @@ function ObservationHistoryLog(olist, data) {
                 CLEAR
             </Button>
             <a href={mailto}>Email the List</a>
-        </div>
-    )
-}
-
-function ObservationHistorySummary(data) {
-    const olist = []
-    data.forEach((g) => {
-        g.observations.forEach((o) =>
-            olist.push({
-                start: new Date(o.start).toString(),
-                species: o.species.localizations.en.commonName,
-            })
-        )
-    })
-    const mail = encodeURIComponent(JSON.stringify(olist, null, 2))
-    const mailto = `mailto:?body=${mail}&subject=Email the summary`
-    return (
-        <div className="oneColumn">
-            <ObservationList
-                data={data}
-                observationGroupContent={observationGroupContent}
-                observationContent={observationContent}
-            />
-            <a href={mailto}>Email the Summary</a>
         </div>
     )
 }

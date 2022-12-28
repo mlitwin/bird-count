@@ -8,6 +8,7 @@ import { IconButton } from '@mui/material'
 import {
     NavigateBeforeOutlined,
     NavigateNextOutlined,
+    EmailOutlined,
 } from '@mui/icons-material'
 
 import { Taxonomy, Observation, ObservationSet } from 'model/types'
@@ -117,6 +118,19 @@ function ObservationSummary() {
     const speciesCount = countSpecies(ac.taxonomy, obs)
     const statistics = `${speciesCount} species`
 
+    const dateRangeString = `${start.format(
+        'ddd MM/D/YY hh:mm a'
+    )} - ${end.format('ddd MM/D/YY hh:mm a')}`
+
+    const textExport = obsSummaries
+        .map((o) => `${o.count} ${o.species.localizations.en.commonName}`)
+        .join('\n')
+    const textExportSummary = `${dateRangeString} ${statistics}\n\n`
+
+    const mailto = `mailto:?body=${encodeURIComponent(
+        textExportSummary + textExport
+    )}&subject=Email the Summary`
+
     function goToToday() {
         const now = dayjs()
         const today = now.startOf('day')
@@ -172,7 +186,13 @@ function ObservationSummary() {
                         <NavigateNextOutlined />
                     </IconButton>
                 </div>
+                <div className="DateRangeActions">
+                    <a href={mailto}>
+                        <EmailOutlined />
+                    </a>
+                </div>
             </div>
+
             <SummaryListHeader
                 summary={summary}
                 statistics={statistics}

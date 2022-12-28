@@ -17,3 +17,9 @@
     display: flex;
     justify-content: center;
 }
+
+.DateRangeActions {
+    position: absolute;
+    right: 20px;
+    padding-top: 10px;
+}
