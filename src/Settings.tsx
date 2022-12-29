@@ -9,14 +9,13 @@ import Slider from '@mui/material/Slider'
 
 import './Settings.css'
 
-/*
-    0: Never,
-    1: Scarce
-    2: Uncommon,
-    3: Common
-*/
-
 function Settings(props) {
+    const marks = [
+        { value: 0, label: 'Never' },
+        { value: 1, label: 'Scarce' },
+        { value: 2, label: 'Uncommon' },
+        { value: 3, label: 'Common' },
+    ]
     function handleClose() {
         props.setOpen(false)
     }
@@ -39,18 +38,17 @@ function Settings(props) {
                 </Toolbar>
             </AppBar>
             <div className="SettingsContent">
-                <Slider
-                    className="Commonness"
-                    size="small"
-                    defaultValue={0}
-                    value={3 - props.commonnessSetting}
-                    onChange={handleChange}
-                    valueLabelDisplay="auto"
-                    step={1}
-                    marks
-                    min={0}
-                    max={3}
-                />
+                <div className="Commonness">
+                    <Slider
+                        defaultValue={0}
+                        value={3 - props.commonnessSetting}
+                        onChange={handleChange}
+                        valueLabelDisplay="off"
+                        marks={marks}
+                        min={0}
+                        max={3}
+                    />
+                </div>
             </div>
         </Dialog>
     )
