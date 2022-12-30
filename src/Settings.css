@@ -5,3 +5,8 @@
 .SettingsContent .Commonness {
     padding: 30px;
 }
+
+.SettingsButtons {
+    display: flex;
+    justify-content: space-between;
+}

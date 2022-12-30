@@ -1,20 +1,16 @@
 import * as React from 'react'
-import Button from '@mui/material/Button'
 import { ObservationSet } from 'model/types'
 import { ObservationList } from './common/ObservationList'
 import ObservationEntry from './common/ObservationEntry'
 import ListItem from '@mui/material/ListItem'
 
-import { observations, clearObservations } from './store/store'
+import { observations } from './store/store'
 
 import dayjs from 'dayjs'
 
 function ObservationHistory(props) {
     const allObservations = observations()
 
-    const observationsJSON = allObservations.map((o) => o.toJSONObject())
-    const mail = encodeURIComponent(JSON.stringify(observationsJSON, null, 2))
-    const mailto = `mailto:?body=${mail}&subject=Email the List`
     const obs = allObservations
         .filter((o) => o.parent === null)
         .map((o) => new ObservationSet([o]))
@@ -22,10 +18,6 @@ function ObservationHistory(props) {
         .sort((a, b) => {
             return a.start - b.start
         })
-
-    function doClear() {
-        clearObservations()
-    }
 
     function observationContent(observation, index, isScrolling) {
         const observationDate = dayjs(observation.start)
@@ -66,10 +58,6 @@ function ObservationHistory(props) {
                 data={obs}
                 observationContent={observationContent}
             />
-            <Button variant="contained" onClick={(e) => doClear()}>
-                CLEAR
-            </Button>
-            <a href={mailto}>Email the List</a>
         </div>
     )
 }
