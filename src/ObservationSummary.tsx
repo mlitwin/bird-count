@@ -192,24 +192,25 @@ function ObservationSummary() {
                     </a>
                 </div>
             </div>
-
             <SummaryListHeader
                 summary={summary}
                 statistics={statistics}
             ></SummaryListHeader>
             <div className="oneColumnExpand">
-                <List>
-                    {obsSummaries.map((obs) => (
-                        <ListItem key={obs.id} disableGutters={true}>
-                            <ObservationEntry
-                                initialMode="display"
-                                variant="entry"
-                                observation={obs}
-                                isScrolling={false}
-                            ></ObservationEntry>
-                        </ListItem>
-                    ))}
-                </List>
+                <div className="ObvservationSummaryList">
+                    <List>
+                        {obsSummaries.map((obs) => (
+                            <ListItem key={obs.id} disableGutters={true}>
+                                <ObservationEntry
+                                    initialMode="display"
+                                    variant="entry"
+                                    observation={obs}
+                                    isScrolling={false}
+                                ></ObservationEntry>
+                            </ListItem>
+                        ))}
+                    </List>
+                </div>
             </div>
         </div>
     )
