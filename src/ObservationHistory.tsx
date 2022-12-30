@@ -33,7 +33,10 @@ function ObservationHistory(props) {
 
         const isFirstOfDay =
             index === 0 ||
-            observationDay === dayjs(obs[index - 1].start).startOf('date')
+            observationDay.unix() !==
+                dayjs(obs[index - 1].start)
+                    .startOf('date')
+                    .unix()
 
         const date = observationDate.format('HH:mm')
 
