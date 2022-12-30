@@ -17,7 +17,7 @@ import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
 import { getAppContext } from './store/store'
 
-import { observations, clearObservations } from './store/store'
+import { observations } from './store/store'
 
 import dayjs from 'dayjs'
 
@@ -200,7 +200,7 @@ function ObservationSummary() {
             <div className="oneColumnExpand">
                 <List>
                     {obsSummaries.map((obs) => (
-                        <ListItem disableGutters={true}>
+                        <ListItem key={obs.id} disableGutters={true}>
                             <ObservationEntry
                                 initialMode="display"
                                 variant="entry"

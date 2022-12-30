@@ -1,21 +1,16 @@
 import { ObservationSet } from 'model/types'
 import List from '@mui/material/List'
-import { GroupedVirtuoso } from 'react-virtuoso'
+import { Virtuoso } from 'react-virtuoso'
 import React, { useEffect, useRef, useState } from 'react'
 import './ObservationList.css'
 
-interface IObservationGroup {
-    date: number
-    summary: ObservationSet
-    statistics: string
-    offset: number
-    observations: ObservationSet[]
-}
-
 interface IObservationListProps {
-    data: IObservationGroup[]
-    observationGroupContent: (group: any, isScrolling: boolean) => JSX.Element
-    observationContent: (item: any, isScrolling: boolean) => JSX.Element
+    data: ObservationSet[]
+    observationContent: (
+        observation: any,
+        index: any,
+        isScrolling: boolean
+    ) => JSX.Element
 }
 
 function EmptyObservationList() {
@@ -41,22 +36,15 @@ function ObservationList(props: IObservationListProps) {
         }
     }, [data])
 
-    const groupCounts = data.map((g) => g.observations.length)
-    const totalObservations = groupCounts.reduce((g, current) => g + current, 0)
+    const totalObservations = data.length
 
     if (totalObservations === 0) {
         return EmptyObservationList()
     }
 
-    const groupedVirtuosoProps: any = {
-        groupCounts: groupCounts,
-        groupContent: (index) =>
-            props.observationGroupContent(data[index], isScrolling),
-        itemContent: (i, g) =>
-            props.observationContent(
-                data[g].observations[i - data[g].offset],
-                isScrolling
-            ),
+    const vrtuosoProps: any = {
+        totalCount: totalObservations,
+        itemContent: (i) => props.observationContent(data[i], i, isScrolling),
         initialTopMostItemIndex: totalObservations - 1,
         isScrolling: setIsScrolling,
     }
@@ -64,10 +52,10 @@ function ObservationList(props: IObservationListProps) {
     return (
         <div className="oneColumnExpand">
             <List className="Observations">
-                <GroupedVirtuoso ref={virtuoso} {...groupedVirtuosoProps} />
+                <Virtuoso ref={virtuoso} {...vrtuosoProps} />
             </List>
         </div>
     )
 }
 
-export { ObservationList, IObservationGroup }
+export { ObservationList }

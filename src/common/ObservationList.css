@@ -3,6 +3,13 @@
     flex-grow: 1;
 }
 
-.Observations div[data-virtuoso-scroller='true'] > *:nth-child(2) {
-    position: absolute !important;
+.ObservationListItem {
+    width: 100%;
+}
+
+.ObservationListDayHeader {
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    border-top: 1px solid;
 }
