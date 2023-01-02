@@ -59,14 +59,12 @@ function Settings(props) {
                     />
                 </div>
                 <div className="SettingsButtons">
-                    <Link component="button" href={mailto}>
+                    <Link component="a" href={mailto} variant="button">
                         Email Observations
                     </Link>
                     <Button
                         variant="contained"
-                        onClick={(e) => () => {
-                            clearObservations()
-                        }}
+                        onClick={(e) => clearObservations()}
                     >
                         CLEAR
                     </Button>
