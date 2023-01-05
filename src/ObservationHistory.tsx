@@ -45,7 +45,7 @@ function ObservationHistory(props) {
                         observation={observation}
                         initialMode="display"
                         displayDate={date}
-                        isScrolling={isScrolling}
+                        disableSwipe={isScrolling}
                     />
                 </div>
             </ListItem>

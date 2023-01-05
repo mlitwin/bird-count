@@ -33,7 +33,7 @@ interface ObservationProps {
     displayDate?: string
     displaySummary?: string
     onEvent?: ObservationEntryEventCallback
-    isScrolling: boolean
+    disableSwipe: boolean
 }
 
 function useRevealSwiper(cancel: boolean) {
@@ -122,7 +122,7 @@ function ObservationEntryDisplay(props) {
     const addObservation = useAddObservation()
 
     const [handlers, swiperProps, lastProps] = useRevealSwiper(
-        props.isScrolling
+        props.disableSwipe
     )
 
     function onClick() {
@@ -299,7 +299,7 @@ function ObservationEntry(props: ObservationProps) {
                 displayDate={displayDate}
                 displaySummary={displaySummary}
                 onEvent={props.onEvent}
-                isScrolling={props.isScrolling}
+                disableSwipe={props.disableSwipe}
             ></ObservationEntryDisplay>
         )
     }

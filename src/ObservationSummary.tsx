@@ -76,7 +76,7 @@ function SummaryListHeader(props) {
                 variant="header"
                 observation={props.summary}
                 displaySummary={props.statistics}
-                isScrolling={false}
+                disableSwipe={true}
             ></ObservationEntry>
         </div>
     )
@@ -205,7 +205,7 @@ function ObservationSummary() {
                                     initialMode="display"
                                     variant="entry"
                                     observation={obs}
-                                    isScrolling={false}
+                                    disableSwipe={true}
                                 ></ObservationEntry>
                             </ListItem>
                         ))}
