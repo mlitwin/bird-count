@@ -144,8 +144,9 @@ function computeRecentObservations(list: Observation[], now?: number) {
         now = Date.now()
     }
     const day = 24 * 60 * 60 * 1000
+    const month = 30 * day
     const recentList = list
-        .filter((obs) => obs.createdAt >= now - day)
+        .filter((obs) => obs.createdAt >= now - month)
         .sort((a, b) => b.createdAt - a.createdAt)
 
     return recentList
