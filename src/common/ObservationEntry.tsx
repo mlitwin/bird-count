@@ -208,7 +208,11 @@ function ObservationEntryEdit(props: IObservationEntryEditProps) {
 
     function doAccept() {
         if (props.variant === 'create') {
-            addObservation(query)
+            const newObservation = ac.createObservation()
+            newObservation.species = query.species
+            newObservation.count = count
+
+            addObservation(newObservation)
         } else if (delta !== 0) {
             const child = ac.createObservation()
             child.parent = query.newObservationParent()
