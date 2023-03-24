@@ -8,3 +8,11 @@
 .SpeciesList {
     overflow-y: scroll;
 }
+
+.SpeciesList > li {
+    padding-bottom: 10px;
+    padding-top: 10px;
+    border-top: 1px solid gray;
+    margin-top: 10px;
+    font-size: 125%;
+}
