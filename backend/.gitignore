@@ -1,0 +1,13 @@
+.DS_Store
+.build/
+dist/
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+
+*/.zip
+
+
+node_modules/

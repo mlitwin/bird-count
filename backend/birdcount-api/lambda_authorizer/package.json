@@ -1,0 +1,23 @@
+{
+  "name": "lambda",
+  "version": "1.0.0",
+  "description": "https://esbuild.github.io/getting-started/#your-first-bundle",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prebuild": "rm -rf dist",
+    "build": "esbuild index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js",
+    "postbuild": "cd dist && zip -r index.zip index.js*"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.294.0",
+    "esbuild": "0.17.10",
+    "jsonwebtoken": "^9.0.0",
+    "jwks-rsa": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.110"
+  }
+}
