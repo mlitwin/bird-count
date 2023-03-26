@@ -14,14 +14,12 @@ const awsConfig = {
   region: "us-east-1",
 };
 
-
 function createObservations(input) {
-
   let error = "";
   const ret = input.map((i) => ({
     group: i.group,
     id: i.id,
-    data: i
+    data: i,
   }));
 
   return [ret, error];
@@ -53,21 +51,29 @@ async function addObservations(event, context) {
   }));
 
   params.RequestItems[table] = requests;
+  const timestamp = new Date();
 
   while (Object.keys(params).length > 0) {
-    params.RequestItems[table].forEach(item => {
-      item.PutRequest.Item.ksuid = KSUID.randomSync().string
+    params.RequestItems[table].forEach((item) => {
+      item.PutRequest.Item.ksuid = KSUID.randomSync().string;
     });
 
     const command = new BatchWriteCommand(params);
     const result = await dynamodb.send(command);
     params = result.UnprocessedItems;
-
   }
+
+  timestamp.setTime(timestamp.getTime() - 1000 * 60 * 5);
+
+  const queryToken = KSUID.randomSync(timestamp).string;
+  const ret = {
+    queryToken,
+    observations: items,
+  };
 
   return {
     statusCode: 200,
-    body: JSON.stringify(items),
+    body: JSON.stringify(ret),
   };
 }
 
