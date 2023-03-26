@@ -16,12 +16,10 @@ const awsConfig = {
 
 
 function createObservations(input) {
-  const timestamp = new Date();
 
   let error = "";
   const ret = input.map((i) => ({
     group: i.group,
-    ksuid: KSUID.randomSync(timestamp).string,
     id: i.id,
     data: i
   }));
@@ -57,9 +55,14 @@ async function addObservations(event, context) {
   params.RequestItems[table] = requests;
 
   while (Object.keys(params).length > 0) {
+    params.RequestItems[table].forEach(item => {
+      item.PutRequest.Item.ksuid = KSUID.randomSync().string
+    });
+
     const command = new BatchWriteCommand(params);
     const result = await dynamodb.send(command);
     params = result.UnprocessedItems;
+
   }
 
   return {
