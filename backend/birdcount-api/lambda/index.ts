@@ -21,7 +21,7 @@ function createObservations(input) {
   let error = "";
   const ret = input.map((i) => ({
     group: i.group,
-    ksuid: KSUID.randomSync(timestamp).toString(),
+    ksuid: KSUID.randomSync(timestamp).string,
     id: i.id,
     data: i
   }));

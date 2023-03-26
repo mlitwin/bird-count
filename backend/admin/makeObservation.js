@@ -21,7 +21,7 @@ function makeObservation() {
 
 const obs = [makeObservation()]
 
-const url = "https://0lb8bg47b9.execute-api.us-east-1.amazonaws.com/dev";
+const url = "https://0lb8bg47b9.execute-api.us-east-1.amazonaws.com/dev/sync";
 const JWT = process.env.JWT;
 
 const config = {
