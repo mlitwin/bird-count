@@ -1,19 +1,130 @@
 "use strict";
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 
-let options = {};
+import KSUID from "ksuid";
 
-// connect to local DB if running offline
-if (process.env.IS_OFFLINE) {
-  options = {
-    region: "localhost",
-    endpoint: "http://localhost:8000",
+const table = process.env.DYNAMODB_TABLE as string;
+
+const dynamodbClient = new DynamoDBClient({});
+const ddbDocClient = DynamoDBDocumentClient.from(dynamodbClient);
+
+function createObservationItem(obs) {
+  return {
+    ksuid: KSUID.randomSync().string,
+    group: obs.group,
+    id: obs.id,
+    data: obs,
   };
 }
 
-const dynamodbClient = new DynamoDBClient(options);
-const dynamodb = DynamoDBDocumentClient.from(dynamodbClient);
+async function createObservation(obs, statuses) {
+  const obsItem = createObservationItem(obs);
+  const params = {
+    TableName: table,
+    Item: obsItem,
+  };
+  try {
+    const data = await ddbDocClient.send(new PutCommand(params));
+    statuses[obs.id] = {
+      status: "success",
+      ksuid: obsItem.ksuid,
+    };
+  } catch (err) {
+    statuses[obs.id] = {
+      status: "failure",
+      message: err.getMessage(),
+    };
+  }
+}
 
-export default dynamodb;
+async function createObservations(observations) {
+  const statuses = {};
+
+  observations.forEach((obs) => {
+    statuses[obs.id] = {
+      status: "unsent",
+    };
+  });
+
+  for (let i = 0; i < observations.length; i++) {
+    await createObservation(observations[i], statuses);
+  }
+
+  return { statuses, observations };
+}
+
+export { createObservations };
+
+/*
+
+function backoff(attempt) {
+  const cap = 10000;
+  const base = 100;
+  const sleep = Math.min(cap, base * (2 ** attempt));
+  const ms = Math.random() * sleep;
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+
+async function addObservations(event, context) {
+  const data = JSON.parse(event.body); // try/catch
+
+  const [items, error] = createObservations(data.observations);
+
+  if (error) {
+    return {
+      statusCode: 400,
+      headers: { "Content-Type": "text/plain" },
+      body: error,
+    };
+  }
+
+  const table = process.env.DYNAMODB_TABLE as string;
+
+  let params: any = {
+    RequestItems: {},
+  };
+
+  const requests = items.map((i) => ({
+    PutRequest: {
+      Item: i,
+    },
+  }));
+
+  params.RequestItems[table] = requests;
+  const timestamp = new Date();
+
+  let tries = 0;
+  while (Object.keys(params).length > 0 && tries < 8) {
+    // TBD exponential backoff starting at 0
+
+    if( tries > 0) {
+      await backoff(tries);
+    }
+    params.RequestItems[table].forEach((item) => {
+      item.PutRequest.Item.ksuid = KSUID.randomSync().string;
+    });
+
+    const command = new BatchWriteCommand(params);
+    const result = await dynamodb.send(command);
+    params = result.UnprocessedItems;
+    tries++;
+  }
+
+  timestamp.setTime(timestamp.getTime() - 1000 * 60 * 5);
+
+  const queryToken = KSUID.randomSync(timestamp).string;
+  const ret = {
+    queryToken,
+    observations: items,
+  };
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify(ret),
+  };
+}*/
