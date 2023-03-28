@@ -24,6 +24,7 @@ async function createObservation(obs, statuses) {
   const params = {
     TableName: table,
     Item: obsItem,
+    ConditionExpression: "attribute_not_exists(group)",
   };
   try {
     const data = await ddbDocClient.send(new PutCommand(params));
@@ -34,7 +35,7 @@ async function createObservation(obs, statuses) {
   } catch (err) {
     statuses[obs.id] = {
       status: "failure",
-      message: err.getMessage(),
+      message: err,
     };
   }
 }
