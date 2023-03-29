@@ -11,7 +11,7 @@ const ddbDocClient = DynamoDBDocumentClient.from(dynamodbClient);
 function createObservationItem(obs) {
   const now = new Date();
   return {
-    timestamp: Math.round(now.getTime() / 1000),
+    querykey: Math.round(now.getTime() / 1000),
     compilation: obs.compilation,
     id: obs.id,
     data: obs,
@@ -29,7 +29,7 @@ async function createObservation(obs, statuses) {
     const data = await ddbDocClient.send(new PutCommand(params));
     statuses[obs.id] = {
       status: "success",
-      ksuid: obsItem.ksuid,
+      timestamp: obsItem.querykey,
     };
   } catch (err) {
     statuses[obs.id] = {
@@ -42,6 +42,8 @@ async function createObservation(obs, statuses) {
 async function createObservations(observations) {
   const statuses = {};
 
+  const now = new Date();
+
   observations.forEach((obs) => {
     statuses[obs.id] = {
       status: "unsent",
@@ -52,7 +54,9 @@ async function createObservations(observations) {
     await createObservation(observations[i], statuses);
   }
 
-  return { statuses, observations };
+  const queryKey = Math.round(now.getTime() / 1000) - 60 * 5;
+
+  return { statuses, queryKey };
 }
 
 export { createObservations };
