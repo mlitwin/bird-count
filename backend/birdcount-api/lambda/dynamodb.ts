@@ -3,17 +3,16 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 
-import KSUID from "ksuid";
-
 const table = process.env.DYNAMODB_TABLE as string;
 
 const dynamodbClient = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(dynamodbClient);
 
 function createObservationItem(obs) {
+  const now = new Date();
   return {
-    ksuid: KSUID.randomSync().string,
-    group: obs.group,
+    timestamp: Math.round(now.getTime() / 1000),
+    compilation: obs.compilation,
     id: obs.id,
     data: obs,
   };
@@ -24,8 +23,7 @@ async function createObservation(obs, statuses) {
   const params = {
     TableName: table,
     Item: obsItem,
-    ConditionExpression: "attribute_not_exists(#G)",
-    ExpressionAttributeNames: { "#G": "group" },
+    ConditionExpression: "attribute_not_exists(id)",
   };
   try {
     const data = await ddbDocClient.send(new PutCommand(params));

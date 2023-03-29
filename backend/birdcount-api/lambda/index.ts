@@ -20,15 +20,17 @@ async function addObservations(event, context) {
 }
 
 export const handler: ProxyHandler = async (event, context) => {
-  switch (event.requestContext.http.method) {
-    case "POST":
-      return await addObservations(event, context);
-    default:
-      return {
-        statusCode: 400,
-        body: JSON.stringify({
-          message: "Unsupported method",
-        }),
-      };
+  const method = event.requestContext.http.method;
+  const path = event.requestContext.http.path.replace(/^\/[^/]*\//, "/");
+
+  if (method === "POST" && path === "/observations") {
+    return await addObservations(event, context);
   }
+
+  return {
+    statusCode: 400,
+    body: JSON.stringify({
+      message: `Unsupported: ${method} ${path}`,
+    }),
+  };
 };

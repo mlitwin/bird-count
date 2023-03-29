@@ -1,14 +1,9 @@
 resource "aws_dynamodb_table" "observations_table" {
-  name         = "birdcount-observations-dev"
+  name         = "birdcount-observations"
   billing_mode = "PAY_PER_REQUEST"
 
   attribute {
-    name = "group"
-    type = "S"
-  }
-
-  attribute {
-    name = "ksuid"
+    name = "compilation"
     type = "S"
   }
 
@@ -17,13 +12,18 @@ resource "aws_dynamodb_table" "observations_table" {
     type = "S"
   }
 
-  hash_key  = "group"
-  range_key = "ksuid"
+   attribute {
+    name = "timestamp"
+    type = "N"
+  }
+
+  hash_key  = "compilation"
+  range_key = "id"
 
   local_secondary_index {
-    name = "user_created_guid"
-    projection_type = "KEYS_ONLY"
-    range_key = "id"
+    name = "timestamp"
+    projection_type = "ALL"
+    range_key = "timestamp"
   }
 
   point_in_time_recovery {

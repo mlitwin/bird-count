@@ -7,7 +7,7 @@ function makeObservation() {
     return {
         id,
         user: 'user',
-        group: 'group',
+        compilation: 'compilation',
         start: 0,
         duration: 0,
         location_latitude: 0,
@@ -21,7 +21,7 @@ function makeObservation() {
 
 const obs = [makeObservation()]
 
-const url = "https://0lb8bg47b9.execute-api.us-east-1.amazonaws.com/dev/sync";
+const url = "https://0lb8bg47b9.execute-api.us-east-1.amazonaws.com/dev/observations";
 const JWT = process.env.JWT;
 
 const config = {
