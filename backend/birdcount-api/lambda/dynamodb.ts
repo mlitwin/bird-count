@@ -1,25 +1,28 @@
 "use strict";
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  DynamoDBDocumentClient,
+  PutCommand,
+  UpdateCommand,
+} from "@aws-sdk/lib-dynamodb";
 
 const table = process.env.DYNAMODB_TABLE as string;
 
 const dynamodbClient = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(dynamodbClient);
 
-function createObservationItem(obs) {
-  const now = new Date();
+function createObservationItem(obs, querykey) {
   return {
-    querykey: Math.round(now.getTime() / 1000),
+    querykey: querykey,
     compilation: obs.compilation,
     id: obs.id,
     data: obs,
   };
 }
 
-async function createObservation(obs, statuses) {
-  const obsItem = createObservationItem(obs);
+async function createObservation(obs, querykey, statuses) {
+  const obsItem = createObservationItem(obs, querykey);
   const params = {
     TableName: table,
     Item: obsItem,
@@ -29,7 +32,7 @@ async function createObservation(obs, statuses) {
     const data = await ddbDocClient.send(new PutCommand(params));
     statuses[obs.id] = {
       status: "success",
-      timestamp: obsItem.querykey,
+      querykey: obsItem.querykey,
     };
   } catch (err) {
     statuses[obs.id] = {
@@ -39,10 +42,24 @@ async function createObservation(obs, statuses) {
   }
 }
 
+async function getquerykey(increment) {
+  const params = {
+    TableName: table,
+    Key: { compilation: "_gloablquerykey", id: "querykey" },
+    UpdateExpression: "SET querykey = if_not_exists(querykey, :start) + :inc",
+    ExpressionAttributeValues: { ":start": 0, ":inc": 1 },
+    ReturnValues: "UPDATED_NEW",
+  };
+  const data = await ddbDocClient.send(new UpdateCommand(params));
+  if (!data.Attributes) {
+    throw `bad getquerykey return ${JSON.stringify(data)}`;
+  }
+  return data.Attributes["querykey"] - increment;
+}
+
 async function createObservations(observations) {
   const statuses = {};
-
-  const now = new Date();
+  let querykey = await getquerykey(observations.length);
 
   observations.forEach((obs) => {
     statuses[obs.id] = {
@@ -51,12 +68,11 @@ async function createObservations(observations) {
   });
 
   for (let i = 0; i < observations.length; i++) {
-    await createObservation(observations[i], statuses);
+    await createObservation(observations[i], querykey, statuses);
+    querykey++;
   }
 
-  const queryKey = Math.round(now.getTime() / 1000) - 60 * 5;
-
-  return { statuses, queryKey };
+  return { statuses, querykey };
 }
 
 export { createObservations };
@@ -100,7 +116,7 @@ async function addObservations(event, context) {
   }));
 
   params.RequestItems[table] = requests;
-  const timestamp = new Date();
+  const querykey = new Date();
 
   let tries = 0;
   while (Object.keys(params).length > 0 && tries < 8) {
@@ -119,9 +135,9 @@ async function addObservations(event, context) {
     tries++;
   }
 
-  timestamp.setTime(timestamp.getTime() - 1000 * 60 * 5);
+  querykey.setTime(querykey.getTime() - 1000 * 60 * 5);
 
-  const queryToken = KSUID.randomSync(timestamp).string;
+  const queryToken = KSUID.randomSync(querykey).string;
   const ret = {
     queryToken,
     observations: items,
