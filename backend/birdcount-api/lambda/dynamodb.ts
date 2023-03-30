@@ -59,7 +59,7 @@ async function getquerykey(increment) {
 
 async function createObservations(observations) {
   const statuses = {};
-  const querykey = await getquerykey(observations.length);
+  let querykey = await getquerykey(observations.length);
 
   observations.forEach((obs) => {
     statuses[obs.id] = {
@@ -68,7 +68,8 @@ async function createObservations(observations) {
   });
 
   for (let i = 0; i < observations.length; i++) {
-    await createObservation(observations[i], querykey + i, statuses);
+    await createObservation(observations[i], querykey, statuses);
+    querykey++;
   }
 
   return { statuses, querykey };
