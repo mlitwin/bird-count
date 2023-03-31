@@ -13,7 +13,7 @@ resource "aws_dynamodb_table" "observations_table" {
   }
 
    attribute {
-    name = "querykey"
+    name = "createdAt"
     type = "N"
   }
 
@@ -21,9 +21,9 @@ resource "aws_dynamodb_table" "observations_table" {
   range_key = "id"
 
   local_secondary_index {
-    name = "querykey"
+    name = "createdAt"
     projection_type = "ALL"
-    range_key = "querykey"
+    range_key = "createdAt"
   }
 
   point_in_time_recovery {

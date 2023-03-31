@@ -39,8 +39,6 @@ console.log(token);
 
 const v = await jose.JWS.createVerify(keystore).verify(token)
 
-console.log(v.header)
-console.log(v.payload.toString())
   
 
 

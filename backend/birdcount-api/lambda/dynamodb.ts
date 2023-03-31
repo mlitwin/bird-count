@@ -12,17 +12,22 @@ const table = process.env.DYNAMODB_TABLE as string;
 const dynamodbClient = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(dynamodbClient);
 
-function createObservationItem(obs, querykey) {
+function getTimestamp() {
+  const now = new Date();
+  return Math.round(now.getTime() / 1000);
+}
+
+function createObservationItem(obs) {
   return {
-    querykey: querykey,
     compilation: obs.compilation,
     id: obs.id,
+    createdAt: getTimestamp(),
     data: obs,
   };
 }
 
-async function createObservation(obs, querykey, statuses) {
-  const obsItem = createObservationItem(obs, querykey);
+async function createObservation(obs, statuses) {
+  const obsItem = createObservationItem(obs);
   const params = {
     TableName: table,
     Item: obsItem,
@@ -32,7 +37,6 @@ async function createObservation(obs, querykey, statuses) {
     const data = await ddbDocClient.send(new PutCommand(params));
     statuses[obs.id] = {
       status: "success",
-      querykey: obsItem.querykey,
     };
   } catch (err) {
     statuses[obs.id] = {
@@ -42,24 +46,8 @@ async function createObservation(obs, querykey, statuses) {
   }
 }
 
-async function getquerykey(increment) {
-  const params = {
-    TableName: table,
-    Key: { compilation: "_gloablquerykey", id: "querykey" },
-    UpdateExpression: "SET querykey = if_not_exists(querykey, :start) + :inc",
-    ExpressionAttributeValues: { ":start": 0, ":inc": 1 },
-    ReturnValues: "UPDATED_NEW",
-  };
-  const data = await ddbDocClient.send(new UpdateCommand(params));
-  if (!data.Attributes) {
-    throw `bad getquerykey return ${JSON.stringify(data)}`;
-  }
-  return data.Attributes["querykey"] - increment;
-}
-
 async function createObservations(observations) {
   const statuses = {};
-  let querykey = await getquerykey(observations.length);
 
   observations.forEach((obs) => {
     statuses[obs.id] = {
@@ -68,11 +56,10 @@ async function createObservations(observations) {
   });
 
   for (let i = 0; i < observations.length; i++) {
-    await createObservation(observations[i], querykey, statuses);
-    querykey++;
+    await createObservation(observations[i], statuses);
   }
 
-  return { statuses, querykey };
+  return { statuses };
 }
 
 export { createObservations };
