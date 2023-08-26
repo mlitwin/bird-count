@@ -21,6 +21,7 @@ resource "aws_iam_role_policy_attachment" "lambda-attach" {
   policy_arn = aws_iam_policy.observations_writepolicy.arn
 }
 
+
 data "aws_iam_policy_document" "observations_s3_policy" {
   statement {
     effect = "Allow"

@@ -50,7 +50,7 @@ data "aws_iam_policy_document" "observations_readpolicy" {
   }
 }
 
-resource "aws_iam_policy" "readpolicy" {
+resource "aws_iam_policy" "observations_readpolicy" {
   name   = "${local.app_name}-${local.region}-observations-DynamoDb-Read-Policy"
   policy = "${data.aws_iam_policy_document.observations_readpolicy.json}"
 }
@@ -72,7 +72,7 @@ data "aws_iam_policy_document" "observations_writepolicy" {
       "dynamodb:UpdateTable",
     ]
 
-    resources = [aws_dynamodb_table.observations_table.arn]
+    resources = [aws_dynamodb_table.observations_table.arn, "${aws_dynamodb_table.observations_table.arn}/index/*"]
 
     effect = "Allow"
   }

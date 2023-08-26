@@ -4,7 +4,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
   PutCommand,
-  UpdateCommand,
+  QueryCommand,
 } from "@aws-sdk/lib-dynamodb";
 
 const table = process.env.DYNAMODB_TABLE as string;
@@ -62,7 +62,32 @@ async function createObservations(observations) {
   return { statuses };
 }
 
-export { createObservations };
+async function queryObservations(compilation, createdAt) {
+  let ret = {
+    items: {},
+    error: "",
+  };
+  const params = {
+    TableName: table,
+    IndexName: "createdAt",
+    KeyConditionExpression: "compilation = :cp AND createdAt >= :ca",
+    ExpressionAttributeValues: {
+      ":cp": compilation,
+      ":ca": createdAt,
+    },
+  };
+  try {
+    const data = await ddbDocClient.send(new QueryCommand(params));
+    if (data?.Items) {
+      ret.items = data.Items;
+    }
+  } catch (err) {
+    ret.error = `error ${err} ${JSON.stringify(err)}`;
+  }
+  return ret;
+}
+
+export { createObservations, queryObservations };
 
 /*
 
