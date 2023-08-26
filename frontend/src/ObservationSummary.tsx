@@ -62,7 +62,7 @@ function computeSummary(
         (a, b) => a.species.taxonomicOrder - b.species.taxonomicOrder
     )
 
-    return [summary, obsSummaries]
+    return [summary, obsSummaries.filter(s => s.count > 0)];
 }
 
 function SummaryListHeader(props) {
@@ -115,7 +115,7 @@ function ObservationSummary() {
     const obs = filterObservations(allObservations, start, end)
     const [summary, obsSummaries] = computeSummary(obs)
 
-    const speciesCount = countSpecies(ac.taxonomy, obs)
+    const speciesCount = countSpecies(ac.taxonomy, obsSummaries)
     const statistics = `${speciesCount} species`
 
     const dateRangeString = `${start.format(
