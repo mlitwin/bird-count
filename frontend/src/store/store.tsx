@@ -6,7 +6,7 @@ import { Observation, Taxonomy, Checklist, Species } from '../model/types'
 import AppContext from './appContext'
 
 import taxonomyJSON from '../data/taxonomy.json'
-import chk from '../data/checklist.json'
+import chk from '../data/checklist-US-ME.json'
 
 let globalAppContext: null | AppContext = null
 function getAppContext(): AppContext {
