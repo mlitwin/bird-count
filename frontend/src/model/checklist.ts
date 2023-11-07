@@ -1,18 +1,22 @@
 import Taxonomy from './taxonomy'
 import Species from './species'
 
-function addAbbeviations(species) {
-    let abbrv = []
-    const commonName = species.localizations.en.commonName.toUpperCase()
-
-    const name = commonName
+function nameToAbbreviation(name: any): string {
+    return name
+        .toUpperCase()
         .replaceAll(/[^-A-Za-z /]/g, '')
         .replaceAll(/[^A-Za-z]/g, ' ')
         .split(/\s+/)
         .map((w) => w[0])
         .join('')
+}
 
-    abbrv.push(name)
+function addAbbreviations(species) {
+    let abbrv = []
+    const commonName = species.localizations.en.commonName.toUpperCase()
+    const sciName = species.sciName
+
+    abbrv.push(nameToAbbreviation(commonName), nameToAbbreviation(sciName))
     species.abbreviations = abbrv
 }
 
@@ -45,7 +49,7 @@ class Checklist {
             const tax = this.taxonomy.speciesTaxons[id]
             let chsp = { ...tax, ...sp }
             chsp.standard = testFilter(chsp)
-            addAbbeviations(chsp)
+            addAbbreviations(chsp)
             this.species.push(chsp)
         }
     }
