@@ -1,4 +1,5 @@
 import React from 'react'
+import './SpeciesName.css'
 
 function SpeciesName(props) {
     const species = props.species

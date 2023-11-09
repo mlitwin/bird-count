@@ -15,12 +15,4 @@
     border-top: 1px solid gray;
     margin-top: 10px;
     font-size: 125%;
-    .SpeciesEntry {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        .SciName {
-            font-style: italic;
-        }
-    }
 }
