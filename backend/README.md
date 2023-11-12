@@ -6,18 +6,19 @@ API Backend for [birdcount](https://github.com/mlitwin/bird-count)
 
 AWS DynamoDB backend with API Gateway / Lambda
 
+https://opentofu.org/docs/intro/install
+
 ## Development
 
 ### Install
 
-brew install terraform
+brew install opentofu
 
 # Raw Notes
 
 https://dynobase.dev/dynamodb-terraform/
 
-aws sts get-caller-identity 
-
+aws sts get-caller-identity
 
 ## Schema
 
@@ -31,8 +32,8 @@ aws sts get-caller-identity
         ]
 
 ## Dev
+
 https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.settingup.install.html - seems cluncky
 Use console
-
 
 https://www.npmjs.com/package/dynamodb-admin - good for localstack

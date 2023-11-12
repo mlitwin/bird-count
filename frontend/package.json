@@ -27,6 +27,7 @@
         "react-swipeable": "^7.0.0",
         "react-virtuoso": "^3.1.5",
         "rxjs": "^7.5.7",
+        "teaful": "^0.11.1",
         "typescript": "^4.8.4",
         "uuid": "^9.0.0",
         "web-vitals": "^2.1.4"
