@@ -73,12 +73,20 @@
 .ObservationHeader {
     display: flex;
     justify-content: center;
-    margin-bottom: 5px;
+    margin-bottom: 25px;
+    margin-top: 10px;
 }
 
 .Observation.header {
     border-top: 1px solid black;
     border-bottom: 1px solid black;
+}
+
+.ObservationHeader .SpeciesEntry {
+    font-size: 125%;
+    color: green;
+    justify-content: center;
+    line-height: 0.6;
 }
 
 .ObservationEditIcons {
