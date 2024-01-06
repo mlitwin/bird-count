@@ -73,8 +73,14 @@
 .ObservationHeader {
     display: flex;
     justify-content: center;
-    margin-bottom: 25px;
+    margin-bottom: 5px;
+}
+
+.Observation.edit .ObservationHeader {
+    display: flex;
+    justify-content: center;
     margin-top: 10px;
+    margin-bottom: 25px;
 }
 
 .Observation.header {
