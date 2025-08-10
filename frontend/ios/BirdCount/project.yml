@@ -1,0 +1,28 @@
+name: BirdCount
+options:
+  bundleIdPrefix: com.birdcount
+configs:
+  Debug: debug
+  Release: release
+settings:
+  SWIFT_VERSION: 5.10
+  IPHONEOS_DEPLOYMENT_TARGET: 18.5  # raised from 16.0
+
+targets:
+  BirdCount:
+    type: application
+    platform: iOS
+    deploymentTarget: "18.5"  # raised from 16.0
+    sources:
+      - path: BirdCount  # include BirdCountApp.swift (previously missed)
+    resources:
+      - path: BirdCount/BirdCount/Resources
+    info:
+      path: BirdCount/BirdCount/Info.plist
+      properties:
+        CFBundleShortVersionString: "1.0.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.birdcount.app
+      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon

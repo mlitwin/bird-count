@@ -1,0 +1,357 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		208E0E02373AB724A6117666 /* Taxon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74ADC22819086097B12402BC /* Taxon.swift */; };
+		5B4143CF290C1B88ED929590 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3DA21F8B7A04FA9A2B01542 /* HomeView.swift */; };
+		9011BEC0A95145374777045E /* TaxonomyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 102D036CF7E1F208793BECF3 /* TaxonomyStore.swift */; };
+		C0B46E941915D7EEBD03E60D /* ios_taxonomy_min.json in Resources */ = {isa = PBXBuildFile; fileRef = A9DD5F1234EFBE186A162092 /* ios_taxonomy_min.json */; };
+		C365B63760F17794D9B0605A /* BirdCountApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F3E57E196D1687022B624BA /* BirdCountApp.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		102D036CF7E1F208793BECF3 /* TaxonomyStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaxonomyStore.swift; sourceTree = "<group>"; };
+		4186A73E1CCA966174627C23 /* BirdCount.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BirdCount.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6E9843D7277B138B6C1DBECF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		74ADC22819086097B12402BC /* Taxon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Taxon.swift; sourceTree = "<group>"; };
+		9F3E57E196D1687022B624BA /* BirdCountApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirdCountApp.swift; sourceTree = "<group>"; };
+		A9DD5F1234EFBE186A162092 /* ios_taxonomy_min.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ios_taxonomy_min.json; sourceTree = "<group>"; };
+		C3DA21F8B7A04FA9A2B01542 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		0E9F1A2D5253B2E4B02E7D86 /* Stores */ = {
+			isa = PBXGroup;
+			children = (
+				102D036CF7E1F208793BECF3 /* TaxonomyStore.swift */,
+			);
+			path = Stores;
+			sourceTree = "<group>";
+		};
+		24611EC614CC6D7A1864CA29 = {
+			isa = PBXGroup;
+			children = (
+				9B6D1315E951F29EB7E1E177 /* BirdCount */,
+				593A6844D89FD614BB1D61E8 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		593A6844D89FD614BB1D61E8 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4186A73E1CCA966174627C23 /* BirdCount.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		78B9C2EEC76652E9C1DC01AC /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				74ADC22819086097B12402BC /* Taxon.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		9B6D1315E951F29EB7E1E177 /* BirdCount */ = {
+			isa = PBXGroup;
+			children = (
+				9F3E57E196D1687022B624BA /* BirdCountApp.swift */,
+				F8D30DB1E6B90E66BCDF31DA /* BirdCount */,
+				78B9C2EEC76652E9C1DC01AC /* Models */,
+				BDFC81D89BC0C43232A8FBF1 /* Resources */,
+				0E9F1A2D5253B2E4B02E7D86 /* Stores */,
+				D64D0655932AD754A88CE98C /* Views */,
+			);
+			path = BirdCount;
+			sourceTree = "<group>";
+		};
+		BDFC81D89BC0C43232A8FBF1 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A9DD5F1234EFBE186A162092 /* ios_taxonomy_min.json */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		D64D0655932AD754A88CE98C /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				EFBC3D1234B751ADCA8AF7DA /* Home */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		EFBC3D1234B751ADCA8AF7DA /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				C3DA21F8B7A04FA9A2B01542 /* HomeView.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		F8D30DB1E6B90E66BCDF31DA /* BirdCount */ = {
+			isa = PBXGroup;
+			children = (
+				6E9843D7277B138B6C1DBECF /* Info.plist */,
+			);
+			path = BirdCount;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		83610DFEB2D4DA25A7719A11 /* BirdCount */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8C271E7F5BEA81D09EBD1323 /* Build configuration list for PBXNativeTarget "BirdCount" */;
+			buildPhases = (
+				9F9531B270C5DC63A9D806F4 /* Sources */,
+				8407163C56FD9A8FAB5D85CF /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BirdCount;
+			packageProductDependencies = (
+			);
+			productName = BirdCount;
+			productReference = 4186A73E1CCA966174627C23 /* BirdCount.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		6B65AF1245C07E46D5190E1B /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+			};
+			buildConfigurationList = 8DD62C39EA86F0F12E7D70F5 /* Build configuration list for PBXProject "BirdCount" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 24611EC614CC6D7A1864CA29;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				83610DFEB2D4DA25A7719A11 /* BirdCount */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8407163C56FD9A8FAB5D85CF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C0B46E941915D7EEBD03E60D /* ios_taxonomy_min.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9F9531B270C5DC63A9D806F4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C365B63760F17794D9B0605A /* BirdCountApp.swift in Sources */,
+				5B4143CF290C1B88ED929590 /* HomeView.swift in Sources */,
+				208E0E02373AB724A6117666 /* Taxon.swift in Sources */,
+				9011BEC0A95145374777045E /* TaxonomyStore.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		06D83211D8FD4F06736B557D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = BirdCount/BirdCount/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.birdcount.app;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3603EDAA027DDDDAF4DF8CE1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.1;
+			};
+			name = Debug;
+		};
+		3DB3CA6B474A5894327E11F2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.1;
+			};
+			name = Release;
+		};
+		EA1927F849D19A443F205B2B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = BirdCount/BirdCount/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.birdcount.app;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8C271E7F5BEA81D09EBD1323 /* Build configuration list for PBXNativeTarget "BirdCount" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				06D83211D8FD4F06736B557D /* Debug */,
+				EA1927F849D19A443F205B2B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		8DD62C39EA86F0F12E7D70F5 /* Build configuration list for PBXProject "BirdCount" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3603EDAA027DDDDAF4DF8CE1 /* Debug */,
+				3DB3CA6B474A5894327E11F2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 6B65AF1245C07E46D5190E1B /* Project object */;
+}

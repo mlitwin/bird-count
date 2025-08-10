@@ -1,0 +1,23 @@
+[
+    {
+        "id": "amecro",
+        "commonName": "American Crow",
+        "scientificName": "Corvus brachyrhynchos",
+        "order": 1,
+        "rank": "species"
+    },
+    {
+        "id": "norbla",
+        "commonName": "Northern Blackbird",
+        "scientificName": "Inventus fictus",
+        "order": 2,
+        "rank": "species"
+    },
+    {
+        "id": "bkhawk",
+        "commonName": "Black Hawk",
+        "scientificName": "Buteogallus anthracinus",
+        "order": 3,
+        "rank": "species"
+    }
+]
