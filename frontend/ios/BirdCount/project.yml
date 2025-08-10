@@ -16,7 +16,7 @@ targets:
     sources:
       - path: BirdCount  # include BirdCountApp.swift (previously missed)
     resources:
-      - path: BirdCount/BirdCount/Resources
+      - path: BirdCount/Resources
     info:
       path: BirdCount/BirdCount/Info.plist
       properties:
@@ -26,3 +26,12 @@ targets:
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.birdcount.app
       ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    scripts:
+      - name: Generate Taxonomy
+        script: |
+          if [ -f BirdCount/Scripts/generate_ios_taxonomy.mjs ]; then
+            node BirdCount/Scripts/generate_ios_taxonomy.mjs || exit 1
+          else
+            echo "No taxonomy generation script found";
+          fi
+        basedOnDependencyAnalysis: false

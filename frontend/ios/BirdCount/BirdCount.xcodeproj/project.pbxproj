@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		208E0E02373AB724A6117666 /* Taxon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74ADC22819086097B12402BC /* Taxon.swift */; };
+		4217D9AF2D23AF11355EF353 /* generate_ios_taxonomy.mjs in Resources */ = {isa = PBXBuildFile; fileRef = E3424E4DDD31730B25CEEBC1 /* generate_ios_taxonomy.mjs */; };
 		5B4143CF290C1B88ED929590 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3DA21F8B7A04FA9A2B01542 /* HomeView.swift */; };
 		9011BEC0A95145374777045E /* TaxonomyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 102D036CF7E1F208793BECF3 /* TaxonomyStore.swift */; };
 		C0B46E941915D7EEBD03E60D /* ios_taxonomy_min.json in Resources */ = {isa = PBXBuildFile; fileRef = A9DD5F1234EFBE186A162092 /* ios_taxonomy_min.json */; };
@@ -22,6 +23,7 @@
 		9F3E57E196D1687022B624BA /* BirdCountApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirdCountApp.swift; sourceTree = "<group>"; };
 		A9DD5F1234EFBE186A162092 /* ios_taxonomy_min.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ios_taxonomy_min.json; sourceTree = "<group>"; };
 		C3DA21F8B7A04FA9A2B01542 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		E3424E4DDD31730B25CEEBC1 /* generate_ios_taxonomy.mjs */ = {isa = PBXFileReference; path = generate_ios_taxonomy.mjs; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -31,6 +33,14 @@
 				102D036CF7E1F208793BECF3 /* TaxonomyStore.swift */,
 			);
 			path = Stores;
+			sourceTree = "<group>";
+		};
+		1B74F50056CF85E52DB1974F /* Scripts */ = {
+			isa = PBXGroup;
+			children = (
+				E3424E4DDD31730B25CEEBC1 /* generate_ios_taxonomy.mjs */,
+			);
+			path = Scripts;
 			sourceTree = "<group>";
 		};
 		24611EC614CC6D7A1864CA29 = {
@@ -64,6 +74,7 @@
 				F8D30DB1E6B90E66BCDF31DA /* BirdCount */,
 				78B9C2EEC76652E9C1DC01AC /* Models */,
 				BDFC81D89BC0C43232A8FBF1 /* Resources */,
+				1B74F50056CF85E52DB1974F /* Scripts */,
 				0E9F1A2D5253B2E4B02E7D86 /* Stores */,
 				D64D0655932AD754A88CE98C /* Views */,
 			);
@@ -156,6 +167,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4217D9AF2D23AF11355EF353 /* generate_ios_taxonomy.mjs in Resources */,
 				C0B46E941915D7EEBD03E60D /* ios_taxonomy_min.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
