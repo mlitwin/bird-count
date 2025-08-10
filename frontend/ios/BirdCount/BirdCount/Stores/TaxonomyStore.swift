@@ -5,6 +5,8 @@ import Observation
     private(set) var species: [Taxon] = []
     private(set) var loaded: Bool = false
     private(set) var error: String? = nil
+    // Added runtime switch for abbreviation search; default true
+    var enableAbbreviationSearch: Bool = true
 
     func load() {
         guard !loaded else { return }
@@ -52,7 +54,7 @@ import Observation
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return species }
         let needle = trimmed.lowercased()
-        let isAbbr = needle.range(of: "^[a-zA-Z]+$", options: .regularExpression) != nil
+        let isAbbr = enableAbbreviationSearch && needle.range(of: "^[a-zA-Z]+$", options: .regularExpression) != nil
         return species.filter { taxon in
             if isAbbr {
                 // abbreviation match: any generated abbreviation starts with the needle characters in order

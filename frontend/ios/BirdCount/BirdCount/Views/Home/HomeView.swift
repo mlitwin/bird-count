@@ -3,9 +3,12 @@ import SwiftUI
 struct HomeView: View {
     @Environment(TaxonomyStore.self) private var taxonomy
     @Environment(ObservationStore.self) private var observations
+    @Environment(SettingsStore.self) private var settings
     @State private var filterText: String = ""
     @State private var useSystemKeyboard: Bool = false // debug toggle if needed
     @State private var selectedTaxon: Taxon? = nil
+    @State private var showSummary: Bool = false
+    @State private var showSettings: Bool = false
 
     private var filtered: [Taxon] { taxonomy.search(filterText) }
 
@@ -16,36 +19,42 @@ struct HomeView: View {
                     .padding(.horizontal)
                     .padding(.top, 8)
                 Divider()
-                Group {
-                    if let error = taxonomy.error {
-                        ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(error))
-                    } else if !taxonomy.loaded {
-                        ProgressView("Loading taxonomy…")
-                            .task { taxonomy.load() }
-                    } else if taxonomy.species.isEmpty {
-                        ContentUnavailableView("No Species", systemImage: "bird", description: Text("Taxonomy file empty"))
-                    } else {
-                        speciesList
-                    }
-                }
+                Group { content }
                 Divider()
-                OnScreenKeyboard(onKey: { ch in
-                    filterText.append(ch)
-                }, onBackspace: {
-                    if !filterText.isEmpty { _ = filterText.removeLast() }
-                }, onClear: {
-                    filterText = ""
-                }, onSpace: {
-                    filterText.append(" ")
-                })
-                .padding(.bottom, 8)
-                .background(.thinMaterial)
+                OnScreenKeyboard(onKey: { filterText.append($0) }, onBackspace: { if !filterText.isEmpty { _ = filterText.removeLast() } }, onClear: { filterText = "" }, onSpace: { filterText.append(" ") })
+                    .padding(.bottom, 8)
+                    .background(.thinMaterial)
             }
             .navigationTitle("Bird Count")
-            .toolbar { ToolbarItem(placement: .topBarTrailing) { toggleKeyboardButton } }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) { Button("Summary") { showSummary = true } }
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button { showSettings = true } label: { Image(systemName: "gearshape") }
+                    toggleKeyboardButton
+                }
+            }
             .sheet(item: $selectedTaxon) { taxon in
                 CountAdjustSheet(taxon: taxon) { selectedTaxon = nil }
             }
+            .sheet(isPresented: $showSummary) { SummaryView(show: $showSummary) }
+            .sheet(isPresented: $showSettings) { SettingsView(show: $showSettings) }
+            .onChange(of: settings.enableAbbreviationSearch) { _, newVal in
+                taxonomy.enableAbbreviationSearch = newVal
+            }
+            .task { taxonomy.enableAbbreviationSearch = settings.enableAbbreviationSearch }
+        }
+    }
+
+    @ViewBuilder private var content: some View {
+        if let error = taxonomy.error {
+            ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(error))
+        } else if !taxonomy.loaded {
+            ProgressView("Loading taxonomy…")
+                .task { taxonomy.load() }
+        } else if taxonomy.species.isEmpty {
+            ContentUnavailableView("No Species", systemImage: "bird", description: Text("Taxonomy file empty"))
+        } else {
+            speciesList
         }
     }
 
@@ -199,79 +208,6 @@ private struct CountAdjustSheet: View, Identifiable {
 
     // MARK: Components
     private struct StepButton: View { let symbol: String; let action: () -> Void; var body: some View { Button(action: action) { Image(systemName: symbol).font(.largeTitle.weight(.semibold)).frame(width: 88, height: 88).background(Circle().fill(Color.accentColor.opacity(0.15))) }.buttonStyle(.plain) } }
-
-    private struct NumericPad: View {
-        let onDigit: (Int) -> Void
-        let onBack: () -> Void
-        let onClear: () -> Void
-        private let layout: [[Int?]] = [[1,2,3],[4,5,6],[7,8,9],[nil,0,nil]]
-        var body: some View {
-            VStack(spacing: 12) {
-                ForEach(layout.indices, id: \.self) { r in
-                    HStack(spacing: 12) {
-                        ForEach(layout[r].indices, id: \.self) { c in
-                            if let val = layout[r][c] { NumButton(label: String(val)) { onDigit(val) } }
-                            else if r == 3 && c == 0 { NumButton(symbol: "delete.left") { onBack() } }
-                            else if r == 3 && c == 2 { NumButton(symbol: "xmark") { onClear() } }
-                            else { Spacer().frame(width: 64, height: 64) }
-                        }
-                    }
-                }
-            }
-        }
-        private struct NumButton: View { var label: String? = nil; var symbol: String? = nil; let action: () -> Void; var body: some View { Button(action: action) { Group { if let label = label { Text(label).font(.title2.bold()) } else if let symbol = symbol { Image(systemName: symbol).font(.title2) } }.frame(width: 64, height: 64).background(RoundedRectangle(cornerRadius: 16).fill(Color(.tertiarySystemFill))) }.buttonStyle(.plain) } }
-    }
-}
-
-struct OnScreenKeyboard: View {
-    let onKey: (String) -> Void
-    let onBackspace: () -> Void
-    let onClear: () -> Void
-    let onSpace: () -> Void
-
-    private let rows: [[String]] = [["Q","W","E","R","T","Y","U","I","O","P"],["A","S","D","F","G","H","J","K","L"],["Z","X","C","V","B","N","M"]]
-
-    var body: some View {
-        VStack(spacing: 6) {
-            ForEach(rows.indices, id: \.self) { r in
-                HStack(spacing: 6) {
-                    ForEach(rows[r], id: \.self) { key in
-                        KeyButton(label: key) { onKey(key.lowercased()) }
-                    }
-                }
-            }
-            HStack(spacing: 6) {
-                KeyButton(symbol: "delete.left.fill", width: 60, role: .destructive) { onBackspace() }
-                    .accessibilityLabel("Backspace")
-                KeyButton(label: "SPACE", flex: true) { onSpace() }
-                    .accessibilityLabel("Space")
-                KeyButton(symbol: "xmark.circle", width: 60) { onClear() }
-                    .accessibilityLabel("Clear filter")
-            }
-        }
-        .padding(.horizontal, 10)
-    }
-
-    private struct KeyButton: View {
-        var label: String? = nil
-        var symbol: String? = nil
-        var width: CGFloat? = nil
-        var flex: Bool = false
-        var role: ButtonRole? = nil
-        let action: () -> Void
-        var body: some View {
-            Button(role: role) { action(); UIImpactFeedbackGenerator(style: .light).impactOccurred() } label: {
-                Group { if let label = label { Text(label).font(.callout.weight(.semibold)) } else if let symbol = symbol { Image(systemName: symbol) } }
-                .frame(width: width, height: 38)
-                .frame(maxWidth: flex ? .infinity : nil)
-            }
-            .buttonStyle(.plain)
-            .padding(.vertical, 4)
-            .frame(height: 46)
-            .frame(maxWidth: flex ? .infinity : (width ?? 34))
-            .background(RoundedRectangle(cornerRadius: 8).fill(Color(.tertiarySystemFill)))
-        }
-    }
 }
 
 #if DEBUG
