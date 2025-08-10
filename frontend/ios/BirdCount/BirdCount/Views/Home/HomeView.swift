@@ -24,12 +24,17 @@ struct HomeView: View {
                         ContentUnavailableView("No Species", systemImage: "bird", description: Text("Taxonomy file empty"))
                     } else {
                         List(filtered) { taxon in
-                            VStack(alignment: .leading) {
+                            VStack(alignment: .leading, spacing: 2) {
                                 Text(taxon.commonName)
                                     .font(.headline)
                                 Text(taxon.scientificName)
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
+                                if !taxon.abbreviations.isEmpty {
+                                    Text(taxon.abbreviations.joined(separator: ", "))
+                                        .font(.caption2)
+                                        .foregroundStyle(.tertiary)
+                                }
                             }
                             .contentShape(Rectangle())
                             .onTapGesture {
