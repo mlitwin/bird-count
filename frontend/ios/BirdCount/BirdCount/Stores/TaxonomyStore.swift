@@ -21,6 +21,16 @@ import Observation
             self.error = error.localizedDescription
         }
     }
+
+    // Simple case-insensitive substring search across common + scientific names.
+    func search(_ text: String) -> [Taxon] {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return species }
+        let needle = trimmed.lowercased()
+        return species.filter { taxon in
+            taxon.commonName.lowercased().contains(needle) || taxon.scientificName.lowercased().contains(needle)
+        }
+    }
 }
 
 #if DEBUG
