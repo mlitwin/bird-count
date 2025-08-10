@@ -103,3 +103,7 @@ This: https://react-rxjs.org/docs/getting-started
 https://gist.github.com/koistya/d7a507438c741ee6adb5 layout
 
 https://science.ebird.org/en/use-ebird-data/the-ebird-taxonomy
+
+https://www.usgs.gov/labs/bird-banding-laboratory/data
+
+view-source:https://www.pwrc.usgs.gov/BBL/Bander_Portal/login/speclist.php

@@ -21,7 +21,7 @@ const sciNames = {};
 taxonomy.species.forEach(sp => {
     const id = sp.id;
 
-    if( speciesById[id]) {
+    if (speciesById[id]) {
         valid = false;
         console.log(`Duplicate species id ${id}`)
     }
@@ -35,16 +35,16 @@ taxonomy.species.forEach(sp => {
 taxonomy.species.forEach(sp => {
     const parent = sp.parent;
 
-    if(parent) {
-        childrendById[parent].push(sp.id); 
+    if (parent) {
+        childrendById[parent].push(sp.id);
     }
 
-    if( sp.id !== 'bird1' && !speciesById[parent]) {
+    if (sp.id !== 'bird1' && !speciesById[parent]) {
         valid = false;
         console.log(`Parent not found for ${JSON.stringify(sp)} seeking ${parent}`)
     }
 
-    if( sp.id === sp.parent) {
+    if (sp.id === sp.parent) {
         console.log(sp)
     }
 });
@@ -55,18 +55,18 @@ const visited = {};
 function visit(sp) {
     if (visited[sp]) {
         valid = false;
-        console.log(`Circularity detected at ${sp}`);    
-        exit(0)  
+        console.log(`Circularity detected at ${sp}`);
+        exit(0)
     }
     visited[sp] = true;
-    childrendById[sp].forEach(v => visit(v)); 
+    childrendById[sp].forEach(v => visit(v));
 }
 
 visit('bird1');
 
 const visitCount = Object.keys(visited).length;
 
-if( visitCount !== taxonomy.species.length) {
+if (visitCount !== taxonomy.species.length) {
     valid = false;
     console.log("Not all species descend from Aves");
     taxonomy.species.forEach(sp => {

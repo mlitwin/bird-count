@@ -9,11 +9,15 @@
         },
         "species": {
             "type": "array",
-            "items": { "$ref": "#/$defs/species" }
+            "items": {
+                "$ref": "#/$defs/species"
+            }
         }
     },
-    "required": ["id", "species"],
-
+    "required": [
+        "id",
+        "species"
+    ],
     "$defs": {
         "species": {
             "type": "object",
@@ -25,17 +29,25 @@
                     "type": "string"
                 },
                 "sciName": {
-                    "type": "string",
-                    "pattern": "^[A-Z][a-z]+( [A-Z]?[.a-z/]+)*(( v-[a-z]+)|( \\([^)]*\\)))?$"
+                    "type": "string"
                 },
                 "taxonomicOrder": {
                     "type": "number"
                 },
                 "parent": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 }
             },
-            "required": ["id", "type", "sciName", "taxonomicOrder", "parent"]
+            "required": [
+                "id",
+                "type",
+                "sciName",
+                "taxonomicOrder",
+                "parent"
+            ]
         }
     }
 }

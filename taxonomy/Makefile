@@ -8,4 +8,4 @@ create:
 .PHONY: checklist
 checklist: create
 	cp taxonomy.json ../frontend/src/data
-	cp checklist*.json ../frontend/src/data
+	cp checklist-US-CA-041.json ../frontend/src/data/checklist.json

@@ -26,9 +26,14 @@ function createDefaultChecklist(taxonomy) {
     const code = sp.speciesCode;
     checklist.species[code].commonness = 1;
   });
-  const US_CA = JSON.parse(fs.readFileSync("./eBird/US-ME.json"));
+
+  const US_CA = JSON.parse(fs.readFileSync("./eBird/US-CA-041.json"));
   US_CA.forEach((sp) => {
     const code = sp.speciesCode;
+    if (!checklist.species[code]) {
+      console.warn(`Species code ${code} not found in taxonomy.`);
+      return;
+    }
     checklist.species[code].commonness = 2;
   });
   ["caltow", "rempar", "annhum", "amecro", "amerob"].forEach((code) => {
@@ -48,6 +53,7 @@ function normalizeSciName(sciName) {
 
   ret = ret.replace(/\//g, " / ");
   ret = ret.replace(/  +/g, " ");
+  ret = ret.replace(/\s*\([^)]*\)\s*$/, "");
 
   ret = ret.trim();
 
@@ -86,7 +92,7 @@ function addSpecies(s) {
       group: s.SPECIES_GROUP,
     },
   };
-  sp.order = s.ORDER1;
+  sp.order = s.ORDER;
   sp.family = normalizeFamily(s.FAMILY);
   updateTypeToTaxon(sp);
   taxonomy.species.push(sp);
@@ -128,7 +134,7 @@ function createTaxon(sciName, type, sp) {
   return t;
 }
 
-fs.createReadStream("./eBird/ebird_taxonomy_v2022.csv")
+fs.createReadStream("./eBird/ebird_taxonomy_v2024.csv")
   .pipe(csv())
   .on("data", (data) => addSpecies(data))
   .on("end", () => {
@@ -161,7 +167,7 @@ fs.createReadStream("./eBird/ebird_taxonomy_v2022.csv")
 
     fs.writeFileSync("./taxonomy.json", JSON.stringify(taxonomy, null, 2));
     fs.writeFileSync(
-      "./checklist-US-ME.json",
+      "./checklist-US-CA-041.json",
       JSON.stringify(checklist, null, 2)
     );
   });
