@@ -9,7 +9,7 @@ import ObservationEntryPad from './ObservationEntryPad'
 import ObservationHistory from './ObservationHistory'
 import ObservationSummary from './ObservationSummary'
 import Settings from './Settings'
-import { useAppContext } from 'store/store'
+import { useAppContext } from './store/store'
 
 function App() {
     const [value, setValue] = React.useState(0)

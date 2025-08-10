@@ -1,27 +1,33 @@
 import * as React from 'react'
-import { ObservationSet } from 'model/types'
+import { ObservationSet, Observation } from './model/types'
 import { ObservationList } from './common/ObservationList'
 import ObservationEntry from './common/ObservationEntry'
 import ListItem from '@mui/material/ListItem'
 
 import { observations } from './store/store'
 
-import dayjs from 'dayjs'
+import dayjs, { Dayjs } from 'dayjs'
 
-function ObservationHistory(props) {
+interface ObservationHistoryProps {}
+
+function ObservationHistory(props: ObservationHistoryProps) {
     const allObservations = observations()
 
-    const obs = allObservations
-        .filter((o) => o.parent === null)
-        .map((o) => new ObservationSet([o]))
-        .filter((o) => o.count > 0)
-        .sort((a, b) => {
+    const obs: ObservationSet[] = allObservations
+        .filter((o: Observation) => o.parent === null)
+        .map((o: Observation) => new ObservationSet([o]))
+        .filter((o: ObservationSet) => o.count > 0)
+        .sort((a: ObservationSet, b: ObservationSet) => {
             return a.start - b.start
         })
 
-    function observationContent(observation, index, isScrolling) {
+    function observationContent(
+        observation: ObservationSet,
+        index: number,
+        isScrolling: boolean
+    ) {
         const observationDate = dayjs(observation.start)
-        const observationDay = observationDate.startOf('date')
+        const observationDay: Dayjs = observationDate.startOf('date')
 
         const isFirstOfDay =
             index === 0 ||

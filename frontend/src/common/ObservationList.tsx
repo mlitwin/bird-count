@@ -1,14 +1,14 @@
-import { ObservationSet } from 'model/types'
+import { ObservationSet } from '../model/types'
 import List from '@mui/material/List'
-import { Virtuoso } from 'react-virtuoso'
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso'
 import React, { useEffect, useRef, useState } from 'react'
 import './ObservationList.css'
 
 interface IObservationListProps {
     data: ObservationSet[]
     observationContent: (
-        observation: any,
-        index: any,
+        observation: ObservationSet,
+        index: number,
         isScrolling: boolean
     ) => JSX.Element
 }
@@ -25,7 +25,7 @@ function ObservationList(props: IObservationListProps) {
     const data = props.data
     const [isScrolling, setIsScrolling] = useState(false)
 
-    const virtuoso = useRef(null)
+    const virtuoso = useRef<VirtuosoHandle | null>(null)
     useEffect(() => {
         if (virtuoso && virtuoso.current) {
             virtuoso.current.scrollToIndex({
@@ -44,7 +44,8 @@ function ObservationList(props: IObservationListProps) {
 
     const vrtuosoProps: any = {
         totalCount: totalObservations,
-        itemContent: (i) => props.observationContent(data[i], i, isScrolling),
+        itemContent: (i: number) =>
+            props.observationContent(data[i], i, isScrolling),
         initialTopMostItemIndex: totalObservations - 1,
         isScrolling: setIsScrolling,
     }

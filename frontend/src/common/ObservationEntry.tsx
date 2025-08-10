@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import SpeciesName from './SpeciesName'
-import { ObservationSet, Observation } from 'model/types'
+import { ObservationSet, Observation } from '../model/types'
 import IconButton from '@mui/material/IconButton'
 import Button from '@mui/material/Button'
 import {
@@ -9,7 +9,7 @@ import {
     RemoveCircleOutlined,
     CancelOutlined,
 } from '@mui/icons-material'
-import { useSwipeable } from 'react-swipeable'
+import { useSwipeable, SwipeableHandlers } from 'react-swipeable'
 
 import { getAppContext, useAddObservation } from '../store/store'
 
@@ -36,20 +36,20 @@ interface ObservationProps {
     disableSwipe: boolean
 }
 
-function useRevealSwiper(cancel: boolean) {
-    const last = useRef(null)
-    const [activeSlide, setActiveSlide] = useState('middle')
-    const [lastWidth, setLastWidth] = useState(0)
-    const [lastContentWidth, setLastContentWidth] = useState(0)
-    const [canceled, setCanceled] = useState(false)
+function useRevealSwiper(cancel: boolean): [SwipeableHandlers, any, any] {
+    const last = useRef<HTMLDivElement | null>(null)
+    const [activeSlide, setActiveSlide] = useState<'middle' | 'last'>('middle')
+    const [lastWidth, setLastWidth] = useState<number>(0)
+    const [lastContentWidth, setLastContentWidth] = useState<number>(0)
+    const [canceled, setCanceled] = useState<boolean>(false)
 
-    function setWidth(width) {
+    function setWidth(width: number) {
         setLastWidth(Math.max(width, 0))
     }
 
     function endSwipe() {
-        const offsetWidth = last?.current.offsetWidth
-        const scrollWidth = last?.current.scrollWidth
+        const offsetWidth = last?.current?.offsetWidth || 0
+        const scrollWidth = last?.current?.scrollWidth || 0
         if (canceled) {
             setCanceled(false)
         }
@@ -74,7 +74,7 @@ function useRevealSwiper(cancel: boolean) {
             if (doCancel()) {
                 return
             }
-            if (activeSlide === 'last') {
+            if (activeSlide === 'last' && last.current) {
                 setLastContentWidth(last.current.offsetWidth)
             }
         },
@@ -89,12 +89,12 @@ function useRevealSwiper(cancel: boolean) {
                 const w = Math.floor(-eventData.deltaX)
                 setWidth(w)
             }
-            if (activeSlide === 'last') {
+            if (activeSlide === 'last' && last.current) {
                 const w = Math.floor(lastContentWidth - eventData.deltaX)
                 setWidth(w)
             }
         },
-        onSwiped: (eventData) => {
+        onSwiped: () => {
             endSwipe()
         },
         trackMouse: true,
@@ -114,7 +114,16 @@ function useRevealSwiper(cancel: boolean) {
     return [handlers, swiperProps, lastProps]
 }
 
-function ObservationEntryDisplay(props) {
+interface ObservationEntryDisplayProps {
+    query: ObservationSet
+    variant: string
+    displayDate: string
+    displaySummary: string
+    onEvent?: ObservationEntryEventCallback
+    setMode: React.Dispatch<React.SetStateAction<Modes>>
+    disableSwipe: boolean
+}
+function ObservationEntryDisplay(props: ObservationEntryDisplayProps) {
     const query = props.query
     const count = props.query.count
     const species = props.query.species
@@ -139,7 +148,7 @@ function ObservationEntryDisplay(props) {
     function doDelete() {
         props.setMode('display')
 
-        const deleteObservations = query.observations.map((o) => {
+        const deleteObservations = query.observations.map((o: Observation) => {
             const parentSet = new ObservationSet([o])
             const newO = new Observation()
             newO.Assign(o)
@@ -151,7 +160,7 @@ function ObservationEntryDisplay(props) {
             return newO
         })
 
-        deleteObservations.forEach((o) => {
+        deleteObservations.forEach((o: Observation) => {
             addObservation(o)
         })
 
@@ -193,7 +202,7 @@ function ObservationEntryDisplay(props) {
 interface IObservationEntryEditProps {
     query: ObservationSet
     variant: string
-    setMode: any
+    setMode: React.Dispatch<React.SetStateAction<Modes>>
     onEvent?: ObservationEntryEventCallback
 }
 
@@ -201,7 +210,7 @@ function ObservationEntryEdit(props: IObservationEntryEditProps) {
     const query = props.query
     const addObservation = useAddObservation()
 
-    const [count, setCount] = useState(query.count)
+    const [count, setCount] = useState<number>(query.count)
     const ac = getAppContext()
 
     const delta = count - query.count

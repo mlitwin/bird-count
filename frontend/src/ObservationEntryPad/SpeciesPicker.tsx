@@ -2,17 +2,23 @@ import SpeciesName from '../common/SpeciesName'
 import React, { useRef, useEffect } from 'react'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
+import { Species } from '../model/types'
 
 import './SpeciesPicker.css'
 
-function setScrollPositionToEnd(bottomEl) {
+function setScrollPositionToEnd(bottomEl: React.RefObject<HTMLElement | null>) {
     if (bottomEl.current) {
         bottomEl.current.scrollIntoView(false)
     }
 }
 
-function SpeciesPicker(props) {
-    const bottomEl = useRef(null)
+interface SpeciesPickerProps {
+    species: Species[]
+    chooseItem: (species: Species) => void
+}
+
+function SpeciesPicker(props: SpeciesPickerProps) {
+    const bottomEl = useRef<HTMLElement | null>(null)
     const maxSpeciesInPicker = 100
     const species = props.species.slice(0, maxSpeciesInPicker).reverse()
 
@@ -24,16 +30,15 @@ function SpeciesPicker(props) {
         setScrollPositionToEnd(bottomEl)
     }, [species])
 
-    function itemContent(sp, index, bottomEl) {
-        const itemProps: any = {
-            key: `${sp.id}:${index}`,
-            onClick: (e) => props.chooseItem(sp),
-        }
-        if (index === species.length - 1) {
-            itemProps.ref = bottomEl
-        }
+    function itemContent(sp: Species, index: number) {
+        const key = `${sp.id}:${index}`
+        const refProp = index === species.length - 1 ? bottomEl : undefined
         return (
-            <ListItem {...itemProps}>
+            <ListItem
+                key={key}
+                ref={refProp as any}
+                onClick={() => props.chooseItem(sp)}
+            >
                 <SpeciesName species={sp} />
             </ListItem>
         )
@@ -44,7 +49,7 @@ function SpeciesPicker(props) {
     return (
         <div className="SpeciesPicker">
             <List key={listKey} className="SpeciesList">
-                {species.map((sp, index) => itemContent(sp, index, bottomEl))}
+                {species.map((sp, index) => itemContent(sp, index))}
             </List>
         </div>
     )

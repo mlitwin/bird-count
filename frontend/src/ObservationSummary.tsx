@@ -11,7 +11,7 @@ import {
     EmailOutlined,
 } from '@mui/icons-material'
 
-import { Taxonomy, Observation, ObservationSet } from 'model/types'
+import { Taxonomy, Observation, ObservationSet } from './model/types'
 import ObservationEntry from './common/ObservationEntry'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
@@ -19,14 +19,20 @@ import { getAppContext } from './store/store'
 
 import { observations } from './store/store'
 
-import dayjs from 'dayjs'
+import dayjs, { Dayjs } from 'dayjs'
 
 import './ObservationSummary.css'
 
-function filterObservations(obs: Observation[], start, end) {
+function filterObservations(
+    obs: Observation[],
+    start: Dayjs,
+    end: Dayjs
+): Observation[] {
     return obs.filter(
         (o) =>
-            o.parent === null && o.start >= start && o.start + o.duration <= end
+            o.parent === null &&
+            o.start >= start.valueOf() &&
+            o.start + o.duration <= end.valueOf()
     )
 }
 
@@ -36,7 +42,7 @@ function computeSummary(
     const ac = getAppContext()
 
     const obsBySpecies: { [key: string]: ObservationSet } = {}
-    let summary = null
+    let summary: ObservationSet | null = null
 
     obs.forEach((obs) => {
         const sp = ac.taxonomy.speciesTaxon(obs.species)
@@ -62,10 +68,14 @@ function computeSummary(
         (a, b) => a.species.taxonomicOrder - b.species.taxonomicOrder
     )
 
-    return [summary, obsSummaries.filter(s => s.count > 0)];
+    return [summary, obsSummaries.filter((s) => s.count > 0)]
 }
 
-function SummaryListHeader(props) {
+interface SummaryListHeaderProps {
+    summary: ObservationSet | null
+    statistics: string
+}
+function SummaryListHeader(props: SummaryListHeaderProps) {
     if (null === props.summary) {
         return <div className="SummaryListHeader">No observations</div>
     }
@@ -88,8 +98,8 @@ function countSpecies(taxonomy: Taxonomy, observations: Observation[]): number {
     const counted: { [id: string]: Boolean } = {}
 
     observations.forEach((obs) => {
-        let t = obs.species.id
-        if (!counted[t]) {
+        let t: string | undefined = obs.species.id
+        if (t && !counted[t]) {
             ret++
             while (t && !counted[t]) {
                 counted[t] = true
@@ -109,8 +119,8 @@ function ObservationSummary() {
 
     const allObservations = observations()
 
-    const [start, setStart] = useState(today)
-    const [end, setEnd] = useState(tomorrow)
+    const [start, setStart] = useState<Dayjs>(today)
+    const [end, setEnd] = useState<Dayjs>(tomorrow)
 
     const obs = filterObservations(allObservations, start, end)
     const [summary, obsSummaries] = computeSummary(obs)
@@ -138,7 +148,7 @@ function ObservationSummary() {
         setStart(today)
         setEnd(tomorrow)
     }
-    function deltaByDay(days) {
+    function deltaByDay(days: number) {
         setStart(start.add(days, 'days'))
         setEnd(end.add(days, 'days'))
     }
@@ -150,28 +160,20 @@ function ObservationSummary() {
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <div>
                             <DateTimePicker
-                                renderInput={(props) => (
-                                    <TextField {...props} />
-                                )}
                                 label="Start"
-                                hideTabs={false}
                                 value={start}
                                 onChange={(newValue) => {
-                                    setStart(newValue)
+                                    if (newValue) setStart(newValue)
                                 }}
                             />
                         </div>
 
                         <div>
                             <DateTimePicker
-                                renderInput={(props) => (
-                                    <TextField {...props} />
-                                )}
                                 label="End"
-                                hideTabs={false}
                                 value={end}
                                 onChange={(newValue) => {
-                                    setEnd(newValue)
+                                    if (newValue) setEnd(newValue)
                                 }}
                             />
                         </div>
