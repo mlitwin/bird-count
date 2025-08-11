@@ -135,8 +135,8 @@ private struct CountAdjustSheet: View, Identifiable {
     let taxon: Taxon
     let onDone: () -> Void
     var id: String { taxon.id }
-    @State private var tempCount: Int = 0
-    @State private var numberBuffer: String = ""
+    @State private var tempCount: Int = 1 // number of new observations to add
+    @State private var numberBuffer: String = "1"
 
     var body: some View {
         NavigationStack {
@@ -152,7 +152,7 @@ private struct CountAdjustSheet: View, Identifiable {
             .padding(.horizontal, 24)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { onDone() } }
-                ToolbarItem(placement: .confirmationAction) { Button("Done") { commitAndClose() }.disabled(tempCount < 0) }
+                ToolbarItem(placement: .confirmationAction) { Button("Done") { commitAndClose() }.disabled(tempCount < 1) }
                 ToolbarItem(placement: .bottomBar) {
                     VStack(alignment: .leading) {
                         Text("Observed species: \(observations.totalSpeciesObserved)")
@@ -194,17 +194,35 @@ private struct CountAdjustSheet: View, Identifiable {
     }
 
     private func initialize() {
-        let current = observations.count(for: taxon.id)
-        tempCount = current
-        numberBuffer = current > 0 ? String(current) : ""
+        // Always default to 1 new observation regardless of existing total
+        tempCount = 1
+        numberBuffer = "1"
     }
 
     // MARK: Logic
-    private func adjust(_ delta: Int) { let new = max(0, tempCount + delta); tempCount = new; numberBuffer = String(new); UIImpactFeedbackGenerator(style: .soft).impactOccurred() }
-    private func appendDigit(_ d: Int) { numberBuffer.append(String(d)); if let val = Int(numberBuffer) { tempCount = val }; UIImpactFeedbackGenerator(style: .light).impactOccurred() }
-    private func backspace() { guard !numberBuffer.isEmpty else { return }; numberBuffer.removeLast(); tempCount = Int(numberBuffer) ?? 0; UIImpactFeedbackGenerator(style: .rigid).impactOccurred() }
-    private func clearBuffer() { numberBuffer = ""; tempCount = 0; UIImpactFeedbackGenerator(style: .rigid).impactOccurred() }
-    private func commitAndClose() { observations.set(taxon.id, to: tempCount); onDone() }
+    private func adjust(_ delta: Int) {
+        let newVal = max(1, tempCount + delta)
+        if newVal != tempCount { tempCount = newVal; numberBuffer = String(newVal); UIImpactFeedbackGenerator(style: .soft).impactOccurred() }
+    }
+    private func appendDigit(_ d: Int) {
+        if numberBuffer == "0" { numberBuffer = "" }
+        numberBuffer.append(String(d))
+        if let val = Int(numberBuffer) { tempCount = max(1, val) }
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+    private func backspace() {
+        guard !numberBuffer.isEmpty else { return }
+        numberBuffer.removeLast()
+        if numberBuffer.isEmpty { tempCount = 1; numberBuffer = "1" }
+        else { tempCount = max(1, Int(numberBuffer) ?? 1) }
+        UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
+    }
+    private func clearBuffer() { tempCount = 1; numberBuffer = "1"; UIImpactFeedbackGenerator(style: .rigid).impactOccurred() }
+    private func commitAndClose() {
+        guard tempCount >= 1 else { onDone(); return }
+        for _ in 0..<tempCount { observations.addObservation(taxon.id) }
+        onDone()
+    }
 
     // MARK: Components
     private struct StepButton: View { let symbol: String; let action: () -> Void; var body: some View { Button(action: action) { Image(systemName: symbol).font(.largeTitle.weight(.semibold)).frame(width: 88, height: 88).background(Circle().fill(Color.accentColor.opacity(0.15))) }.buttonStyle(.plain) } }

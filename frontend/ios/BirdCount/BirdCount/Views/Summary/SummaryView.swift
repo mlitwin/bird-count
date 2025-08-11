@@ -59,7 +59,7 @@ struct SummaryView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Close") { show = false } }
                 ToolbarItemGroup(placement: .primaryAction) {
-                    Button("Log") { showLog = true }.disabled(observations.events.isEmpty)
+                    Button("Log") { showLog = true }.disabled(observations.observations.isEmpty)
                     Button("Share") { shareSheet = true }.disabled(observedSpecies.isEmpty)
                 }
             }

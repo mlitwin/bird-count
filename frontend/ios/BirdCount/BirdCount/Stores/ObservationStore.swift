@@ -2,110 +2,83 @@ import Foundation
 import Observation
 
 @Observable final class ObservationStore {
-    // counts keyed by taxon id
-    private(set) var counts: [String:Int] = [:] {
-        didSet { persistCounts() }
-    }
-    private let persistenceKeyCounts = "ObservationCounts"
+    // Fundamental model: each observation is its own record.
+    struct RecordedObservation: Identifiable, Codable { let id: UUID; let taxonId: String; let timestamp: Date }
+
+    private(set) var observations: [RecordedObservation] = [] { didSet { persist() ; rebuildDerived() } }
+
+    // Derived counts map (species -> count) rebuilt when observations change
+    private(set) var counts: [String:Int] = [:]
 
     struct Recent: Identifiable, Codable, Equatable { let id: String; var lastUpdated: Date }
     private(set) var recent: [Recent] = [] // most-recent first
     private let recentLimit = 20
 
-    // Event log
-    struct Event: Identifiable, Codable { let id: UUID; let taxonId: String; let delta: Int; let newValue: Int; let timestamp: Date }
-    private(set) var events: [Event] = [] { didSet { persistEvents() } }
-    private let persistenceKeyEvents = "ObservationEvents"
-    private let maxPersistedEvents = 2000
+    private let persistenceKey = "ObservationRecords"
 
-    init() { load() }
+    init() { load(); rebuildDerived() }
+
+    // MARK: Derived helpers
+    private func rebuildDerived() {
+        counts = observations.reduce(into: [:]) { $0[$1.taxonId, default: 0] += 1 }
+    }
 
     func count(for id: String) -> Int { counts[id] ?? 0 }
 
+    // MARK: Mutations
+    func addObservation(_ taxonId: String, timestamp: Date = Date()) {
+        observations.append(RecordedObservation(id: UUID(), taxonId: taxonId, timestamp: timestamp))
+        touchRecent(taxonId)
+    }
+
     func increment(_ id: String, by delta: Int = 1) {
-        let old = count(for: id)
-        let new = max(0, old + delta)
-        guard new != old else { return }
-        counts[id] = new
-        logChange(id: id, old: old, new: new)
-        touchRecent(id)
+        guard delta > 0 else { return } // negative increments not supported directly
+        for _ in 0..<delta { addObservation(id) }
     }
 
+    // Adjust to target value by adding or removing most recent observations for that species.
     func set(_ id: String, to value: Int) {
-        let old = count(for: id)
-        let new = max(0, value)
-        guard new != old else { return }
-        counts[id] = new
-        logChange(id: id, old: old, new: new)
-        touchRecent(id)
-    }
-
-    func reset(_ id: String) {
-        let old = count(for: id)
-        guard old != 0 else { return }
-        counts[id] = 0
-        logChange(id: id, old: old, new: 0)
-        touchRecent(id)
-    }
-    
-    func clearAll() {
-        counts.keys.forEach { id in
-            let old = counts[id] ?? 0
-            if old != 0 { logChange(id: id, old: old, new: 0) }
+        let current = count(for: id)
+        if value > current {
+            increment(id, by: value - current)
+        } else if value < current {
+            // Remove newest observations first for that species
+            var toRemove = current - value
+            for idx in observations.indices.reversed() where toRemove > 0 {
+                if observations[idx].taxonId == id { observations.remove(at: idx); toRemove -= 1 }
+            }
         }
-        counts.removeAll()
-        recent.removeAll()
+        // touch recent even if unchanged for consistency
+        touchRecent(id)
     }
 
-    var totalIndividuals: Int { counts.values.reduce(0, +) }
-    var totalSpeciesObserved: Int { counts.values.filter { $0 > 0 }.count }
+    func reset(_ id: String) { set(id, to: 0) }
 
-    // MARK: Event logging
-    private func logChange(id: String, old: Int, new: Int) {
-        let delta = new - old
-        guard delta != 0 else { return }
-        events.append(Event(id: UUID(), taxonId: id, delta: delta, newValue: new, timestamp: Date()))
-        if events.count > maxPersistedEvents { events.removeFirst(events.count - maxPersistedEvents) }
-    }
+    func clearAll() { observations.removeAll(); recent.removeAll() }
+
+    var totalIndividuals: Int { observations.count }
+    var totalSpeciesObserved: Int { counts.keys.count }
 
     // MARK: Recent handling
     private func touchRecent(_ id: String) {
         let now = Date()
-        if let idx = recent.firstIndex(where: { $0.id == id }) {
-            recent[idx].lastUpdated = now
-        } else {
-            recent.insert(Recent(id: id, lastUpdated: now), at: 0)
-        }
+        if let idx = recent.firstIndex(where: { $0.id == id }) { recent[idx].lastUpdated = now } else { recent.insert(Recent(id: id, lastUpdated: now), at: 0) }
         recent.sort { $0.lastUpdated > $1.lastUpdated }
         if recent.count > recentLimit { recent.removeLast(recent.count - recentLimit) }
     }
 
     // MARK: Persistence
-    private func persistCounts() {
-        // Only store positive counts to minimize size
-        let positive = counts.filter { $0.value > 0 }
-        UserDefaults.standard.set(positive, forKey: persistenceKeyCounts)
-    }
-
-    private func persistEvents() {
+    private func persist() {
         do {
-            let encoder = JSONEncoder()
-            encoder.dateEncodingStrategy = .iso8601
-            let slice = events.suffix(maxPersistedEvents)
-            let data = try encoder.encode(Array(slice))
-            UserDefaults.standard.set(data, forKey: persistenceKeyEvents)
+            let encoder = JSONEncoder(); encoder.dateEncodingStrategy = .iso8601
+            let data = try encoder.encode(observations)
+            UserDefaults.standard.set(data, forKey: persistenceKey)
         } catch { /* ignore */ }
     }
 
     private func load() {
-        // counts
-        if let stored = UserDefaults.standard.dictionary(forKey: persistenceKeyCounts) as? [String:Int] { counts = stored }
-        // events
-        if let data = UserDefaults.standard.data(forKey: persistenceKeyEvents) {
-            do {
-                let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601
-                events = try decoder.decode([Event].self, from: data)
-            } catch { events = [] }
+        if let data = UserDefaults.standard.data(forKey: persistenceKey) {
+            do { let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601; observations = try decoder.decode([RecordedObservation].self, from: data) } catch { observations = [] }
         }
     }
 }
@@ -114,8 +87,9 @@ import Observation
 extension ObservationStore {
     static var previewInstance: ObservationStore {
         let s = ObservationStore()
-        s.set("amecro", to: 3)
-        s.set("norbla", to: 1)
+        s.addObservation("amecro")
+        s.addObservation("amecro")
+        s.addObservation("norbla")
         return s
     }
 }
