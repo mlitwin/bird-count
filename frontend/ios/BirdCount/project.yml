@@ -13,14 +13,18 @@ targets:
     type: application
     platform: iOS
     deploymentTarget: "18.5"  # raised from 16.0
+    # NOTE: XcodeGen detects resources (JSON, assets, etc.) from entries in 'sources'.
+    # The previous 'resources:' key is not a valid target property, so the checklist JSON files
+    # were not being copied. We list both the Swift sources root and the shared data directory here.
     sources:
-      - path: BirdCount  # include BirdCountApp.swift (previously missed)
-    resources:
-      - path: BirdCount/Resources
-      - path: ../../src/data/checklist-US-CA-041.json
-        name: checklist-US-CA-041.json
-      - path: ../../src/data/checklist-US-ME.json
-        name: checklist-US-ME.json
+      - path: BirdCount               # Swift sources & bundled Resources/ (ios_taxonomy_min.json, etc.)
+      - path: ../../src/data          # Shared JSON data from the web frontend
+        includes:                     # Limit to the checklist variants you want packaged
+          - checklist-*.json
+          - checklist.json            # Added base file (was previously commented out)
+        # If you also need the base checklist.json file, uncomment the next line:
+        # - checklist.json
+        buildPhase: resources         # Explicitly ensure treated as resources (optional; JSON defaults to resources)
     info:
       path: BirdCount/BirdCount/Info.plist
       properties:

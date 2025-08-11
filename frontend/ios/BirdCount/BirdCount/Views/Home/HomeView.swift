@@ -15,6 +15,14 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
+                if let checklistErr = taxonomy.checklistError {
+                    Text(checklistErr)
+                        .font(.caption)
+                        .foregroundStyle(.white)
+                        .padding(6)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.red.opacity(0.8))
+                }
                 FilterBar(text: filterText) { filterText = "" }
                     .padding(.horizontal)
                     .padding(.top, 8)
