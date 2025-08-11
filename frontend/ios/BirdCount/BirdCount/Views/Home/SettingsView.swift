@@ -7,6 +7,9 @@ struct SettingsView: View {
     @Binding var show: Bool
     @State private var confirmClear: Bool = false
 
+    // Example list of bundled checklist ids; keep in sync with added resource files
+    private let availableChecklists: [String] = ["checklist-US-CA-041", "checklist-US-ME"]
+
     // Helper to build bindings into settings values
     private func binding<Value>(_ keyPath: ReferenceWritableKeyPath<SettingsStore, Value>) -> Binding<Value> {
         Binding(get: { settings[keyPath: keyPath] }, set: { settings[keyPath: keyPath] = $0 })
@@ -17,6 +20,24 @@ struct SettingsView: View {
             List {
                 Section("Search") {
                     Toggle("Enable abbreviation search", isOn: binding(\.enableAbbreviationSearch))
+                }
+                Section("Checklist") {
+                    Picker("Region checklist", selection: binding(\.selectedChecklistId)) {
+                        Text("None (global)").tag(String?.none)
+                        ForEach(availableChecklists, id: \.self) { id in
+                            Text(labelForChecklist(id)).tag(String?.some(id))
+                        }
+                    }
+                    if settings.selectedChecklistId != nil {
+                        VStack(alignment: .leading) {
+                            Text("Show species with commonness between:")
+                            HStack {
+                                Stepper(value: binding(\.minCommonness), in: 0...3) { Text("Min: \(settings.minCommonness)") }
+                                Stepper(value: binding(\.maxCommonness), in: 0...3) { Text("Max: \(settings.maxCommonness)") }
+                            }
+                            CommonnessLegend()
+                        }
+                    }
                 }
                 Section("Feedback") {
                     Toggle("Haptics", isOn: binding(\.enableHaptics))
@@ -51,6 +72,26 @@ struct SettingsView: View {
     private func label(for mode: SettingsStore.DarkModeOverride) -> String {
         switch mode { case .system: return "System"; case .light: return "Light"; case .dark: return "Dark" }
     }
+
+    private func labelForChecklist(_ id: String) -> String {
+        if id.contains("US-CA-041") { return "US-CA (Region 041)" }
+        if id.contains("US-ME") { return "US-ME" }
+        return id
+    }
+}
+
+private struct CommonnessLegend: View {
+    var body: some View {
+        HStack(spacing: 8) {
+            legendItem(code: "R", label: "Rare")
+            legendItem(code: "S", label: "Scarce")
+            legendItem(code: "U", label: "Uncommon")
+            legendItem(code: "C", label: "Common")
+        }
+        .font(.caption2)
+        .foregroundStyle(.secondary)
+    }
+    private func legendItem(code: String, label: String) -> some View { HStack(spacing: 2) { Text(code).bold(); Text(label) } }
 }
 
 #if DEBUG

@@ -10,7 +10,7 @@ struct HomeView: View {
     @State private var showSummary: Bool = false
     @State private var showSettings: Bool = false
 
-    private var filtered: [Taxon] { taxonomy.search(filterText) }
+    private var filtered: [Taxon] { taxonomy.search(filterText, minCommonness: settings.selectedChecklistId != nil ? settings.minCommonness : nil, maxCommonness: settings.selectedChecklistId != nil ? settings.maxCommonness : nil) }
 
     var body: some View {
         NavigationStack {
@@ -41,7 +41,10 @@ struct HomeView: View {
             .onChange(of: settings.enableAbbreviationSearch) { _, newVal in
                 taxonomy.enableAbbreviationSearch = newVal
             }
-            .task { taxonomy.enableAbbreviationSearch = settings.enableAbbreviationSearch }
+            .onChange(of: settings.selectedChecklistId) { _, newId in
+                if let id = newId { taxonomy.loadChecklist(id: id) }
+            }
+            .task { taxonomy.enableAbbreviationSearch = settings.enableAbbreviationSearch; if let id = settings.selectedChecklistId { taxonomy.loadChecklist(id: id) } }
         }
     }
 
@@ -91,6 +94,7 @@ private struct SpeciesRow: View {
                     .foregroundStyle(.secondary)
             }
             Spacer()
+            if let c = taxon.commonness { Text(commonnessLabel(c)).font(.caption2).padding(4).background(RoundedRectangle(cornerRadius: 4).fill(Color.gray.opacity(0.15))) }
             if count > 0 {
                 Text("\(count)")
                     .font(.subheadline.monospacedDigit())
@@ -102,6 +106,7 @@ private struct SpeciesRow: View {
             }
         }
     }
+    private func commonnessLabel(_ c: Int) -> String { switch c { case 0: return "R"; case 1: return "S"; case 2: return "U"; case 3: return "C"; default: return "" } }
 }
 
 private struct FilterBar: View {
@@ -233,9 +238,9 @@ private extension TaxonomyStore {
     static var previewInstance: TaxonomyStore {
         let store = TaxonomyStore()
         store.loadPreview(species: [
-            Taxon(id: "amecro", commonName: "American Crow", scientificName: "Corvus brachyrhynchos", order: 1, rank: "species"),
-            Taxon(id: "norbla", commonName: "Northern Blackbird", scientificName: "Inventus fictus", order: 2, rank: "species"),
-            Taxon(id: "bkhawk", commonName: "Black Hawk", scientificName: "Buteogallus anthracinus", order: 3, rank: "species")
+            Taxon(id: "amecro", commonName: "American Crow", scientificName: "Corvus brachyrhynchos", order: 1, rank: "species", commonness: 3),
+            Taxon(id: "norbla", commonName: "Northern Blackbird", scientificName: "Inventus fictus", order: 2, rank: "species", commonness: 1),
+            Taxon(id: "bkhawk", commonName: "Black Hawk", scientificName: "Buteogallus anthracinus", order: 3, rank: "species", commonness: 0)
         ])
         return store
     }
@@ -247,5 +252,6 @@ private extension TaxonomyStore {
     HomeView()
         .environment(TaxonomyStore.previewInstance)
         .environment(ObservationStore.previewInstance)
+        .environment(SettingsStore())
 }
 #endif

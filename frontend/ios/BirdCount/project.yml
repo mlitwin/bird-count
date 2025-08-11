@@ -17,6 +17,10 @@ targets:
       - path: BirdCount  # include BirdCountApp.swift (previously missed)
     resources:
       - path: BirdCount/Resources
+      - path: ../../src/data/checklist-US-CA-041.json
+        name: checklist-US-CA-041.json
+      - path: ../../src/data/checklist-US-ME.json
+        name: checklist-US-ME.json
     info:
       path: BirdCount/BirdCount/Info.plist
       properties:
