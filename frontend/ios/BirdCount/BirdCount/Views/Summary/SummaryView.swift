@@ -5,6 +5,7 @@ struct SummaryView: View {
     @Environment(TaxonomyStore.self) private var taxonomy
     @Binding var show: Bool
     @State private var shareSheet: Bool = false
+    @State private var showLog: Bool = false
 
     private var observedSpecies: [(Taxon, Int)] {
         taxonomy.species
@@ -57,9 +58,13 @@ struct SummaryView: View {
             .navigationTitle("Summary")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Close") { show = false } }
-                ToolbarItem(placement: .primaryAction) { Button("Share") { shareSheet = true }.disabled(observedSpecies.isEmpty) }
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button("Log") { showLog = true }.disabled(observations.events.isEmpty)
+                    Button("Share") { shareSheet = true }.disabled(observedSpecies.isEmpty)
+                }
             }
             .sheet(isPresented: $shareSheet) { ShareActivityView(items: [exportText()]) }
+            .sheet(isPresented: $showLog) { ObservationLogView(show: $showLog) }
         }
     }
 
@@ -72,12 +77,6 @@ struct SummaryView: View {
         for (taxon, count) in observedSpecies { lines.append("\(taxon.commonName)\t\(count)") }
         return lines.joined(separator: "\n")
     }
-}
-
-private struct ShareActivityView: UIViewControllerRepresentable {
-    let items: [Any]
-    func makeUIViewController(context: Context) -> UIActivityViewController { UIActivityViewController(activityItems: items, applicationActivities: nil) }
-    func updateUIViewController(_ vc: UIActivityViewController, context: Context) {}
 }
 
 #if DEBUG

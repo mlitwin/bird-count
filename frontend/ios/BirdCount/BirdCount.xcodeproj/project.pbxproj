@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		208E0E02373AB724A6117666 /* Taxon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74ADC22819086097B12402BC /* Taxon.swift */; };
 		4217D9AF2D23AF11355EF353 /* generate_ios_taxonomy.mjs in Resources */ = {isa = PBXBuildFile; fileRef = E3424E4DDD31730B25CEEBC1 /* generate_ios_taxonomy.mjs */; };
+		594E347B44CB9AE16D14A93F /* ObservationLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCA969A738EAD7B00CC123B /* ObservationLogView.swift */; };
 		5B4143CF290C1B88ED929590 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3DA21F8B7A04FA9A2B01542 /* HomeView.swift */; };
 		6C9CBAEA8E77832D8787CD76 /* SummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B0BA1474D059B40D0C1BEDC /* SummaryView.swift */; };
 		88723733D4405DC1AA55DB13 /* NumericPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCBE3E988878FA83F955105 /* NumericPad.swift */; };
@@ -18,6 +19,7 @@
 		C365B63760F17794D9B0605A /* BirdCountApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F3E57E196D1687022B624BA /* BirdCountApp.swift */; };
 		DA0F562E577225B3765DA0BF /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E83557E0B3151DB0A65A1E5 /* SettingsStore.swift */; };
 		DC557950C6D808B5000F77CB /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E633F06C7C8AF39A661F905C /* SettingsView.swift */; };
+		DD452196F163874F5DE69BCA /* ShareActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1AE8BBD3313453070C1CF58 /* ShareActivityView.swift */; };
 		F50783CF7870BE1FA0621CCD /* ObservationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11C0F2EB5F5DDCE1C6106B1 /* ObservationStore.swift */; };
 /* End PBXBuildFile section */
 
@@ -25,6 +27,7 @@
 		102D036CF7E1F208793BECF3 /* TaxonomyStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaxonomyStore.swift; sourceTree = "<group>"; };
 		4186A73E1CCA966174627C23 /* BirdCount.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BirdCount.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4E83557E0B3151DB0A65A1E5 /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
+		4FCA969A738EAD7B00CC123B /* ObservationLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationLogView.swift; sourceTree = "<group>"; };
 		6B0BA1474D059B40D0C1BEDC /* SummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
 		6E9843D7277B138B6C1DBECF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		74ADC22819086097B12402BC /* Taxon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Taxon.swift; sourceTree = "<group>"; };
@@ -33,6 +36,7 @@
 		C3DA21F8B7A04FA9A2B01542 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		CA105FDD346A2759183A3BEE /* OnScreenKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnScreenKeyboard.swift; sourceTree = "<group>"; };
 		CCCBE3E988878FA83F955105 /* NumericPad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumericPad.swift; sourceTree = "<group>"; };
+		E1AE8BBD3313453070C1CF58 /* ShareActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareActivityView.swift; sourceTree = "<group>"; };
 		E3424E4DDD31730B25CEEBC1 /* generate_ios_taxonomy.mjs */ = {isa = PBXFileReference; path = generate_ios_taxonomy.mjs; sourceTree = "<group>"; };
 		E633F06C7C8AF39A661F905C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F11C0F2EB5F5DDCE1C6106B1 /* ObservationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationStore.swift; sourceTree = "<group>"; };
@@ -70,6 +74,7 @@
 			children = (
 				CCCBE3E988878FA83F955105 /* NumericPad.swift */,
 				CA105FDD346A2759183A3BEE /* OnScreenKeyboard.swift */,
+				E1AE8BBD3313453070C1CF58 /* ShareActivityView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -125,6 +130,7 @@
 		DC4A1644E50266BEDDD2B064 /* Summary */ = {
 			isa = PBXGroup;
 			children = (
+				4FCA969A738EAD7B00CC123B /* ObservationLogView.swift */,
 				6B0BA1474D059B40D0C1BEDC /* SummaryView.swift */,
 			);
 			path = Summary;
@@ -216,10 +222,12 @@
 				C365B63760F17794D9B0605A /* BirdCountApp.swift in Sources */,
 				5B4143CF290C1B88ED929590 /* HomeView.swift in Sources */,
 				88723733D4405DC1AA55DB13 /* NumericPad.swift in Sources */,
+				594E347B44CB9AE16D14A93F /* ObservationLogView.swift in Sources */,
 				F50783CF7870BE1FA0621CCD /* ObservationStore.swift in Sources */,
 				A3C57170B910A837385A6158 /* OnScreenKeyboard.swift in Sources */,
 				DA0F562E577225B3765DA0BF /* SettingsStore.swift in Sources */,
 				DC557950C6D808B5000F77CB /* SettingsView.swift in Sources */,
+				DD452196F163874F5DE69BCA /* ShareActivityView.swift in Sources */,
 				6C9CBAEA8E77832D8787CD76 /* SummaryView.swift in Sources */,
 				208E0E02373AB724A6117666 /* Taxon.swift in Sources */,
 				9011BEC0A95145374777045E /* TaxonomyStore.swift in Sources */,
