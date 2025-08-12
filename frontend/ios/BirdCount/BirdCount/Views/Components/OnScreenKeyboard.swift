@@ -4,7 +4,6 @@ struct OnScreenKeyboard: View {
     let onKey: (String) -> Void
     let onBackspace: () -> Void
     let onClear: () -> Void
-    let onSpace: () -> Void
 
     private let rows: [[String]] = [
         ["Q","W","E","R","T","Y","U","I","O","P"],
@@ -17,14 +16,14 @@ struct OnScreenKeyboard: View {
             ForEach(rows.indices, id: \.self) { r in
                 HStack(spacing: 6) {
                     ForEach(rows[r], id: \.self) { key in
-                        KeyButton(label: key) { onKey(key.lowercased()) }
+                        KeyButton(label: key, flex: true) { onKey(key.lowercased()) }
+                    }
+                    if r == rows.count - 1 {
+                        // Include action keys in-row so all keys share equal width
+                        KeyButton(symbol: "delete.left.fill", flex: true, role: .destructive) { onBackspace() }
+                        KeyButton(symbol: "xmark.circle", flex: true) { onClear() }
                     }
                 }
-            }
-            HStack(spacing: 6) {
-                KeyButton(symbol: "delete.left.fill", width: 60, role: .destructive) { onBackspace() }
-                KeyButton(label: "SPACE", flex: true) { onSpace() }
-                KeyButton(symbol: "xmark.circle", width: 60) { onClear() }
             }
         }
         .padding(.horizontal, 10)

@@ -29,7 +29,7 @@ struct HomeView: View {
                     .padding(.horizontal)
                     .padding(.vertical, 8)
                 Divider()
-                OnScreenKeyboard(onKey: { filterText.append($0) }, onBackspace: { if !filterText.isEmpty { _ = filterText.removeLast() } }, onClear: { filterText = "" }, onSpace: { filterText.append(" ") })
+                OnScreenKeyboard(onKey: { filterText.append($0) }, onBackspace: { if !filterText.isEmpty { _ = filterText.removeLast() } }, onClear: { filterText = "" })
                     .padding(.bottom, 8)
                     .background(.thinMaterial)
             }
