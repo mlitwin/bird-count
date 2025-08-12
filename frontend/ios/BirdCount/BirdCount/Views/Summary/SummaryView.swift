@@ -6,12 +6,12 @@ struct SummaryView: View {
     @Binding var show: Bool
     @State private var shareSheet: Bool = false
     @State private var showLog: Bool = false
-    // Recent filter range
+    // Range filter
     @State private var startDate: Date = Calendar.current.date(byAdding: .day, value: -1, to: Date()) ?? Date()
     @State private var endDate: Date = Date()
-    @State private var preset: RecentPreset = .custom
+    @State private var preset: RangePreset = .custom
 
-    private enum RecentPreset: String, CaseIterable, Identifiable {
+    private enum RangePreset: String, CaseIterable, Identifiable {
         case lastHour = "Last Hour"
         case today = "Today"
         case last7Days = "7 Days"
@@ -20,7 +20,7 @@ struct SummaryView: View {
         var id: String { rawValue }
     }
 
-    private func applyPreset(_ p: RecentPreset) {
+    private func applyRangePreset(_ p: RangePreset) {
         let now = Date()
         switch p {
         case .lastHour:
@@ -50,7 +50,7 @@ struct SummaryView: View {
             .sorted { $0.0.commonName < $1.0.commonName }
     }
 
-    private var recentEntries: [(Taxon, Int, Date)] {
+    private var updatesInRange: [(Taxon, Int, Date)] {
         observations.recent.compactMap { r in
             guard let taxon = taxonomy.species.first(where: { $0.id == r.id }) else { return nil }
             return (taxon, observations.count(for: r.id), r.lastUpdated)
@@ -75,20 +75,20 @@ struct SummaryView: View {
                     HStack { Text("Species observed"); Spacer(); Text("\(observations.totalSpeciesObserved)") }
                     HStack { Text("Total individuals"); Spacer(); Text("\(observations.totalIndividuals)") }
                 }
-                Section("Recent Range") {
+                Section("Range") {
                     Picker("Preset", selection: $preset) {
-                        ForEach(RecentPreset.allCases) { p in Text(p.rawValue).tag(p) }
+                        ForEach(RangePreset.allCases) { p in Text(p.rawValue).tag(p) }
                     }
                     .pickerStyle(.segmented)
-                    .onChange(of: preset) { _, newVal in applyPreset(newVal) }
+                    .onChange(of: preset) { _, newVal in applyRangePreset(newVal) }
                     DatePicker("From", selection: $startDate, displayedComponents: [.date, .hourAndMinute])
                     DatePicker("To", selection: $endDate, in: startDate... , displayedComponents: [.date, .hourAndMinute])
                         .onChange(of: startDate) { _, _ in preset = .custom }
                         .onChange(of: endDate) { _, _ in preset = .custom }
                 }
-                if !recentEntries.isEmpty {
+                if !updatesInRange.isEmpty {
                     Section("Recent") {
-                        ForEach(recentEntries, id: \.0.id) { (taxon, count, date) in
+                        ForEach(updatesInRange, id: \.0.id) { (taxon, count, date) in
                             HStack {
                                 VStack(alignment: .leading) {
                                     Text(taxon.commonName)
