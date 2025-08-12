@@ -23,11 +23,11 @@ struct HomeView: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.red.opacity(0.8))
                 }
+                Group { content }
+                Divider()
                 FilterBar(text: filterText) { filterText = "" }
                     .padding(.horizontal)
-                    .padding(.top, 8)
-                Divider()
-                Group { content }
+                    .padding(.vertical, 8)
                 Divider()
                 OnScreenKeyboard(onKey: { filterText.append($0) }, onBackspace: { if !filterText.isEmpty { _ = filterText.removeLast() } }, onClear: { filterText = "" }, onSpace: { filterText.append(" ") })
                     .padding(.bottom, 8)
@@ -70,15 +70,31 @@ struct HomeView: View {
     }
 
     private var speciesList: some View {
-        List(filtered) { taxon in
-            SpeciesRow(taxon: taxon, count: observations.count(for: taxon.id))
-                .contentShape(Rectangle())
-                .onTapGesture { selectedTaxon = taxon }
-                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                    Button(role: .destructive) { observations.reset(taxon.id) } label: { Label("Reset", systemImage: "trash") }
+    GeometryReader { proxy in
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    ForEach(filtered) { taxon in
+                        let count = observations.count(for: taxon.id)
+                        VStack(spacing: 0) {
+                            SpeciesRow(taxon: taxon, count: count)
+                                .contentShape(Rectangle())
+                                .onTapGesture { selectedTaxon = taxon }
+                                .contextMenu {
+                                    if count > 0 {
+                                        Button(role: .destructive) { observations.reset(taxon.id) } label: { Label("Reset", systemImage: "trash") }
+                                    }
+                                }
+                                .padding(.horizontal)
+                                .padding(.vertical, 6)
+                            Divider()
+                        }
+                    }
                 }
-        }
-        .listStyle(.plain)
+                // Make stack at least as tall as available space and align its contents to bottom
+                .frame(minHeight: proxy.size.height, alignment: .bottom)
+            }
+    }
+    .padding(.bottom, 24)
     }
 
     private var toggleKeyboardButton: some View {
