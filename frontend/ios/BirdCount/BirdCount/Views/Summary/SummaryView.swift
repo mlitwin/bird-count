@@ -20,6 +20,20 @@ struct SummaryView: View {
         var id: String { rawValue }
     }
 
+    // Lightweight models to simplify ForEach and type inference
+    private struct UpdateItem: Identifiable {
+        let id: String // taxon.id
+        let taxon: Taxon
+        let count: Int
+        let date: Date
+    }
+
+    private struct SpeciesCountItem: Identifiable {
+        let id: String // taxon.id
+        let taxon: Taxon
+        let count: Int
+    }
+
     private func applyRangePreset(_ p: RangePreset) {
         let now = Date()
         switch p {
@@ -50,32 +64,38 @@ struct SummaryView: View {
             .sorted { $0.0.commonName < $1.0.commonName }
     }
 
-    private var updatesInRange: [(Taxon, Int, Date)] {
+    private var updatesInRange: [UpdateItem] {
         observations.recent.compactMap { r in
             guard let taxon = taxonomy.species.first(where: { $0.id == r.id }) else { return nil }
-            return (taxon, observations.count(for: r.id), r.lastUpdated)
+            let count = observations.count(for: r.id)
+            guard count > 0, r.lastUpdated >= startDate, r.lastUpdated <= endDate else { return nil }
+            return UpdateItem(id: taxon.id, taxon: taxon, count: count, date: r.lastUpdated)
         }
-        .filter { $0.1 > 0 && $0.2 >= startDate && $0.2 <= endDate }
     }
 
-    private var speciesInRange: [(Taxon, Int)] {
+    private var speciesInRange: [SpeciesCountItem] {
         // Aggregate counts within the selected range
         let filtered = observations.observations.filter { $0.timestamp >= startDate && $0.timestamp <= endDate }
         let counts = filtered.reduce(into: [String:Int]()) { $0[$1.taxonId, default: 0] += 1 }
         return taxonomy.species.compactMap { t in
-            if let c = counts[t.id], c > 0 { return (t, c) } else { return nil }
+            if let c = counts[t.id], c > 0 {
+                return SpeciesCountItem(id: t.id, taxon: t, count: c)
+            } else {
+                return nil
+            }
         }
-        .sorted { $0.0.commonName < $1.0.commonName }
+        .sorted { $0.taxon.commonName < $1.taxon.commonName }
     }
 
     var body: some View {
-        NavigationStack {
-            List {
-                Section("Totals") {
-                    HStack { Text("Species observed"); Spacer(); Text("\(observations.totalSpeciesObserved)") }
-                    HStack { Text("Total individuals"); Spacer(); Text("\(observations.totalIndividuals)") }
-                }
-                Section("Range") {
+        // Break up inference with local constants
+        let recent = updatesInRange
+        let species = speciesInRange
+        return NavigationStack {
+            VStack(spacing: 0) {
+                // Fixed header: Range + Totals
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Range").font(.headline)
                     Picker("Preset", selection: $preset) {
                         ForEach(RangePreset.allCases) { p in Text(p.rawValue).tag(p) }
                     }
@@ -85,38 +105,55 @@ struct SummaryView: View {
                     DatePicker("To", selection: $endDate, in: startDate... , displayedComponents: [.date, .hourAndMinute])
                         .onChange(of: startDate) { _, _ in preset = .custom }
                         .onChange(of: endDate) { _, _ in preset = .custom }
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Totals").font(.headline)
+                        HStack { Text("Species observed"); Spacer(); Text("\(observations.totalSpeciesObserved)") }
+                        HStack { Text("Total individuals"); Spacer(); Text("\(observations.totalIndividuals)") }
+                    }
                 }
-                if !updatesInRange.isEmpty {
-                    Section("Recent") {
-                        ForEach(updatesInRange, id: \.0.id) { (taxon, count, date) in
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(taxon.commonName)
-                                    Text(date, style: .time).font(.caption).foregroundStyle(.secondary)
+                .padding(.horizontal)
+                .padding(.vertical, 12)
+
+                Divider()
+
+                // Scrollable content: Recent and Species in Range
+                List {
+                    if !recent.isEmpty {
+                        Section("Recent") {
+                            ForEach(recent) { item in
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        Text(item.taxon.commonName)
+                                        Text(item.date, style: .time).font(.caption).foregroundStyle(.secondary)
+                                    }
+                                    Spacer()
+                                    Text("\(item.count)").monospacedDigit()
                                 }
-                                Spacer()
-                                Text("\(count)").monospacedDigit()
                             }
                         }
                     }
-                }
-                if !speciesInRange.isEmpty {
-                    Section("Species in Range") {
-                        ForEach(speciesInRange, id: \.0.id) { (taxon, count) in
-                            HStack { Text(taxon.commonName); Spacer(); Text("\(count)").monospacedDigit() }
+                    if !species.isEmpty {
+                        Section("Species in Range") {
+                            ForEach(species) { item in
+                                HStack { Text(item.taxon.commonName); Spacer(); Text("\(item.count)").monospacedDigit() }
+                            }
                         }
                     }
+                    if recent.isEmpty && species.isEmpty {
+                        Section { Text("No observations yet.").foregroundStyle(.secondary) }
+                    }
                 }
-                if observedSpecies.isEmpty {
-                    Section { Text("No observations yet.").foregroundStyle(.secondary) }
-                }
+                .listStyle(.insetGrouped)
+                .scrollBounceBehavior(.basedOnSize)
             }
             .navigationTitle("Summary")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Close") { show = false } }
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button("Log") { showLog = true }.disabled(observations.observations.isEmpty)
-                    Button("Share") { shareSheet = true }.disabled(observedSpecies.isEmpty)
+                    // Disable Share if there are no observations at all to avoid heavy computed properties here
+                    Button("Share") { shareSheet = true }.disabled(observations.totalIndividuals == 0)
                 }
             }
             .sheet(isPresented: $shareSheet) { ShareActivityView(items: [exportText()]) }
@@ -138,3 +175,5 @@ struct SummaryView: View {
 #if DEBUG
 #Preview("Summary Empty") { SummaryView(show: .constant(true)).environment(ObservationStore()).environment(TaxonomyStore()) }
 #endif
+
+// iOS 18.5+ target assumed: using scrollBounceBehavior(.never) directly above
