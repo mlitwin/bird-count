@@ -155,28 +155,50 @@ private struct CountAdjustSheet: View, Identifiable {
         NavigationStack {
             VStack(spacing: 24) {
                 header
-                countDisplay
-                stepButtons
                 NumericPad(onDigit: { appendDigit($0) }, onBack: backspace, onClear: clearBuffer)
                     .frame(maxWidth: 400)
+                countDisplay
+                stepButtons
                 Spacer()
             }
             .padding(.top, 32)
             .padding(.horizontal, 24)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { onDone() } }
-                ToolbarItem(placement: .confirmationAction) { Button("Done") { commitAndClose() }.disabled(tempCount < 1) }
-                ToolbarItem(placement: .bottomBar) {
-                    VStack(alignment: .leading) {
+            .onAppear(perform: initialize)
+            .interactiveDismissDisabled()
+            .safeAreaInset(edge: .bottom) {
+                VStack(spacing: 12) {
+                    // Stats
+                    VStack(alignment: .leading, spacing: 2) {
                         Text("Observed species: \(observations.totalSpeciesObserved)")
                         Text("Total individuals: \(observations.totalIndividuals)")
                     }
                     .font(.footnote)
                     .foregroundStyle(.secondary)
+
+                    // Action buttons
+                    HStack(spacing: 12) {
+                        Button(role: .cancel) { onDone() } label: {
+                            Text("Cancel").frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.red)
+                        .controlSize(.large)
+
+                        Button(action: { commitAndClose() }) {
+                            Text("Done").frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.green)
+                        .controlSize(.large)
+                        .disabled(tempCount < 1)
+                    }
+                    .font(.title3.weight(.semibold))
                 }
+                .padding(.horizontal, 16)
+                .padding(.top, 10)
+                .padding(.bottom, 12)
+                .background(.ultraThinMaterial)
             }
-            .onAppear(perform: initialize)
-            .interactiveDismissDisabled()
         }
     }
 
