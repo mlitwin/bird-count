@@ -112,16 +112,16 @@ private struct SpeciesRow: View {
         HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(taxon.commonName)
-                    .font(.headline)
+                    .font(.title3.weight(.semibold))
                 Text(taxon.scientificName)
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            if let c = taxon.commonness { Text(commonnessLabel(c)).font(.caption2).padding(4).background(RoundedRectangle(cornerRadius: 4).fill(Color.gray.opacity(0.15))) }
+            if let c = taxon.commonness { Text(commonnessLabel(c)).font(.footnote).padding(4).background(RoundedRectangle(cornerRadius: 4).fill(Color.gray.opacity(0.15))) }
             if count > 0 {
                 Text("\(count)")
-                    .font(.subheadline.monospacedDigit())
+                    .font(.headline.monospacedDigit())
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(Capsule().fill(Color.accentColor.opacity(0.15)))
