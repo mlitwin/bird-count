@@ -19,15 +19,30 @@ struct BirdCountApp: App {
 private struct TopTabsRoot: View {
     private enum Tab: String, CaseIterable, Identifiable { case home = "Home", summary = "Summary", log = "Log"; var id: String { rawValue } }
     @State private var selection: Tab = .home
+    @State private var showSettings: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
-            // Top tab selector
-            Picker("", selection: $selection) {
-                ForEach(Tab.allCases) { tab in Text(tab.rawValue).tag(tab) }
+            // Top tab selector with Settings button on the right
+            ZStack {
+                Picker("", selection: $selection) {
+                    ForEach(Tab.allCases) { tab in Text(tab.rawValue).tag(tab) }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+
+                HStack { Spacer()
+                    Button(action: { showSettings = true }) {
+                        Image(systemName: "gearshape")
+                            .font(.headline)
+                            .padding(8)
+                            .background(Circle().fill(Color(.secondarySystemBackground)))
+                    }
+                    .accessibilityLabel("Settings")
+                    .padding(.trailing, 8)
+                }
+                .allowsHitTesting(true)
             }
-            .pickerStyle(.segmented)
-            .padding(.horizontal)
             .padding(.top, 8)
 
             Divider()
@@ -41,5 +56,6 @@ private struct TopTabsRoot: View {
                 }
             }
         }
+        .sheet(isPresented: $showSettings) { SettingsView(show: $showSettings) }
     }
 }

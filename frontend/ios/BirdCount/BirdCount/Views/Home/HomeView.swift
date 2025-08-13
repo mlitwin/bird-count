@@ -5,9 +5,7 @@ struct HomeView: View {
     @Environment(ObservationStore.self) private var observations
     @Environment(SettingsStore.self) private var settings
     @State private var filterText: String = ""
-    @State private var useSystemKeyboard: Bool = false // debug toggle if needed
     @State private var selectedTaxon: Taxon? = nil
-    @State private var showSettings: Bool = false
 
     private var filtered: [Taxon] { taxonomy.search(filterText, minCommonness: settings.selectedChecklistId != nil ? settings.minCommonness : nil, maxCommonness: settings.selectedChecklistId != nil ? settings.maxCommonness : nil) }
 
@@ -33,16 +31,9 @@ struct HomeView: View {
                     .background(.thinMaterial)
             }
             .navigationTitle("Bird Count")
-            .toolbar {
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    Button { showSettings = true } label: { Image(systemName: "gearshape") }
-                    toggleKeyboardButton
-                }
-            }
             .sheet(item: $selectedTaxon) { taxon in
                 CountAdjustSheet(taxon: taxon) { selectedTaxon = nil }
             }
-            .sheet(isPresented: $showSettings) { SettingsView(show: $showSettings) }
             .onChange(of: settings.enableAbbreviationSearch) { _, newVal in
                 taxonomy.enableAbbreviationSearch = newVal
             }
@@ -94,12 +85,7 @@ struct HomeView: View {
     .padding(.bottom, 24)
     }
 
-    private var toggleKeyboardButton: some View {
-        Button(action: { useSystemKeyboard.toggle() }) {
-            Image(systemName: useSystemKeyboard ? "keyboard" : "rectangle.bottomthird.inset.filled")
-        }
-        .help("Toggle system keyboard (debug)")
-    }
+        // Removed keyboard toggle button
 }
 
 private struct SpeciesRow: View {
