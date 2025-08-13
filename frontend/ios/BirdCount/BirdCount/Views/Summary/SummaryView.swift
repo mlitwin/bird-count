@@ -3,7 +3,6 @@ import SwiftUI
 struct SummaryView: View {
     @Environment(ObservationStore.self) private var observations
     @Environment(TaxonomyStore.self) private var taxonomy
-    @Binding var show: Bool
     @State private var shareSheet: Bool = false
     @State private var showLog: Bool = false
     // Range filter
@@ -149,15 +148,13 @@ struct SummaryView: View {
             }
             .navigationTitle("Summary")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Close") { show = false } }
                 ToolbarItemGroup(placement: .primaryAction) {
-                    Button("Log") { showLog = true }.disabled(observations.observations.isEmpty)
                     // Disable Share if there are no observations at all to avoid heavy computed properties here
                     Button("Share") { shareSheet = true }.disabled(observations.totalIndividuals == 0)
                 }
             }
             .sheet(isPresented: $shareSheet) { ShareActivityView(items: [exportText()]) }
-            .sheet(isPresented: $showLog) { ObservationLogView(show: $showLog) }
+            // No Log sheet in tab mode; Log has its own tab now
         }
     }
 
@@ -173,7 +170,7 @@ struct SummaryView: View {
 }
 
 #if DEBUG
-#Preview("Summary Empty") { SummaryView(show: .constant(true)).environment(ObservationStore()).environment(TaxonomyStore()) }
+#Preview("Summary Empty") { SummaryView().environment(ObservationStore()).environment(TaxonomyStore()) }
 #endif
 
 // iOS 18.5+ target assumed: using scrollBounceBehavior(.never) directly above

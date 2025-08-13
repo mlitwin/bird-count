@@ -3,7 +3,8 @@ import SwiftUI
 struct ObservationLogView: View {
     @Environment(ObservationStore.self) private var observationsStore
     @Environment(TaxonomyStore.self) private var taxonomy
-    @Binding var show: Bool
+    // Optional binding: if provided, shows a Close button (when used as a sheet); in Tab usage, omit it
+    var show: Binding<Bool>? = nil
     @State private var exportSheet: Bool = false
 
     struct DisplayObservation: Identifiable { let id: UUID; let taxon: Taxon?; let timestamp: Date }
@@ -29,7 +30,9 @@ struct ObservationLogView: View {
             }
             .navigationTitle("Observation Log")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Close") { show = false } }
+                if let show = show {
+                    ToolbarItem(placement: .cancellationAction) { Button("Close") { show.wrappedValue = false } }
+                }
                 ToolbarItem(placement: .primaryAction) { Button("Export") { exportSheet = true }.disabled(display.isEmpty) }
             }
             .sheet(isPresented: $exportSheet) { ShareActivityView(items: [exportText()]) }
@@ -50,5 +53,6 @@ struct ObservationLogView: View {
 }
 
 #if DEBUG
-#Preview { ObservationLogView(show: .constant(true)).environment(ObservationStore()).environment(TaxonomyStore()) }
+#Preview("Sheet style") { ObservationLogView(show: .constant(true)).environment(ObservationStore()).environment(TaxonomyStore()) }
+#Preview("Tab style") { ObservationLogView().environment(ObservationStore()).environment(TaxonomyStore()) }
 #endif

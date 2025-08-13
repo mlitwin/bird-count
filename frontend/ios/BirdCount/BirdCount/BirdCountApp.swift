@@ -8,10 +8,38 @@ struct BirdCountApp: App {
 
     var body: some Scene {
         WindowGroup {
-            HomeView()
-                .environment(taxonomyStore)
-                .environment(observationStore)
-                .environment(settingsStore) // inject settings
+            TopTabsRoot()
+            .environment(taxonomyStore)
+            .environment(observationStore)
+            .environment(settingsStore) // inject settings
+        }
+    }
+}
+
+private struct TopTabsRoot: View {
+    private enum Tab: String, CaseIterable, Identifiable { case home = "Home", summary = "Summary", log = "Log"; var id: String { rawValue } }
+    @State private var selection: Tab = .home
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Top tab selector
+            Picker("", selection: $selection) {
+                ForEach(Tab.allCases) { tab in Text(tab.rawValue).tag(tab) }
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal)
+            .padding(.top, 8)
+
+            Divider()
+
+            // Content
+            Group {
+                switch selection {
+                case .home: HomeView()
+                case .summary: SummaryView()
+                case .log: ObservationLogView()
+                }
+            }
         }
     }
 }

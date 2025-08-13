@@ -7,7 +7,6 @@ struct HomeView: View {
     @State private var filterText: String = ""
     @State private var useSystemKeyboard: Bool = false // debug toggle if needed
     @State private var selectedTaxon: Taxon? = nil
-    @State private var showSummary: Bool = false
     @State private var showSettings: Bool = false
 
     private var filtered: [Taxon] { taxonomy.search(filterText, minCommonness: settings.selectedChecklistId != nil ? settings.minCommonness : nil, maxCommonness: settings.selectedChecklistId != nil ? settings.maxCommonness : nil) }
@@ -35,7 +34,6 @@ struct HomeView: View {
             }
             .navigationTitle("Bird Count")
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) { Button("Summary") { showSummary = true } }
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Button { showSettings = true } label: { Image(systemName: "gearshape") }
                     toggleKeyboardButton
@@ -44,7 +42,6 @@ struct HomeView: View {
             .sheet(item: $selectedTaxon) { taxon in
                 CountAdjustSheet(taxon: taxon) { selectedTaxon = nil }
             }
-            .sheet(isPresented: $showSummary) { SummaryView(show: $showSummary) }
             .sheet(isPresented: $showSettings) { SettingsView(show: $showSettings) }
             .onChange(of: settings.enableAbbreviationSearch) { _, newVal in
                 taxonomy.enableAbbreviationSearch = newVal
