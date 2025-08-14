@@ -7,6 +7,7 @@ struct HomeView: View {
     @State private var filterText: String = ""
     @State private var selectedTaxon: Taxon? = nil
     @State private var bottomControlsHeight: CGFloat = 0
+    @State private var sheetContentHeight: CGFloat = 0
 
     private var filtered: [Taxon] { taxonomy.search(filterText, minCommonness: settings.selectedChecklistId != nil ? settings.minCommonness : nil, maxCommonness: settings.selectedChecklistId != nil ? settings.maxCommonness : nil) }
 
@@ -64,9 +65,18 @@ struct HomeView: View {
                                 CountAdjustSheet(taxon: taxon) {
                                     withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) { selectedTaxon = nil }
                                 }
+                                // Measure intrinsic height of the sheet's content
+                                .background(
+                                    GeometryReader { sheetGeo in
+                                        Color.clear
+                                            .preference(key: SheetContentHeightKey.self, value: sheetGeo.size.height)
+                                    }
+                                )
                             }
+                            .onPreferenceChange(SheetContentHeightKey.self) { sheetContentHeight = $0 }
                             .frame(maxWidth: .infinity)
-                            .frame(height: max(geo.size.height + geo.safeAreaInsets.top - bottomControlsHeight, 320))
+                            // Height equals content height
+                            .frame(height: max(sheetContentHeight, 1))
                             .background(.ultraThinMaterial)
                             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                             .shadow(radius: 10)
@@ -131,6 +141,14 @@ private struct BottomControlsHeightKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = max(value, nextValue())
+    }
+}
+
+// PreferenceKey for the sheet content height
+private struct SheetContentHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }
 

@@ -6,23 +6,12 @@ struct CountAdjustSheet: View, Identifiable {
     let onDone: () -> Void
     var id: String { taxon.id }
     @State private var tempCount: Int = 1 // number of new observations to add
-    @State private var numberBuffer: String = "1"
-    @State private var showPad: Bool = false // keypad is hidden initially
+    // Numeric keypad removed; simple +/- controls only
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 16) {
                 CountHeaderView(taxon: taxon)
-
-                KeypadToggleView(showPad: $showPad)
-
-                NumericPadContainer(showPad: showPad,
-                                    onDigit: { appendDigit($0) },
-                                    onBack: backspace,
-                                    onClear: clearBuffer)
-
-                // Push display and step buttons to the bottom
-                Spacer(minLength: 0)
 
                 StepControlsView(value: tempCount, onMinus: { adjust(-1) }, onPlus: { adjust(+1) })
 
@@ -38,30 +27,15 @@ struct CountAdjustSheet: View, Identifiable {
     }
 
     private func initialize() {
-        // Always default to 1 new observation regardless of existing total
-        tempCount = 1
-        numberBuffer = "1"
+    // Always default to 1 new observation regardless of existing total
+    tempCount = 1
     }
 
     // MARK: Logic
     private func adjust(_ delta: Int) {
-        let newVal = max(1, tempCount + delta)
-        if newVal != tempCount { tempCount = newVal; numberBuffer = String(newVal); UIImpactFeedbackGenerator(style: .soft).impactOccurred() }
+    let newVal = max(1, tempCount + delta)
+    if newVal != tempCount { tempCount = newVal; UIImpactFeedbackGenerator(style: .soft).impactOccurred() }
     }
-    private func appendDigit(_ d: Int) {
-        if numberBuffer == "0" { numberBuffer = "" }
-        numberBuffer.append(String(d))
-        if let val = Int(numberBuffer) { tempCount = max(1, val) }
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-    }
-    private func backspace() {
-        guard !numberBuffer.isEmpty else { return }
-        numberBuffer.removeLast()
-        if numberBuffer.isEmpty { tempCount = 1; numberBuffer = "1" }
-        else { tempCount = max(1, Int(numberBuffer) ?? 1) }
-        UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
-    }
-    private func clearBuffer() { tempCount = 1; numberBuffer = "1"; UIImpactFeedbackGenerator(style: .rigid).impactOccurred() }
     private func commitAndClose() {
         guard tempCount >= 1 else { onDone(); return }
         for _ in 0..<tempCount { observations.addObservation(taxon.id) }
@@ -83,36 +57,7 @@ private struct CountHeaderView: View {
     }
 }
 
-private struct KeypadToggleView: View {
-    @Binding var showPad: Bool
-    var body: some View {
-        HStack {
-            Button(action: { withAnimation(.easeInOut) { showPad.toggle() } }) {
-                Label(showPad ? "Hide keypad" : "Show keypad",
-                      systemImage: showPad ? "keyboard.chevron.compact.down" : "keyboard")
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.small)
-            Spacer()
-        }
-    }
-}
-
-private struct NumericPadContainer: View {
-    let showPad: Bool
-    let onDigit: (Int) -> Void
-    let onBack: () -> Void
-    let onClear: () -> Void
-    var body: some View {
-        Group {
-            if showPad {
-                NumericPad(onDigit: { onDigit($0) }, onBack: onBack, onClear: onClear)
-                    .frame(maxWidth: 400)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-            }
-        }
-    }
-}
+// Numeric keypad and toggle removed
 
 // Count display is now integrated into StepControlsView
 
