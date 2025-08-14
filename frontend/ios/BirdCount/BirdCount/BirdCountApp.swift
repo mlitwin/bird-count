@@ -23,26 +23,26 @@ private struct TopTabsRoot: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Top tab selector with Settings button on the right
-            ZStack {
+            // Top tab selector with a separated Settings button on the right
+            HStack(alignment: .center, spacing: 12) {
                 Picker("", selection: $selection) {
                     ForEach(Tab.allCases) { tab in Text(tab.rawValue).tag(tab) }
                 }
                 .pickerStyle(.segmented)
-                .padding(.horizontal)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-                HStack { Spacer()
-                    Button(action: { showSettings = true }) {
-                        Image(systemName: "gearshape")
-                            .font(.headline)
-                            .padding(8)
-                            .background(Circle().fill(Color(.secondarySystemBackground)))
-                    }
-                    .accessibilityLabel("Settings")
-                    .padding(.trailing, 8)
+                // Gap is provided by Spacer; adjust minLength to tweak visual separation
+                Spacer(minLength: 24)
+
+                Button(action: { showSettings = true }) {
+                    Image(systemName: "gearshape")
+                        .font(.headline)
+                        .padding(8)
+                        .background(Circle().fill(Color(.secondarySystemBackground)))
                 }
-                .allowsHitTesting(true)
+                .accessibilityLabel("Settings")
             }
+            .padding(.horizontal)
             .padding(.top, 8)
 
             Divider()
