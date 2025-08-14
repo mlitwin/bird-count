@@ -11,7 +11,7 @@ struct CountAdjustSheet: View, Identifiable {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 24) {
+            VStack(spacing: 16) {
                 CountHeaderView(taxon: taxon)
 
                 KeypadToggleView(showPad: $showPad)
@@ -24,17 +24,15 @@ struct CountAdjustSheet: View, Identifiable {
                 // Push display and step buttons to the bottom
                 Spacer(minLength: 0)
 
-                CountDisplayView(value: tempCount)
-
-                StepControlsView(onMinus: { adjust(-1) }, onPlus: { adjust(+1) })
+                StepControlsView(value: tempCount, onMinus: { adjust(-1) }, onPlus: { adjust(+1) })
 
                 ActionBarView(onCancel: onDone,
                                onDone: { commitAndClose() },
                                doneDisabled: tempCount < 1)
                     .padding(.bottom, 8)
             }
-            .padding(.top, 24)
-            .padding(.horizontal, 24)
+            .padding(.top, 12)
+            .padding(.horizontal, 16)
             .onAppear(perform: initialize)
         }
     }
@@ -77,9 +75,9 @@ private struct CountHeaderView: View {
     var body: some View {
         VStack(spacing: 4) {
             Text(taxon.commonName)
-                .font(.title2.weight(.semibold))
+                .font(.headline.weight(.semibold))
             Text(taxon.scientificName)
-                .font(.subheadline)
+                .font(.footnote)
                 .foregroundStyle(.secondary)
         }
     }
@@ -94,7 +92,7 @@ private struct KeypadToggleView: View {
                       systemImage: showPad ? "keyboard.chevron.compact.down" : "keyboard")
             }
             .buttonStyle(.bordered)
-            .controlSize(.regular)
+            .controlSize(.small)
             Spacer()
         }
     }
@@ -116,23 +114,23 @@ private struct NumericPadContainer: View {
     }
 }
 
-private struct CountDisplayView: View {
-    let value: Int
-    var body: some View {
-        Text("\(value)")
-            .font(.system(size: 72, weight: .bold, design: .rounded))
-            .monospacedDigit()
-            .padding(.vertical, 8)
-            .contentTransition(.numericText())
-    }
-}
+// Count display is now integrated into StepControlsView
 
 private struct StepControlsView: View {
+    let value: Int
     let onMinus: () -> Void
     let onPlus: () -> Void
     var body: some View {
-        HStack(spacing: 20) {
+        HStack(spacing: 12) {
             StepButton(symbol: "minus", action: onMinus)
+
+            Text("\(value)")
+                .font(.system(size: 48, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .frame(minWidth: 72)
+                .accessibilityLabel("Count")
+                .accessibilityValue("\(value)")
+
             StepButton(symbol: "plus", action: onPlus)
         }
     }
@@ -143,8 +141,8 @@ private struct StepControlsView: View {
         var body: some View {
             Button(action: action) {
                 Image(systemName: symbol)
-                    .font(.largeTitle.weight(.semibold))
-                    .frame(width: 88, height: 88)
+            .font(.title.weight(.semibold))
+            .frame(width: 72, height: 72)
                     .background(Circle().fill(Color.accentColor.opacity(0.15)))
             }
             .buttonStyle(.plain)
@@ -158,7 +156,7 @@ private struct ActionBarView: View {
     let doneDisabled: Bool
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 8) {
             // Action buttons
             HStack(spacing: 12) {
                 Button(role: .cancel, action: onCancel) {
@@ -166,21 +164,21 @@ private struct ActionBarView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.red)
-                .controlSize(.large)
+                .controlSize(.regular)
 
                 Button(action: onDone) {
                     Text("Done").frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.green)
-                .controlSize(.large)
+                .controlSize(.regular)
                 .disabled(doneDisabled)
             }
-            .font(.title3.weight(.semibold))
+            .font(.headline.weight(.semibold))
         }
         .padding(.horizontal, 16)
-        .padding(.top, 10)
-        .padding(.bottom, 12)
+        .padding(.top, 6)
+        .padding(.bottom, 8)
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(radius: 4, y: 2)
