@@ -63,8 +63,6 @@ struct SummaryView: View {
             .sorted { $0.0.commonName < $1.0.commonName }
     }
 
-    // Recent section removed
-
     private var speciesInRange: [SpeciesCountItem] {
         // Aggregate counts within the selected range
         let filtered = observations.observations.filter { $0.timestamp >= startDate && $0.timestamp <= endDate }
@@ -81,7 +79,9 @@ struct SummaryView: View {
 
     var body: some View {
         // Break up inference with local constants
-        let species = speciesInRange
+    let species = speciesInRange
+    let totalSpeciesInRange = species.count
+    let totalIndividualsInRange = species.reduce(0) { $0 + $1.count }
         return NavigationStack {
             VStack(spacing: 0) {
                 // Compact header row: Title + Share
@@ -114,8 +114,8 @@ struct SummaryView: View {
 
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Totals").font(.headline)
-                        HStack { Text("Species observed"); Spacer(); Text("\(observations.totalSpeciesObserved)") }
-                        HStack { Text("Total individuals"); Spacer(); Text("\(observations.totalIndividuals)") }
+                        HStack { Text("Species observed"); Spacer(); Text("\(totalSpeciesInRange)").monospacedDigit() }
+                        HStack { Text("Total individuals"); Spacer(); Text("\(totalIndividualsInRange)").monospacedDigit() }
                     }
                 }
                 .padding(.horizontal)
