@@ -123,7 +123,7 @@ struct SummaryView: View {
 
                 Divider()
 
-                // Scrollable content: Recent and Species in Range
+                // Scrollable content: Species in Range
                 List {
                     if !species.isEmpty {
                         Section("Species in Range") {
@@ -141,7 +141,6 @@ struct SummaryView: View {
             }
             .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $shareSheet) { ShareActivityView(items: [exportText()]) }
-            // No Log sheet in tab mode; Log has its own tab now
         }
     }
 
