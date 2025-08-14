@@ -63,14 +63,7 @@ struct SummaryView: View {
             .sorted { $0.0.commonName < $1.0.commonName }
     }
 
-    private var updatesInRange: [UpdateItem] {
-        observations.recent.compactMap { r in
-            guard let taxon = taxonomy.species.first(where: { $0.id == r.id }) else { return nil }
-            let count = observations.count(for: r.id)
-            guard count > 0, r.lastUpdated >= startDate, r.lastUpdated <= endDate else { return nil }
-            return UpdateItem(id: taxon.id, taxon: taxon, count: count, date: r.lastUpdated)
-        }
-    }
+    // Recent section removed
 
     private var speciesInRange: [SpeciesCountItem] {
         // Aggregate counts within the selected range
@@ -88,7 +81,6 @@ struct SummaryView: View {
 
     var body: some View {
         // Break up inference with local constants
-        let recent = updatesInRange
         let species = speciesInRange
         return NavigationStack {
             VStack(spacing: 0) {
@@ -118,20 +110,6 @@ struct SummaryView: View {
 
                 // Scrollable content: Recent and Species in Range
                 List {
-                    if !recent.isEmpty {
-                        Section("Recent") {
-                            ForEach(recent) { item in
-                                HStack {
-                                    VStack(alignment: .leading) {
-                                        Text(item.taxon.commonName)
-                                        Text(item.date, style: .time).font(.caption).foregroundStyle(.secondary)
-                                    }
-                                    Spacer()
-                                    Text("\(item.count)").monospacedDigit()
-                                }
-                            }
-                        }
-                    }
                     if !species.isEmpty {
                         Section("Species in Range") {
                             ForEach(species) { item in
@@ -139,7 +117,7 @@ struct SummaryView: View {
                             }
                         }
                     }
-                    if recent.isEmpty && species.isEmpty {
+                    if species.isEmpty {
                         Section { Text("No observations yet.").foregroundStyle(.secondary) }
                     }
                 }
