@@ -84,6 +84,21 @@ struct SummaryView: View {
         let species = speciesInRange
         return NavigationStack {
             VStack(spacing: 0) {
+                // Compact header row: Title + Share
+                HStack(spacing: 12) {
+                    Text("Summary")
+                        .font(.title2.weight(.semibold))
+                    Spacer()
+                    Button(action: { shareSheet = true }) {
+                        Label("Share", systemImage: "square.and.arrow.up")
+                    }
+                    .disabled(observations.totalIndividuals == 0)
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+
                 // Fixed header: Range + Totals
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Range").font(.headline)
@@ -124,13 +139,7 @@ struct SummaryView: View {
                 .listStyle(.insetGrouped)
                 .scrollBounceBehavior(.basedOnSize)
             }
-            .navigationTitle("Summary")
-            .toolbar {
-                ToolbarItemGroup(placement: .primaryAction) {
-                    // Disable Share if there are no observations at all to avoid heavy computed properties here
-                    Button("Share") { shareSheet = true }.disabled(observations.totalIndividuals == 0)
-                }
-            }
+            .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $shareSheet) { ShareActivityView(items: [exportText()]) }
             // No Log sheet in tab mode; Log has its own tab now
         }
