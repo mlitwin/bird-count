@@ -28,9 +28,7 @@ struct CountAdjustSheet: View, Identifiable {
 
                 StepControlsView(onMinus: { adjust(-1) }, onPlus: { adjust(+1) })
 
-                ActionBarView(observedSpecies: observations.totalSpeciesObserved,
-                               totalIndividuals: observations.totalIndividuals,
-                               onCancel: onDone,
+                ActionBarView(onCancel: onDone,
                                onDone: { commitAndClose() },
                                doneDisabled: tempCount < 1)
             }
@@ -154,22 +152,12 @@ private struct StepControlsView: View {
 }
 
 private struct ActionBarView: View {
-    let observedSpecies: Int
-    let totalIndividuals: Int
     let onCancel: () -> Void
     let onDone: () -> Void
     let doneDisabled: Bool
 
     var body: some View {
         VStack(spacing: 12) {
-            // Stats
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Observed species: \(observedSpecies)")
-                Text("Total individuals: \(totalIndividuals)")
-            }
-            .font(.footnote)
-            .foregroundStyle(.secondary)
-
             // Action buttons
             HStack(spacing: 12) {
                 Button(role: .cancel, action: onCancel) {
