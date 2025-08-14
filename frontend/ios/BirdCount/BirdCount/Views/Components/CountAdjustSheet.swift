@@ -31,6 +31,7 @@ struct CountAdjustSheet: View, Identifiable {
                 ActionBarView(onCancel: onDone,
                                onDone: { commitAndClose() },
                                doneDisabled: tempCount < 1)
+                    .padding(.bottom, 8)
             }
             .padding(.top, 24)
             .padding(.horizontal, 24)
