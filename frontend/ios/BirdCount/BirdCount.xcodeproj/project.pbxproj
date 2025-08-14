@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1FC3EA44A81F6C94E57C3757 /* CountAdjustSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFA8094EBAC869E648D7F854 /* CountAdjustSheet.swift */; };
 		208E0E02373AB724A6117666 /* Taxon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74ADC22819086097B12402BC /* Taxon.swift */; };
 		4217D9AF2D23AF11355EF353 /* generate_ios_taxonomy.mjs in Resources */ = {isa = PBXBuildFile; fileRef = E3424E4DDD31730B25CEEBC1 /* generate_ios_taxonomy.mjs */; };
 		43633DA051B6ACEE6D0811D9 /* checklist-US-CA-041.json in Resources */ = {isa = PBXBuildFile; fileRef = AD12BB59D440BC995C372E0D /* checklist-US-CA-041.json */; };
@@ -46,6 +47,7 @@
 		E3424E4DDD31730B25CEEBC1 /* generate_ios_taxonomy.mjs */ = {isa = PBXFileReference; path = generate_ios_taxonomy.mjs; sourceTree = "<group>"; };
 		E633F06C7C8AF39A661F905C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F11C0F2EB5F5DDCE1C6106B1 /* ObservationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationStore.swift; sourceTree = "<group>"; };
+		FFA8094EBAC869E648D7F854 /* CountAdjustSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountAdjustSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -79,6 +81,7 @@
 		506504D8E4EB265F3C61EE8F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				FFA8094EBAC869E648D7F854 /* CountAdjustSheet.swift */,
 				CCCBE3E988878FA83F955105 /* NumericPad.swift */,
 				CA105FDD346A2759183A3BEE /* OnScreenKeyboard.swift */,
 				E1AE8BBD3313453070C1CF58 /* ShareActivityView.swift */,
@@ -241,6 +244,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C365B63760F17794D9B0605A /* BirdCountApp.swift in Sources */,
+				1FC3EA44A81F6C94E57C3757 /* CountAdjustSheet.swift in Sources */,
 				5B4143CF290C1B88ED929590 /* HomeView.swift in Sources */,
 				88723733D4405DC1AA55DB13 /* NumericPad.swift in Sources */,
 				594E347B44CB9AE16D14A93F /* ObservationLogView.swift in Sources */,

@@ -6,6 +6,7 @@ struct HomeView: View {
     @Environment(SettingsStore.self) private var settings
     @State private var filterText: String = ""
     @State private var selectedTaxon: Taxon? = nil
+    @State private var bottomControlsHeight: CGFloat = 0
 
     private var filtered: [Taxon] { taxonomy.search(filterText, minCommonness: settings.selectedChecklistId != nil ? settings.minCommonness : nil, maxCommonness: settings.selectedChecklistId != nil ? settings.maxCommonness : nil) }
 
@@ -21,19 +22,26 @@ struct HomeView: View {
                         .background(Color.red.opacity(0.8))
                 }
                 Group { content }
-                Divider()
-                FilterBar(text: filterText) { filterText = "" }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                Divider()
-                OnScreenKeyboard(onKey: { filterText.append($0) }, onBackspace: { if !filterText.isEmpty { _ = filterText.removeLast() } }, onClear: { filterText = "" })
-                    .padding(.bottom, 8)
-                    .background(.thinMaterial)
+                // Bottom controls (FilterBar + Keyboard) measured dynamically for sheet positioning
+                VStack(spacing: 0) {
+                    Divider()
+                    FilterBar(text: filterText) { filterText = "" }
+                        .padding(.horizontal)
+                        .padding(.vertical, 8)
+                    Divider()
+                    OnScreenKeyboard(onKey: { filterText.append($0) }, onBackspace: { if !filterText.isEmpty { _ = filterText.removeLast() } }, onClear: { filterText = "" })
+                        .padding(.bottom, 8)
+                        .background(.thinMaterial)
+                }
+                .background(
+                    GeometryReader { geo in
+                        Color.clear
+                            .preference(key: BottomControlsHeightKey.self, value: geo.size.height)
+                    }
+                )
+                .onPreferenceChange(BottomControlsHeightKey.self) { bottomControlsHeight = $0 }
             }
             .navigationTitle("Bird Count")
-            .sheet(item: $selectedTaxon) { taxon in
-                CountAdjustSheet(taxon: taxon) { selectedTaxon = nil }
-            }
             .onChange(of: settings.enableAbbreviationSearch) { _, newVal in
                 taxonomy.enableAbbreviationSearch = newVal
             }
@@ -41,6 +49,33 @@ struct HomeView: View {
                 if let id = newId { taxonomy.loadChecklist(id: id) }
             }
             .task { taxonomy.enableAbbreviationSearch = settings.enableAbbreviationSearch; if let id = settings.selectedChecklistId { taxonomy.loadChecklist(id: id) } }
+            // Present CountAdjustSheet as a custom bottom overlay, shifted up by the bottom controls height
+            .overlay(alignment: .bottom) {
+                if let taxon = selectedTaxon {
+                    GeometryReader { geo in
+                        ZStack(alignment: .bottom) {
+                            Color.black.opacity(0.25)
+                                .ignoresSafeArea()
+                                .onTapGesture { withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) { selectedTaxon = nil } }
+
+                            VStack(spacing: 0) {
+                                CountAdjustSheet(taxon: taxon) {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) { selectedTaxon = nil }
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: max(geo.size.height + geo.safeAreaInsets.top - bottomControlsHeight, 320))
+                            .background(.ultraThinMaterial)
+                            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                            .shadow(radius: 10)
+                            .padding(.horizontal, 12)
+                            .padding(.bottom, bottomControlsHeight)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                        }
+                        .ignoresSafeArea()
+                    }
+                }
+            }
         }
     }
 
@@ -86,6 +121,14 @@ struct HomeView: View {
     }
 
         // Removed keyboard toggle button
+}
+
+// PreferenceKey for measuring bottom controls height dynamically
+private struct BottomControlsHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
 }
 
 private struct SpeciesRow: View {
@@ -142,125 +185,6 @@ private struct FilterBar: View {
     }
 }
 
-private struct CountAdjustSheet: View, Identifiable {
-    @Environment(ObservationStore.self) private var observations
-    let taxon: Taxon
-    let onDone: () -> Void
-    var id: String { taxon.id }
-    @State private var tempCount: Int = 1 // number of new observations to add
-    @State private var numberBuffer: String = "1"
-
-    var body: some View {
-        NavigationStack {
-            VStack(spacing: 24) {
-                header
-                NumericPad(onDigit: { appendDigit($0) }, onBack: backspace, onClear: clearBuffer)
-                    .frame(maxWidth: 400)
-                countDisplay
-                stepButtons
-                Spacer()
-            }
-            .padding(.top, 32)
-            .padding(.horizontal, 24)
-            .onAppear(perform: initialize)
-            .interactiveDismissDisabled()
-            .safeAreaInset(edge: .bottom) {
-                VStack(spacing: 12) {
-                    // Stats
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Observed species: \(observations.totalSpeciesObserved)")
-                        Text("Total individuals: \(observations.totalIndividuals)")
-                    }
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-
-                    // Action buttons
-                    HStack(spacing: 12) {
-                        Button(role: .cancel) { onDone() } label: {
-                            Text("Cancel").frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.red)
-                        .controlSize(.large)
-
-                        Button(action: { commitAndClose() }) {
-                            Text("Done").frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.green)
-                        .controlSize(.large)
-                        .disabled(tempCount < 1)
-                    }
-                    .font(.title3.weight(.semibold))
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 10)
-                .padding(.bottom, 12)
-                .background(.ultraThinMaterial)
-            }
-        }
-    }
-
-    // MARK: Subviews
-    private var header: some View {
-        VStack(spacing: 4) {
-            Text(taxon.commonName)
-                .font(.title2.weight(.semibold))
-            Text(taxon.scientificName)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-    }
-
-    private var countDisplay: some View {
-        Text("\(tempCount)")
-            .font(.system(size: 72, weight: .bold, design: .rounded))
-            .monospacedDigit()
-            .padding(.vertical, 8)
-            .contentTransition(.numericText())
-    }
-
-    private var stepButtons: some View {
-        HStack(spacing: 20) {
-            StepButton(symbol: "minus") { adjust(-1) }
-            StepButton(symbol: "plus") { adjust(+1) }
-        }
-    }
-
-    private func initialize() {
-        // Always default to 1 new observation regardless of existing total
-        tempCount = 1
-        numberBuffer = "1"
-    }
-
-    // MARK: Logic
-    private func adjust(_ delta: Int) {
-        let newVal = max(1, tempCount + delta)
-        if newVal != tempCount { tempCount = newVal; numberBuffer = String(newVal); UIImpactFeedbackGenerator(style: .soft).impactOccurred() }
-    }
-    private func appendDigit(_ d: Int) {
-        if numberBuffer == "0" { numberBuffer = "" }
-        numberBuffer.append(String(d))
-        if let val = Int(numberBuffer) { tempCount = max(1, val) }
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-    }
-    private func backspace() {
-        guard !numberBuffer.isEmpty else { return }
-        numberBuffer.removeLast()
-        if numberBuffer.isEmpty { tempCount = 1; numberBuffer = "1" }
-        else { tempCount = max(1, Int(numberBuffer) ?? 1) }
-        UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
-    }
-    private func clearBuffer() { tempCount = 1; numberBuffer = "1"; UIImpactFeedbackGenerator(style: .rigid).impactOccurred() }
-    private func commitAndClose() {
-        guard tempCount >= 1 else { onDone(); return }
-        for _ in 0..<tempCount { observations.addObservation(taxon.id) }
-        onDone()
-    }
-
-    // MARK: Components
-    private struct StepButton: View { let symbol: String; let action: () -> Void; var body: some View { Button(action: action) { Image(systemName: symbol).font(.largeTitle.weight(.semibold)).frame(width: 88, height: 88).background(Circle().fill(Color.accentColor.opacity(0.15))) }.buttonStyle(.plain) } }
-}
 
 #if DEBUG
 private extension TaxonomyStore {
