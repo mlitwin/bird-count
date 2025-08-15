@@ -17,8 +17,28 @@ struct HomeView: View {
 
     // Range-filtered counts per species
     private var rangeCounts: [String:Int] {
-        let filteredObs = observations.observations.filter { $0.timestamp >= startDate && $0.timestamp <= endDate }
-        return filteredObs.reduce(into: [String:Int]()) { $0[$1.taxonId, default: 0] += 1 }
+        let (effStart, effEnd) = effectiveRange
+        let filteredObs = observations.observations.filter { $0.timestamp >= effStart && $0.timestamp <= effEnd }
+        return filteredObs.reduce(into: [String:Int]()) { $0[$1.taxonId, default: 0] += max(0, $1.count) }
+    }
+
+    // Dynamic range: for relative presets, recompute against "now"
+    private var effectiveRange: (Date, Date) {
+        let now = Date()
+        switch preset {
+        case .today:
+            return (Calendar.current.startOfDay(for: now), now)
+        case .lastHour:
+            let start = Calendar.current.date(byAdding: .hour, value: -1, to: now) ?? now
+            return (start, now)
+        case .last7Days:
+            let start = Calendar.current.date(byAdding: .day, value: -7, to: now) ?? now
+            return (start, now)
+        case .all:
+            return (.distantPast, now)
+        case .custom:
+            return (startDate, endDate)
+        }
     }
 
     var body: some View {

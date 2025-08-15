@@ -18,20 +18,20 @@ import Observation
 
     // MARK: Derived helpers
     private func rebuildDerived() {
-        counts = observations.reduce(into: [:]) { $0[$1.taxonId, default: 0] += 1 }
+    counts = observations.reduce(into: [:]) { $0[$1.taxonId, default: 0] += max(0, $1.count) }
     }
 
     func count(for id: String) -> Int { counts[id] ?? 0 }
 
     // MARK: Mutations
-    func addObservation(_ taxonId: String, timestamp: Date = Date()) {
-    observations.append(ObservationRecord(id: UUID(), taxonId: taxonId, timestamp: timestamp))
+    func addObservation(_ taxonId: String, timestamp: Date = Date(), count: Int = 1) {
+        observations.append(ObservationRecord(id: UUID(), taxonId: taxonId, timestamp: timestamp, count: max(0, count)))
         touchRecent(taxonId)
     }
 
     func increment(_ id: String, by delta: Int = 1) {
         guard delta > 0 else { return } // negative increments not supported directly
-        for _ in 0..<delta { addObservation(id) }
+        addObservation(id, count: delta)
     }
 
     // Adjust to target value by adding or removing most recent observations for that species.
@@ -40,10 +40,22 @@ import Observation
         if value > current {
             increment(id, by: value - current)
         } else if value < current {
-            // Remove newest observations first for that species
+            // Decrease from newest records first for that species
             var toRemove = current - value
-            for idx in observations.indices.reversed() where toRemove > 0 {
-                if observations[idx].taxonId == id { observations.remove(at: idx); toRemove -= 1 }
+            var idx = observations.count - 1
+            while idx >= 0 && toRemove > 0 {
+                let rec = observations[idx]
+                if rec.taxonId == id {
+                    let c = max(0, rec.count)
+                    if c > toRemove {
+                        observations[idx].count = c - toRemove
+                        toRemove = 0
+                    } else {
+                        toRemove -= c
+                        observations.remove(at: idx)
+                    }
+                }
+                idx -= 1
             }
         }
         // touch recent even if unchanged for consistency
@@ -54,7 +66,7 @@ import Observation
 
     func clearAll() { observations.removeAll(); recent.removeAll() }
 
-    var totalIndividuals: Int { observations.count }
+    var totalIndividuals: Int { observations.reduce(0) { $0 + max(0, $1.count) } }
     var totalSpeciesObserved: Int { counts.keys.count }
 
     // MARK: Recent handling

@@ -14,10 +14,29 @@ struct ObservationLogView: View {
     struct DisplayObservation: Identifiable { let id: UUID; let taxon: Taxon?; let timestamp: Date }
 
     private var display: [DisplayObservation] {
-        let filtered = observationsStore.observations.filter { $0.timestamp >= startDate && $0.timestamp <= endDate }
+        let (effStart, effEnd) = effectiveRange
+        let filtered = observationsStore.observations.filter { $0.timestamp >= effStart && $0.timestamp <= effEnd }
         return filtered.sorted { $0.timestamp < $1.timestamp }.map { rec in
             let taxon = taxonomy.species.first { $0.id == rec.taxonId }
             return DisplayObservation(id: rec.id, taxon: taxon, timestamp: rec.timestamp)
+        }
+    }
+
+    private var effectiveRange: (Date, Date) {
+        let now = Date()
+        switch preset {
+        case .today:
+            return (Calendar.current.startOfDay(for: now), now)
+        case .lastHour:
+            let start = Calendar.current.date(byAdding: .hour, value: -1, to: now) ?? now
+            return (start, now)
+        case .last7Days:
+            let start = Calendar.current.date(byAdding: .day, value: -7, to: now) ?? now
+            return (start, now)
+        case .all:
+            return (.distantPast, now)
+        case .custom:
+            return (startDate, endDate)
         }
     }
 

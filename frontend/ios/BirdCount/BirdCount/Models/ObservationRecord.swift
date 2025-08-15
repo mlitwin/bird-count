@@ -7,10 +7,12 @@ public struct ObservationRecord: Identifiable, Codable, Equatable {
     public let id: UUID
     public let taxonId: String
     public let timestamp: Date
+    public var count: Int
 
-    public init(id: UUID = UUID(), taxonId: String, timestamp: Date = Date()) {
+    public init(id: UUID = UUID(), taxonId: String, timestamp: Date = Date(), count: Int = 1) {
         self.id = id
         self.taxonId = taxonId
         self.timestamp = timestamp
+        self.count = max(0, count)
     }
 }

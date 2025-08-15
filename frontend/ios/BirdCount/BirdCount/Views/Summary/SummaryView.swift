@@ -38,9 +38,10 @@ struct SummaryView: View {
     }
 
     private var speciesInRange: [SpeciesCountItem] {
-        // Aggregate counts within the selected range
-        let filtered = observations.observations.filter { $0.timestamp >= startDate && $0.timestamp <= endDate }
-        let counts = filtered.reduce(into: [String:Int]()) { $0[$1.taxonId, default: 0] += 1 }
+        // Aggregate counts within the selected range (dynamic for relative presets)
+        let (effStart, effEnd) = effectiveRange
+        let filtered = observations.observations.filter { $0.timestamp >= effStart && $0.timestamp <= effEnd }
+        let counts = filtered.reduce(into: [String:Int]()) { $0[$1.taxonId, default: 0] += max(0, $1.count) }
         return taxonomy.species.compactMap { t in
             if let c = counts[t.id], c > 0 {
                 return SpeciesCountItem(id: t.id, taxon: t, count: c)
@@ -49,6 +50,24 @@ struct SummaryView: View {
             }
         }
         .sorted { $0.taxon.commonName < $1.taxon.commonName }
+    }
+
+    private var effectiveRange: (Date, Date) {
+        let now = Date()
+        switch preset {
+        case .today:
+            return (Calendar.current.startOfDay(for: now), now)
+        case .lastHour:
+            let start = Calendar.current.date(byAdding: .hour, value: -1, to: now) ?? now
+            return (start, now)
+        case .last7Days:
+            let start = Calendar.current.date(byAdding: .day, value: -7, to: now) ?? now
+            return (start, now)
+        case .all:
+            return (.distantPast, now)
+        case .custom:
+            return (startDate, endDate)
+        }
     }
 
     var body: some View {
