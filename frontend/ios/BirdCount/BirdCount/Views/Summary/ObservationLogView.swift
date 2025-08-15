@@ -27,7 +27,10 @@ struct ObservationLogView: View {
                 HStack(alignment: .firstTextBaseline) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(obs.taxon?.commonName ?? obs.taxon?.id ?? obs.taxon?.scientificName ?? "Unknown")
-                        Text(obs.timestamp, style: .time).font(.caption).foregroundStyle(.secondary)
+                        // Show both date and time
+                        Text(obs.timestamp.formatted(date: .abbreviated, time: .shortened))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                 }
                 .accessibilityElement(children: .combine)
@@ -53,7 +56,8 @@ struct ObservationLogView: View {
 
     private func accessibilityLabel(for o: DisplayObservation) -> String {
         let name = o.taxon?.commonName ?? "Unknown species"
-        return "\(name) at \(DateFormatter.localizedString(from: o.timestamp, dateStyle: .none, timeStyle: .short))"
+        let dt = DateFormatter.localizedString(from: o.timestamp, dateStyle: .medium, timeStyle: .short)
+        return "\(name) at \(dt)"
     }
 }
 
