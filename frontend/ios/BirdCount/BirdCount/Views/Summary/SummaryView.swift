@@ -10,14 +10,7 @@ struct SummaryView: View {
     @State private var endDate: Date = Date()
     @State private var preset: RangePreset = .custom
 
-    private enum RangePreset: String, CaseIterable, Identifiable {
-        case lastHour = "Last Hour"
-        case today = "Today"
-        case last7Days = "7 Days"
-        case all = "All"
-        case custom = "Custom"
-        var id: String { rawValue }
-    }
+    // RangePreset moved to Components/RangeSelectorView.swift
 
     // Lightweight models to simplify ForEach and type inference
     private struct UpdateItem: Identifiable {
@@ -33,26 +26,7 @@ struct SummaryView: View {
         let count: Int
     }
 
-    private func applyRangePreset(_ p: RangePreset) {
-        let now = Date()
-        switch p {
-        case .lastHour:
-            startDate = Calendar.current.date(byAdding: .hour, value: -1, to: now) ?? now
-            endDate = now
-        case .today:
-            let cal = Calendar.current
-            startDate = cal.startOfDay(for: now)
-            endDate = now
-        case .last7Days:
-            startDate = Calendar.current.date(byAdding: .day, value: -7, to: now) ?? now
-            endDate = now
-        case .all:
-            startDate = .distantPast
-            endDate = now
-        case .custom:
-            break
-        }
-    }
+    // applyRangePreset is handled inside RangeSelectorView
 
     private var observedSpecies: [(Taxon, Int)] {
         taxonomy.species
@@ -101,16 +75,7 @@ struct SummaryView: View {
 
                 // Fixed header: Range + Totals
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Range").font(.headline)
-                    Picker("Preset", selection: $preset) {
-                        ForEach(RangePreset.allCases) { p in Text(p.rawValue).tag(p) }
-                    }
-                    .pickerStyle(.segmented)
-                    .onChange(of: preset) { _, newVal in applyRangePreset(newVal) }
-                    DatePicker("From", selection: $startDate, displayedComponents: [.date, .hourAndMinute])
-                    DatePicker("To", selection: $endDate, in: startDate... , displayedComponents: [.date, .hourAndMinute])
-                        .onChange(of: startDate) { _, _ in preset = .custom }
-                        .onChange(of: endDate) { _, _ in preset = .custom }
+                    RangeSelectorView(preset: $preset, startDate: $startDate, endDate: $endDate)
 
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Totals").font(.headline)

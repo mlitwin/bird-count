@@ -15,6 +15,7 @@
 		5B4143CF290C1B88ED929590 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3DA21F8B7A04FA9A2B01542 /* HomeView.swift */; };
 		68D2F644EA81B5C2380F5DB2 /* checklist-US-ME.json in Resources */ = {isa = PBXBuildFile; fileRef = 77B3EC72050A052361E92911 /* checklist-US-ME.json */; };
 		6C9CBAEA8E77832D8787CD76 /* SummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B0BA1474D059B40D0C1BEDC /* SummaryView.swift */; };
+		757C953EF8E9A353E0737D51 /* RangeSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22F7391BED2166E79AC0A46 /* RangeSelectorView.swift */; };
 		88723733D4405DC1AA55DB13 /* NumericPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCBE3E988878FA83F955105 /* NumericPad.swift */; };
 		9011BEC0A95145374777045E /* TaxonomyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 102D036CF7E1F208793BECF3 /* TaxonomyStore.swift */; };
 		A3C57170B910A837385A6158 /* OnScreenKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA105FDD346A2759183A3BEE /* OnScreenKeyboard.swift */; };
@@ -43,6 +44,7 @@
 		CA105FDD346A2759183A3BEE /* OnScreenKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnScreenKeyboard.swift; sourceTree = "<group>"; };
 		CC412F9A02FEF839809F38AC /* checklist.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = checklist.json; sourceTree = "<group>"; };
 		CCCBE3E988878FA83F955105 /* NumericPad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumericPad.swift; sourceTree = "<group>"; };
+		D22F7391BED2166E79AC0A46 /* RangeSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeSelectorView.swift; sourceTree = "<group>"; };
 		E1AE8BBD3313453070C1CF58 /* ShareActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareActivityView.swift; sourceTree = "<group>"; };
 		E3424E4DDD31730B25CEEBC1 /* generate_ios_taxonomy.mjs */ = {isa = PBXFileReference; path = generate_ios_taxonomy.mjs; sourceTree = "<group>"; };
 		E633F06C7C8AF39A661F905C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -84,6 +86,7 @@
 				FFA8094EBAC869E648D7F854 /* CountAdjustSheet.swift */,
 				CCCBE3E988878FA83F955105 /* NumericPad.swift */,
 				CA105FDD346A2759183A3BEE /* OnScreenKeyboard.swift */,
+				D22F7391BED2166E79AC0A46 /* RangeSelectorView.swift */,
 				E1AE8BBD3313453070C1CF58 /* ShareActivityView.swift */,
 			);
 			path = Components;
@@ -250,6 +253,7 @@
 				594E347B44CB9AE16D14A93F /* ObservationLogView.swift in Sources */,
 				F50783CF7870BE1FA0621CCD /* ObservationStore.swift in Sources */,
 				A3C57170B910A837385A6158 /* OnScreenKeyboard.swift in Sources */,
+				757C953EF8E9A353E0737D51 /* RangeSelectorView.swift in Sources */,
 				DA0F562E577225B3765DA0BF /* SettingsStore.swift in Sources */,
 				DC557950C6D808B5000F77CB /* SettingsView.swift in Sources */,
 				DD452196F163874F5DE69BCA /* ShareActivityView.swift in Sources */,
