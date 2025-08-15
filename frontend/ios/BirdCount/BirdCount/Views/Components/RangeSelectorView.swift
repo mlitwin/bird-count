@@ -24,7 +24,6 @@ public struct RangeSelectorView: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Range").font(.headline)
             HStack(spacing: 8) {
                 // Shift range one day back
                 Button(action: { shiftRangeByDays(-1); preset = .custom }) {
@@ -64,10 +63,23 @@ public struct RangeSelectorView: View {
                 .controlSize(.small)
             }
 
-            // Text representation of the current date range
+            // Text representation of the current date range (prominent)
             Text(rangeSummary)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(.primary)
+                .padding(.vertical, 8)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .background(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color(.secondarySystemBackground))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .strokeBorder(Color.gray.opacity(0.2))
+                )
+                .lineLimit(1)
+                .minimumScaleFactor(0.9)
+                .allowsTightening(true)
         }
         .sheet(isPresented: $showCustomSheet) {
             CustomRangeSheet(startDate: $startDate, endDate: $endDate, onCancel: {
@@ -109,15 +121,57 @@ public struct RangeSelectorView: View {
         endDate = max(newStart, newEnd)
     }
 
-    // Summary string for the currently selected range
+    // Summary string for the currently selected range (compact, likely to fit one line)
     private var rangeSummary: String {
-        let style = Date.FormatStyle.dateTime
-            .month(.abbreviated)
-            .day()
-            .year()
-            .hour()
-            .minute()
-        return "\(startDate.formatted(style)) – \(endDate.formatted(style))"
+        if preset == .all {
+            return "All time – Now"
+        }
+        let cal = Calendar.current
+        let sameDay = cal.isDate(startDate, inSameDayAs: endDate)
+        let sameYear = cal.component(.year, from: startDate) == cal.component(.year, from: endDate)
+        let sameMonth = sameYear && cal.component(.month, from: startDate) == cal.component(.month, from: endDate)
+
+        let startHM = Formatters.hm.string(from: startDate)
+        let endHM = Formatters.hm.string(from: endDate)
+
+        if sameDay {
+            // Aug 14, 9:00 – 10:30
+            return "\(Formatters.mdy.string(from: startDate)) \(startHM) – \(endHM)"
+        } else if sameMonth {
+            // Aug 14 9:00 – 16 10:30
+            let startMD = Formatters.md.string(from: startDate)
+            let endD = String(cal.component(.day, from: endDate))
+            return "\(startMD) \(startHM) – \(endD) \(endHM)"
+        } else if sameYear {
+            // Aug 14 9:00 – Sep 2 10:30
+            let startMD = Formatters.md.string(from: startDate)
+            let endMD = Formatters.md.string(from: endDate)
+            return "\(startMD) \(startHM) – \(endMD) \(endHM)"
+        } else {
+            // Aug 14, 2024 9:00 – Sep 2, 2025 10:30
+            let startMDY = Formatters.mdy.string(from: startDate)
+            let endMDY = Formatters.mdy.string(from: endDate)
+            return "\(startMDY) \(startHM) – \(endMDY) \(endHM)"
+        }
+    }
+
+    private enum Formatters {
+        static let hm: DateFormatter = {
+            let df = DateFormatter()
+            df.timeStyle = .short
+            df.dateStyle = .none
+            return df
+        }()
+        static let md: DateFormatter = {
+            let df = DateFormatter()
+            df.setLocalizedDateFormatFromTemplate("MMMd") // e.g., Aug 14
+            return df
+        }()
+        static let mdy: DateFormatter = {
+            let df = DateFormatter()
+            df.setLocalizedDateFormatFromTemplate("MMMdyyyy") // e.g., Aug 14, 2025
+            return df
+        }()
     }
 }
 

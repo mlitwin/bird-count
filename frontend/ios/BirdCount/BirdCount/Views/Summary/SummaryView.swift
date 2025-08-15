@@ -78,7 +78,6 @@ struct SummaryView: View {
                     RangeSelectorView(preset: $preset, startDate: $startDate, endDate: $endDate)
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Totals").font(.headline)
                         HStack { Text("Species observed"); Spacer(); Text("\(totalSpeciesInRange)").monospacedDigit() }
                         HStack { Text("Total individuals"); Spacer(); Text("\(totalIndividualsInRange)").monospacedDigit() }
                     }
