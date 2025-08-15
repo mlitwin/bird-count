@@ -2,10 +2,8 @@ import Foundation
 import Observation
 
 @Observable final class ObservationStore {
-    // Fundamental model: each observation is its own record.
-    struct RecordedObservation: Identifiable, Codable { let id: UUID; let taxonId: String; let timestamp: Date }
-
-    private(set) var observations: [RecordedObservation] = [] { didSet { persist() ; rebuildDerived() } }
+    // Fundamental model is defined in Models/Observation.swift
+    private(set) var observations: [ObservationRecord] = [] { didSet { persist() ; rebuildDerived() } }
 
     // Derived counts map (species -> count) rebuilt when observations change
     private(set) var counts: [String:Int] = [:]
@@ -27,7 +25,7 @@ import Observation
 
     // MARK: Mutations
     func addObservation(_ taxonId: String, timestamp: Date = Date()) {
-        observations.append(RecordedObservation(id: UUID(), taxonId: taxonId, timestamp: timestamp))
+    observations.append(ObservationRecord(id: UUID(), taxonId: taxonId, timestamp: timestamp))
         touchRecent(taxonId)
     }
 
@@ -78,7 +76,7 @@ import Observation
 
     private func load() {
         if let data = UserDefaults.standard.data(forKey: persistenceKey) {
-            do { let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601; observations = try decoder.decode([RecordedObservation].self, from: data) } catch { observations = [] }
+            do { let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601; observations = try decoder.decode([ObservationRecord].self, from: data) } catch { observations = [] }
         }
     }
 }
