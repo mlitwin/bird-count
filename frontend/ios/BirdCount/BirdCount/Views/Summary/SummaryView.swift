@@ -5,10 +5,10 @@ struct SummaryView: View {
     @Environment(TaxonomyStore.self) private var taxonomy
     @State private var shareSheet: Bool = false
     @State private var showLog: Bool = false
-    // Range filter
-    @State private var startDate: Date = Calendar.current.date(byAdding: .day, value: -1, to: Date()) ?? Date()
-    @State private var endDate: Date = Date()
-    @State private var preset: RangePreset = .custom
+    // Range filter (provided from parent/top-level)
+    @Binding var preset: RangePreset
+    @Binding var startDate: Date
+    @Binding var endDate: Date
 
     // RangePreset moved to Components/RangeSelectorView.swift
 
@@ -73,14 +73,10 @@ struct SummaryView: View {
                 .padding(.horizontal)
                 .padding(.vertical, 8)
 
-                // Fixed header: Range + Totals
-                VStack(alignment: .leading, spacing: 12) {
-                    RangeSelectorView(preset: $preset, startDate: $startDate, endDate: $endDate)
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack { Text("Species observed"); Spacer(); Text("\(totalSpeciesInRange)").monospacedDigit() }
-                        HStack { Text("Total individuals"); Spacer(); Text("\(totalIndividualsInRange)").monospacedDigit() }
-                    }
+                // Totals (range is selected globally at the top of the app)
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack { Text("Species observed"); Spacer(); Text("\(totalSpeciesInRange)").monospacedDigit() }
+                    HStack { Text("Total individuals"); Spacer(); Text("\(totalIndividualsInRange)").monospacedDigit() }
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
@@ -120,7 +116,11 @@ struct SummaryView: View {
 }
 
 #if DEBUG
-#Preview("Summary Empty") { SummaryView().environment(ObservationStore()).environment(TaxonomyStore()) }
+#Preview("Summary Empty") {
+    SummaryView(preset: .constant(.custom), startDate: .constant(Date()), endDate: .constant(Date()))
+        .environment(ObservationStore())
+        .environment(TaxonomyStore())
+}
 #endif
 
 // iOS 18.5+ target assumed: using scrollBounceBehavior(.never) directly above

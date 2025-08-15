@@ -5,12 +5,17 @@ struct ObservationLogView: View {
     @Environment(TaxonomyStore.self) private var taxonomy
     // Optional binding: if provided, shows a Close button (when used as a sheet); in Tab usage, omit it
     var show: Binding<Bool>? = nil
+    // Shared date range
+    @Binding var preset: RangePreset
+    @Binding var startDate: Date
+    @Binding var endDate: Date
     @State private var exportSheet: Bool = false
 
     struct DisplayObservation: Identifiable { let id: UUID; let taxon: Taxon?; let timestamp: Date }
 
     private var display: [DisplayObservation] {
-        observationsStore.observations.sorted { $0.timestamp < $1.timestamp }.map { rec in
+        let filtered = observationsStore.observations.filter { $0.timestamp >= startDate && $0.timestamp <= endDate }
+        return filtered.sorted { $0.timestamp < $1.timestamp }.map { rec in
             let taxon = taxonomy.species.first { $0.id == rec.taxonId }
             return DisplayObservation(id: rec.id, taxon: taxon, timestamp: rec.timestamp)
         }
@@ -53,6 +58,14 @@ struct ObservationLogView: View {
 }
 
 #if DEBUG
-#Preview("Sheet style") { ObservationLogView(show: .constant(true)).environment(ObservationStore()).environment(TaxonomyStore()) }
-#Preview("Tab style") { ObservationLogView().environment(ObservationStore()).environment(TaxonomyStore()) }
+#Preview("Sheet style") {
+    ObservationLogView(show: .constant(true), preset: .constant(.custom), startDate: .constant(Date().addingTimeInterval(-3600)), endDate: .constant(Date()))
+        .environment(ObservationStore())
+        .environment(TaxonomyStore())
+}
+#Preview("Tab style") {
+    ObservationLogView(preset: .constant(.custom), startDate: .constant(Date().addingTimeInterval(-3600)), endDate: .constant(Date()))
+        .environment(ObservationStore())
+        .environment(TaxonomyStore())
+}
 #endif

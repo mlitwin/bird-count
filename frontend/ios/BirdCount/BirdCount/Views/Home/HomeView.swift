@@ -4,12 +4,22 @@ struct HomeView: View {
     @Environment(TaxonomyStore.self) private var taxonomy
     @Environment(ObservationStore.self) private var observations
     @Environment(SettingsStore.self) private var settings
+    // Shared range (reserved for future use in Home)
+    @Binding var preset: RangePreset
+    @Binding var startDate: Date
+    @Binding var endDate: Date
     @State private var filterText: String = ""
     @State private var selectedTaxon: Taxon? = nil
     @State private var bottomControlsHeight: CGFloat = 0
     @State private var sheetContentHeight: CGFloat = 0
 
     private var filtered: [Taxon] { taxonomy.search(filterText, minCommonness: settings.selectedChecklistId != nil ? settings.minCommonness : nil, maxCommonness: settings.selectedChecklistId != nil ? settings.maxCommonness : nil) }
+
+    // Range-filtered counts per species
+    private var rangeCounts: [String:Int] {
+        let filteredObs = observations.observations.filter { $0.timestamp >= startDate && $0.timestamp <= endDate }
+        return filteredObs.reduce(into: [String:Int]()) { $0[$1.taxonId, default: 0] += 1 }
+    }
 
     var body: some View {
         NavigationStack {
@@ -110,7 +120,7 @@ struct HomeView: View {
             ScrollView {
                 LazyVStack(spacing: 0) {
                     ForEach(filtered) { taxon in
-                        let count = observations.count(for: taxon.id)
+                        let count = rangeCounts[taxon.id] ?? 0
                         VStack(spacing: 0) {
                             SpeciesRow(taxon: taxon, count: count)
                                 .contentShape(Rectangle())
@@ -223,7 +233,11 @@ private extension TaxonomyStore {
 
 #if DEBUG
 #Preview("Home") {
-    HomeView()
+    HomeView(
+        preset: .constant(.today),
+        startDate: .constant(Calendar.current.startOfDay(for: Date())),
+        endDate: .constant(Date())
+    )
         .environment(TaxonomyStore.previewInstance)
         .environment(ObservationStore.previewInstance)
         .environment(SettingsStore())
