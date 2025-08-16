@@ -60,15 +60,17 @@ struct ObservationLogView: View {
                 }
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel(accessibilityLabel(for: obs))
-            }
-            .navigationTitle("Observation Log")
-            .toolbar {
+        }
+        
+        .toolbar {
                 if let show = show {
                     ToolbarItem(placement: .cancellationAction) { Button("Close") { show.wrappedValue = false } }
                 }
                 ToolbarItem(placement: .primaryAction) { Button("Export") { exportSheet = true }.disabled(display.isEmpty) }
             }
-            .sheet(isPresented: $exportSheet) { ShareActivityView(items: [exportText()]) }
+        .sheet(isPresented: $exportSheet) { ShareActivityView(items: [exportText()]) }
+        .toolbar(.hidden, for: .navigationBar)
+        .toolbarBackground(.hidden, for: .navigationBar)
         }
     }
 

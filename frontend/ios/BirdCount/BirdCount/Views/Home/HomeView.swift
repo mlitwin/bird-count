@@ -72,9 +72,10 @@ struct HomeView: View {
                 )
                 .onPreferenceChange(BottomControlsHeightKey.self) { bottomControlsHeight = $0 }
             }
-            .navigationTitle("Bird Count")
-            // Hide the nav bar when the custom overlay is shown so underlying title isn't visible
-            .toolbar(selectedTaxon != nil ? .hidden : .visible, for: .navigationBar)
+            
+            // Hide the nav bar entirely so it doesn't reserve space at the top
+            .toolbar(.hidden, for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
             .onChange(of: settings.enableAbbreviationSearch) { _, newVal in
                 taxonomy.enableAbbreviationSearch = newVal
             }

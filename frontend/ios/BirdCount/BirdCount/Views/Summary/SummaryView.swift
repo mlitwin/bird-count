@@ -119,6 +119,7 @@ struct SummaryView: View {
                 .scrollBounceBehavior(.basedOnSize)
             }
             .toolbar(.hidden, for: .navigationBar)
+                .toolbarBackground(.hidden, for: .navigationBar)
             .sheet(isPresented: $shareSheet) { ShareActivityView(items: [exportText()]) }
         }
     }
