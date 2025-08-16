@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		011D6EA11871172D3EAC76CB /* ObservationRecordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCE0B9078509DFFC117339F /* ObservationRecordView.swift */; };
 		1FC3EA44A81F6C94E57C3757 /* CountAdjustSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFA8094EBAC869E648D7F854 /* CountAdjustSheet.swift */; };
 		208E0E02373AB724A6117666 /* Taxon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74ADC22819086097B12402BC /* Taxon.swift */; };
 		2F254EB92FDCE66308F3191B /* ObservationRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB13F58DAFB4B97D611643BD /* ObservationRecord.swift */; };
@@ -51,6 +52,7 @@
 		E3424E4DDD31730B25CEEBC1 /* generate_ios_taxonomy.mjs */ = {isa = PBXFileReference; path = generate_ios_taxonomy.mjs; sourceTree = "<group>"; };
 		E633F06C7C8AF39A661F905C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F11C0F2EB5F5DDCE1C6106B1 /* ObservationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationStore.swift; sourceTree = "<group>"; };
+		FBCE0B9078509DFFC117339F /* ObservationRecordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationRecordView.swift; sourceTree = "<group>"; };
 		FFA8094EBAC869E648D7F854 /* CountAdjustSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountAdjustSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -87,6 +89,7 @@
 			children = (
 				FFA8094EBAC869E648D7F854 /* CountAdjustSheet.swift */,
 				CCCBE3E988878FA83F955105 /* NumericPad.swift */,
+				FBCE0B9078509DFFC117339F /* ObservationRecordView.swift */,
 				CA105FDD346A2759183A3BEE /* OnScreenKeyboard.swift */,
 				D22F7391BED2166E79AC0A46 /* RangeSelectorView.swift */,
 				E1AE8BBD3313453070C1CF58 /* ShareActivityView.swift */,
@@ -255,6 +258,7 @@
 				88723733D4405DC1AA55DB13 /* NumericPad.swift in Sources */,
 				594E347B44CB9AE16D14A93F /* ObservationLogView.swift in Sources */,
 				2F254EB92FDCE66308F3191B /* ObservationRecord.swift in Sources */,
+				011D6EA11871172D3EAC76CB /* ObservationRecordView.swift in Sources */,
 				F50783CF7870BE1FA0621CCD /* ObservationStore.swift in Sources */,
 				A3C57170B910A837385A6158 /* OnScreenKeyboard.swift in Sources */,
 				757C953EF8E9A353E0737D51 /* RangeSelectorView.swift in Sources */,

@@ -11,7 +11,7 @@ struct ObservationLogView: View {
     @Binding var endDate: Date
     @State private var exportSheet: Bool = false
 
-    struct DisplayObservation: Identifiable { let id: UUID; let taxon: Taxon?; let begin: Date; let end: Date }
+    struct DisplayObservation: Identifiable { let id: UUID; let taxonId: String; let taxon: Taxon?; let begin: Date; let end: Date; let count: Int }
 
     private var display: [DisplayObservation] { buildDisplay() }
 
@@ -24,7 +24,7 @@ struct ObservationLogView: View {
             .sorted { $0.begin < $1.begin }
             .map { rec in
                 let taxon = speciesById[rec.taxonId]
-                return DisplayObservation(id: rec.id, taxon: taxon, begin: rec.begin, end: rec.end)
+                return DisplayObservation(id: rec.id, taxonId: rec.taxonId, taxon: taxon, begin: rec.begin, end: rec.end, count: rec.count)
             }
     }
 
@@ -49,18 +49,8 @@ struct ObservationLogView: View {
     var body: some View {
         NavigationStack {
             List(display) { obs in
-                HStack(alignment: .firstTextBaseline) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(displayName(for: obs.taxon))
-                        // Show both date and time (single or range)
-                        Text(dateRangeString(for: obs))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel(accessibilityLabel(for: obs))
-        }
+                ObservationRecordView(record: ObservationRecord(id: obs.id, taxonId: obs.taxonId, begin: obs.begin, end: obs.end, count: obs.count))
+            }
         
         .toolbar {
                 if let show = show {
