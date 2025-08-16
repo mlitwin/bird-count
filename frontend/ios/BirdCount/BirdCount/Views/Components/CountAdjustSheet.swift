@@ -38,7 +38,7 @@ struct CountAdjustSheet: View, Identifiable {
     }
     private func commitAndClose() {
         guard tempCount >= 1 else { onDone(); return }
-    observations.addObservation(taxon.id, count: tempCount)
+    observations.addObservation(taxon.id, begin: Date(), end: nil, count: tempCount)
         onDone()
     }
 }

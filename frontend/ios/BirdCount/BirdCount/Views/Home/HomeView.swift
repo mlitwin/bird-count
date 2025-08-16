@@ -18,7 +18,7 @@ struct HomeView: View {
     // Range-filtered counts per species
     private var rangeCounts: [String:Int] {
         let (effStart, effEnd) = effectiveRange
-        let filteredObs = observations.observations.filter { $0.timestamp >= effStart && $0.timestamp <= effEnd }
+    let filteredObs = observations.observations.filter { $0.end >= effStart && $0.begin <= effEnd }
         return filteredObs.reduce(into: [String:Int]()) { $0[$1.taxonId, default: 0] += max(0, $1.count) }
     }
 

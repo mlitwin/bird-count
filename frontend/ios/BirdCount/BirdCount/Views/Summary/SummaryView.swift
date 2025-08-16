@@ -39,9 +39,9 @@ struct SummaryView: View {
 
     private var speciesInRange: [SpeciesCountItem] {
         // Aggregate counts within the selected range (dynamic for relative presets)
-        let (effStart, effEnd) = effectiveRange
-        let filtered = observations.observations.filter { $0.timestamp >= effStart && $0.timestamp <= effEnd }
-        let counts = filtered.reduce(into: [String:Int]()) { $0[$1.taxonId, default: 0] += max(0, $1.count) }
+    let (effStart, effEnd) = effectiveRange
+    let filtered = observations.observations.filter { $0.end >= effStart && $0.begin <= effEnd }
+    let counts = filtered.reduce(into: [String:Int]()) { $0[$1.taxonId, default: 0] += max(0, $1.count) }
         return taxonomy.species.compactMap { t in
             if let c = counts[t.id], c > 0 {
                 return SpeciesCountItem(id: t.id, taxon: t, count: c)

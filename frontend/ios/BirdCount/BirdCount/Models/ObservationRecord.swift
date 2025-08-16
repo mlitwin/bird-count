@@ -6,13 +6,16 @@ import Foundation
 public struct ObservationRecord: Identifiable, Codable, Equatable {
     public let id: UUID
     public let taxonId: String
-    public let timestamp: Date
+    // Use a time interval [begin, end]; default behavior is begin == end
+    public let begin: Date
+    public let end: Date
     public var count: Int
 
-    public init(id: UUID = UUID(), taxonId: String, timestamp: Date = Date(), count: Int = 1) {
+    public init(id: UUID = UUID(), taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1) {
         self.id = id
         self.taxonId = taxonId
-        self.timestamp = timestamp
+        self.begin = begin
+        self.end = end ?? begin
         self.count = max(0, count)
     }
 }

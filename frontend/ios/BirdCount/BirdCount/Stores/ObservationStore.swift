@@ -24,14 +24,14 @@ import Observation
     func count(for id: String) -> Int { counts[id] ?? 0 }
 
     // MARK: Mutations
-    func addObservation(_ taxonId: String, timestamp: Date = Date(), count: Int = 1) {
-        observations.append(ObservationRecord(id: UUID(), taxonId: taxonId, timestamp: timestamp, count: max(0, count)))
+    func addObservation(_ taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1) {
+        observations.append(ObservationRecord(id: UUID(), taxonId: taxonId, begin: begin, end: end, count: max(0, count)))
         touchRecent(taxonId)
     }
 
     func increment(_ id: String, by delta: Int = 1) {
         guard delta > 0 else { return } // negative increments not supported directly
-        addObservation(id, count: delta)
+    addObservation(id, begin: Date(), end: nil, count: delta)
     }
 
     // Adjust to target value by adding or removing most recent observations for that species.
