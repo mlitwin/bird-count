@@ -146,9 +146,10 @@ struct SummaryView: View {
     private func exportText(includeCounts: Bool = false) -> String {
         let species = speciesInRange
         var lines: [String] = []
-        lines.append("Bird Count Summary")
         lines.append("Species observed: \(species.count)")
-        lines.append("Total individuals: \(species.reduce(0) { $0 + $1.count })")
+        if includeCounts {
+            lines.append("Total individuals: \(species.reduce(0) { $0 + $1.count })")
+        }
         lines.append("")
         for item in species {
             if includeCounts {

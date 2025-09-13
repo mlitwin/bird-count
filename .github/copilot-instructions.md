@@ -58,7 +58,6 @@ These guidelines help AI coding assistants generate changes that fit this projec
 - Do: Respect the sorting and range rules above.
 - Don’t: Introduce deps without updating manifests/docs.
 - Don’t: Hardcode resource paths; use `Bundle.main.url(forResource:withExtension:)`.
-- Don’t: Break public APIs without migrating call sites.
 
 ## Handy references
 - Sorting: `compareTaxa(_:_:)` in `TaxonomyStore` encapsulates species ordering.
