@@ -2,6 +2,10 @@
 
 These guidelines help AI coding assistants generate changes that fit this project’s structure, tools, and conventions.
 
+## General Rules
+
+- Do: After a change, run 'make build-test' to ensure everything works as expected. 
+
 ## Scope and targets
 - Platform: iOS (target 18.5+), Swift 5.x, SwiftUI-first.
 - State: Use Swift Observation (@Observable) stores injected via `.environment`.

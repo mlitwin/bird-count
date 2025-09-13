@@ -1,66 +1,42 @@
 import SwiftUI
-import Combine
-
-public enum DateRangePreset: String, CaseIterable, Identifiable {
-    case lastHour = "Last Hour"
-    case today = "Today"
-    case last7Days = "7 Days"
-    case all = "All"
-    case custom = "Custom"
-    public var id: String { rawValue }
-}
 
 public struct DateRangeSelectorView: View {
-    @Binding var preset: DateRangePreset
-    @Binding var startDate: Date
-    @Binding var endDate: Date
+    @Environment(DateRangeStore.self) private var dateRangeStore
     @State private var showCustomSheet: Bool = false
     @State private var previousPreset: DateRangePreset? = nil
-
-    public init(preset: Binding<DateRangePreset>, startDate: Binding<Date>, endDate: Binding<Date>) {
-        self._preset = preset
-        self._startDate = startDate
-        self._endDate = endDate
-    }
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
-                // Shift range one day back
-                Button(action: { shiftRangeByDays(-1); preset = .custom }) {
+                Button(action: { shiftRangeByDays(-1); dateRangeStore.setPreset(.custom) }) {
                     Image(systemName: "chevron.left")
                         .accessibilityLabel("Previous day")
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
 
-                // Today preset (visually indicate selection via tint/weight)
-                Button("Today") { applyRangePreset(.today); preset = .today }
+                Button("Today") { applyRangePreset(.today); dateRangeStore.setPreset(.today) }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
-                    .tint(preset == .today ? .accentColor : .primary)
-                    .fontWeight(preset == .today ? .semibold : .regular)
+                    .tint(dateRangeStore.dateRangePreset == .today ? .accentColor : .primary)
+                    .fontWeight(dateRangeStore.dateRangePreset == .today ? .semibold : .regular)
 
-                // Shift range one day forward
-                Button(action: { shiftRangeByDays(1); preset = .custom }) {
+                Button(action: { shiftRangeByDays(1); dateRangeStore.setPreset(.custom) }) {
                     Image(systemName: "chevron.right")
                         .accessibilityLabel("Next day")
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
 
-                // All preset
-                Button("All") { applyRangePreset(.all); preset = .all }
+                Button("All") { applyRangePreset(.all); dateRangeStore.setPreset(.all) }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
 
                 Spacer()
             }
-
-            // Text representation of the current date range (prominent)
             Button(action: {
-                previousPreset = preset
-                preset = .custom
+                previousPreset = dateRangeStore.dateRangePreset
+                dateRangeStore.setPreset(.custom)
                 showCustomSheet = true
             }) {
                 Text(rangeSummary)
@@ -85,56 +61,39 @@ public struct DateRangeSelectorView: View {
             .accessibilityLabel("Custom range")
         }
         .sheet(isPresented: $showCustomSheet) {
-            CustomRangeSheet(startDate: $startDate, endDate: $endDate, onCancel: {
-                // Revert to previous preset if cancel
-                if let prev = previousPreset { preset = prev }
-            }, onDone: {
-                // Ensure Custom is selected when done
-                preset = .custom
-            })
+            CustomRangeSheet(
+                startDate: .constant(dateRangeStore.dateRange.begin),
+                endDate: .constant(dateRangeStore.dateRange.end),
+                onCancel: {
+                    if let prev = previousPreset { dateRangeStore.setPreset(prev) }
+                    previousPreset = nil
+                },
+                onDone: {
+                    dateRangeStore.setPreset(.custom)
+                    previousPreset = nil
+                }
+            )
+            .onAppear {
+                if previousPreset == nil {
+                    previousPreset = dateRangeStore.dateRangePreset
+                }
+            }
         }
-    // Keep preset in sync if range equals the Today preset values (via chevrons or custom sheet)
-    .onChange(of: startDate) { _, _ in syncPresetWithCurrentRange() }
-    .onChange(of: endDate) { _, _ in syncPresetWithCurrentRange() }
-    // Auto-update when the calendar day changes while the app is active
-    .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
-        syncPresetWithCurrentRange()
-    }
-    .onAppear { syncPresetWithCurrentRange() }
     }
 
     private func applyRangePreset(_ p: DateRangePreset) {
-        let now = Date()
-        switch p {
-        case .lastHour:
-            startDate = Calendar.current.date(byAdding: .hour, value: -1, to: now) ?? now
-            endDate = now
-        case .today:
-            let cal = Calendar.current
-            startDate = cal.startOfDay(for: now)
-            endDate = Calendar.current.date(byAdding: .day, value: 1, to: startDate) ?? now
-        case .last7Days:
-            startDate = Calendar.current.date(byAdding: .day, value: -7, to: now) ?? now
-            endDate = now
-        case .all:
-            startDate = .distantPast
-            endDate = now
-        case .custom:
-            break
-        }
+        dateRangeStore.applyPreset(p)
     }
 
     private func shiftRangeByDays(_ days: Int) {
-        let cal = Calendar.current
-        let newStart = cal.date(byAdding: .day, value: days, to: startDate) ?? startDate
-        let newEnd = cal.date(byAdding: .day, value: days, to: endDate) ?? endDate
-        startDate = newStart
-        endDate = max(newStart, newEnd)
-    syncPresetWithCurrentRange()
+        dateRangeStore.shiftRangeByDays(days)
     }
 
     // Summary string for the currently selected range (compact, likely to fit one line)
     private var rangeSummary: String {
+        let preset = dateRangeStore.dateRangePreset
+        let startDate = dateRangeStore.dateRange.begin
+        let endDate = dateRangeStore.dateRange.end
         if preset == .all {
             return "All time – Now"
         }
@@ -147,20 +106,16 @@ public struct DateRangeSelectorView: View {
         let endHM = Formatters.hm.string(from: endDate)
 
         if sameDay {
-            // Aug 14, 9:00 – 10:30
             return "\(Formatters.mdy.string(from: startDate)) \(startHM) – \(endHM)"
         } else if sameMonth {
-            // Aug 14 9:00 – 16 10:30
             let startMD = Formatters.md.string(from: startDate)
             let endD = String(cal.component(.day, from: endDate))
             return "\(startMD) \(startHM) – \(endD) \(endHM)"
         } else if sameYear {
-            // Aug 14 9:00 – Sep 2 10:30
             let startMD = Formatters.md.string(from: startDate)
             let endMD = Formatters.md.string(from: endDate)
             return "\(startMD) \(startHM) – \(endMD) \(endHM)"
         } else {
-            // Aug 14, 2024 9:00 – Sep 2, 2025 10:30
             let startMDY = Formatters.mdy.string(from: startDate)
             let endMDY = Formatters.mdy.string(from: endDate)
             return "\(startMDY) \(startHM) – \(endMDY) \(endHM)"
@@ -193,11 +148,14 @@ private extension DateRangeSelectorView {
         let cal = Calendar.current
         let todayStart = cal.startOfDay(for: Date())
         let todayEnd = cal.date(byAdding: .day, value: 1, to: todayStart) ?? todayStart
+        let startDate = dateRangeStore.dateRange.begin
+        let endDate = dateRangeStore.dateRange.end
+        let preset = dateRangeStore.dateRangePreset
         if startDate == todayStart && endDate == todayEnd {
-            if preset != .today { preset = .today }
+            if preset != .today { dateRangeStore.setPreset(.today) }
         } else if preset == .today {
             // If the range no longer equals today's boundaries, deselect Today
-            preset = .custom
+            dateRangeStore.setPreset(.custom)
         }
     }
 }

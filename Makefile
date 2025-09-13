@@ -57,3 +57,11 @@ fastlane-beta:
 prep-beta:
 	@./scripts/bump-build.sh
 
+build-test: generate
+	@xcodebuild \
+		-project "$(PROJECT)" \
+		-scheme "$(SCHEME)" \
+		-configuration "$(CONFIGURATION)" \
+		-destination "$(DEST)" \
+		-quiet \
+		build-for-testing

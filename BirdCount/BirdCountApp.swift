@@ -14,14 +14,16 @@ struct BirdCountApp: App {
     }
     @State private var taxonomyStore = TaxonomyStore()
     @State private var observationStore = ObservationStore()
-    @State private var settingsStore = SettingsStore() // Added settings store
+    @State private var settingsStore = SettingsStore()
+    @State private var dateRangeStore = DateRangeStore()
 
     var body: some Scene {
         WindowGroup {
             TopTabsRoot()
-            .environment(taxonomyStore)
-            .environment(observationStore)
-            .environment(settingsStore) // inject settings
+                .environment(taxonomyStore)
+                .environment(observationStore)
+                .environment(settingsStore)
+                .environment(dateRangeStore)
         }
     }
 }
@@ -29,10 +31,7 @@ private struct TopTabsRoot: View {
     private enum Tab: String, CaseIterable, Identifiable { case home = "Home", summary = "Summary", log = "Log"; var id: String { rawValue } }
     @State private var selection: Tab = .home
     @State private var showSettings: Bool = false
-    // Shared date range across screens
-    @State private var preset: DateRangePreset = .today
-    @State private var startDate: Date = Calendar.current.startOfDay(for: Date())
-    @State private var endDate: Date = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: Date())) ?? Date()
+    @Environment(DateRangeStore.self) private var dateRangeStore
 
     var body: some View {
         VStack(spacing: 0) {
@@ -59,15 +58,15 @@ private struct TopTabsRoot: View {
 
             // Content under top tabs: bottom TabView for Home/Summary/Log
             TabView(selection: $selection) {
-                HomeView(preset: $preset, startDate: $startDate, endDate: $endDate)
+                HomeView()
                     .tabItem { Label("Home", systemImage: "house") }
                     .tag(Tab.home)
 
-                SummaryView(preset: $preset, startDate: $startDate, endDate: $endDate)
+                SummaryView()
                     .tabItem { Label("Summary", systemImage: "chart.bar") }
                     .tag(Tab.summary)
 
-                ObservationLogView(preset: $preset, startDate: $startDate, endDate: $endDate)
+                ObservationLogView()
                     .tabItem { Label("Log", systemImage: "list.bullet") }
                     .tag(Tab.log)
             }

@@ -48,31 +48,15 @@ struct SummaryView: View {
     }
 
     private var effectiveRange: (Date, Date) {
-        let now = Date()
-        switch preset {
-        case .today:
-            return (Calendar.current.startOfDay(for: now), now)
-        case .lastHour:
-            let start = Calendar.current.date(byAdding: .hour, value: -1, to: now) ?? now
-            return (start, now)
-        case .last7Days:
-            let start = Calendar.current.date(byAdding: .day, value: -7, to: now) ?? now
-            return (start, now)
-        case .all:
-            return (.distantPast, now)
-        case .custom:
-            return (startDate, endDate)
-        }
+        let range = dateRangeStore.dateRange
+        return (range.begin, range.end)
     }
     @Environment(ObservationStore.self) private var observations
     @Environment(TaxonomyStore.self) private var taxonomy
     @State private var shareSheet: Bool = false
     @State private var includeCounts: Bool = false
     @State private var showLog: Bool = false
-    // Range filter (provided from parent/top-level)
-    @Binding var preset: DateRangePreset
-    @Binding var startDate: Date
-    @Binding var endDate: Date
+    @Environment(DateRangeStore.self) private var dateRangeStore
     // ...existing code...
 
     var body: some View {
@@ -98,7 +82,7 @@ struct SummaryView: View {
                 .padding(.vertical, 8)
 
                 // Date range selector (only in Summary)
-                DateRangeSelectorView(preset: $preset, startDate: $startDate, endDate: $endDate)
+                DateRangeSelectorView()
                     .padding(.horizontal)
                     .padding(.bottom, 8)
 
@@ -162,11 +146,13 @@ struct SummaryView: View {
     }
 }
 
+//
 #if DEBUG
 #Preview("Summary Empty") {
-    SummaryView(preset: .constant(.custom), startDate: .constant(Date()), endDate: .constant(Date()))
+    SummaryView()
         .environment(ObservationStore())
         .environment(TaxonomyStore())
+        .environment(DateRangeStore())
 }
 #endif
 

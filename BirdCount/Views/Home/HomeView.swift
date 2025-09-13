@@ -5,10 +5,7 @@ struct HomeView: View {
     @Environment(ObservationStore.self) private var observations
     @State private var scrollToBottomSignal: Int = 0
     @Environment(SettingsStore.self) private var settings
-    // Shared range (reserved for future use in Home)
-    @Binding var preset: DateRangePreset
-    @Binding var startDate: Date
-    @Binding var endDate: Date
+    @Environment(DateRangeStore.self) private var dateRangeStore
     @State private var filterText: String = ""
     @State private var selectedTaxon: Taxon? = nil
     @State private var bottomControlsHeight: CGFloat = 0
@@ -221,13 +218,10 @@ private extension TaxonomyStore {
 
 #if DEBUG
 #Preview("Home") {
-    HomeView(
-    preset: .constant(.today),
-        startDate: .constant(Calendar.current.startOfDay(for: Date())),
-        endDate: .constant(Date())
-    )
+    HomeView()
         .environment(TaxonomyStore.previewInstance)
         .environment(ObservationStore.previewInstance)
         .environment(SettingsStore())
+        .environment(DateRangeStore())
 }
 #endif

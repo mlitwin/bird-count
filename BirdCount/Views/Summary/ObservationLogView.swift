@@ -5,10 +5,7 @@ struct ObservationLogView: View {
     @Environment(TaxonomyStore.self) private var taxonomy
     // Optional binding: if provided, shows a Close button (when used as a sheet); in Tab usage, omit it
     var show: Binding<Bool>? = nil
-    // Shared date range
-    @Binding var preset: DateRangePreset
-    @Binding var startDate: Date
-    @Binding var endDate: Date
+    @Environment(DateRangeStore.self) private var dateRangeStore
     @State private var exportSheet: Bool = false
 
     // Flattened list of records (no date filtering here), preserving children so ObservationRecordView can compute recursive totals
@@ -78,13 +75,15 @@ struct ObservationLogView: View {
 
 #if DEBUG
 #Preview("Sheet style") {
-    ObservationLogView(show: .constant(true), preset: .constant(.custom), startDate: .constant(Date().addingTimeInterval(-3600)), endDate: .constant(Date()))
+    ObservationLogView(show: .constant(true))
         .environment(ObservationStore())
         .environment(TaxonomyStore())
+        .environment(DateRangeStore())
 }
 #Preview("Tab style") {
-    ObservationLogView(preset: .constant(.custom), startDate: .constant(Date().addingTimeInterval(-3600)), endDate: .constant(Date()))
+    ObservationLogView()
         .environment(ObservationStore())
         .environment(TaxonomyStore())
+        .environment(DateRangeStore())
 }
 #endif
