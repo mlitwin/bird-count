@@ -21,19 +21,30 @@ final class DateRangeStore {
         let storedRange = DateRangeStore.loadFromDefaults()
         let storedPreset = DateRangeStore.loadPresetFromDefaults()
         let initialRange: DateRange
+        let initialPreset: DateRangePreset
+
         if let range = storedRange {
             initialRange = range
         } else {
             initialRange = DateRange.defaultRange()
         }
-        let initialPreset: DateRangePreset
+
         if let preset = storedPreset {
             initialPreset = preset
         } else {
             // Infer preset from range if possible
             initialPreset = DateRangeStore.inferPreset(for: initialRange)
         }
-        self.dateRange = initialRange
+
+        if initialPreset == .today {
+            let now = Date()
+            let cal = Calendar.current
+            let start = cal.startOfDay(for: now)
+            let end = cal.date(byAdding: .day, value: 1, to: start) ?? now
+            self.dateRange = DateRange(begin: start, end: end)
+        } else {
+            self.dateRange = initialRange
+        }
         self.dateRangePreset = initialPreset
     }
 
