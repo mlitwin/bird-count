@@ -79,6 +79,16 @@ public struct DateRangeSelectorView: View {
                 }
             }
         }
+        // Keep preset in sync if range equals the Today preset values (via chevrons or custom sheet)
+        .onChange(of: dateRangeStore.dateRange.begin) { _, _ in syncPresetWithCurrentRange() }
+        .onChange(of: dateRangeStore.dateRange.end) { _, _ in syncPresetWithCurrentRange() }
+        // Auto-update when the calendar day changes while the app is active
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
+            if dateRangeStore.dateRangePreset == .today {
+                dateRangeStore.applyPreset(.today)
+            }
+        }
+        .onAppear { syncPresetWithCurrentRange() }
     }
 
     private func applyRangePreset(_ p: DateRangePreset) {
