@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import BirdCount
+@testable import BirdCountCore
 
 struct DateRangeStoreTests {
     @Test
