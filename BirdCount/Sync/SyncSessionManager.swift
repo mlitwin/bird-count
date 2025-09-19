@@ -15,7 +15,7 @@ import UIKit
     private(set) var errorMessage: String?
     
     // MARK: - Private Properties
-    private let serviceType = "birdcount-sync"
+    private let serviceType = "birdcount"  // Simplified service type name
     private let localPeerID: MCPeerID
     private var session: MCSession?
     private var browser: MCNearbyServiceBrowser?
@@ -32,6 +32,7 @@ import UIKit
         let deviceName = UIDevice.current.name
         self.localPeerID = MCPeerID(displayName: deviceName)
         super.init()
+        print("🔄 SyncSessionManager initialized with peer ID: \(deviceName)")
     }
     
     // MARK: - Public API
@@ -40,18 +41,21 @@ import UIKit
     func startBrowsing() {
         guard state == .idle else { return }
         
+        print("🔍 Starting to browse for peers...")
         setState(.browsing)
         setupSession()
         
         browser = MCNearbyServiceBrowser(peer: localPeerID, serviceType: serviceType)
         browser?.delegate = self
         browser?.startBrowsingForPeers()
+        print("🔍 Browser started for service type: \(serviceType)")
     }
     
     /// Start advertising for incoming sync requests (receiver mode)
     func startAdvertising(onIncomingSync: @escaping (PayloadV1, @escaping (Bool) -> Void) -> Void) {
         guard state == .idle else { return }
         
+        print("📢 Starting to advertise...")
         self.onIncomingSync = onIncomingSync
         setState(.advertising)
         setupSession()
@@ -59,12 +63,14 @@ import UIKit
         advertiser = MCNearbyServiceAdvertiser(peer: localPeerID, discoveryInfo: nil, serviceType: serviceType)
         advertiser?.delegate = self
         advertiser?.startAdvertisingPeer()
+        print("📢 Advertiser started for service type: \(serviceType)")
     }
     
     /// Connect to a discovered peer (sender initiates connection)
     func connect(to peer: MCPeerID) {
         guard state == .browsing, let browser = browser else { return }
         
+        print("🤝 Attempting to connect to peer: \(peer.displayName)")
         setState(.connecting)
         browser.invitePeer(peer, to: session!, withContext: nil, timeout: 30)
     }
@@ -104,11 +110,14 @@ import UIKit
     // MARK: - Private Methods
     
     private func setupSession() {
+        print("🔧 Setting up MCSession...")
         session = MCSession(peer: localPeerID, securityIdentity: nil, encryptionPreference: .required)
         session?.delegate = self
+        print("🔧 MCSession created with encryption required")
     }
     
     private func setState(_ newState: SyncState) {
+        print("🔄 State change: \(state) -> \(newState)")
         state = newState
         if newState != .transferring {
             progress = 0.0
@@ -173,41 +182,67 @@ import UIKit
 // MARK: - MCNearbyServiceBrowserDelegate
 extension SyncSessionManager: MCNearbyServiceBrowserDelegate {
     func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
-        discoveredPeers.append(peerID)
+        print("🔍 Found peer: \(peerID.displayName)")
+        DispatchQueue.main.async { [weak self] in
+            self?.discoveredPeers.append(peerID)
+        }
     }
     
     func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
-        discoveredPeers.removeAll { $0 == peerID }
+        print("🔍 Lost peer: \(peerID.displayName)")
+        DispatchQueue.main.async { [weak self] in
+            self?.discoveredPeers.removeAll { $0 == peerID }
+        }
+    }
+    
+    func browser(_ browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: Error) {
+        print("❌ Browser failed to start: \(error.localizedDescription)")
+        DispatchQueue.main.async { [weak self] in
+            self?.setError("Failed to start browsing: \(error.localizedDescription)")
+        }
     }
 }
 
 // MARK: - MCNearbyServiceAdvertiserDelegate  
 extension SyncSessionManager: MCNearbyServiceAdvertiserDelegate {
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
+        print("📢 Received invitation from peer: \(peerID.displayName)")
         // Accept the invitation
         invitationHandler(true, session)
+    }
+    
+    func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: Error) {
+        print("❌ Advertiser failed to start: \(error.localizedDescription)")
+        DispatchQueue.main.async { [weak self] in
+            self?.setError("Failed to start advertising: \(error.localizedDescription)")
+        }
     }
 }
 
 // MARK: - MCSessionDelegate
 extension SyncSessionManager: MCSessionDelegate {
     func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
+        print("🔗 Peer \(peerID.displayName) changed state to: \(state.rawValue)")
         DispatchQueue.main.async { [weak self] in
             switch state {
             case .connected:
+                print("✅ Connected to peer: \(peerID.displayName)")
                 self?.connectedPeers.append(peerID)
                 self?.setState(.connected)
                 
             case .connecting:
+                print("🔄 Connecting to peer: \(peerID.displayName)")
                 break // Keep current state
                 
             case .notConnected:
+                print("❌ Disconnected from peer: \(peerID.displayName)")
                 self?.connectedPeers.removeAll { $0 == peerID }
                 if self?.connectedPeers.isEmpty == true {
                     self?.setError("Connection lost")
                 }
                 
             @unknown default:
+                print("⚠️ Unknown session state: \(state.rawValue)")
                 break
             }
         }
