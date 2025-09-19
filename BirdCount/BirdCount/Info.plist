@@ -18,6 +18,12 @@
 	<string>1.0.0</string>
 	<key>CFBundleVersion</key>
 	<string>17</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_birdcount._tcp</string>
+	</array>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>This app uses the local network to sync bird observations between devices.</string>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>
