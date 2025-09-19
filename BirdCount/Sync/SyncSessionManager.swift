@@ -97,6 +97,11 @@ import UIKit
             // Simulate progress for user feedback
             startProgressAnimation()
             
+            // Mark transfer as completed for sender side
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+                self?.completeTransfer(success: true)
+            }
+            
         } catch {
             completion(.failure(error))
             reset()
