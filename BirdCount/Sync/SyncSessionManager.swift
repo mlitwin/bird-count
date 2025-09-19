@@ -20,6 +20,7 @@ import UIKit
     private var session: MCSession?
     private var browser: MCNearbyServiceBrowser?
     private var advertiser: MCNearbyServiceAdvertiser?
+    private var transferCompleted = false
     
     // Sync-specific properties
     private var pendingPayload: PayloadV1?
@@ -143,6 +144,7 @@ import UIKit
         pendingPayload = nil
         onSyncCompletion = nil
         onIncomingSync = nil
+        transferCompleted = false  // Reset the transfer completion flag
         
         discoveredPeers.removeAll()
         connectedPeers.removeAll()
@@ -165,6 +167,7 @@ import UIKit
     private func completeTransfer(success: Bool, error: Error? = nil) {
         if success {
             progress = 1.0
+            transferCompleted = true  // Mark transfer as successful
             setState(.completed)
             onSyncCompletion?(.success(()))
         } else {
@@ -238,7 +241,13 @@ extension SyncSessionManager: MCSessionDelegate {
                 print("❌ Disconnected from peer: \(peerID.displayName)")
                 self?.connectedPeers.removeAll { $0 == peerID }
                 if self?.connectedPeers.isEmpty == true {
-                    self?.setError("Connection lost")
+                    // Only show error if transfer wasn't completed successfully
+                    if self?.transferCompleted != true {
+                        self?.setError("Connection lost")
+                    } else {
+                        // Transfer was successful, just clean up
+                        self?.setState(.completed)
+                    }
                 }
                 
             @unknown default:
