@@ -6,7 +6,8 @@ configs:
   Release: release
 settings:
   SWIFT_VERSION: 5.10
-  IPHONEOS_DEPLOYMENT_TARGET: 18.5  # raised from 16.0
+  IPHONEOS_DEPLOYMENT_TARGET: 18.5
+  DEAD_CODE_STRIPPING: YES
 
 targets:
   BirdCount:
@@ -43,6 +44,7 @@ targets:
       ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
       DEVELOPMENT_TEAM: 352K435X8J
       CODE_SIGN_STYLE: Automatic
+      DEAD_CODE_STRIPPING: YES
     scripts:
       - name: Generate Taxonomy
         script: |
@@ -68,6 +70,7 @@ targets:
       PRODUCT_BUNDLE_IDENTIFIER: org.antoninus.birdcount.app
       DEVELOPMENT_TEAM: 352K435X8J
       CODE_SIGNING_ALLOWED: NO
+      DEAD_CODE_STRIPPING: YES
 
   BirdCountCore:
     type: framework
@@ -78,6 +81,7 @@ targets:
       - path: BirdCount/Stores
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: org.antoninus.birdcount.core
+      DEAD_CODE_STRIPPING: YES
 
   BirdCountCoreTests:
     type: bundle.unit-test
@@ -91,6 +95,7 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
       PRODUCT_BUNDLE_IDENTIFIER: org.antoninus.birdcount.core.tests
       CODE_SIGNING_ALLOWED: NO
+      DEAD_CODE_STRIPPING: YES
 
 schemes:
   BirdCount:
