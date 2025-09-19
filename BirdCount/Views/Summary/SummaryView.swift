@@ -53,10 +53,13 @@ struct SummaryView: View {
     }
     @Environment(ObservationStore.self) private var observations
     @Environment(TaxonomyStore.self) private var taxonomy
+    @Environment(DateRangeStore.self) private var dateRangeStore
+    @Environment(SyncSessionManager.self) private var syncManager
     @State private var shareSheet: Bool = false
+    @State private var showSyncSheet: Bool = false
+    @State private var showShareOptions: Bool = false
     @State private var includeCounts: Bool = false
     @State private var showLog: Bool = false
-    @Environment(DateRangeStore.self) private var dateRangeStore
     // ...existing code...
 
     var body: some View {
@@ -71,7 +74,7 @@ struct SummaryView: View {
                     Text("Summary")
                         .font(.title2.weight(.semibold))
                     Spacer()
-                    Button(action: { shareSheet = true }) {
+                    Button(action: { showShareOptions = true }) {
                         Label("Share", systemImage: "square.and.arrow.up")
                     }
                     .disabled(observations.totalIndividuals == 0)
@@ -114,6 +117,11 @@ struct SummaryView: View {
             }
             .toolbar(.hidden, for: .navigationBar)
                 .toolbarBackground(.hidden, for: .navigationBar)
+            .confirmationDialog("Share Options", isPresented: $showShareOptions) {
+                Button("Export") { shareSheet = true }
+                Button("Sync to Nearby iPhone") { showSyncSheet = true }
+                Button("Cancel", role: .cancel) { }
+            }
             .sheet(isPresented: $shareSheet) {
                 VStack(spacing: 16) {
                     Toggle(isOn: $includeCounts) {
@@ -123,6 +131,9 @@ struct SummaryView: View {
                     ShareActivityView(items: [exportText(includeCounts: includeCounts)])
                 }
                 .padding()
+            }
+            .sheet(isPresented: $showSyncSheet) {
+                SyncSheet()
             }
         }
     }

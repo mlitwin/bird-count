@@ -1,9 +1,9 @@
 import Foundation
 import Observation
 
-@Observable final class ObservationStore {
+@Observable public final class ObservationStore {
     // Fundamental model is defined in Models/Observation.swift
-    private(set) var observations: [ObservationRecord] = [] { didSet { persist() ; rebuildDerived() } }
+    public var observations: [ObservationRecord] = [] { didSet { persist() ; rebuildDerived() } }
 
     // Derived data cache
     private var cache = ObservationStoreCache()
@@ -16,7 +16,7 @@ import Observation
 
     private let persistenceKey = "ObservationRecords"
 
-    init() { load(); rebuildDerived() }
+    public init() { load(); rebuildDerived() }
 
     // MARK: Derived helpers
     private func rebuildDerived() {
@@ -28,9 +28,24 @@ import Observation
     func lastObservedDate(for id: String) -> Date? { cache.lastObservedDate(for: id) }
 
     // MARK: Mutations
-    func addObservation(_ taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1) {
+    public func addObservation(_ taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1) {
         observations.append(ObservationRecord(id: UUID(), taxonId: taxonId, begin: begin, end: end, count: max(0, count)))
         touchRecent(taxonId)
+    }
+    
+    /// Import multiple observations at once (used by sync operations)
+    public func importObservations(_ records: [ObservationRecord]) {
+        observations.append(contentsOf: records)
+        // Note: didSet on observations will automatically trigger persist() and rebuildDerived()
+        
+        // Update recent list for all imported taxa
+        for record in records {
+            touchRecent(record.taxonId)
+            // Also handle children
+            for child in record.children {
+                touchRecent(child.taxonId)
+            }
+        }
     }
 
     func increment(_ id: String, by delta: Int = 1) {
@@ -44,7 +59,7 @@ import Observation
     var totalSpeciesObserved: Int { cache.totalSpeciesObserved }
 
     /// Find an observation record by UUID, searching recursively through children.
-    func findRecord(by id: UUID) -> ObservationRecord? {
+    public func findRecord(by id: UUID) -> ObservationRecord? {
         func search(in array: [ObservationRecord]) -> ObservationRecord? {
             for rec in array {
                 if rec.id == id { return rec }
@@ -58,7 +73,7 @@ import Observation
     /// Attach a child observation record to an existing record identified by `parentId`.
     /// Returns true if the parent was found and the child added.
     @discardableResult
-    func addChildObservation(parentId: UUID, taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1) -> Bool {
+    public func addChildObservation(parentId: UUID, taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1) -> Bool {
     let newChild = ObservationRecord(id: UUID(), taxonId: taxonId, begin: begin, end: end, count: count)
         var didAttach = false
         func attach(into array: inout [ObservationRecord]) {

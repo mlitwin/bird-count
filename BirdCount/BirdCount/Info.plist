@@ -31,5 +31,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Bird Count uses local network to sync observations with nearby devices.</string>
 </dict>
 </plist>
