@@ -41,6 +41,7 @@
 		77AF3DEC1F3CE827F22D458E /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E83557E0B3151DB0A65A1E5 /* SettingsStore.swift */; };
 		7803ACA26233782463A7568B /* MockSyncTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B29D04C3005F2B05B763ABE /* MockSyncTransport.swift */; };
 		7EEFDB7446CA306481FEA245 /* DateRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = DADA4B0CCFCE53D3C7F061C8 /* DateRange.swift */; };
+		84F3149A7B109FB43BB628BD /* ViewConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D7F2012E653F5E1BF69E0D /* ViewConstants.swift */; };
 		87C235802D01F7FC1E551882 /* SyncTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17B59B4533BFF5B8EDB3E0D /* SyncTransport.swift */; };
 		88723733D4405DC1AA55DB13 /* NumericPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCBE3E988878FA83F955105 /* NumericPad.swift */; };
 		8CBC66555D3B77474B42746A /* ObservationExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE337F05758535174D947692 /* ObservationExportService.swift */; };
@@ -121,6 +122,7 @@
 		74ADC22819086097B12402BC /* Taxon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Taxon.swift; sourceTree = "<group>"; };
 		77B3EC72050A052361E92911 /* checklist-US-ME.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "checklist-US-ME.json"; sourceTree = "<group>"; };
 		783AD92EE988689DEFC27F00 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		87D7F2012E653F5E1BF69E0D /* ViewConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewConstants.swift; sourceTree = "<group>"; };
 		880BA767C44FECBE7F37690F /* ObservationSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationSyncTests.swift; sourceTree = "<group>"; };
 		905A41A6B9EC879EAD96F7CA /* BirdCountTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirdCountTests.swift; sourceTree = "<group>"; };
 		965E0236AD7C27566CDA7512 /* ObservationsSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationsSelectorView.swift; sourceTree = "<group>"; };
@@ -207,6 +209,7 @@
 				CA105FDD346A2759183A3BEE /* OnScreenKeyboard.swift */,
 				E1AE8BBD3313453070C1CF58 /* ShareActivityView.swift */,
 				FE3EC2F235F0B25723256BE9 /* SpeciesListView.swift */,
+				87D7F2012E653F5E1BF69E0D /* ViewConstants.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -541,6 +544,7 @@
 				87C235802D01F7FC1E551882 /* SyncTransport.swift in Sources */,
 				208E0E02373AB724A6117666 /* Taxon.swift in Sources */,
 				9011BEC0A95145374777045E /* TaxonomyStore.swift in Sources */,
+				84F3149A7B109FB43BB628BD /* ViewConstants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

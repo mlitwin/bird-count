@@ -55,7 +55,6 @@ struct SummaryView: View {
     @Environment(TaxonomyStore.self) private var taxonomy
     @Environment(DateRangeStore.self) private var dateRangeStore
     @State private var showLog: Bool = false
-    // ...existing code...
 
     var body: some View {
         // Break up inference with local constants
@@ -64,21 +63,13 @@ struct SummaryView: View {
     let totalIndividualsInRange = species.reduce(0) { $0 + $1.count }
         return NavigationStack {
             VStack(spacing: 0) {
-                // Compact header row: Title only
-                HStack(spacing: 12) {
-                    Text("Summary")
-                        .font(.title2.weight(.semibold))
-                    Spacer()
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-
                 // Totals (range is selected globally at the top of the app)
                 VStack(alignment: .leading, spacing: 8) {
                     HStack { Text("Species observed"); Spacer(); Text("\(totalSpeciesInRange)").monospacedDigit() }
                     HStack { Text("Total individuals"); Spacer(); Text("\(totalIndividualsInRange)").monospacedDigit() }
                 }
                 .padding(.horizontal)
+                .padding(.top, ViewConstants.floatingHeaderTopPadding)
                 .padding(.vertical, 12)
 
                 Divider()

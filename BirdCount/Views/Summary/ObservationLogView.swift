@@ -38,6 +38,9 @@ struct ObservationLogView: View {
                         }
                     }
             }
+                        .safeAreaInset(edge: .top, spacing: 0) {
+                Color.clear.frame(height: ViewConstants.floatingHeaderTopPadding)
+            }
         
         .toolbar {
                 if let show = show {
