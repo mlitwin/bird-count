@@ -54,12 +54,6 @@ struct SummaryView: View {
     @Environment(ObservationStore.self) private var observations
     @Environment(TaxonomyStore.self) private var taxonomy
     @Environment(DateRangeStore.self) private var dateRangeStore
-    @Environment(SyncSessionManager.self) private var syncManager
-    @State private var shareSheet: Bool = false
-    @State private var showSyncSheet: Bool = false
-    @State private var syncMode: SyncMode = .sender
-    @State private var showShareOptions: Bool = false
-    @State private var includeCounts: Bool = false
     @State private var showLog: Bool = false
     // ...existing code...
 
@@ -70,17 +64,11 @@ struct SummaryView: View {
     let totalIndividualsInRange = species.reduce(0) { $0 + $1.count }
         return NavigationStack {
             VStack(spacing: 0) {
-                // Compact header row: Title + Share
+                // Compact header row: Title only
                 HStack(spacing: 12) {
                     Text("Summary")
                         .font(.title2.weight(.semibold))
                     Spacer()
-                    Button(action: { showShareOptions = true }) {
-                        Label("Share", systemImage: "square.and.arrow.up")
-                    }
-                    .disabled(observations.totalIndividuals == 0)
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 8)
@@ -113,50 +101,7 @@ struct SummaryView: View {
             }
             .toolbar(.hidden, for: .navigationBar)
                 .toolbarBackground(.hidden, for: .navigationBar)
-            .confirmationDialog("Share Options", isPresented: $showShareOptions) {
-                Button("Export") { shareSheet = true }
-                Button("Send to Nearby iPhone") { 
-                    syncMode = .sender
-                    showSyncSheet = true 
-                }
-                Button("Receive from Nearby iPhone") { 
-                    syncMode = .receiver
-                    showSyncSheet = true 
-                }
-                Button("Cancel", role: .cancel) { }
-            }
-            .sheet(isPresented: $shareSheet) {
-                VStack(spacing: 16) {
-                    Toggle(isOn: $includeCounts) {
-                        Text("Include counts")
-                    }
-                    .padding(.horizontal)
-                    ShareActivityView(items: [exportText(includeCounts: includeCounts)])
-                }
-                .padding()
-            }
-            .sheet(isPresented: $showSyncSheet) {
-                SyncSheet(initialMode: syncMode)
-            }
         }
-    }
-
-    private func exportText(includeCounts: Bool = false) -> String {
-        let species = speciesInRange
-        var lines: [String] = []
-        lines.append("Species observed: \(species.count)")
-        if includeCounts {
-            lines.append("Total individuals: \(species.reduce(0) { $0 + $1.count })")
-        }
-        lines.append("")
-        for item in species {
-            if includeCounts {
-                lines.append("\(item.taxon.commonName)\t\(item.count)")
-            } else {
-                lines.append("\(item.taxon.commonName)")
-            }
-        }
-        return lines.joined(separator: "\n")
     }
 }
 
