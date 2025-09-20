@@ -1,7 +1,7 @@
 import Foundation
 
 /// Mock transport for testing sync functionality in simulator
-/// This bypasses MultipeerConnectivity limitations
+/// This bypasses network-based transport limitations for development/testing
 class MockSyncTransport: ObservableObject {
     static let shared = MockSyncTransport()
     

@@ -1,6 +1,6 @@
 import Foundation
 
-/// Data structure for syncing observations between devices via MultipeerConnectivity.
+/// Data structure for syncing observations between devices via Network Framework.
 /// Version 1 of the sync payload format.
 public struct PayloadV1: Codable {
     public let schemaVersion: Int

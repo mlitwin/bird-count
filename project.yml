@@ -42,6 +42,7 @@ targets:
         NSLocalNetworkUsageDescription: "This app uses the local network to sync bird observations between devices."
         NSBonjourServices:
           - "_birdcount._tcp"
+          - "_birdcount._tcp.local."
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: org.antoninus.birdcount.app
       ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
