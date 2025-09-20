@@ -16,6 +16,10 @@ import UIKit
     var progress: Double { transport.progress }
     var errorMessage: String? { transport.errorMessage }
     
+    // MARK: - Sync Success State
+    private(set) var lastSentRecordCount: Int = 0
+    private(set) var lastReceivedRecordCount: Int = 0
+    
     
     // MARK: - Initialization
     init() {
@@ -28,12 +32,22 @@ import UIKit
     
     /// Start browsing for peers to sync with (sender mode)
     func startBrowsing() {
+        resetSyncCounts()
         transport.startBrowsing()
     }
     
     /// Start advertising for incoming sync requests (receiver mode)
     func startAdvertising(onIncomingSync: @escaping (PayloadV1, @escaping (Bool) -> Void) -> Void) {
-        transport.startAdvertising(onIncomingSync: onIncomingSync)
+        resetSyncCounts()
+        
+        // Wrap the completion to track received record count
+        transport.startAdvertising { [weak self] payload, completion in
+            // Store record count when sync is received
+            self?.lastReceivedRecordCount = payload.observations.count
+            
+            // Forward to original handler
+            onIncomingSync(payload, completion)
+        }
     }
     
     /// Connect to a discovered peer (sender initiates connection)
@@ -43,12 +57,24 @@ import UIKit
     
     /// Send sync payload to connected peer
     func sendSync(payload: PayloadV1, completion: @escaping (Result<Void, Error>) -> Void) {
+        // Store record count for success feedback
+        lastSentRecordCount = payload.observations.count
+        
         transport.sendSync(payload: payload, completion: completion)
     }
     
     /// Cancel current operation and reset to idle
     func cancel() {
+        resetSyncCounts()
         transport.cancel()
+    }
+    
+    // MARK: - Private Methods
+    
+    /// Reset sync success counts (called when starting new sync operations)
+    private func resetSyncCounts() {
+        lastSentRecordCount = 0
+        lastReceivedRecordCount = 0
     }
 }
 

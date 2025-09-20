@@ -50,7 +50,7 @@ struct SyncSheet: View {
                     ProgressView("Processing...")
                     
                 case .completed:
-                    CompletedView()
+                    CompletedView(mode: mode)
                     
                 case .error:
                     ErrorView()
@@ -265,6 +265,9 @@ private struct TransferringView: View {
 }
 
 private struct CompletedView: View {
+    @Environment(SyncSessionManager.self) private var syncManager
+    let mode: SyncMode
+    
     var body: some View {
         VStack(spacing: 20) {
             Image(systemName: "checkmark.circle.fill")
@@ -274,9 +277,36 @@ private struct CompletedView: View {
             Text("Sync Complete!")
                 .font(.headline)
             
-            Text("Observations have been successfully synced")
-                .multilineTextAlignment(.center)
-                .foregroundColor(.secondary)
+            VStack(spacing: 8) {
+                Text(successMessage)
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.secondary)
+                
+                Text(recordCountMessage)
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.primary)
+                    .font(.subheadline)
+            }
+        }
+    }
+    
+    private var successMessage: String {
+        switch mode {
+        case .sender:
+            return "Observations have been successfully sent"
+        case .receiver:
+            return "Observations have been successfully received"
+        }
+    }
+    
+    private var recordCountMessage: String {
+        switch mode {
+        case .sender:
+            let count = syncManager.lastSentRecordCount
+            return count == 1 ? "1 record sent" : "\(count) records sent"
+        case .receiver:
+            let count = syncManager.lastReceivedRecordCount
+            return count == 1 ? "1 record received" : "\(count) records received"
         }
     }
 }
