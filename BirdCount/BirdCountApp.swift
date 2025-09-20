@@ -36,24 +36,24 @@ private struct TopTabsRoot: View {
     @Environment(DateRangeStore.self) private var dateRangeStore
 
     var body: some View {
-        VStack(spacing: 0) {
-            AppHeaderView(showSettings: $showSettings)
+        // Content under top tabs: bottom TabView for Home/Summary/Log
+        TabView(selection: $selection) {
+            HomeView()
+                .tabItem { Label("Home", systemImage: "house") }
+                .tag(Tab.home)
 
-            Divider()
+            SummaryView()
+                .tabItem { Label("Summary", systemImage: "chart.bar") }
+                .tag(Tab.summary)
 
-            // Content under top tabs: bottom TabView for Home/Summary/Log
-            TabView(selection: $selection) {
-                HomeView()
-                    .tabItem { Label("Home", systemImage: "house") }
-                    .tag(Tab.home)
-
-                SummaryView()
-                    .tabItem { Label("Summary", systemImage: "chart.bar") }
-                    .tag(Tab.summary)
-
-                ObservationLogView()
-                    .tabItem { Label("Log", systemImage: "list.bullet") }
-                    .tag(Tab.log)
+            ObservationLogView()
+                .tabItem { Label("Log", systemImage: "list.bullet") }
+                .tag(Tab.log)
+        }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            VStack(spacing: 0) {
+                AppHeaderView(showSettings: $showSettings)
+                Divider()
             }
         }
         .sheet(isPresented: $showSettings) { SettingsView(show: $showSettings) }
