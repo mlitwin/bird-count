@@ -7,31 +7,29 @@ public struct ObservationsSelectorView: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Button(action: {
-                previousPreset = dateRangeStore.dateRangePreset
-                // Don't change the preset when opening the sheet - let it stay as is
-                showCustomSheet = true
-            }) {
+            HStack(alignment: .center) {
                 Text(rangeSummary)
                     .font(.headline.weight(.semibold))
-                    .foregroundStyle(.tint)
-                    .padding(.vertical, 8)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(Color(.secondarySystemBackground))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .strokeBorder(Color.gray.opacity(0.2))
-                    )
+                    .foregroundStyle(.primary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.9)
                     .allowsTightening(true)
-                    .contentShape(Rectangle())
+                
+                Spacer()
+                
+                Button(action: {
+                    previousPreset = dateRangeStore.dateRangePreset
+                    // Don't change the preset when opening the sheet - let it stay as is
+                    showCustomSheet = true
+                }) {
+                    Image(systemName: "pencil")
+                        .font(.headline)
+                        .foregroundStyle(.tint)
+                        .padding(8)
+                        .background(Circle().fill(Color(.secondarySystemBackground)))
+                }
+                .accessibilityLabel("Edit range")
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Custom range")
         }
         .sheet(isPresented: $showCustomSheet) {
             CustomRangeSheet(
@@ -76,10 +74,23 @@ public struct ObservationsSelectorView: View {
         let startDate = dateRangeStore.dateRange.begin
         let endDate = dateRangeStore.dateRange.end
         if preset == .all {
-            return "All time – Now"
+            return "All time"
+        }
+        if preset == .today {
+            return "Today"
         }
         let cal = Calendar.current
         let sameDay = cal.isDate(startDate, inSameDayAs: endDate)
+        
+        // Check if this is a complete day (starts at midnight, ends at midnight next day)
+        let isCompleteDay = cal.isDate(startDate, equalTo: cal.startOfDay(for: startDate), toGranularity: .second) &&
+                           cal.isDate(endDate, equalTo: cal.startOfDay(for: endDate), toGranularity: .second) &&
+                           cal.dateInterval(of: .day, for: startDate)?.end == endDate
+        
+        if isCompleteDay {
+            return Formatters.mdy.string(from: startDate)
+        }
+        
         let sameYear = cal.component(.year, from: startDate) == cal.component(.year, from: endDate)
         let sameMonth = sameYear && cal.component(.month, from: startDate) == cal.component(.month, from: endDate)
 
