@@ -53,10 +53,8 @@ struct AppHeaderView: View {
             // Gradient background that transitions from opaque to transparent
             LinearGradient(
                 gradient: Gradient(stops: [
-                    .init(color: Color(.systemGroupedBackground), location: 0.0),
-                    .init(color: Color(.systemGroupedBackground), location: 0.6),
-                    .init(color: Color(.systemGroupedBackground).opacity(0.8), location: 0.8),
-                    .init(color: Color(.systemGroupedBackground).opacity(0.0), location: 1.0)
+                    .init(color: Color(.systemGroupedBackground), location: 0.95),
+                    .init(color: Color(.systemGroupedBackground).opacity(0.5), location: 1.0)
                 ]),
                 startPoint: .top,
                 endPoint: .bottom
