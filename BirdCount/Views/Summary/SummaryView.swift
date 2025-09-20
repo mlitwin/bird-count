@@ -57,6 +57,7 @@ struct SummaryView: View {
     @Environment(SyncSessionManager.self) private var syncManager
     @State private var shareSheet: Bool = false
     @State private var showSyncSheet: Bool = false
+    @State private var syncMode: SyncMode = .sender
     @State private var showShareOptions: Bool = false
     @State private var includeCounts: Bool = false
     @State private var showLog: Bool = false
@@ -119,7 +120,14 @@ struct SummaryView: View {
                 .toolbarBackground(.hidden, for: .navigationBar)
             .confirmationDialog("Share Options", isPresented: $showShareOptions) {
                 Button("Export") { shareSheet = true }
-                Button("Sync to Nearby iPhone") { showSyncSheet = true }
+                Button("Send to Nearby iPhone") { 
+                    syncMode = .sender
+                    showSyncSheet = true 
+                }
+                Button("Receive from Nearby iPhone") { 
+                    syncMode = .receiver
+                    showSyncSheet = true 
+                }
                 Button("Cancel", role: .cancel) { }
             }
             .sheet(isPresented: $shareSheet) {
@@ -133,7 +141,7 @@ struct SummaryView: View {
                 .padding()
             }
             .sheet(isPresented: $showSyncSheet) {
-                SyncSheet()
+                SyncSheet(initialMode: syncMode)
             }
         }
     }
@@ -164,6 +172,7 @@ struct SummaryView: View {
         .environment(ObservationStore())
         .environment(TaxonomyStore())
         .environment(DateRangeStore())
+        .environment(SyncSessionManager())
 }
 #endif
 

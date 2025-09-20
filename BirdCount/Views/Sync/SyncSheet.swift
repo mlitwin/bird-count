@@ -6,17 +6,21 @@ struct SyncSheet: View {
     @Environment(DateRangeStore.self) private var dateRangeStore
     @Environment(\.dismiss) private var dismiss
     
-    @State private var mode: SyncMode = .sender
+    private let mode: SyncMode
     @State private var incomingPayload: PayloadV1?
     @State private var showingApproval = false
     @State private var approvalCompletion: ((Bool) -> Void)?
+    
+    init(initialMode: SyncMode = .sender) {
+        self.mode = initialMode
+    }
     
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
                 switch syncManager.state {
                 case .idle:
-                    IdleView(mode: $mode) {
+                    IdleView(mode: mode) {
                         startSync()
                     }
                     
@@ -125,7 +129,7 @@ struct SyncSheet: View {
 // MARK: - Sub-views
 
 private struct IdleView: View {
-    @Binding var mode: SyncMode
+    let mode: SyncMode
     let onStart: () -> Void
     
     var body: some View {
@@ -138,15 +142,11 @@ private struct IdleView: View {
                 .font(.title2)
                 .fontWeight(.semibold)
             
-            Text("Share your bird observations with another iPhone nearby")
+            Text(mode == .sender 
+                ? "Send your bird observations to another iPhone nearby"
+                : "Receive bird observations from another iPhone nearby")
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
-            
-            Picker("Sync Mode", selection: $mode) {
-                Text("Send to Device").tag(SyncMode.sender)
-                Text("Receive from Device").tag(SyncMode.receiver)
-            }
-            .pickerStyle(SegmentedPickerStyle())
             
             Button(action: onStart) {
                 Text(mode == .sender ? "Find Devices" : "Wait for Connection")
@@ -299,7 +299,7 @@ private struct ErrorView: View {
 
 // MARK: - Supporting Types
 
-private enum SyncMode {
+enum SyncMode {
     case sender
     case receiver
 }
