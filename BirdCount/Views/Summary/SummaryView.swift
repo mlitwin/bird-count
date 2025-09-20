@@ -86,7 +86,7 @@ struct SummaryView: View {
                 .padding(.vertical, 8)
 
                 // Date range selector (only in Summary)
-                DateRangeSelectorView()
+                ObservationsSelectorView()
                     .padding(.horizontal)
                     .padding(.bottom, 8)
 

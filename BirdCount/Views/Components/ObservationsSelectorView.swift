@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct DateRangeSelectorView: View {
+public struct ObservationsSelectorView: View {
     @Environment(DateRangeStore.self) private var dateRangeStore
     @State private var showCustomSheet: Bool = false
     @State private var previousPreset: DateRangePreset? = nil
@@ -153,7 +153,7 @@ public struct DateRangeSelectorView: View {
 }
 
 // MARK: - Preset sync helpers
-private extension DateRangeSelectorView {
+private extension ObservationsSelectorView {
     func syncPresetWithCurrentRange() {
         let cal = Calendar.current
         let todayStart = cal.startOfDay(for: Date())
