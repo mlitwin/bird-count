@@ -24,3 +24,11 @@ BirdCount is a simple, fast, offline-first bird counting app. It lets you:
 1) Open `ios/BirdCount/BirdCount/BirdCount.xcodeproj` in Xcode.
 2) Select the BirdCount scheme and an iOS 17+ Simulator (or a device).
 3) Build and Run.
+
+# Roadmap notes
+
+* Move range selection to an always visible part of the upper toolbar
+* Add User section to settings, with for now username
+* Add to observation model
+  * username
+  * geolocation
