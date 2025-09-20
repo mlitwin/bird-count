@@ -7,36 +7,9 @@ public struct ObservationsSelectorView: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Button(action: { shiftRangeByDays(-1); dateRangeStore.setPreset(.custom) }) {
-                    Image(systemName: "chevron.left")
-                        .accessibilityLabel("Previous day")
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-
-                Button("Today") { applyRangePreset(.today); dateRangeStore.setPreset(.today) }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                    .tint(dateRangeStore.dateRangePreset == .today ? .accentColor : .primary)
-                    .fontWeight(dateRangeStore.dateRangePreset == .today ? .semibold : .regular)
-
-                Button(action: { shiftRangeByDays(1); dateRangeStore.setPreset(.custom) }) {
-                    Image(systemName: "chevron.right")
-                        .accessibilityLabel("Next day")
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-
-                Button("All") { applyRangePreset(.all); dateRangeStore.setPreset(.all) }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-
-                Spacer()
-            }
             Button(action: {
                 previousPreset = dateRangeStore.dateRangePreset
-                dateRangeStore.setPreset(.custom)
+                // Don't change the preset when opening the sheet - let it stay as is
                 showCustomSheet = true
             }) {
                 Text(rangeSummary)
@@ -62,14 +35,12 @@ public struct ObservationsSelectorView: View {
         }
         .sheet(isPresented: $showCustomSheet) {
             CustomRangeSheet(
-                startDate: .constant(dateRangeStore.dateRange.begin),
-                endDate: .constant(dateRangeStore.dateRange.end),
                 onCancel: {
                     if let prev = previousPreset { dateRangeStore.setPreset(prev) }
                     previousPreset = nil
                 },
                 onDone: {
-                    dateRangeStore.setPreset(.custom)
+                    // Don't override the preset - let it remain as set by the buttons
                     previousPreset = nil
                 }
             )
@@ -173,23 +144,84 @@ private extension ObservationsSelectorView {
 // MARK: - Custom Range Sheet
 private struct CustomRangeSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @Binding var startDate: Date
-    @Binding var endDate: Date
+    @Environment(DateRangeStore.self) private var dateRangeStore
     let onCancel: () -> Void
     let onDone: () -> Void
+    
+    @State private var refreshTrigger = false
 
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    HStack(spacing: 8) {
+                        Button(action: { 
+                            shiftRangeByDays(-1) 
+                            dateRangeStore.setPreset(.custom)
+                            refreshTrigger.toggle()
+                        }) {
+                            Image(systemName: "chevron.left")
+                                .accessibilityLabel("Previous day")
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+
+                        Button("Today") { 
+                            dateRangeStore.setPreset(.today)
+                            refreshTrigger.toggle()
+                        }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                            .tint(dateRangeStore.dateRangePreset == .today ? .accentColor : .primary)
+                            .fontWeight(dateRangeStore.dateRangePreset == .today ? .semibold : .regular)
+
+                        Button(action: { 
+                            shiftRangeByDays(1) 
+                            dateRangeStore.setPreset(.custom)
+                            refreshTrigger.toggle()
+                        }) {
+                            Image(systemName: "chevron.right")
+                                .accessibilityLabel("Next day")
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+
+                        Button("All") { 
+                            dateRangeStore.setPreset(.all)
+                            refreshTrigger.toggle()
+                        }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                            .tint(dateRangeStore.dateRangePreset == .all ? .accentColor : .primary)
+                            .fontWeight(dateRangeStore.dateRangePreset == .all ? .semibold : .regular)
+
+                        Spacer()
+                    }
+                }
                 Section(header: Text("From")) {
-                    DatePicker("", selection: $startDate, in: ...endDate, displayedComponents: [.date, .hourAndMinute])
+                    DatePicker("", selection: Binding(
+                        get: { dateRangeStore.dateRange.begin },
+                        set: { newStart in
+                            dateRangeStore.update(DateRange(begin: newStart, end: dateRangeStore.dateRange.end))
+                            dateRangeStore.dateRangePreset = .custom
+                            refreshTrigger.toggle()
+                        }
+                    ), in: ...dateRangeStore.dateRange.end, displayedComponents: [.date, .hourAndMinute])
                         .labelsHidden()
                 }
                 Section(header: Text("To")) {
-                    DatePicker("", selection: $endDate, in: startDate... , displayedComponents: [.date, .hourAndMinute])
+                    DatePicker("", selection: Binding(
+                        get: { dateRangeStore.dateRange.end },
+                        set: { newEnd in
+                            dateRangeStore.update(DateRange(begin: dateRangeStore.dateRange.begin, end: newEnd))
+                            dateRangeStore.dateRangePreset = .custom
+                            refreshTrigger.toggle()
+                        }
+                    ), in: dateRangeStore.dateRange.begin... , displayedComponents: [.date, .hourAndMinute])
                         .labelsHidden()
                 }
             }
+            .id(refreshTrigger) // Force refresh when refreshTrigger changes
             .navigationTitle("Custom Range")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -201,5 +233,9 @@ private struct CustomRangeSheet: View {
             }
         }
         .presentationDetents([.fraction(0.5), .large])
+    }
+    
+    private func shiftRangeByDays(_ days: Int) {
+        dateRangeStore.shiftRangeByDays(days)
     }
 }
