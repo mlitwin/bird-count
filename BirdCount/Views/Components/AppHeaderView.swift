@@ -21,25 +21,24 @@ struct AppHeaderView: View {
                     .font(.title2.weight(.semibold))
             }
             .frame(maxWidth: .infinity)
-            .overlay(alignment: .trailing) {
-                HStack(spacing: 12) {
-                    Button(action: { showShareOptions = true }) {
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.headline)
-                            .padding(8)
-                            .background(Circle().fill(Color(.secondarySystemBackground)))
-                    }
-                    .disabled(observations.totalIndividuals == 0)
-                    .accessibilityLabel("Share")
-                    
-                    Button(action: { showSettings = true }) {
-                        Image(systemName: "gearshape")
-                            .font(.headline)
-                            .padding(8)
-                            .background(Circle().fill(Color(.secondarySystemBackground)))
-                    }
-                    .accessibilityLabel("Settings")
+            .overlay(alignment: .leading) {
+                Button(action: { showShareOptions = true }) {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.headline)
+                        .padding(8)
+                        .background(Circle().fill(Color(.secondarySystemBackground)))
                 }
+                .disabled(observations.totalIndividuals == 0)
+                .accessibilityLabel("Share")
+            }
+            .overlay(alignment: .trailing) {
+                Button(action: { showSettings = true }) {
+                    Image(systemName: "gearshape")
+                        .font(.headline)
+                        .padding(8)
+                        .background(Circle().fill(Color(.secondarySystemBackground)))
+                }
+                .accessibilityLabel("Settings")
             }
             .padding(.horizontal)
             .padding(.top, 8)
