@@ -34,12 +34,16 @@ struct SyncSheet: View {
                     ConnectingView()
                     
                 case .connected:
-                    ConnectedView {
-                        sendObservations()
+                    if mode == .sender {
+                        ConnectedView {
+                            sendObservations()
+                        }
+                    } else {
+                        WaitingToReceiveView()
                     }
                     
                 case .transferring:
-                    TransferringView()
+                    TransferringView(mode: mode)
                     
                 case .receivingApproval:
                     // This state is handled by the sheet presentation
@@ -242,6 +246,7 @@ private struct ConnectedView: View {
 
 private struct TransferringView: View {
     @Environment(SyncSessionManager.self) private var syncManager
+    let mode: SyncMode
     
     var body: some View {
         VStack(spacing: 20) {
@@ -249,7 +254,7 @@ private struct TransferringView: View {
                 .progressViewStyle(CircularProgressViewStyle(tint: .blue))
                 .scaleEffect(1.5)
             
-            Text("Sending observations...")
+            Text(mode == .sender ? "Sending observations..." : "Receiving observations...")
                 .font(.headline)
             
             Text("\(Int(syncManager.progress * 100))%")
@@ -293,6 +298,26 @@ private struct ErrorView: View {
                     .multilineTextAlignment(.center)
                     .foregroundColor(.secondary)
             }
+        }
+    }
+}
+
+private struct WaitingToReceiveView: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "arrow.down.circle")
+                .font(.system(size: 60))
+                .foregroundColor(.blue)
+            
+            Text("Connected!")
+                .font(.headline)
+            
+            Text("Waiting to receive observations...")
+                .multilineTextAlignment(.center)
+                .foregroundColor(.secondary)
+            
+            ProgressView()
+                .scaleEffect(1.2)
         }
     }
 }
