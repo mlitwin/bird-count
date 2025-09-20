@@ -85,11 +85,6 @@ struct SummaryView: View {
                 .padding(.horizontal)
                 .padding(.vertical, 8)
 
-                // Date range selector (only in Summary)
-                ObservationsSelectorView()
-                    .padding(.horizontal)
-                    .padding(.bottom, 8)
-
                 // Totals (range is selected globally at the top of the app)
                 VStack(alignment: .leading, spacing: 8) {
                     HStack { Text("Species observed"); Spacer(); Text("\(totalSpeciesInRange)").monospacedDigit() }

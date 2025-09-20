@@ -36,6 +36,7 @@
 		68D2F644EA81B5C2380F5DB2 /* checklist-US-ME.json in Resources */ = {isa = PBXBuildFile; fileRef = 77B3EC72050A052361E92911 /* checklist-US-ME.json */; };
 		6C9CBAEA8E77832D8787CD76 /* SummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B0BA1474D059B40D0C1BEDC /* SummaryView.swift */; };
 		73E849EBBAC6EFCB61213E7E /* SyncSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A0C5EC7F393B0C8A4C4510 /* SyncSheet.swift */; };
+		74F6EE9B7B2BA6BE0F8F20A0 /* AppHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF1503D4300A927D857CA79D /* AppHeaderView.swift */; };
 		75089FF45C05EBC6944800A2 /* ObservationStoreCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D9C8368572CC7976F0E8145 /* ObservationStoreCache.swift */; };
 		77AF3DEC1F3CE827F22D458E /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E83557E0B3151DB0A65A1E5 /* SettingsStore.swift */; };
 		7803ACA26233782463A7568B /* MockSyncTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B29D04C3005F2B05B763ABE /* MockSyncTransport.swift */; };
@@ -143,6 +144,7 @@
 		E3424E4DDD31730B25CEEBC1 /* generate_ios_taxonomy.mjs */ = {isa = PBXFileReference; path = generate_ios_taxonomy.mjs; sourceTree = "<group>"; };
 		E62366A5F44389EFC3E8E7BB /* NetworkSyncTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkSyncTransport.swift; sourceTree = "<group>"; };
 		E88A4BACD0DF593F50C9EF1D /* BirdCountTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BirdCountTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		EF1503D4300A927D857CA79D /* AppHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppHeaderView.swift; sourceTree = "<group>"; };
 		F11C0F2EB5F5DDCE1C6106B1 /* ObservationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationStore.swift; sourceTree = "<group>"; };
 		F6A0C5EC7F393B0C8A4C4510 /* SyncSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncSheet.swift; sourceTree = "<group>"; };
 		FBCE0B9078509DFFC117339F /* ObservationRecordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationRecordView.swift; sourceTree = "<group>"; };
@@ -197,6 +199,7 @@
 		506504D8E4EB265F3C61EE8F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				EF1503D4300A927D857CA79D /* AppHeaderView.swift */,
 				FFA8094EBAC869E648D7F854 /* CountAdjustSheet.swift */,
 				CCCBE3E988878FA83F955105 /* NumericPad.swift */,
 				FBCE0B9078509DFFC117339F /* ObservationRecordView.swift */,
@@ -505,6 +508,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				74F6EE9B7B2BA6BE0F8F20A0 /* AppHeaderView.swift in Sources */,
 				C365B63760F17794D9B0605A /* BirdCountApp.swift in Sources */,
 				0AC86B5E2CBE362C8C2809B5 /* CommonnessRangeView.swift in Sources */,
 				1FC3EA44A81F6C94E57C3757 /* CountAdjustSheet.swift in Sources */,
