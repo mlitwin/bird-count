@@ -30,7 +30,7 @@ targets:
       path: BirdCount/BirdCount/Info.plist
       properties:
         CFBundleShortVersionString: "1.0.0"
-        CFBundleVersion: "25"
+        CFBundleVersion: "26"
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
