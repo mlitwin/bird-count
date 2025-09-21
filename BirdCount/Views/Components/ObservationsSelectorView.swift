@@ -2,12 +2,22 @@ import SwiftUI
 
 public struct ObservationsSelectorView: View {
     @Environment(DateRangeStore.self) private var dateRangeStore
+    @Environment(ObservationStore.self) private var observations
     @State private var showCustomSheet: Bool = false
     @State private var previousPreset: DateRangePreset? = nil
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .center) {
+                // Species count badge
+                Text("\(observations.totalSpeciesObserved(in: dateRangeStore.dateRange))")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(.tint))
+                    .accessibilityLabel("\(observations.totalSpeciesObserved(in: dateRangeStore.dateRange)) species observed")
+                
                 Text(rangeSummary)
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(.primary)

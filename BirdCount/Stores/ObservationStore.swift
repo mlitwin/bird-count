@@ -57,6 +57,33 @@ import Observation
 
     var totalIndividuals: Int { cache.totalIndividuals }
     var totalSpeciesObserved: Int { cache.totalSpeciesObserved }
+    
+    /// Calculate total individuals within a specific date range
+    func totalIndividuals(in range: DateRange) -> Int {
+        let filteredObservations = observationsInRange(range)
+        var tempCache = ObservationStoreCache()
+        tempCache.rebuild(from: filteredObservations)
+        return tempCache.totalIndividuals
+    }
+    
+    /// Calculate total species observed within a specific date range
+    func totalSpeciesObserved(in range: DateRange) -> Int {
+        let filteredObservations = observationsInRange(range)
+        var tempCache = ObservationStoreCache()
+        tempCache.rebuild(from: filteredObservations)
+        return tempCache.totalSpeciesObserved
+    }
+    
+    /// Filter observations to only include those that overlap with the given date range
+    private func observationsInRange(_ range: DateRange) -> [ObservationRecord] {
+        return observations.compactMap { record -> ObservationRecord? in
+            // Check if record overlaps with the range: record.end >= range.begin && record.begin <= range.end
+            if record.end >= range.begin && record.begin <= range.end {
+                return record
+            }
+            return nil
+        }
+    }
 
     /// Find an observation record by UUID, searching recursively through children.
     public func findRecord(by id: UUID) -> ObservationRecord? {

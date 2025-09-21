@@ -28,7 +28,7 @@ struct AppHeaderView: View {
                         .padding(8)
                         .background(Circle().fill(Color(.secondarySystemBackground)))
                 }
-                .disabled(observations.totalIndividuals == 0)
+                .disabled(observations.totalIndividuals(in: dateRangeStore.dateRange) == 0)
                 .accessibilityLabel("Share")
             }
             .overlay(alignment: .trailing) {
