@@ -38,7 +38,8 @@ public final class LocationManager: NSObject {
     override init() {
         super.init()
         setupLocationManager()
-        updateLocationServicesStatus()
+        // Location services status will be checked asynchronously via delegate callbacks
+        // Don't call CLLocationManager.locationServicesEnabled() synchronously to avoid blocking main thread
     }
     
     // MARK: - Setup
@@ -48,94 +49,125 @@ public final class LocationManager: NSObject {
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.distanceFilter = 10 // Only update if moved 10+ meters
         
-        // Update initial authorization status
-        authorizationStatus = locationManager.authorizationStatus
-    }
-    
-    private func updateLocationServicesStatus() {
-        locationServicesEnabled = CLLocationManager.locationServicesEnabled()
+        // Authorization status will be updated via didChangeAuthorization delegate callback
+        // Don't call locationManager.authorizationStatus synchronously to avoid blocking main thread
     }
     
     // MARK: - Public Methods
     
+    /// Check if location services are enabled on the device (asynchronously)
+    /// - Parameter completion: Called with the result on the main thread
+    public func checkLocationServicesEnabled(completion: @escaping (Bool) -> Void) {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let enabled = CLLocationManager.locationServicesEnabled()
+            DispatchQueue.main.async {
+                self?.locationServicesEnabled = enabled
+                completion(enabled)
+            }
+        }
+    }
+    
     /// Request location permissions from the user
     /// This should be called when the user first tries to capture location
     public func requestLocationPermission() {
-        guard locationServicesEnabled else {
-            lastError = LocationError.servicesDisabled
-            return
-        }
-        
-        switch authorizationStatus {
-        case .notDetermined:
-            hasRequestedInitialPermission = true
-            // Dispatch authorization request to avoid blocking main thread
-            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                self?.locationManager.requestWhenInUseAuthorization()
+        // Check location services status first if we don't have a recent check
+        checkLocationServicesEnabled { [weak self] enabled in
+            guard let self else { return }
+            
+            guard enabled else {
+                self.lastError = LocationError.servicesDisabled
+                return
             }
             
-        case .denied, .restricted:
-            lastError = LocationError.permissionDenied
-            
-        case .authorizedAlways, .authorizedWhenInUse:
-            // Already authorized, no action needed
-            break
-            
-        @unknown default:
-            lastError = LocationError.unknownAuthorizationStatus
+            switch self.authorizationStatus {
+            case .notDetermined:
+                self.hasRequestedInitialPermission = true
+                // Dispatch authorization request to avoid blocking main thread
+                DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                    self?.locationManager.requestWhenInUseAuthorization()
+                }
+                
+            case .denied, .restricted:
+                self.lastError = LocationError.permissionDenied
+                
+            case .authorizedAlways, .authorizedWhenInUse:
+                // Already authorized, no action needed
+                break
+                
+            @unknown default:
+                self.lastError = LocationError.unknownAuthorizationStatus
+            }
         }
     }
     
     /// Request a one-time location update
     /// - Parameter completion: Called with the result of the location request
     public func requestLocation(completion: @escaping (Result<ObservationLocation, Error>) -> Void) {
-        guard locationServicesEnabled else {
-            completion(.failure(LocationError.servicesDisabled))
-            return
-        }
-        
-        switch authorizationStatus {
-        case .authorizedAlways, .authorizedWhenInUse:
-            // Store completion handler and request location
-            locationCompletionHandlers.append(completion)
+        // Check location services status first if we don't have a recent check
+        checkLocationServicesEnabled { [weak self] enabled in
+            guard let self else { return }
             
-            if !isRequestingLocation {
-                isRequestingLocation = true
-                lastError = nil
-                locationManager.requestLocation()
+            guard enabled else {
+                completion(.failure(LocationError.servicesDisabled))
+                return
             }
             
-        case .notDetermined:
-            // Request permission first, then location
-            locationCompletionHandlers.append(completion)
-            requestLocationPermission()
-            
-        case .denied, .restricted:
-            completion(.failure(LocationError.permissionDenied))
-            
-        @unknown default:
-            completion(.failure(LocationError.unknownAuthorizationStatus))
+            switch self.authorizationStatus {
+            case .authorizedAlways, .authorizedWhenInUse:
+                // Store completion handler and request location
+                self.locationCompletionHandlers.append(completion)
+                
+                if !self.isRequestingLocation {
+                    self.isRequestingLocation = true
+                    self.lastError = nil
+                    // Dispatch location request to avoid blocking main thread
+                    DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                        self?.locationManager.requestLocation()
+                    }
+                }
+                
+            case .notDetermined:
+                // Request permission first, then location
+                self.locationCompletionHandlers.append(completion)
+                self.requestLocationPermission()
+                
+            case .denied, .restricted:
+                completion(.failure(LocationError.permissionDenied))
+                
+            @unknown default:
+                completion(.failure(LocationError.unknownAuthorizationStatus))
+            }
         }
     }
     
     /// Start continuous location updates (for when app is actively being used for observations)
     public func startLocationUpdates() {
-        guard locationServicesEnabled else {
-            lastError = LocationError.servicesDisabled
-            return
+        checkLocationServicesEnabled { [weak self] enabled in
+            guard let self else { return }
+            
+            guard enabled else {
+                self.lastError = LocationError.servicesDisabled
+                return
+            }
+            
+            guard self.authorizationStatus == .authorizedAlways || self.authorizationStatus == .authorizedWhenInUse else {
+                self.lastError = LocationError.permissionDenied
+                return
+            }
+            
+            // Dispatch location updates to avoid blocking main thread
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                self?.locationManager.startUpdatingLocation()
+            }
         }
-        
-        guard authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse else {
-            lastError = LocationError.permissionDenied
-            return
-        }
-        
-        locationManager.startUpdatingLocation()
     }
     
     /// Stop continuous location updates
     public func stopLocationUpdates() {
-        locationManager.stopUpdatingLocation()
+        // Dispatch stop request to avoid blocking main thread
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            self?.locationManager.stopUpdatingLocation()
+        }
     }
     
     /// Clear any stored error
@@ -146,21 +178,24 @@ public final class LocationManager: NSObject {
     /// Ensure we have a current location for observations
     /// This will request location permission if needed, or update current location if stale
     public func ensureLocationForObservation() {
-        guard locationServicesEnabled else { return }
-        
-        if canRequestPermission {
-            // First time - request permission
-            requestLocationPermission()
-        } else if isAuthorized {
-            // Check if we need a fresh location (older than 5 minutes)
-            if let currentLocation = currentLocation,
-               Date().timeIntervalSince(currentLocation.timestamp) < 300 { // 5 minutes
-                // Current location is fresh enough, no action needed
-                return
-            } else {
-                // Need a fresh location
-                requestLocation { _ in
-                    // Location will be stored automatically in currentObservationLocation
+        checkLocationServicesEnabled { [weak self] enabled in
+            guard let self else { return }
+            guard enabled else { return }
+            
+            if self.canRequestPermission {
+                // First time - request permission
+                self.requestLocationPermission()
+            } else if self.isAuthorized {
+                // Check if we need a fresh location (older than 5 minutes)
+                if let currentLocation = self.currentLocation,
+                   Date().timeIntervalSince(currentLocation.timestamp) < 300 { // 5 minutes
+                    // Current location is fresh enough, no action needed
+                    return
+                } else {
+                    // Need a fresh location
+                    self.requestLocation { _ in
+                        // Location will be stored automatically in currentObservationLocation
+                    }
                 }
             }
         }
@@ -196,50 +231,69 @@ extension LocationManager: CLLocationManagerDelegate {
     public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         
-        // Update current location
-        currentLocation = location
-        currentObservationLocation = ObservationLocation(from: location)
-        
-        // If this was a one-time request, complete all pending handlers
-        if isRequestingLocation {
-            isRequestingLocation = false
-            let observationLocation = ObservationLocation(from: location)
+        // Ensure UI updates happen on main thread for @Observable properties
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
             
-            for handler in locationCompletionHandlers {
-                handler(.success(observationLocation))
+            // Update current location
+            self.currentLocation = location
+            self.currentObservationLocation = ObservationLocation(from: location)
+            
+            // If this was a one-time request, complete all pending handlers
+            if self.isRequestingLocation {
+                self.isRequestingLocation = false
+                let observationLocation = ObservationLocation(from: location)
+                
+                for handler in self.locationCompletionHandlers {
+                    handler(.success(observationLocation))
+                }
+                self.locationCompletionHandlers.removeAll()
             }
-            locationCompletionHandlers.removeAll()
         }
     }
     
     public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        lastError = error
-        
-        // Complete any pending location requests with error
-        if isRequestingLocation {
-            isRequestingLocation = false
+        // Ensure UI updates happen on main thread for @Observable properties
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
             
-            for handler in locationCompletionHandlers {
-                handler(.failure(error))
+            self.lastError = error
+            
+            // Complete any pending location requests with error
+            if self.isRequestingLocation {
+                self.isRequestingLocation = false
+                
+                for handler in self.locationCompletionHandlers {
+                    handler(.failure(error))
+                }
+                self.locationCompletionHandlers.removeAll()
             }
-            locationCompletionHandlers.removeAll()
         }
     }
     
-    public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        authorizationStatus = status
-        
-        // If permission was just granted and we have pending requests, fulfill them
-        if (status == .authorizedAlways || status == .authorizedWhenInUse) && !locationCompletionHandlers.isEmpty {
-            requestLocation { _ in }
-        }
-        
-        // If permission was denied, complete pending requests with error
-        if (status == .denied || status == .restricted) && !locationCompletionHandlers.isEmpty {
-            for handler in locationCompletionHandlers {
-                handler(.failure(LocationError.permissionDenied))
+    public func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        // Ensure UI updates happen on main thread for @Observable properties
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            
+            let authStatus = manager.authorizationStatus
+            self.authorizationStatus = authStatus
+            
+            // Don't check CLLocationManager.locationServicesEnabled() here to avoid blocking main thread
+            // This will be checked asynchronously when needed in other methods
+            
+            // If permission was just granted and we have pending requests, fulfill them
+            if (authStatus == .authorizedAlways || authStatus == .authorizedWhenInUse) && !self.locationCompletionHandlers.isEmpty {
+                self.requestLocation { _ in }
             }
-            locationCompletionHandlers.removeAll()
+            
+            // If permission was denied, complete pending requests with error
+            if (authStatus == .denied || authStatus == .restricted) && !self.locationCompletionHandlers.isEmpty {
+                for handler in self.locationCompletionHandlers {
+                    handler(.failure(LocationError.permissionDenied))
+                }
+                self.locationCompletionHandlers.removeAll()
+            }
         }
     }
 }
