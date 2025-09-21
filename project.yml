@@ -43,6 +43,9 @@ targets:
         NSBonjourServices:
           - "_birdcount._tcp"
           - "_birdcount._tcp.local."
+        CFBundleDevelopmentRegion: "en"
+        CFBundleLocalizations:
+          - "en"
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: org.antoninus.birdcount.app
       ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon

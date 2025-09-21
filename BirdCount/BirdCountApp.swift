@@ -39,15 +39,15 @@ private struct TopTabsRoot: View {
         // Content under top tabs: bottom TabView for Home/Summary/Log
         TabView(selection: $selection) {
             HomeView()
-                .tabItem { Label("Home", systemImage: "house") }
+                .tabItem { Label(Strings.Tab.home.string, systemImage: "house") }
                 .tag(Tab.home)
 
             SummaryView()
-                .tabItem { Label("Summary", systemImage: "chart.bar") }
+                .tabItem { Label(Strings.Tab.summary.string, systemImage: "chart.bar") }
                 .tag(Tab.summary)
 
             ObservationLogView()
-                .tabItem { Label("Log", systemImage: "list.bullet") }
+                .tabItem { Label(Strings.Tab.log.string, systemImage: "list.bullet") }
                 .tag(Tab.log)
         }
         .safeAreaInset(edge: .top, spacing: 0) {

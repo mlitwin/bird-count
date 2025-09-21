@@ -99,7 +99,7 @@ private struct StepControlsView: View {
                 .font(.system(size: 48, weight: .bold, design: .rounded))
                 .monospacedDigit()
                 .frame(minWidth: 72)
-                .accessibilityLabel("Count")
+                .accessibilityLabel(Strings.Observation.count.string)
                 .accessibilityValue("\(value)")
 
             StepButton(symbol: "plus", action: onPlus)
@@ -136,14 +136,14 @@ private struct ActionBarView: View {
             // Action buttons
             HStack(spacing: 12) {
                 Button(role: .cancel, action: onCancel) {
-                    Text("Cancel").frame(maxWidth: .infinity)
+                    Text(Strings.General.cancel.string).frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.red)
                 .controlSize(.regular)
 
                 Button(action: onDone) {
-                    Text("Done").frame(maxWidth: .infinity)
+                    Text(Strings.General.done.string).frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.green)

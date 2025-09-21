@@ -38,7 +38,7 @@ struct ObservationLogView: View {
                                     count: -total
                                 )
                             } label: {
-                                Label("Delete", systemImage: "trash")
+                                Label(Strings.Observation.delete.string, systemImage: "trash")
                             }
                         }
                 }
@@ -46,9 +46,9 @@ struct ObservationLogView: View {
         
         .toolbar {
                 if let show = show {
-                    ToolbarItem(placement: .cancellationAction) { Button("Close") { show.wrappedValue = false } }
+                    ToolbarItem(placement: .cancellationAction) { Button(Strings.General.close.string) { show.wrappedValue = false } }
                 }
-                ToolbarItem(placement: .primaryAction) { Button("Export") { exportSheet = true }.disabled(display.isEmpty) }
+                ToolbarItem(placement: .primaryAction) { Button(Strings.Share.export.string) { exportSheet = true }.disabled(display.isEmpty) }
             }
         .sheet(isPresented: $exportSheet) { ShareActivityView(items: [exportText()]) }
         .toolbar(.hidden, for: .navigationBar)
@@ -57,12 +57,12 @@ struct ObservationLogView: View {
     }
 
     private func exportText() -> String {
-        var lines: [String] = ["Bird Count Observations"]
+        var lines: [String] = [Strings.Summary.exportTitle.string]
         let formatter = ISO8601DateFormatter()
         // Build a quick lookup for species by id once
         let speciesById: [String: Taxon] = Dictionary(uniqueKeysWithValues: taxonomy.species.map { ($0.id, $0) })
         for r in display {
-            let taxonName = speciesById[r.taxonId]?.commonName ?? "Unknown"
+            let taxonName = speciesById[r.taxonId]?.commonName ?? Strings.Observation.unknown.string
             if r.begin == r.end {
                 lines.append("\(formatter.string(from: r.begin))\t\(taxonName)\t×\(recursiveCount(r))")
             } else {

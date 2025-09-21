@@ -107,7 +107,7 @@ private struct SpeciesRow: View {
                         .padding(.vertical, 4)
                         .background(Capsule().fill(Color.accentColor.opacity(0.15)))
                         .overlay(Capsule().stroke(Color.accentColor, lineWidth: 1))
-                        .accessibilityLabel("\(taxon.commonName) count \(count)")
+                        .accessibilityLabel(String(format: Strings.Accessibility.countLabel.string, taxon.commonName, count))
                 }
             }
             .contentShape(Rectangle())

@@ -133,18 +133,18 @@ struct HomeView: View {
 
     @ViewBuilder private var content: some View {
         if let error = taxonomy.error {
-            ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(error))
+            ContentUnavailableView(Strings.General.error.string, systemImage: "exclamationmark.triangle", description: Text(error))
                 .safeAreaInset(edge: .top, spacing: 0) {
                     HeaderSpacingView()
                 }
         } else if !taxonomy.loaded {
-            ProgressView("Loading taxonomy…")
+            ProgressView(Strings.Home.loading.string)
                 .task { taxonomy.load() }
                 .safeAreaInset(edge: .top, spacing: 0) {
                     HeaderSpacingView()
                 }
         } else if taxonomy.species.isEmpty {
-            ContentUnavailableView("No Species", systemImage: "bird", description: Text("Taxonomy file empty"))
+            ContentUnavailableView(Strings.Species.List.empty.string, systemImage: "bird", description: Text(Strings.Species.List.emptyDescription.string))
                 .safeAreaInset(edge: .top, spacing: 0) {
                     HeaderSpacingView()
                 }
@@ -187,7 +187,7 @@ private struct FilterBar: View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(.secondary)
-            Text(text.isEmpty ? "Filter species" : text)
+            Text(text.isEmpty ? Strings.Home.Filter.placeholder.string : text)
                 .foregroundStyle(text.isEmpty ? .secondary : .primary)
                 .lineLimit(1)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -195,7 +195,7 @@ private struct FilterBar: View {
                 Button(action: onClear) {
                     Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
                 }
-                .accessibilityLabel("Clear filter text")
+                .accessibilityLabel(Strings.Home.Filter.clear.string)
             }
         }
         .padding(10)

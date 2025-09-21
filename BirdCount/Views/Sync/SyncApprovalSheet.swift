@@ -30,12 +30,12 @@ struct SyncApprovalSheet: View {
                     .foregroundColor(.blue)
                 
                 // Title
-                Text("Sync Request")
+                Text(Strings.Sync.Approval.request.string)
                     .font(.title2)
                     .fontWeight(.semibold)
                 
                 // Sender info
-                Text("From: \(payload.senderDisplayName)")
+                Text(String(format: Strings.Sync.Approval.from.string, payload.senderDisplayName))
                     .font(.headline)
                     .foregroundColor(.secondary)
                 
@@ -43,33 +43,33 @@ struct SyncApprovalSheet: View {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Image(systemName: "doc.text")
-                        Text("Import Summary")
+                        Text(Strings.Sync.Approval.importSummary.string)
                             .font(.headline)
                     }
                     
                     Divider()
                     
                     HStack {
-                        Text("Observations:")
+                        Text(Strings.Sync.Approval.observationsLabel.string)
                         Spacer()
                         Text("\(observationCount)")
                             .fontWeight(.semibold)
                     }
                     
                     HStack {
-                        Text("Species:")
+                        Text(Strings.Sync.Approval.speciesLabel.string)
                         Spacer()
                         Text("\(speciesCount)")
                             .fontWeight(.semibold)
                     }
                     
                     HStack {
-                        Text("Date Range:")
+                        Text(Strings.Sync.Approval.dateRangeLabel.string)
                         Spacer()
                         VStack(alignment: .trailing, spacing: 2) {
                             Text(dateFormatter.string(from: payload.rangeStart))
                             if !Calendar.current.isDate(payload.rangeStart, inSameDayAs: payload.rangeEnd) {
-                                Text("to \(dateFormatter.string(from: payload.rangeEnd))")
+                                Text(String(format: Strings.Sync.Approval.to.string, dateFormatter.string(from: payload.rangeEnd)))
                             }
                         }
                         .font(.caption)
@@ -80,7 +80,7 @@ struct SyncApprovalSheet: View {
                 .cornerRadius(12)
                 
                 // Warning text
-                Text("New observations will be added to your records. Existing observations won't be modified.")
+                Text(Strings.Sync.Approval.disclaimer.string)
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -90,20 +90,20 @@ struct SyncApprovalSheet: View {
                 // Action buttons
                 VStack(spacing: 12) {
                     Button(action: { onResponse(true) }) {
-                        Text("Accept and Import")
+                        Text(Strings.Sync.Approval.accept.string)
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
                     
                     Button(action: { onResponse(false) }) {
-                        Text("Decline")
+                        Text(Strings.Sync.Approval.decline.string)
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
                 }
             }
             .padding()
-            .navigationTitle("Incoming Sync")
+            .navigationTitle(Strings.Sync.Approval.incoming.string)
             .navigationBarTitleDisplayMode(.inline)
         }
     }

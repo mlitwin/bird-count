@@ -16,7 +16,7 @@ public struct ObservationsSelectorView: View {
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(Capsule().fill(.tint))
-                    .accessibilityLabel("\(observations.totalSpeciesObserved(in: dateRangeStore.dateRange)) species observed")
+                    .accessibilityLabel(String(format: Strings.Accessibility.speciesObserved.string, observations.totalSpeciesObserved(in: dateRangeStore.dateRange)))
                 
                 Text(rangeSummary)
                     .font(.headline.weight(.semibold))
@@ -38,7 +38,7 @@ public struct ObservationsSelectorView: View {
                         .padding(8)
                         .background(Circle().fill(Color(.secondarySystemBackground)))
                 }
-                .accessibilityLabel("Edit range")
+                .accessibilityLabel(Strings.Share.Accessibility.editRange.string)
             }
         }
         .sheet(isPresented: $showCustomSheet) {
@@ -84,10 +84,10 @@ public struct ObservationsSelectorView: View {
         let startDate = dateRangeStore.dateRange.begin
         let endDate = dateRangeStore.dateRange.end
         if preset == .all {
-            return "All time"
+            return Strings.DateRange.allTime.string
         }
         if preset == .today {
-            return "Today"
+            return Strings.DateRange.today.string
         }
         let cal = Calendar.current
         let sameDay = cal.isDate(startDate, inSameDayAs: endDate)
@@ -182,12 +182,12 @@ private struct CustomRangeSheet: View {
                             refreshTrigger.toggle()
                         }) {
                             Image(systemName: "chevron.left")
-                                .accessibilityLabel("Previous day")
+                                .accessibilityLabel(Strings.DateRange.previous.string)
                         }
                         .buttonStyle(.bordered)
                         .controlSize(.small)
 
-                        Button("Today") { 
+                        Button(Strings.DateRange.today.string) { 
                             dateRangeStore.setPreset(.today)
                             refreshTrigger.toggle()
                         }
@@ -202,12 +202,12 @@ private struct CustomRangeSheet: View {
                             refreshTrigger.toggle()
                         }) {
                             Image(systemName: "chevron.right")
-                                .accessibilityLabel("Next day")
+                                .accessibilityLabel(Strings.DateRange.next.string)
                         }
                         .buttonStyle(.bordered)
                         .controlSize(.small)
 
-                        Button("All") { 
+                        Button(Strings.DateRange.all.string) { 
                             dateRangeStore.setPreset(.all)
                             refreshTrigger.toggle()
                         }
@@ -219,7 +219,7 @@ private struct CustomRangeSheet: View {
                         Spacer()
                     }
                 }
-                Section(header: Text("From")) {
+                Section(header: Text(Strings.DateRange.from.string)) {
                     DatePicker("", selection: Binding(
                         get: { dateRangeStore.dateRange.begin },
                         set: { newStart in
@@ -230,7 +230,7 @@ private struct CustomRangeSheet: View {
                     ), in: ...dateRangeStore.dateRange.end, displayedComponents: [.date, .hourAndMinute])
                         .labelsHidden()
                 }
-                Section(header: Text("To")) {
+                Section(header: Text(Strings.DateRange.to.string)) {
                     DatePicker("", selection: Binding(
                         get: { dateRangeStore.dateRange.end },
                         set: { newEnd in
@@ -243,13 +243,13 @@ private struct CustomRangeSheet: View {
                 }
             }
             .id(refreshTrigger) // Force refresh when refreshTrigger changes
-            .navigationTitle("Custom Range")
+            .navigationTitle(Strings.DateRange.custom.string)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { onCancel(); dismiss() }
+                    Button(Strings.General.cancel.string) { onCancel(); dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { onDone(); dismiss() }
+                    Button(Strings.General.done.string) { onDone(); dismiss() }
                 }
             }
         }

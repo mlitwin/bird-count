@@ -17,7 +17,7 @@ struct AppHeaderView: View {
         VStack(spacing: 0) {
             // Top bar: centered title with trailing Settings and Share buttons
             ZStack {
-                Text("Bird Count")
+                Text(Strings.Home.title.string)
                     .font(.title2.weight(.semibold))
             }
             .frame(maxWidth: .infinity)
@@ -29,7 +29,7 @@ struct AppHeaderView: View {
                         .background(Circle().fill(Color(.secondarySystemBackground)))
                 }
                 .disabled(observations.totalIndividuals(in: dateRangeStore.dateRange) == 0)
-                .accessibilityLabel("Share")
+                .accessibilityLabel(Strings.Share.Accessibility.label.string)
             }
             .overlay(alignment: .trailing) {
                 Button(action: { showSettings = true }) {
@@ -38,7 +38,7 @@ struct AppHeaderView: View {
                         .padding(8)
                         .background(Circle().fill(Color(.secondarySystemBackground)))
                 }
-                .accessibilityLabel("Settings")
+                .accessibilityLabel(Strings.Share.Accessibility.settings.string)
             }
             .padding(.horizontal)
             .padding(.top, 8)
@@ -60,22 +60,22 @@ struct AppHeaderView: View {
                 endPoint: .bottom
             )
         )
-        .confirmationDialog("Share Options", isPresented: $showShareOptions) {
-            Button("Export") { shareSheet = true }
-            Button("Send to Nearby iPhone") { 
+        .confirmationDialog(Strings.Share.title.string, isPresented: $showShareOptions) {
+            Button(Strings.Share.export.string) { shareSheet = true }
+            Button(Strings.Share.sendNearby.string) { 
                 syncMode = .sender
                 showSyncSheet = true 
             }
-            Button("Receive from Nearby iPhone") { 
+            Button(Strings.Share.receiveNearby.string) { 
                 syncMode = .receiver
                 showSyncSheet = true 
             }
-            Button("Cancel", role: .cancel) { }
+            Button(Strings.General.cancel.string, role: .cancel) { }
         }
         .sheet(isPresented: $shareSheet) {
             VStack(spacing: 16) {
                 Toggle(isOn: $includeCounts) {
-                    Text("Include counts")
+                    Text(Strings.Share.includeCounts.string)
                 }
                 .padding(.horizontal)
                 ShareActivityView(items: [exportText(includeCounts: includeCounts)])
@@ -136,9 +136,9 @@ struct AppHeaderView: View {
     private func exportText(includeCounts: Bool = false) -> String {
         let species = speciesInRange
         var lines: [String] = []
-        lines.append("Species observed: \(species.count)")
+        lines.append("\(Strings.Species.observed.string): \(species.count)")
         if includeCounts {
-            lines.append("Total individuals: \(species.reduce(0) { $0 + $1.count })")
+            lines.append("\(Strings.Species.individuals.string): \(species.reduce(0) { $0 + $1.count })")
         }
         lines.append("")
         for item in species {

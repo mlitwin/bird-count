@@ -47,7 +47,7 @@ struct SyncSheet: View {
                     
                 case .receivingApproval:
                     // This state is handled by the sheet presentation
-                    ProgressView("Processing...")
+                    ProgressView(Strings.Sync.processing.string)
                     
                 case .completed:
                     CompletedView(mode: mode)
@@ -57,11 +57,11 @@ struct SyncSheet: View {
                 }
             }
             .padding()
-            .navigationTitle("Sync Observations")
+            .navigationTitle(Strings.Sync.title.string)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button(Strings.General.cancel.string) {
                         syncManager.cancel()
                         dismiss()
                     }
@@ -142,18 +142,18 @@ private struct IdleView: View {
                 .font(.system(size: 60))
                 .foregroundColor(.blue)
             
-            Text("Sync Observations")
+            Text(Strings.Sync.title.string)
                 .font(.title2)
                 .fontWeight(.semibold)
             
             Text(mode == .sender 
-                ? "Send your bird observations to another iPhone nearby"
-                : "Receive bird observations from another iPhone nearby")
+                ? Strings.Sync.sendDescription.string
+                : Strings.Sync.receiveDescription.string)
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
             
             Button(action: onStart) {
-                Text(mode == .sender ? "Find Devices" : "Wait for Connection")
+                Text(mode == .sender ? Strings.Sync.findDevices.string : Strings.Sync.waitConnection.string)
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
@@ -169,11 +169,11 @@ private struct BrowsingView: View {
             ProgressView()
                 .scaleEffect(1.5)
             
-            Text("Looking for devices...")
+            Text(Strings.Sync.looking.string)
                 .font(.headline)
             
             if !syncManager.discoveredPeers.isEmpty {
-                Text("Found Devices:")
+                Text(Strings.Sync.foundDevices.string)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 
@@ -204,10 +204,10 @@ private struct AdvertisingView: View {
             ProgressView()
                 .scaleEffect(1.5)
             
-            Text("Waiting for connection...")
+            Text(Strings.Sync.waitingConnection.string)
                 .font(.headline)
             
-            Text("Make sure the sending device is looking for your device")
+            Text(Strings.Sync.makeSure.string)
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
         }
@@ -220,7 +220,7 @@ private struct ConnectingView: View {
             ProgressView()
                 .scaleEffect(1.5)
             
-            Text("Connecting...")
+            Text(Strings.Sync.connecting.string)
                 .font(.headline)
         }
     }
@@ -235,10 +235,10 @@ private struct ConnectedView: View {
                 .font(.system(size: 60))
                 .foregroundColor(.green)
             
-            Text("Connected!")
+            Text(Strings.Sync.connected.string)
                 .font(.headline)
             
-            Button("Send Observations", action: onSend)
+            Button(Strings.Sync.sendObservations.string, action: onSend)
                 .buttonStyle(.borderedProminent)
         }
     }
@@ -254,7 +254,7 @@ private struct TransferringView: View {
                 .progressViewStyle(CircularProgressViewStyle(tint: .blue))
                 .scaleEffect(1.5)
             
-            Text(mode == .sender ? "Sending observations..." : "Receiving observations...")
+            Text(mode == .sender ? Strings.Sync.sending.string : Strings.Sync.receiving.string)
                 .font(.headline)
             
             Text("\(Int(syncManager.progress * 100))%")
@@ -274,7 +274,7 @@ private struct CompletedView: View {
                 .font(.system(size: 60))
                 .foregroundColor(.green)
             
-            Text("Sync Complete!")
+            Text(Strings.Sync.complete.string)
                 .font(.headline)
             
             VStack(spacing: 8) {
@@ -293,9 +293,9 @@ private struct CompletedView: View {
     private var successMessage: String {
         switch mode {
         case .sender:
-            return "Observations have been successfully sent"
+            return Strings.Sync.successSent.string
         case .receiver:
-            return "Observations have been successfully received"
+            return Strings.Sync.successReceived.string
         }
     }
     
@@ -303,10 +303,10 @@ private struct CompletedView: View {
         switch mode {
         case .sender:
             let count = syncManager.lastSentRecordCount
-            return count == 1 ? "1 record sent" : "\(count) records sent"
+            return count == 1 ? Strings.Sync.recordSentSingle.string : String(format: Strings.Sync.recordSentMultiple.string, count)
         case .receiver:
             let count = syncManager.lastReceivedRecordCount
-            return count == 1 ? "1 record received" : "\(count) records received"
+            return count == 1 ? Strings.Sync.recordReceivedSingle.string : String(format: Strings.Sync.recordReceivedMultiple.string, count)
         }
     }
 }
@@ -320,7 +320,7 @@ private struct ErrorView: View {
                 .font(.system(size: 60))
                 .foregroundColor(.red)
             
-            Text("Sync Failed")
+            Text(Strings.Sync.failed.string)
                 .font(.headline)
             
             if let errorMessage = syncManager.errorMessage {
@@ -339,10 +339,10 @@ private struct WaitingToReceiveView: View {
                 .font(.system(size: 60))
                 .foregroundColor(.blue)
             
-            Text("Connected!")
+            Text(Strings.Sync.connected.string)
                 .font(.headline)
             
-            Text("Waiting to receive observations...")
+            Text(Strings.Sync.waitReceive.string)
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
             

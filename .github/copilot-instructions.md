@@ -1,6 +1,14 @@
 # Copilot Instructions for this Swift iOS App
 
-These guidelines help AI coding assistants generate changes that fit this project’s structure, tools, and conventions.
+These guidelines help AI coding assistant## Do/Don't
+- Do: Update `project.yml` for file changes; regenerate the project.
+- Do: Keep UI updates on main; heavy IO/decoding off main.
+- Do: Respect the sorting and range rules above.
+- Do: Use `Strings.*` constants for all user-facing text.
+- Do: Add new strings to both `Localizable.strings` and `Strings.swift`.
+- Don't: Introduce deps without updating manifests/docs.
+- Don't: Hardcode resource paths; use `Bundle.main.url(forResource:withExtension:)`.
+- Don't: Use hardcoded strings like `"Cancel"`, `"OK"`, etc. in UI code.rate changes that fit this project’s structure, tools, and conventions.
 
 ## General Rules
 
@@ -48,6 +56,36 @@ These guidelines help AI coding assistants generate changes that fit this projec
 ## Performance
 - Large JSON: memory-mapped Data and minimal decoding.
 - Maintain id→index maps for fast mutation (e.g., taxonomy incremental updates).
+
+## Localization
+- **Never use hardcoded strings** in UI code. Always use the localization system.
+- All user-facing strings must use `Strings.*` constants from `BirdCount/Localization/Strings.swift`.
+- Access localized strings via `.string` property: `Text(Strings.General.cancel.string)`
+- For SwiftUI Text with LocalizedStringKey: `Text(Strings.General.cancel.localizedStringKey)`
+- For string interpolation: `String(format: Strings.Accessibility.speciesObserved.string, count)`
+
+### Adding New Strings
+1. Add the key-value pair to `BirdCount/Resources/Localizations/en.lproj/Localizable.strings`
+2. Add the corresponding constant to `BirdCount/Localization/Strings.swift`
+3. Use the constant throughout the codebase
+
+### String Organization
+- Group strings by feature area (General, Home, Species, Sync, etc.)
+- Use hierarchical enums: `Strings.Sync.Approval.accept`
+- Follow existing naming patterns for consistency
+
+### Examples
+```swift
+// ✅ Correct - Use localized strings
+Text(Strings.General.cancel.string)
+Button(Strings.Home.Filter.clear.string) { /* action */ }
+.accessibilityLabel(Strings.Share.Accessibility.label.string)
+
+// ❌ Wrong - Hardcoded strings
+Text("Cancel")
+Button("Clear filter text") { /* action */ }
+.accessibilityLabel("Share")
+```
 
 ## Testing
 - Add minimal unit tests for public behaviors: one happy path + an edge case.

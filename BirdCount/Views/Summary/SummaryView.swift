@@ -68,8 +68,8 @@ struct SummaryView: View {
                 
                 // Totals (range is selected globally at the top of the app)
                 VStack(alignment: .leading, spacing: 8) {
-                    HStack { Text("Species observed"); Spacer(); Text("\(totalSpeciesInRange)").monospacedDigit() }
-                    HStack { Text("Total individuals"); Spacer(); Text("\(totalIndividualsInRange)").monospacedDigit() }
+                    HStack { Text(Strings.Species.observed.string); Spacer(); Text("\(totalSpeciesInRange)").monospacedDigit() }
+                    HStack { Text(Strings.Species.individuals.string); Spacer(); Text("\(totalIndividualsInRange)").monospacedDigit() }
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
@@ -79,14 +79,14 @@ struct SummaryView: View {
                 // Scrollable content: Species in Range
                 List {
                     if !species.isEmpty {
-                        Section("Species in Range") {
+                        Section(Strings.Species.inRange.string) {
                             ForEach(species) { item in
                                 HStack { Text(item.taxon.commonName); Spacer(); Text("\(item.count)").monospacedDigit() }
                             }
                         }
                     }
                     if species.isEmpty {
-                        Section { Text("No observations yet.").foregroundStyle(.secondary) }
+                        Section { Text(Strings.Observation.none.string).foregroundStyle(.secondary) }
                     }
                 }
                 .listStyle(.insetGrouped)
