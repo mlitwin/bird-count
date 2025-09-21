@@ -132,9 +132,24 @@ import Observation
         let locationManager = LocationManager.shared
         
         if locationManager.isAuthorized {
-            // Try to get current location if available, otherwise use existing location
-            let location = locationManager.currentObservationLocation
-            addObservation(taxonId, begin: begin, end: end, count: count, location: location)
+            // Check if we have a recent location (within 5 minutes)
+            if let currentLocation = locationManager.currentObservationLocation,
+               Date().timeIntervalSince(currentLocation.timestamp) < 300 {
+                // Use existing recent location
+                addObservation(taxonId, begin: begin, end: end, count: count, location: currentLocation)
+            } else {
+                // Request fresh location and add observation when received
+                locationManager.requestLocation { [weak self] result in
+                    switch result {
+                    case .success(let location):
+                        self?.addObservation(taxonId, begin: begin, end: end, count: count, location: location)
+                    case .failure(_):
+                        // Failed to get location, add without it
+                        self?.addObservation(taxonId, begin: begin, end: end, count: count, location: nil)
+                    }
+                }
+                return // Don't add the observation synchronously, wait for location callback
+            }
         } else {
             // No location permission, add without location
             addObservation(taxonId, begin: begin, end: end, count: count, location: nil)
@@ -147,9 +162,24 @@ import Observation
         let locationManager = LocationManager.shared
         
         if locationManager.isAuthorized {
-            // Try to get current location if available, otherwise use existing location
-            let location = locationManager.currentObservationLocation
-            return addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: location)
+            // Check if we have a recent location (within 5 minutes)
+            if let currentLocation = locationManager.currentObservationLocation,
+               Date().timeIntervalSince(currentLocation.timestamp) < 300 {
+                // Use existing recent location
+                return addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: currentLocation)
+            } else {
+                // Request fresh location and add child observation when received
+                locationManager.requestLocation { [weak self] result in
+                    switch result {
+                    case .success(let location):
+                        _ = self?.addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: location)
+                    case .failure(_):
+                        // Failed to get location, add without it
+                        _ = self?.addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: nil)
+                    }
+                }
+                return true // Optimistically return true since we're adding async
+            }
         } else {
             // No location permission, add without location
             return addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: nil)
