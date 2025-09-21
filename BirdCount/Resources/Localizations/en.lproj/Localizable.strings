@@ -13,6 +13,7 @@
 "general.clear" = "Clear";
 "general.loading" = "Loading...";
 "general.error" = "Error";
+"general.menu" = "Menu";
 
 // MARK: - Tabs
 "tab.home" = "Home";

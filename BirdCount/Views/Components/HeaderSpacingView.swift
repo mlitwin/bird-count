@@ -5,7 +5,7 @@ struct HeaderSpacingView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Visible header structure matching the actual floating header
-            AppHeaderView(showSettings: .constant(false))
+            AppHeaderView(showSettings: .constant(false), showLeftDrawer: .constant(false))
         }
         .background(
             // Solid background matching systemGroupedBackground

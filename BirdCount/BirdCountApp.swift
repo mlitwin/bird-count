@@ -33,29 +33,39 @@ private struct TopTabsRoot: View {
     private enum Tab: String, CaseIterable, Identifiable { case home = "Home", summary = "Summary", log = "Log"; var id: String { rawValue } }
     @State private var selection: Tab = .home
     @State private var showSettings: Bool = false
+    @State private var showLeftDrawer: Bool = false
     @Environment(DateRangeStore.self) private var dateRangeStore
 
     var body: some View {
-        // Content under top tabs: bottom TabView for Home/Summary/Log
-        TabView(selection: $selection) {
-            HomeView()
-                .tabItem { Label(Strings.Tab.home.string, systemImage: "house") }
-                .tag(Tab.home)
+        ZStack {
+            // Content under top tabs: bottom TabView for Home/Summary/Log
+            TabView(selection: $selection) {
+                HomeView()
+                    .tabItem { Label(Strings.Tab.home.string, systemImage: "house") }
+                    .tag(Tab.home)
 
-            SummaryView()
-                .tabItem { Label(Strings.Tab.summary.string, systemImage: "chart.bar") }
-                .tag(Tab.summary)
+                SummaryView()
+                    .tabItem { Label(Strings.Tab.summary.string, systemImage: "chart.bar") }
+                    .tag(Tab.summary)
 
-            ObservationLogView()
-                .tabItem { Label(Strings.Tab.log.string, systemImage: "list.bullet") }
-                .tag(Tab.log)
-        }
-        .safeAreaInset(edge: .top, spacing: 0) {
-            VStack(spacing: 0) {
-                AppHeaderView(showSettings: $showSettings)
-                Divider()
+                ObservationLogView()
+                    .tabItem { Label(Strings.Tab.log.string, systemImage: "list.bullet") }
+                    .tag(Tab.log)
             }
+            .safeAreaInset(edge: .top, spacing: 8) {
+                VStack(spacing: 0) {
+                    AppHeaderView(showSettings: $showSettings, showLeftDrawer: $showLeftDrawer)
+                    Divider()
+                }
+            }
+            .sheet(isPresented: $showSettings) { SettingsView(show: $showSettings) }
+            
+            // Left drawer overlay at the top level
+            LeftDrawerView(
+                isPresented: $showLeftDrawer,
+                showSettings: $showSettings,
+                showShareOptions: .constant(false)
+            )
         }
-        .sheet(isPresented: $showSettings) { SettingsView(show: $showSettings) }
     }
 }
