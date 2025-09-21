@@ -229,5 +229,6 @@ private extension TaxonomyStore {
         .environment(ObservationStore.previewInstance)
         .environment(SettingsStore())
         .environment(DateRangeStore())
+        .environment(SyncSessionManager())
 }
 #endif
