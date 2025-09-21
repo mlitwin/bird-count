@@ -133,21 +133,21 @@ struct HomeView: View {
 
     @ViewBuilder private var content: some View {
         if let error = taxonomy.error {
-            ContentUnavailableView(Strings.General.error.string, systemImage: "exclamationmark.triangle", description: Text(error))
-                .safeAreaInset(edge: .top, spacing: 0) {
-                    HeaderSpacingView()
-                }
+            VStack(spacing: 0) {
+                HeaderSpacingView()
+                ContentUnavailableView(Strings.General.error.string, systemImage: "exclamationmark.triangle", description: Text(error))
+            }
         } else if !taxonomy.loaded {
-            ProgressView(Strings.Home.loading.string)
-                .task { taxonomy.load() }
-                .safeAreaInset(edge: .top, spacing: 0) {
-                    HeaderSpacingView()
-                }
+            VStack(spacing: 0) {
+                HeaderSpacingView()
+                ProgressView(Strings.Home.loading.string)
+                    .task { taxonomy.load() }
+            }
         } else if taxonomy.species.isEmpty {
-            ContentUnavailableView(Strings.Species.List.empty.string, systemImage: "bird", description: Text(Strings.Species.List.emptyDescription.string))
-                .safeAreaInset(edge: .top, spacing: 0) {
-                    HeaderSpacingView()
-                }
+            VStack(spacing: 0) {
+                HeaderSpacingView()
+                ContentUnavailableView(Strings.Species.List.empty.string, systemImage: "bird", description: Text(Strings.Species.List.emptyDescription.string))
+            }
         } else {
             SpeciesListView(taxa: filtered, scrollToBottomSignal: scrollToBottomSignal) { taxon in
                 selectedTaxon = taxon

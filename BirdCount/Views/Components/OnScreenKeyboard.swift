@@ -7,11 +7,8 @@ struct OnScreenKeyboard: View {
 
     // Always active on Home; keep as a parameter for flexibility
     var active: Bool = true
-    // Built-in bottom spacing so the keyboard doesn't feel cramped against edges
     var bottomPadding: CGFloat = 8
-    // A bit of space above the top row
     var topPadding: CGFloat = 8
-    // Vertical spacing between rows of keys
     var rowSpacing: CGFloat = 10
     private let rows: [[String]] = [
         ["Q","W","E","R","T","Y","U","I","O","P"],
