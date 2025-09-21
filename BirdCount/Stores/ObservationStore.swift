@@ -28,8 +28,8 @@ import Observation
     func lastObservedDate(for id: String) -> Date? { cache.lastObservedDate(for: id) }
 
     // MARK: Mutations
-    public func addObservation(_ taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1) {
-        observations.append(ObservationRecord(id: UUID(), taxonId: taxonId, begin: begin, end: end, count: max(0, count)))
+    public func addObservation(_ taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1, location: ObservationLocation? = nil) {
+        observations.append(ObservationRecord(id: UUID(), taxonId: taxonId, begin: begin, end: end, count: max(0, count), location: location))
         touchRecent(taxonId)
     }
     
@@ -100,8 +100,8 @@ import Observation
     /// Attach a child observation record to an existing record identified by `parentId`.
     /// Returns true if the parent was found and the child added.
     @discardableResult
-    public func addChildObservation(parentId: UUID, taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1) -> Bool {
-    let newChild = ObservationRecord(id: UUID(), taxonId: taxonId, begin: begin, end: end, count: count)
+    public func addChildObservation(parentId: UUID, taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1, location: ObservationLocation? = nil) -> Bool {
+    let newChild = ObservationRecord(id: UUID(), taxonId: taxonId, begin: begin, end: end, count: count, location: location)
         var didAttach = false
         func attach(into array: inout [ObservationRecord]) {
             for idx in array.indices {
@@ -123,6 +123,37 @@ import Observation
             rebuildDerived()
         }
         return didAttach
+    }
+    
+    // MARK: Location-aware observation methods
+    
+    /// Add observation with automatic location capture if permissions allow
+    public func addObservationWithLocation(_ taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1) {
+        let locationManager = LocationManager.shared
+        
+        if locationManager.isAuthorized {
+            // Try to get current location if available, otherwise use existing location
+            let location = locationManager.currentObservationLocation
+            addObservation(taxonId, begin: begin, end: end, count: count, location: location)
+        } else {
+            // No location permission, add without location
+            addObservation(taxonId, begin: begin, end: end, count: count, location: nil)
+        }
+    }
+    
+    /// Add child observation with automatic location capture if permissions allow
+    @discardableResult
+    public func addChildObservationWithLocation(parentId: UUID, taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1) -> Bool {
+        let locationManager = LocationManager.shared
+        
+        if locationManager.isAuthorized {
+            // Try to get current location if available, otherwise use existing location
+            let location = locationManager.currentObservationLocation
+            return addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: location)
+        } else {
+            // No location permission, add without location
+            return addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: nil)
+        }
     }
 
     // MARK: Recent handling

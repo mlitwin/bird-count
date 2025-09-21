@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CountAdjustSheet: View, Identifiable {
     @Environment(ObservationStore.self) private var observations
+    @Environment(LocationManager.self) private var locationManager
     let taxon: Taxon
     // Optional parent record id; when present, new observations will be attached as children of this parent
     var parentId: UUID? = nil
@@ -38,6 +39,14 @@ struct CountAdjustSheet: View, Identifiable {
             // Default for new root additions
             tempCount = 1
         }
+        
+        // Request location when preparing to add observation
+        requestLocationForObservation()
+    }
+    
+    private func requestLocationForObservation() {
+        // Ensure we have the best location available for the observation
+        locationManager.ensureLocationForObservation()
     }
 
     // MARK: Logic
@@ -53,12 +62,12 @@ struct CountAdjustSheet: View, Identifiable {
             let currentTotal = recursiveCount(parent)
             let delta = tempCount - currentTotal
             if delta != 0 {
-                _ = observations.addChildObservation(parentId: pid, taxonId: taxon.id, begin: Date(), end: nil, count: delta)
+                _ = observations.addChildObservationWithLocation(parentId: pid, taxonId: taxon.id, begin: Date(), end: nil, count: delta)
             }
         } else {
             // For new root additions, treat tempCount as the count to add; allow 0 => no-op
             if tempCount > 0 {
-                observations.addObservation(taxon.id, begin: Date(), end: nil, count: tempCount)
+                observations.addObservationWithLocation(taxon.id, begin: Date(), end: nil, count: tempCount)
                 didAddRootObservation = true
             }
         }

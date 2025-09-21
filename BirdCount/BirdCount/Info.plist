@@ -29,6 +29,8 @@
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>This app uses the local network to sync bird observations between devices.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app uses your location to record where bird observations were made. Location data helps you track birding locations and is only stored locally on your device.</string>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>

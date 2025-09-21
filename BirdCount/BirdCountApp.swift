@@ -17,6 +17,7 @@ struct BirdCountApp: App {
     @State private var settingsStore = SettingsStore()
     @State private var dateRangeStore = DateRangeStore()
     @State private var syncSessionManager = SyncSessionManager()
+    @State private var locationManager = LocationManager.shared
 
     var body: some Scene {
         WindowGroup {
@@ -26,6 +27,7 @@ struct BirdCountApp: App {
                 .environment(settingsStore)
                 .environment(dateRangeStore)
                 .environment(syncSessionManager)
+                .environment(locationManager)
         }
     }
 }

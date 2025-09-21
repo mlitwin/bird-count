@@ -198,6 +198,39 @@ enum Strings {
             static let unknownDevice = LocalizedString("error.sync.unknown.device")
         }
     }
+    
+    // MARK: - Location
+    enum Location {
+        static let capture = LocalizedString("location.capture")
+        static let current = LocalizedString("location.current")
+        static let unknown = LocalizedString("location.unknown")
+        static let permissionRequest = LocalizedString("location.permission.request")
+        static let permissionTitle = LocalizedString("location.permission.title")
+        static let permissionMessage = LocalizedString("location.permission.message")
+        static let settingsPrompt = LocalizedString("location.settings.prompt")
+        static let settingsButton = LocalizedString("location.settings.button")
+        
+        enum Accuracy {
+            static let excellent = LocalizedString("location.accuracy.excellent")
+            static let good = LocalizedString("location.accuracy.good")
+            static let fair = LocalizedString("location.accuracy.fair")
+            static let poor = LocalizedString("location.accuracy.poor")
+            static let invalid = LocalizedString("location.accuracy.invalid")
+        }
+        
+        enum Error {
+            static let servicesDisabled = LocalizedString("location.error.services.disabled")
+            static let permissionDenied = LocalizedString("location.error.permission.denied")
+            static let unknownStatus = LocalizedString("location.error.unknown.status")
+            static let unavailable = LocalizedString("location.error.unavailable")
+            
+            enum Recovery {
+                static let enableServices = LocalizedString("location.error.recovery.enable.services")
+                static let grantPermission = LocalizedString("location.error.recovery.grant.permission")
+                static let tryAgain = LocalizedString("location.error.recovery.try.again")
+            }
+        }
+    }
 }
 
 // MARK: - SwiftUI Extensions

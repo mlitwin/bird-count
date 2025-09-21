@@ -30,7 +30,7 @@ struct ObservationLogView: View {
                             Button(role: .destructive) {
                                 let total = recursiveCount(rec)
                                 guard total != 0 else { return }
-                                _ = observationsStore.addChildObservation(
+                                _ = observationsStore.addChildObservationWithLocation(
                                     parentId: rec.id,
                                     taxonId: rec.taxonId,
                                     begin: Date(),

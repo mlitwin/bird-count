@@ -40,6 +40,7 @@ targets:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
         NSLocalNetworkUsageDescription: "This app uses the local network to sync bird observations between devices."
+        NSLocationWhenInUseUsageDescription: "This app uses your location to record where bird observations were made. Location data helps you track birding locations and is only stored locally on your device."
         NSBonjourServices:
           - "_birdcount._tcp"
           - "_birdcount._tcp.local."

@@ -1,11 +1,23 @@
 # Copilot Instructions for this Swift iOS App
 
-These guidelines help AI coding assistant## Do/Don't
-- Do: Update `project.yml` for file changes; regenerate the project.
-- Do: Keep UI updates on main; heavy IO/decoding off main.
-- Do: Respect the sorting and range rules above.
-- Do: Use `Strings.*` constants for all user-facing text.
-- Do: Add new strings to both `Localizable.strings` and `Strings.swift`.
+These guidelines help AI coding assistants generate changes that fit this project's structure, tools, and conventions.
+
+## General Rules
+
+- Do: After a change, run 'make build-test' to ensure everything works as expected. 
+
+## Scope and targets
+- Platform: iOS (target 18.5+), Swift 5.x, SwiftUI-first.
+- State: Use Swift Observation (@Observable) stores injected via `.environment`.
+- UI: SwiftUI views; avoid UIKit unless strictly necessary.
+
+## Project structure and tools
+- Project is generated with XcodeGen (`project.yml`).
+  - Don't hand-edit `.xcodeproj`; update `project.yml` and run the generator.
+  - Don't hand-edit `Info.plist`; add properties to `project.yml` under `info.properties` instead.
+  - For app permissions (location, camera, etc.), add usage description keys to `project.yml`.
+- Automation via Fastlane (bundled): generate/build/test/archive.
+- Tests live in `Tests/` and use the `Testing` package with `#expect`.
 - Don't: Introduce deps without updating manifests/docs.
 - Don't: Hardcode resource paths; use `Bundle.main.url(forResource:withExtension:)`.
 - Don't: Use hardcoded strings like `"Cancel"`, `"OK"`, etc. in UI code.rate changes that fit this project’s structure, tools, and conventions.

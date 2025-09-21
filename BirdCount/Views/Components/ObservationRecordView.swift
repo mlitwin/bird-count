@@ -12,6 +12,12 @@ struct ObservationRecordView: View {
                 Text(dateRangeString)
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                if let location = record.location, location.isValid {
+                    Text(location.displayName)
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                        .lineLimit(1)
+                }
             }
             Spacer()
             // Always show count; use recursive total including children

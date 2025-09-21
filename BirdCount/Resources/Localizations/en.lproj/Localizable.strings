@@ -137,3 +137,29 @@
 "error.sync.advertising.failed" = "Failed to start advertising: %@";
 "error.sync.endpoint.not.found" = "Could not find endpoint for peer";
 "error.sync.unknown.device" = "Unknown Device";
+
+// MARK: - Location
+"location.capture" = "Capture Location";
+"location.current" = "Current Location";
+"location.unknown" = "Unknown Location";
+"location.accuracy.excellent" = "Excellent";
+"location.accuracy.good" = "Good";
+"location.accuracy.fair" = "Fair";
+"location.accuracy.poor" = "Poor";
+"location.accuracy.invalid" = "Invalid";
+"location.permission.request" = "Enable Location";
+"location.permission.title" = "Location Access";
+"location.permission.message" = "Allow BirdCount to access your location to record where observations were made?";
+"location.settings.prompt" = "Enable location access in Settings to capture observation locations.";
+"location.settings.button" = "Open Settings";
+
+// MARK: - Location Errors
+"location.error.services.disabled" = "Location services are disabled";
+"location.error.permission.denied" = "Location permission denied";
+"location.error.unknown.status" = "Unknown location authorization status";
+"location.error.unavailable" = "Location unavailable";
+
+// MARK: - Location Error Recovery
+"location.error.recovery.enable.services" = "Enable Location Services in Settings";
+"location.error.recovery.grant.permission" = "Grant location permission in Settings";
+"location.error.recovery.try.again" = "Try again later";
