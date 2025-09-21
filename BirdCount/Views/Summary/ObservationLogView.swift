@@ -20,26 +20,28 @@ struct ObservationLogView: View {
 
     var body: some View {
         NavigationStack {
-            List(display) { rec in
-                ObservationRecordView(record: rec)
-                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                        Button(role: .destructive) {
-                            let total = recursiveCount(rec)
-                            guard total != 0 else { return }
-                            _ = observationsStore.addChildObservation(
-                                parentId: rec.id,
-                                taxonId: rec.taxonId,
-                                begin: Date(),
-                                end: nil,
-                                count: -total
-                            )
-                        } label: {
-                            Label("Delete", systemImage: "trash")
+            VStack(spacing: 0) {
+                // Header spacing to account for floating AppHeaderView
+                HeaderSpacingView()
+                
+                List(display) { rec in
+                    ObservationRecordView(record: rec)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            Button(role: .destructive) {
+                                let total = recursiveCount(rec)
+                                guard total != 0 else { return }
+                                _ = observationsStore.addChildObservation(
+                                    parentId: rec.id,
+                                    taxonId: rec.taxonId,
+                                    begin: Date(),
+                                    end: nil,
+                                    count: -total
+                                )
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
                         }
-                    }
-            }
-                        .safeAreaInset(edge: .top, spacing: 0) {
-                Color.clear.frame(height: ViewConstants.floatingHeaderTopPadding)
+                }
             }
         
         .toolbar {

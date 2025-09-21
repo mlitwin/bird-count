@@ -135,25 +135,22 @@ struct HomeView: View {
         if let error = taxonomy.error {
             ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(error))
                 .safeAreaInset(edge: .top, spacing: 0) {
-                    Color.clear.frame(height: ViewConstants.floatingHeaderTopPadding)
+                    HeaderSpacingView()
                 }
         } else if !taxonomy.loaded {
             ProgressView("Loading taxonomy…")
                 .task { taxonomy.load() }
                 .safeAreaInset(edge: .top, spacing: 0) {
-                    Color.clear.frame(height: ViewConstants.floatingHeaderTopPadding)
+                    HeaderSpacingView()
                 }
         } else if taxonomy.species.isEmpty {
             ContentUnavailableView("No Species", systemImage: "bird", description: Text("Taxonomy file empty"))
                 .safeAreaInset(edge: .top, spacing: 0) {
-                    Color.clear.frame(height: ViewConstants.floatingHeaderTopPadding)
+                    HeaderSpacingView()
                 }
         } else {
             SpeciesListView(taxa: filtered, scrollToBottomSignal: scrollToBottomSignal) { taxon in
                 selectedTaxon = taxon
-            }
-            .safeAreaInset(edge: .top, spacing: 0) {
-                Color.clear.frame(height: ViewConstants.floatingHeaderTopPadding)
             }
         }
     }

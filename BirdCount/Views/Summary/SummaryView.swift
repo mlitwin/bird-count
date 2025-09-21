@@ -63,13 +63,15 @@ struct SummaryView: View {
     let totalIndividualsInRange = species.reduce(0) { $0 + $1.count }
         return NavigationStack {
             VStack(spacing: 0) {
+                // Header spacing to account for floating AppHeaderView
+                HeaderSpacingView()
+                
                 // Totals (range is selected globally at the top of the app)
                 VStack(alignment: .leading, spacing: 8) {
                     HStack { Text("Species observed"); Spacer(); Text("\(totalSpeciesInRange)").monospacedDigit() }
                     HStack { Text("Total individuals"); Spacer(); Text("\(totalIndividualsInRange)").monospacedDigit() }
                 }
                 .padding(.horizontal)
-                .padding(.top, ViewConstants.floatingHeaderTopPadding)
                 .padding(.vertical, 12)
 
                 Divider()

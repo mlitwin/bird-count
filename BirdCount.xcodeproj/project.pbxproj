@@ -23,6 +23,7 @@
 		42EE39979BF5B402A2C26C35 /* ObservationsSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 965E0236AD7C27566CDA7512 /* ObservationsSelectorView.swift */; };
 		43633DA051B6ACEE6D0811D9 /* checklist-US-CA-041.json in Resources */ = {isa = PBXBuildFile; fileRef = AD12BB59D440BC995C372E0D /* checklist-US-CA-041.json */; };
 		47FB6008BE8519B9F446ECED /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 783AD92EE988689DEFC27F00 /* SettingsView.swift */; };
+		4B1502BCC309C7909CB58C05 /* HeaderSpacingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D7AE2C3B7717C8EA9B78229 /* HeaderSpacingView.swift */; };
 		50EE06DA5183920B0950A212 /* Taxon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74ADC22819086097B12402BC /* Taxon.swift */; };
 		523C39EC6322BD2B9D47FA9C /* PayloadV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65AC4B6E1A3FAEA5DB80436 /* PayloadV1.swift */; };
 		594E347B44CB9AE16D14A93F /* ObservationLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCA969A738EAD7B00CC123B /* ObservationLogView.swift */; };
@@ -108,6 +109,7 @@
 		1B29D04C3005F2B05B763ABE /* MockSyncTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSyncTransport.swift; sourceTree = "<group>"; };
 		1C2576ACDD95729987584994 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1F5C38ADF32B9D45D6ED7AAF /* TaxonomyStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaxonomyStoreTests.swift; sourceTree = "<group>"; };
+		2D7AE2C3B7717C8EA9B78229 /* HeaderSpacingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderSpacingView.swift; sourceTree = "<group>"; };
 		2E550332A5E0138A929F3B43 /* SyncSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncSessionManager.swift; sourceTree = "<group>"; };
 		4186A73E1CCA966174627C23 /* BirdCount.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BirdCount.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		490E29F6D3D7AA78458944AC /* BirdCountCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = BirdCountCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -203,6 +205,7 @@
 			children = (
 				EF1503D4300A927D857CA79D /* AppHeaderView.swift */,
 				FFA8094EBAC869E648D7F854 /* CountAdjustSheet.swift */,
+				2D7AE2C3B7717C8EA9B78229 /* HeaderSpacingView.swift */,
 				CCCBE3E988878FA83F955105 /* NumericPad.swift */,
 				FBCE0B9078509DFFC117339F /* ObservationRecordView.swift */,
 				965E0236AD7C27566CDA7512 /* ObservationsSelectorView.swift */,
@@ -518,6 +521,7 @@
 				3C661CC0F44CD129B8242012 /* DateRange.swift in Sources */,
 				EA346BFABBA8BAE1E3688F4D /* DateRangePreset.swift in Sources */,
 				9288B6EA2B9DCAC3A584E6A2 /* DateRangeStore.swift in Sources */,
+				4B1502BCC309C7909CB58C05 /* HeaderSpacingView.swift in Sources */,
 				5B4143CF290C1B88ED929590 /* HomeView.swift in Sources */,
 				7803ACA26233782463A7568B /* MockSyncTransport.swift in Sources */,
 				2599DEF5D927CA3279EC427C /* NetworkSyncTransport.swift in Sources */,
