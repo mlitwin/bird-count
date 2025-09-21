@@ -9,23 +9,12 @@ public struct ObservationsSelectorView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .center) {
-                // Species count badge
-                Text("\(observations.totalSpeciesObserved(in: dateRangeStore.dateRange))")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Capsule().fill(.tint))
-                    .accessibilityLabel(String(format: Strings.Accessibility.speciesObserved.string, observations.totalSpeciesObserved(in: dateRangeStore.dateRange)))
-                
                 Text(rangeSummary)
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.9)
                     .allowsTightening(true)
-                
-                Spacer()
                 
                 Button(action: {
                     previousPreset = dateRangeStore.dateRangePreset
@@ -39,6 +28,17 @@ public struct ObservationsSelectorView: View {
                         .background(Circle().fill(Color(.secondarySystemBackground)))
                 }
                 .accessibilityLabel(Strings.Share.Accessibility.editRange.string)
+                
+                Spacer()
+                
+                // Species count badge
+                Text("\(observations.totalSpeciesObserved(in: dateRangeStore.dateRange))")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(.tint))
+                    .accessibilityLabel(String(format: Strings.Accessibility.speciesObserved.string, observations.totalSpeciesObserved(in: dateRangeStore.dateRange)))
             }
         }
         .sheet(isPresented: $showCustomSheet) {
