@@ -20,15 +20,18 @@ public struct ObservationRecord: Identifiable, Codable, Equatable {
         get { data.count }
         set { data.count = newValue }
     }
+    public var location: ObservationLocation? { data.location }
 
     // MARK: Initializers
-    public init(id: UUID = UUID(), taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1) {
-        self.data = ObservationRecordDTO(id: id, parentId: nil, taxonId: taxonId, begin: begin, end: end ?? begin, count: count)
+    public init(id: UUID = UUID(), taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1, location: ObservationLocation? = nil) {
+        let beginTime = begin
+        self.data = ObservationRecordDTO(id: id, parentId: nil, taxonId: taxonId, begin: beginTime, end: end ?? beginTime, count: count, location: location)
         self.children = []
     }
 
-    public init(parent: inout ObservationRecord, id: UUID = UUID(), taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1) {
-        self.data = ObservationRecordDTO(id: id, parentId: parent.id, taxonId: taxonId, begin: begin, end: end ?? begin, count: count)
+    public init(parent: inout ObservationRecord, id: UUID = UUID(), taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1, location: ObservationLocation? = nil) {
+        let beginTime = begin
+        self.data = ObservationRecordDTO(id: id, parentId: parent.id, taxonId: taxonId, begin: beginTime, end: end ?? beginTime, count: count, location: location)
         self.children = []
         parent.children.append(self)
     }

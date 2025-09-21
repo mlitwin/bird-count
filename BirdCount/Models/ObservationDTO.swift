@@ -8,13 +8,15 @@ public struct ObservationRecordDTO: Identifiable, Codable, Equatable {
     public let begin: Date
     public let end: Date
     public var count: Int
+    public let location: ObservationLocation?
 
-    public init(id: UUID, parentId: UUID? = nil, taxonId: String, begin: Date, end: Date, count: Int) {
+    public init(id: UUID, parentId: UUID? = nil, taxonId: String, begin: Date, end: Date, count: Int, location: ObservationLocation? = nil) {
         self.id = id
         self.parentId = parentId
         self.taxonId = taxonId
         self.begin = begin
         self.end = end
         self.count = count
+        self.location = location
     }
 }

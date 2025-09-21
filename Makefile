@@ -44,7 +44,7 @@ simulators:
 	@xcrun simctl list devices available
 
 # Build and run macOS-native core tests (fast, no simulator)
-core-test:
+test-core:
 	@xcodebuild \
 		-project "$(PROJECT)" \
 		-scheme "BirdCountCore" \

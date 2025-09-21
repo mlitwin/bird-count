@@ -1,5 +1,5 @@
 import XCTest
-@testable import BirdCountCore
+@testable import BirdCount
 
 final class ObservationSyncTests: XCTestCase {
     
