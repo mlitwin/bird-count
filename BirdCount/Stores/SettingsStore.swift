@@ -10,18 +10,12 @@ import Observation
     private var initializing = true
 
     // User-adjustable settings with default values
-
-    // Removed: feedback and appearance settings
-    // Checklist related
     var selectedChecklistId: String? = nil { didSet { persistIfReady() } }
     var minCommonness: Int = 0 { didSet { normalizeRanges(changed: .min) } }
     var maxCommonness: Int = 3 { didSet { normalizeRanges(changed: .max) } }
 
-    // Removed: DarkModeOverride
-
     init() {
         let defaults = UserDefaults.standard
-    // Removed: enableHaptics, darkModeOverride
         if let raw = defaults.string(forKey: Self.key("selectedChecklistId")), !raw.isEmpty { selectedChecklistId = raw }
         if defaults.object(forKey: Self.key("minCommonness")) != nil { minCommonness = defaults.integer(forKey: Self.key("minCommonness")) }
         if defaults.object(forKey: Self.key("maxCommonness")) != nil { maxCommonness = defaults.integer(forKey: Self.key("maxCommonness")) }
@@ -49,7 +43,6 @@ import Observation
     private func persistIfReady() { if !initializing { persist() } }
     private func persist() {
         let d = UserDefaults.standard
-    // Removed: enableHaptics, darkModeOverride
         d.set(selectedChecklistId ?? "", forKey: Self.key("selectedChecklistId"))
         d.set(minCommonness, forKey: Self.key("minCommonness"))
         d.set(maxCommonness, forKey: Self.key("maxCommonness"))

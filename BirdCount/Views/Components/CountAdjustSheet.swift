@@ -11,7 +11,6 @@ struct CountAdjustSheet: View, Identifiable {
     var onCommitted: ((Bool) -> Void)? = nil
     var id: String { taxon.id }
     @State private var tempCount: Int = 1 // desired total count when adjusting existing record
-    // Numeric keypad removed; simple +/- controls only
 
     var body: some View {
         NavigationStack {
@@ -83,9 +82,7 @@ private struct CountHeaderView: View {
     }
 }
 
-// Numeric keypad and toggle removed
-
-// Count display is now integrated into StepControlsView
+// MARK: - Step Controls
 
 private struct StepControlsView: View {
     let value: Int

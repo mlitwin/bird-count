@@ -154,8 +154,6 @@ struct HomeView: View {
             }
         }
     }
-
-        // Removed keyboard toggle button
 }
 
 // PreferenceKey for measuring bottom controls height dynamically
@@ -176,8 +174,7 @@ private struct SheetContentHeightKey: PreferenceKey {
 
     
 
-// A simple key that updates when range inputs change
-// (removed recomputeKey tuple to avoid Hashable conformance requirement)
+// MARK: - Filter Bar
 
 private struct FilterBar: View {
     let text: String
