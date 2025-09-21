@@ -1,4 +1,5 @@
 import SwiftUI
+import MapKit
 
 struct ObservationDetailsSheet: View {
     @Environment(TaxonomyStore.self) private var taxonomy
@@ -145,18 +146,27 @@ private struct LocationDetailsSection: View {
                 .fontWeight(.semibold)
             
             if let location = record.location, location.isValid {
-                DetailRow(label: "Name", value: location.displayName)
-                DetailRow(label: "Coordinates", value: location.formattedCoordinates())
-                DetailRow(label: "Accuracy", value: "\(location.accuracyDescription) (±\(Int(location.horizontalAccuracy))m)")
+                // Map View
+                LocationMapView(location: location)
+                    .frame(height: 200)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3), lineWidth: 1))
                 
-                if let altitude = location.altitude {
-                    DetailRow(label: "Altitude", value: "\(Int(altitude))m")
-                }
-                
-                DetailRow(label: "Recorded", value: location.timestamp.formatted(date: .omitted, time: .standard))
-                
-                if let notes = location.notes, !notes.isEmpty {
-                    DetailRow(label: "Notes", value: notes)
+                // Location Details
+                VStack(alignment: .leading, spacing: 8) {
+                    DetailRow(label: "Name", value: location.displayName)
+                    DetailRow(label: "Coordinates", value: location.formattedCoordinates())
+                    DetailRow(label: "Accuracy", value: "\(location.accuracyDescription) (±\(Int(location.horizontalAccuracy))m)")
+                    
+                    if let altitude = location.altitude {
+                        DetailRow(label: "Altitude", value: "\(Int(altitude))m")
+                    }
+                    
+                    DetailRow(label: "Recorded", value: location.timestamp.formatted(date: .omitted, time: .standard))
+                    
+                    if let notes = location.notes, !notes.isEmpty {
+                        DetailRow(label: "Notes", value: notes)
+                    }
                 }
             } else {
                 Text("No location data available")
@@ -266,6 +276,85 @@ private struct SummarySection: View {
 
 // MARK: - Helper Views
 
+private struct LocationMapView: View {
+    let location: ObservationLocation
+    
+    @State private var cameraPosition: MapCameraPosition
+    
+    init(location: ObservationLocation) {
+        self.location = location
+        
+        // Initialize camera position centered on the location
+        let coordinate = CLLocationCoordinate2D(
+            latitude: location.latitude,
+            longitude: location.longitude
+        )
+        
+        // Set zoom level based on accuracy - less accurate locations get zoomed out more
+        let span: MKCoordinateSpan
+        if location.horizontalAccuracy <= 50 {
+            span = MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01) // Close zoom for accurate locations
+        } else if location.horizontalAccuracy <= 200 {
+            span = MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02) // Medium zoom
+        } else {
+            span = MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05) // Wider zoom for less accurate locations
+        }
+        
+        self._cameraPosition = State(initialValue: .region(MKCoordinateRegion(center: coordinate, span: span)))
+    }
+    
+    var body: some View {
+        Map(position: $cameraPosition) {
+            // Location pin
+            Annotation("Observation Location", coordinate: coordinate) {
+                LocationPin()
+            }
+            
+            // Accuracy circle if accuracy is reasonable to show
+            if location.horizontalAccuracy > 0 && location.horizontalAccuracy <= 1000 {
+                MapCircle(center: coordinate, radius: location.horizontalAccuracy)
+                    .foregroundStyle(.blue.opacity(0.2))
+                    .stroke(.blue.opacity(0.5), lineWidth: 1)
+            }
+        }
+        .mapStyle(.standard)
+        .mapControlVisibility(.hidden) // Hide default controls for cleaner look in details view
+    }
+    
+    private var coordinate: CLLocationCoordinate2D {
+        CLLocationCoordinate2D(
+            latitude: location.latitude,
+            longitude: location.longitude
+        )
+    }
+}
+
+private struct LocationPin: View {
+    var body: some View {
+        ZStack {
+            // Pin shadow
+            Circle()
+                .fill(.black.opacity(0.3))
+                .frame(width: 20, height: 20)
+                .offset(x: 1, y: 1)
+            
+            // Pin background
+            Circle()
+                .fill(.white)
+                .frame(width: 20, height: 20)
+                .overlay(
+                    Circle()
+                        .stroke(.gray.opacity(0.3), lineWidth: 1)
+                )
+            
+            // Pin center (bird icon color)
+            Circle()
+                .fill(.blue)
+                .frame(width: 12, height: 12)
+        }
+    }
+}
+
 private struct DetailRow: View {
     let label: String
     let value: String
@@ -332,13 +421,24 @@ private func recursiveCount(_ record: ObservationRecord) -> Int {
 
 #if DEBUG
 #Preview {
+    let mockLocation = ObservationLocation(
+        latitude: 37.7749,
+        longitude: -122.4194,
+        horizontalAccuracy: 5.0,
+        timestamp: Date().addingTimeInterval(-300),
+        altitude: 100,
+        verticalAccuracy: 3.0,
+        name: "Golden Gate Park",
+        notes: "Near the Japanese Tea Garden"
+    )
+    
     let mockRecord = ObservationRecord(
         id: UUID(),
         taxonId: "amecro",
         begin: Date().addingTimeInterval(-3600),
         end: Date(),
         count: 3,
-        location: ObservationLocation.mock()
+        location: mockLocation
     )
     
     ObservationDetailsSheet(record: mockRecord)
