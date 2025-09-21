@@ -1,4 +1,4 @@
-.PHONY: help generate test list-dests simulators core-test prep-beta fastlane-beta
+.PHONY: help generate test test-app test-core list-dests simulators prep-beta fastlane-beta clean
 
 # Configurable variables
 SCHEME ?= BirdCount
@@ -13,8 +13,10 @@ CONFIGURATION ?= Debug
 help:
 	@echo "Targets:"
 	@echo "  generate   Regenerate Xcode project from project.yml using XcodeGen"
-	@echo "  test       Build and run unit tests on the iOS Simulator (\"$(SIMULATOR)\", OS=$(OS))"
-	@echo "  core-test  Build and run macOS unit tests for pure Swift logic (no Simulator)"
+	@echo "  test       Run both app and core tests"
+	@echo "  test-app   Build and run unit tests on the iOS Simulator (\"$(SIMULATOR)\", OS=$(OS))"
+	@echo "  test-core  Build and run macOS unit tests for pure Swift logic (no Simulator)"
+	@echo "  clean      Clean build artifacts and derived data"
 	@echo "  list-dests Show valid destinations for the scheme (useful for -destination)"
 	@echo "  simulators List available Booted/Shutdown simulators via simctl"
 	@echo "  prep-beta  Bump CFBundleVersion in project.yml and regenerate the Xcode project"
@@ -25,14 +27,24 @@ generate:
 	@command -v xcodegen >/dev/null 2>&1 || { echo "Error: xcodegen not found. Install with: brew install xcodegen" >&2; exit 127; }
 	@xcodegen generate
 
+# Run both app and core tests
+test: test-core test-app
+
 # Build and run tests for the app
-# Example: make test SIMULATOR="iPhone 15"
-test:
+# Example: make test SIMULATOR="iPhone 16"
+test-app:
 	@xcodebuild \
 		-project "$(PROJECT)" \
 		-scheme "$(SCHEME)" \
 		-configuration "$(CONFIGURATION)" \
 		-destination "$(DEST)" \
+		test
+# Build and run macOS-native core tests (fast, no simulator)
+test-core:
+	@xcodebuild \
+		-project "$(PROJECT)" \
+		-scheme "BirdCountCore" \
+		-configuration "$(CONFIGURATION)" \
 		test
 
 # Show the valid destinations xcodebuild sees for this scheme/project
@@ -43,13 +55,6 @@ list-dests:
 simulators:
 	@xcrun simctl list devices available
 
-# Build and run macOS-native core tests (fast, no simulator)
-test-core:
-	@xcodebuild \
-		-project "$(PROJECT)" \
-		-scheme "BirdCountCore" \
-		-configuration "$(CONFIGURATION)" \
-		test
 
 fastlane-beta:
 	op run --env-file apple.env -- bundle exec fastlane beta
@@ -65,3 +70,14 @@ build-test: generate
 		-destination "$(DEST)" \
 		-quiet \
 		build-for-testing
+
+# Clean build artifacts and derived data
+clean:
+	@echo "Cleaning build artifacts..."
+	@xcodebuild clean \
+		-project "$(PROJECT)" \
+		-scheme "$(SCHEME)" \
+		-configuration "$(CONFIGURATION)" 2>/dev/null || true
+	@echo "Removing derived data..."
+	@rm -rf ~/Library/Developer/Xcode/DerivedData/BirdCount-* 2>/dev/null || true
+	@echo "Clean complete."
