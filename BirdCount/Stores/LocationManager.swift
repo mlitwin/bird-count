@@ -69,7 +69,10 @@ public final class LocationManager: NSObject {
         switch authorizationStatus {
         case .notDetermined:
             hasRequestedInitialPermission = true
-            locationManager.requestWhenInUseAuthorization()
+            // Dispatch authorization request to avoid blocking main thread
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                self?.locationManager.requestWhenInUseAuthorization()
+            }
             
         case .denied, .restricted:
             lastError = LocationError.permissionDenied

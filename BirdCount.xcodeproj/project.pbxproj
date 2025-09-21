@@ -61,11 +61,13 @@
 		B5D190E8062082C0AB7AFD7B /* LeftDrawerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED96AA768B26BFF2333C6D5 /* LeftDrawerView.swift */; };
 		B7A68117A165B96D49F12BCE /* ObservationRecordLocationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5831C01C2F3DB6F6D15AB48A /* ObservationRecordLocationTests.swift */; };
 		BAE59DC44E9938705B0A6BCF /* checklist.json in Resources */ = {isa = PBXBuildFile; fileRef = CC412F9A02FEF839809F38AC /* checklist.json */; };
+		BBABB1F85B3393489B4F9724 /* ObservationStoreLocationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41872F0F1DF51AC09BC9B96A /* ObservationStoreLocationTests.swift */; };
 		BCF2B2A1BD62C977C6FF3609 /* ObservationDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 683F06540EC61740371DE480 /* ObservationDTO.swift */; };
 		C0B46E941915D7EEBD03E60D /* ios_taxonomy_min.json in Resources */ = {isa = PBXBuildFile; fileRef = A9DD5F1234EFBE186A162092 /* ios_taxonomy_min.json */; };
 		C365B63760F17794D9B0605A /* BirdCountApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F3E57E196D1687022B624BA /* BirdCountApp.swift */; };
 		CF1BCB77B5B2E53C01268015 /* ObservationImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F4BB95CE42040F9B6B692C /* ObservationImportService.swift */; };
 		D0E822208F5FD0C78C08D446 /* ObservationSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FAB184DAE5C28F995C062DD /* ObservationSyncTests.swift */; };
+		D2B12B9EB0D566EC7A54CB54 /* ObservationDetailsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DCA7C78C606696E72C940D9 /* ObservationDetailsSheet.swift */; };
 		DA0F562E577225B3765DA0BF /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E83557E0B3151DB0A65A1E5 /* SettingsStore.swift */; };
 		DD452196F163874F5DE69BCA /* ShareActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1AE8BBD3313453070C1CF58 /* ShareActivityView.swift */; };
 		DD7C4B78A6F107299E688AD6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1AA4EB3102747E239D81B301 /* Localizable.strings */; };
@@ -125,6 +127,7 @@
 		2E550332A5E0138A929F3B43 /* SyncSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncSessionManager.swift; sourceTree = "<group>"; };
 		2FFD7656F8F0320D84879B37 /* LocationManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManagerTests.swift; sourceTree = "<group>"; };
 		4186A73E1CCA966174627C23 /* BirdCount.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BirdCount.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		41872F0F1DF51AC09BC9B96A /* ObservationStoreLocationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationStoreLocationTests.swift; sourceTree = "<group>"; };
 		423444717CB358DADDC73CC9 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 		48123A84923C3A9D21804AB8 /* ObservationLocationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationLocationTests.swift; sourceTree = "<group>"; };
 		490E29F6D3D7AA78458944AC /* BirdCountCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = BirdCountCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -140,6 +143,7 @@
 		7516073B623E343E4440B200 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		77B3EC72050A052361E92911 /* checklist-US-ME.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "checklist-US-ME.json"; sourceTree = "<group>"; };
 		783AD92EE988689DEFC27F00 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		7DCA7C78C606696E72C940D9 /* ObservationDetailsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationDetailsSheet.swift; sourceTree = "<group>"; };
 		87D7F2012E653F5E1BF69E0D /* ViewConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewConstants.swift; sourceTree = "<group>"; };
 		8BF2F46315BDAC6BEDF1AA1C /* ObservationLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationLocation.swift; sourceTree = "<group>"; };
 		905A41A6B9EC879EAD96F7CA /* BirdCountTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirdCountTests.swift; sourceTree = "<group>"; };
@@ -297,6 +301,7 @@
 				2FFD7656F8F0320D84879B37 /* LocationManagerTests.swift */,
 				CAF79995B3B7FC149037EC4C /* ModelsTests.swift */,
 				48123A84923C3A9D21804AB8 /* ObservationLocationTests.swift */,
+				41872F0F1DF51AC09BC9B96A /* ObservationStoreLocationTests.swift */,
 				BAE4346483A7FCF5504F471D /* ObservationStoreTests.swift */,
 				1F5C38ADF32B9D45D6ED7AAF /* TaxonomyStoreTests.swift */,
 			);
@@ -412,6 +417,7 @@
 		F9570F4900BB51B0E81BCFB3 /* Log */ = {
 			isa = PBXGroup;
 			children = (
+				7DCA7C78C606696E72C940D9 /* ObservationDetailsSheet.swift */,
 				EE5F763F03DD6201966D2395 /* ObservationLogView.swift */,
 			);
 			path = Log;
@@ -561,6 +567,7 @@
 				E7891027B8EA5A53FA9356B0 /* LocationManagerTests.swift in Sources */,
 				F2C31476F4EAEA0FCA29CD01 /* ModelsTests.swift in Sources */,
 				377DB66A35FF3BE2021A6BF6 /* ObservationLocationTests.swift in Sources */,
+				BBABB1F85B3393489B4F9724 /* ObservationStoreLocationTests.swift in Sources */,
 				5E033E45710125708E279708 /* ObservationStoreTests.swift in Sources */,
 				657490E66225F83841436699 /* TaxonomyStoreTests.swift in Sources */,
 			);
@@ -585,6 +592,7 @@
 				2599DEF5D927CA3279EC427C /* NetworkSyncTransport.swift in Sources */,
 				88723733D4405DC1AA55DB13 /* NumericPad.swift in Sources */,
 				17AAAB3F06F7444453AA17D5 /* ObservationDTO.swift in Sources */,
+				D2B12B9EB0D566EC7A54CB54 /* ObservationDetailsSheet.swift in Sources */,
 				8CBC66555D3B77474B42746A /* ObservationExportService.swift in Sources */,
 				CF1BCB77B5B2E53C01268015 /* ObservationImportService.swift in Sources */,
 				50E6FE2FF48EEC8A338ABD21 /* ObservationLocation.swift in Sources */,

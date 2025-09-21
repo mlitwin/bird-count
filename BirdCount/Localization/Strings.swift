@@ -79,6 +79,7 @@ enum Strings {
         static let none = LocalizedString("observation.none")
         static let unknown = LocalizedString("observation.unknown")
         static let delete = LocalizedString("observation.delete")
+        static let details = LocalizedString("observation.details")
     }
     
     // MARK: - Date Range

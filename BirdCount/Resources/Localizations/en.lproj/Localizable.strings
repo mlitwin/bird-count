@@ -40,6 +40,7 @@
 "observation.none" = "No observations yet.";
 "observation.unknown" = "Unknown";
 "observation.delete" = "Delete";
+"observation.details" = "Details";
 
 // MARK: - Date Range
 "date.range.all.time" = "All time";
