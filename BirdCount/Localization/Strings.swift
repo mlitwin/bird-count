@@ -39,6 +39,7 @@ enum Strings {
         static let loading = LocalizedString("general.loading")
         static let error = LocalizedString("general.error")
         static let menu = LocalizedString("general.menu")
+        static let user = LocalizedString("general.user")
     }
     
     // MARK: - Tabs

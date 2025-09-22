@@ -14,6 +14,7 @@
 "general.loading" = "Loading...";
 "general.error" = "Error";
 "general.menu" = "Menu";
+"general.user" = "User settings";
 
 // MARK: - Tabs
 "tab.home" = "Home";

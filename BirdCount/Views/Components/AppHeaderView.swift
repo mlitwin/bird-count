@@ -4,6 +4,7 @@ import SwiftUI
 struct AppHeaderView: View {
     @Binding var showSettings: Bool
     @Binding var showLeftDrawer: Bool
+    @State private var showUserView: Bool = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -26,6 +27,17 @@ struct AppHeaderView: View {
                 }
                 .accessibilityLabel(Strings.General.menu.string)
             }
+            .overlay(alignment: .trailing) {
+                Button(action: { 
+                    showUserView = true
+                }) {
+                    Image(systemName: "person.circle")
+                        .font(.headline)
+                        .padding(8)
+                        .background(Circle().fill(Color(.secondarySystemBackground)))
+                }
+                .accessibilityLabel(Strings.General.user.string)
+            }
             .padding(.horizontal)
             .padding(.top, 8)
             .padding(.bottom, 8)
@@ -46,5 +58,8 @@ struct AppHeaderView: View {
                 endPoint: .bottom
             )
         )
+        .sheet(isPresented: $showUserView) {
+            UserView()
+        }
     }
 }
