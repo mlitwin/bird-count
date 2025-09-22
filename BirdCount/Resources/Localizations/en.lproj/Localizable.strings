@@ -16,6 +16,10 @@
 "general.menu" = "Menu";
 "general.user" = "User settings";
 
+// MARK: - User
+"user.email" = "Email";
+"user.email.placeholder" = "Enter your email address";
+
 // MARK: - Tabs
 "tab.home" = "Home";
 "tab.summary" = "Summary";

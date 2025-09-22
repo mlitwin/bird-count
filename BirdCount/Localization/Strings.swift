@@ -42,6 +42,12 @@ enum Strings {
         static let user = LocalizedString("general.user")
     }
     
+    // MARK: - User
+    enum User {
+        static let email = LocalizedString("user.email")
+        static let emailPlaceholder = LocalizedString("user.email.placeholder")
+    }
+    
     // MARK: - Tabs
     enum Tab {
         static let home = LocalizedString("tab.home")

@@ -13,12 +13,14 @@ import Observation
     var selectedChecklistId: String? = nil { didSet { persistIfReady() } }
     var minCommonness: Int = 0 { didSet { normalizeRanges(changed: .min) } }
     var maxCommonness: Int = 3 { didSet { normalizeRanges(changed: .max) } }
+    var loginEmail: String = "" { didSet { persistIfReady() } }
 
     init() {
         let defaults = UserDefaults.standard
         if let raw = defaults.string(forKey: Self.key("selectedChecklistId")), !raw.isEmpty { selectedChecklistId = raw }
         if defaults.object(forKey: Self.key("minCommonness")) != nil { minCommonness = defaults.integer(forKey: Self.key("minCommonness")) }
         if defaults.object(forKey: Self.key("maxCommonness")) != nil { maxCommonness = defaults.integer(forKey: Self.key("maxCommonness")) }
+        if let email = defaults.string(forKey: Self.key("loginEmail")) { loginEmail = email }
         normalizeRanges(changed: nil)
         initializing = false
     }
@@ -46,5 +48,6 @@ import Observation
         d.set(selectedChecklistId ?? "", forKey: Self.key("selectedChecklistId"))
         d.set(minCommonness, forKey: Self.key("minCommonness"))
         d.set(maxCommonness, forKey: Self.key("maxCommonness"))
+        d.set(loginEmail, forKey: Self.key("loginEmail"))
     }
 }
