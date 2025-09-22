@@ -85,6 +85,7 @@ enum Strings {
         static let add = LocalizedString("observation.add")
         static let edit = LocalizedString("observation.edit")
         static let none = LocalizedString("observation.none")
+        static let noneInRange = LocalizedString("observation.none.range")
         static let unknown = LocalizedString("observation.unknown")
         static let delete = LocalizedString("observation.delete")
         static let details = LocalizedString("observation.details")

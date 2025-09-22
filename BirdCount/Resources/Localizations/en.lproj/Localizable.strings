@@ -44,6 +44,7 @@
 "observation.add" = "Add Observation";
 "observation.edit" = "Edit Observation";
 "observation.none" = "No observations yet.";
+"observation.none.range" = "No observations in selected date range";
 "observation.unknown" = "Unknown";
 "observation.delete" = "Delete";
 "observation.details" = "Details";
