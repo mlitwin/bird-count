@@ -32,13 +32,19 @@ public struct ObservationsSelectorView: View {
                 Spacer()
                 
                 // Species count badge
-                Text("\(observations.totalSpeciesObserved(in: dateRangeStore.dateRange))")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Capsule().fill(.tint))
-                    .accessibilityLabel(String(format: Strings.Accessibility.speciesObserved.string, observations.totalSpeciesObserved(in: dateRangeStore.dateRange)))
+                HStack(spacing: 6) {
+                    Text("\(observations.totalSpeciesObserved(in: dateRangeStore.dateRange))")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Capsule().fill(.tint))
+                        .accessibilityLabel(String(format: Strings.Accessibility.speciesObserved.string, observations.totalSpeciesObserved(in: dateRangeStore.dateRange)))
+                    
+                    Text(Strings.Species.species.string)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
             }
         }
         .sheet(isPresented: $showCustomSheet) {

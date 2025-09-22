@@ -1,4 +1,4 @@
-.PHONY: help generate test test-app test-core list-dests simulators prep-beta fastlane-beta clean
+.PHONY: help generate build-test test test-app test-core list-dests simulators prep-beta fastlane-beta clean
 
 # Configurable variables
 SCHEME ?= BirdCount
@@ -13,6 +13,7 @@ CONFIGURATION ?= Debug
 help:
 	@echo "Targets:"
 	@echo "  generate   Regenerate Xcode project from project.yml using XcodeGen"
+	@echo "  build-test Build for testing to verify code compiles correctly"
 	@echo "  test       Run both app and core tests"
 	@echo "  test-app   Build and run unit tests on the iOS Simulator (\"$(SIMULATOR)\", OS=$(OS))"
 	@echo "  test-core  Build and run macOS unit tests for pure Swift logic (no Simulator)"
@@ -63,13 +64,16 @@ prep-beta:
 	@./scripts/bump-build.sh
 
 build-test: generate
+	@echo "🔨 Building for testing..."
 	@xcodebuild \
 		-project "$(PROJECT)" \
 		-scheme "$(SCHEME)" \
 		-configuration "$(CONFIGURATION)" \
 		-destination "$(DEST)" \
 		-quiet \
-		build-for-testing
+		build-for-testing && \
+	echo "✅ Build test SUCCEEDED" || \
+	(echo "❌ Build test FAILED" && exit 1)
 
 # Clean build artifacts and derived data
 clean:

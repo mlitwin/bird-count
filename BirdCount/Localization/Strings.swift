@@ -61,6 +61,7 @@ enum Strings {
     
     // MARK: - Species
     enum Species {
+        static let species = LocalizedString("species")
         static let observed = LocalizedString("species.observed")
         static let individuals = LocalizedString("species.individuals")
         static let inRange = LocalizedString("species.in.range")

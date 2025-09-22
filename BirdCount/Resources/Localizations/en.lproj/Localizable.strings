@@ -27,6 +27,7 @@
 "home.loading" = "Loading taxonomy…";
 
 // MARK: - Species List
+"species" = "species";
 "species.list.empty" = "No Species";
 "species.list.empty.description" = "Taxonomy file empty";
 "species.observed" = "Species observed";

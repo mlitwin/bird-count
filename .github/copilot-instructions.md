@@ -4,7 +4,8 @@ These guidelines help AI coding assistants generate changes that fit this projec
 
 ## General Rules
 
-- Do: After a change, run 'make build-test' to ensure everything works as expected. 
+- Do: After a change, run 'make build-test' to verify code compiles correctly before proceeding.
+- Do: Use 'make build-test' for quick compilation verification without running full tests.
 
 ## Scope and targets
 - Platform: iOS (target 18.5+), Swift 5.x, SwiftUI-first.
