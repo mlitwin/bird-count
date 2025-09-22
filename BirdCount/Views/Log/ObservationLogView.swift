@@ -28,18 +28,19 @@ struct ObservationLogView: View {
                 List(display) { rec in
                     ObservationRecordView(record: rec)
                         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                            Button(role: .destructive) {
-                                let total = recursiveCount(rec)
-                                guard total != 0 else { return }
-                                _ = observationsStore.addChildObservationWithLocation(
-                                    parentId: rec.id,
-                                    taxonId: rec.taxonId,
-                                    begin: Date(),
-                                    end: nil,
-                                    count: -total
-                                )
-                            } label: {
-                                Label(Strings.Observation.delete.string, systemImage: "trash")
+                            let total = recursiveCount(rec)
+                            if total > 0 {
+                                Button(role: .destructive) {
+                                    _ = observationsStore.addChildObservationWithLocation(
+                                        parentId: rec.id,
+                                        taxonId: rec.taxonId,
+                                        begin: Date(),
+                                        end: nil,
+                                        count: -total
+                                    )
+                                } label: {
+                                    Label(Strings.Observation.delete.string, systemImage: "trash")
+                                }
                             }
                         }
                         .swipeActions(edge: .leading) {
