@@ -20,9 +20,8 @@ struct SyncSheet: View {
             VStack(spacing: 20) {
                 switch syncManager.state {
                 case .idle:
-                    IdleView(mode: mode) {
-                        startSync()
-                    }
+                    // Show loading while starting up
+                    ProgressView(mode == .sender ? Strings.Sync.looking.string : Strings.Sync.waitingConnection.string)
                     
                 case .browsing:
                     BrowsingView()
@@ -86,6 +85,8 @@ struct SyncSheet: View {
         }
         .onAppear {
             setupIncomingSyncHandler()
+            // Start sync immediately when the sheet appears
+            startSync()
         }
     }
     
@@ -131,35 +132,6 @@ struct SyncSheet: View {
 }
 
 // MARK: - Sub-views
-
-private struct IdleView: View {
-    let mode: SyncMode
-    let onStart: () -> Void
-    
-    var body: some View {
-        VStack(spacing: 30) {
-            Image(systemName: "iphone.and.arrow.forward")
-                .font(.system(size: 60))
-                .foregroundColor(.blue)
-            
-            Text(Strings.Sync.title.string)
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            Text(mode == .sender 
-                ? Strings.Sync.sendDescription.string
-                : Strings.Sync.receiveDescription.string)
-                .multilineTextAlignment(.center)
-                .foregroundColor(.secondary)
-            
-            Button(action: onStart) {
-                Text(mode == .sender ? Strings.Sync.findDevices.string : Strings.Sync.waitConnection.string)
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-        }
-    }
-}
 
 private struct BrowsingView: View {
     @Environment(SyncSessionManager.self) private var syncManager
