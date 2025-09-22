@@ -9,6 +9,20 @@ public struct ObservationsSelectorView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .center) {
+                 // Species count badge
+                HStack(spacing: 6) {
+                    Text("\(observations.totalSpeciesObserved(in: dateRangeStore.dateRange))")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Capsule().fill(.tint))
+                        .accessibilityLabel(String(format: Strings.Accessibility.speciesObserved.string, observations.totalSpeciesObserved(in: dateRangeStore.dateRange)))
+                    
+                    Text(Strings.Species.species.string)
+                        .font(.headline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
                 Text(rangeSummary)
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(.primary)
@@ -28,23 +42,7 @@ public struct ObservationsSelectorView: View {
                         .background(Circle().fill(Color(.secondarySystemBackground)))
                 }
                 .accessibilityLabel(Strings.Share.Accessibility.editRange.string)
-                
                 Spacer()
-                
-                // Species count badge
-                HStack(spacing: 6) {
-                    Text("\(observations.totalSpeciesObserved(in: dateRangeStore.dateRange))")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Capsule().fill(.tint))
-                        .accessibilityLabel(String(format: Strings.Accessibility.speciesObserved.string, observations.totalSpeciesObserved(in: dateRangeStore.dateRange)))
-                    
-                    Text(Strings.Species.species.string)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                }
             }
         }
         .sheet(isPresented: $showCustomSheet) {
