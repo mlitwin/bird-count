@@ -7,6 +7,9 @@ struct ObservationSyncTests {
     @Test func testExportForSync() {
         let observationStore = ObservationStore()
         
+        // Clear any existing observations to ensure clean state
+        observationStore.clearAll()
+        
         // Add some test observations
         observationStore.addObservation("amecro", begin: Date(), end: nil, count: 2)
         observationStore.addObservation("norbla", begin: Date().addingTimeInterval(-3600), end: nil, count: 1)
@@ -35,6 +38,9 @@ struct ObservationSyncTests {
     
     @Test func testImportFromSync() {
         let observationStore = ObservationStore()
+        
+        // Clear any existing observations to ensure clean state
+        observationStore.clearAll()
         
         // Create a payload to import
         let observations = [
@@ -79,6 +85,9 @@ struct ObservationSyncTests {
     @Test func testImportDeduplication() {
         let observationStore = ObservationStore()
         
+        // Clear any existing observations to ensure clean state
+        observationStore.clearAll()
+        
         // Add an observation to the store
         let existingId = UUID()
         let existingRecord = ObservationRecord(id: existingId, taxonId: "amecro", begin: Date(), end: nil, count: 1, observer: "")
@@ -98,7 +107,12 @@ struct ObservationSyncTests {
         )
         
         // Import the payload
-        #expect(throws: Never.self) { try ObservationImportService.importFromSync(payload, into: observationStore) }
+        do {
+            try ObservationImportService.importFromSync(payload, into: observationStore)
+        } catch {
+            #expect(Bool(false), "Import failed with error: \(error)")
+            return
+        }
         
         // Verify only the new observation was added (duplicate was skipped)
         #expect(observationStore.observations.count == 2)
@@ -111,6 +125,9 @@ struct ObservationSyncTests {
     
     @Test func testUnsupportedSchemaVersion() {
         let observationStore = ObservationStore()
+        
+        // Clear any existing observations to ensure clean state
+        observationStore.clearAll()
         
         let payload = PayloadV1(
             schemaVersion: 999, // Unsupported version

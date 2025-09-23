@@ -44,3 +44,10 @@ public struct ObservationRecord: Identifiable, Codable, Equatable {
         children.append(adjusted)
     }
 }
+
+// MARK: - Equatable
+extension ObservationRecord {
+    public static func == (lhs: ObservationRecord, rhs: ObservationRecord) -> Bool {
+        return lhs.data == rhs.data && lhs.children == rhs.children
+    }
+}
