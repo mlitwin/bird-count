@@ -40,7 +40,9 @@ public class ObservationImportService {
                 taxonId: parentDTO.taxonId,
                 begin: parentDTO.begin,
                 end: parentDTO.end,
-                count: parentDTO.count
+                count: parentDTO.count,
+                location: parentDTO.location,
+                observer: parentDTO.observer
             )
             
             // Add children if any exist
@@ -56,7 +58,9 @@ public class ObservationImportService {
                         taxonId: childDTO.taxonId,
                         begin: childDTO.begin,
                         end: childDTO.end,
-                        count: childDTO.count
+                        count: childDTO.count,
+                        location: childDTO.location,
+                        observer: childDTO.observer
                     )
                     parentRecord.addChild(childRecord)
                 }
@@ -86,7 +90,9 @@ public class ObservationImportService {
                     taxonId: child.taxonId,
                     begin: child.begin,
                     end: child.end,
-                    count: child.count
+                    count: child.count,
+                    location: child.location,
+                    observer: child.observer
                 ) {
                     // Successfully attached to existing parent
                     continue
@@ -111,12 +117,14 @@ public class ObservationImportService {
                 taxonId: child.taxonId,
                 begin: child.begin,
                 end: child.end,
-                count: child.count
+                count: child.count,
+                location: child.location,
+                observer: child.observer
             )
         }
     }
     
-    public enum ImportError: Error, LocalizedError {
+    public enum ImportError: Error, Equatable, LocalizedError {
         case unsupportedSchemaVersion(Int)
         case invalidPayload
         

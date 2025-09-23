@@ -110,8 +110,8 @@ import Observation
     /// Attach a child observation record to an existing record identified by `parentId`.
     /// Returns true if the parent was found and the child added.
     @discardableResult
-    public func addChildObservation(parentId: UUID, taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1, location: ObservationLocation? = nil) -> Bool {
-    let newChild = ObservationRecord(id: UUID(), taxonId: taxonId, begin: begin, end: end, count: count, location: location)
+    public func addChildObservation(parentId: UUID, taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1, location: ObservationLocation? = nil, observer: String = "") -> Bool {
+    let newChild = ObservationRecord(id: UUID(), taxonId: taxonId, begin: begin, end: end, count: count, location: location, observer: observer)
         var didAttach = false
         func attach(into array: inout [ObservationRecord]) {
             for idx in array.indices {
@@ -170,29 +170,30 @@ import Observation
     @discardableResult
     public func addChildObservationWithLocation(parentId: UUID, taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1) -> Bool {
         let locationManager = LocationManager.shared
+        let observer = settingsStore?.loginEmail ?? ""
         
         if locationManager.isAuthorized {
             // Check if we have a recent location (within 5 minutes)
             if let currentLocation = locationManager.currentObservationLocation,
                Date().timeIntervalSince(currentLocation.timestamp) < 300 {
                 // Use existing recent location
-                return addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: currentLocation)
+                return addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: currentLocation, observer: observer)
             } else {
                 // Request fresh location and add child observation when received
                 locationManager.requestLocation { [weak self] result in
                     switch result {
                     case .success(let location):
-                        _ = self?.addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: location)
+                        _ = self?.addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: location, observer: observer)
                     case .failure(_):
                         // Failed to get location, add without it
-                        _ = self?.addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: nil)
+                        _ = self?.addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: nil, observer: observer)
                     }
                 }
                 return true // Optimistically return true since we're adding async
             }
         } else {
             // No location permission, add without location
-            return addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: nil)
+            return addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: nil, observer: observer)
         }
     }
 
