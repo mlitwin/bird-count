@@ -7,7 +7,7 @@ struct ObservationRecordLocationTests {
     @Test("ObservationRecord without location serializes correctly")
     func testSerializationWithoutLocation() throws {
         // Use a fixed date to avoid timing issues in test
-        let fixedDate = Date()
+        let fixedDate = Date(timeIntervalSince1970: 1695312000) // Fixed date for reproducible tests
         let record = ObservationRecord(taxonId: "amecro", begin: fixedDate, count: 2, observer: "")
         
         // Verify location is nil
@@ -45,18 +45,20 @@ struct ObservationRecordLocationTests {
             name: "San Francisco"
         )
         
+        let fixedDate = Date(timeIntervalSince1970: 1695312000) // Fixed date for reproducible tests
         let record = ObservationRecord(
             taxonId: "amecro",
+            begin: fixedDate,
+            end: fixedDate,
             count: 3,
             location: location
         )
-        
         // Verify location is set
         #expect(record.location != nil)
         #expect(record.location?.latitude == 37.7749)
         #expect(record.location?.longitude == -122.4194)
         #expect(record.location?.name == "San Francisco")
-        
+
         // Test JSON serialization
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
