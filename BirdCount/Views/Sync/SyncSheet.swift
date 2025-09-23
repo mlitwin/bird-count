@@ -238,6 +238,7 @@ private struct TransferringView: View {
 
 private struct CompletedView: View {
     @Environment(SyncSessionManager.self) private var syncManager
+    @Environment(\.dismiss) private var dismiss
     let mode: SyncMode
     
     var body: some View {
@@ -259,6 +260,11 @@ private struct CompletedView: View {
                     .foregroundColor(.primary)
                     .font(.subheadline)
             }
+            
+            Button(Strings.General.done.string) {
+                dismiss()
+            }
+            .buttonStyle(.borderedProminent)
         }
     }
     
