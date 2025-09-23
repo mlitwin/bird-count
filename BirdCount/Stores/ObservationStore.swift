@@ -137,6 +137,7 @@ import Observation
     
     // MARK: Location-aware observation methods
     
+    #if os(iOS)
     /// Add observation with automatic location capture if permissions allow
     public func addObservationWithLocation(_ taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1) {
         let locationManager = LocationManager.shared
@@ -196,6 +197,21 @@ import Observation
             return addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: nil, observer: observer)
         }
     }
+    #else
+    /// Add observation with automatic location capture - not available on this platform
+    public func addObservationWithLocation(_ taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1) {
+        // Fall back to adding without location on non-iOS platforms
+        addObservation(taxonId, begin: begin, end: end, count: count, location: nil)
+    }
+    
+    /// Add child observation with automatic location capture - not available on this platform
+    @discardableResult
+    public func addChildObservationWithLocation(parentId: UUID, taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1) -> Bool {
+        let observer = settingsStore?.loginEmail ?? ""
+        // Fall back to adding without location on non-iOS platforms
+        return addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: nil, observer: observer)
+    }
+    #endif
 
     // MARK: Recent handling
     private func touchRecent(_ id: String) {

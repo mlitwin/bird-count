@@ -87,6 +87,8 @@ targets:
     sources:
       - path: BirdCount/Models
       - path: BirdCount/Stores
+        excludes:
+          - LocationManager.swift  # iOS-specific, not cross-platform
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: org.antoninus.birdcount.core
       DEAD_CODE_STRIPPING: YES
