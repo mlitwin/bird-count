@@ -1,7 +1,7 @@
 import Foundation
 import Observation
 
-@Observable final class SettingsStore {
+@Observable public final class SettingsStore {
     // Static key helper to avoid self usage before init completes
     private static let keyPrefix = "Settings_"
     private static func key(_ k: String) -> String { keyPrefix + k }

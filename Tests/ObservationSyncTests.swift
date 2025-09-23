@@ -51,8 +51,8 @@ final class ObservationSyncTests: XCTestCase {
     func testImportFromSync() {
         // Create a payload to import
         let observations = [
-            ObservationRecordDTO(id: UUID(), parentId: nil, taxonId: "redwin", begin: Date(), end: Date(), count: 3),
-            ObservationRecordDTO(id: UUID(), parentId: nil, taxonId: "blujay", begin: Date(), end: Date(), count: 1)
+            ObservationRecordDTO(id: UUID(), parentId: nil, taxonId: "redwin", begin: Date(), end: Date(), count: 3, observer: "test@example.com"),
+            ObservationRecordDTO(id: UUID(), parentId: nil, taxonId: "blujay", begin: Date(), end: Date(), count: 1, observer: "test@example.com")
         ]
         
         let payload = PayloadV1(
@@ -81,12 +81,12 @@ final class ObservationSyncTests: XCTestCase {
     func testImportDeduplication() {
         // Add an observation to the store
         let existingId = UUID()
-        let existingRecord = ObservationRecord(id: existingId, taxonId: "amecro", begin: Date(), end: nil, count: 1)
+        let existingRecord = ObservationRecord(id: existingId, taxonId: "amecro", begin: Date(), end: nil, count: 1, observer: "")
         observationStore.importObservations([existingRecord])
         
         // Create a payload with the same observation ID (should be deduplicated)
-        let duplicateObservation = ObservationRecordDTO(id: existingId, parentId: nil, taxonId: "amecro", begin: Date(), end: Date(), count: 2)
-        let newObservation = ObservationRecordDTO(id: UUID(), parentId: nil, taxonId: "norbla", begin: Date(), end: Date(), count: 1)
+        let duplicateObservation = ObservationRecordDTO(id: existingId, parentId: nil, taxonId: "amecro", begin: Date(), end: Date(), count: 2, observer: "test@example.com")
+        let newObservation = ObservationRecordDTO(id: UUID(), parentId: nil, taxonId: "norbla", begin: Date(), end: Date(), count: 1, observer: "test@example.com")
         
         let payload = PayloadV1(
             schemaVersion: 1,

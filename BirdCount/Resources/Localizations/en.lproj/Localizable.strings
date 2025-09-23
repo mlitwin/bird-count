@@ -48,6 +48,7 @@
 "observation.unknown" = "Unknown";
 "observation.delete" = "Delete";
 "observation.details" = "Details";
+"observation.observer" = "Observer";
 
 // MARK: - Date Range
 "date.range.all.time" = "All time";

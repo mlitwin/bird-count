@@ -105,6 +105,12 @@ private struct ObservationDetailsSection: View {
             DetailRow(label: "Date & Time", value: formattedDateTime)
             DetailRow(label: "Duration", value: formattedDuration)
             DetailRow(label: "Direct Count", value: "\(record.count)")
+            
+            // Observer field - show only if not empty
+            if !record.observer.isEmpty {
+                DetailRow(label: Strings.Observation.observer.string, value: record.observer)
+            }
+            
             DetailRow(label: "Record ID", value: record.id.uuidString.prefix(8) + "...")
         }
     }

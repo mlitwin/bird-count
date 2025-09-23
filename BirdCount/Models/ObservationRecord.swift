@@ -21,17 +21,18 @@ public struct ObservationRecord: Identifiable, Codable, Equatable {
         set { data.count = newValue }
     }
     public var location: ObservationLocation? { data.location }
+    public var observer: String { data.observer }
 
     // MARK: Initializers
-    public init(id: UUID = UUID(), taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1, location: ObservationLocation? = nil) {
+    public init(id: UUID = UUID(), taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1, location: ObservationLocation? = nil, observer: String = "") {
         let beginTime = begin
-        self.data = ObservationRecordDTO(id: id, parentId: nil, taxonId: taxonId, begin: beginTime, end: end ?? beginTime, count: count, location: location)
+        self.data = ObservationRecordDTO(id: id, parentId: nil, taxonId: taxonId, begin: beginTime, end: end ?? beginTime, count: count, location: location, observer: observer)
         self.children = []
     }
 
-    public init(parent: inout ObservationRecord, id: UUID = UUID(), taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1, location: ObservationLocation? = nil) {
+    public init(parent: inout ObservationRecord, id: UUID = UUID(), taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1, location: ObservationLocation? = nil, observer: String = "") {
         let beginTime = begin
-        self.data = ObservationRecordDTO(id: id, parentId: parent.id, taxonId: taxonId, begin: beginTime, end: end ?? beginTime, count: count, location: location)
+        self.data = ObservationRecordDTO(id: id, parentId: parent.id, taxonId: taxonId, begin: beginTime, end: end ?? beginTime, count: count, location: location, observer: observer)
         self.children = []
         parent.children.append(self)
     }

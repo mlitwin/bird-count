@@ -8,7 +8,7 @@ struct ObservationRecordLocationTests {
     func testSerializationWithoutLocation() throws {
         // Use a fixed date to avoid timing issues in test
         let fixedDate = Date()
-        let record = ObservationRecord(taxonId: "amecro", begin: fixedDate, count: 2)
+        let record = ObservationRecord(taxonId: "amecro", begin: fixedDate, count: 2, observer: "")
         
         // Verify location is nil
         #expect(record.location == nil)
@@ -102,11 +102,37 @@ struct ObservationRecordLocationTests {
         decoder.dateDecodingStrategy = .iso8601
         let data = jsonWithoutLocation.data(using: .utf8)!
         
-        // This should not throw and location should be nil
+        // This should not throw and location should be nil, observer should be empty string
         let dto = try decoder.decode(ObservationRecordDTO.self, from: data)
         #expect(dto.location == nil)
+        #expect(dto.observer == "")
         #expect(dto.taxonId == "amecro")
         #expect(dto.count == 1)
+    }
+    
+    @Test("ObservationRecord with observer serialization")
+    func testObserverSerialization() throws {
+        let fixedDate = Date(timeIntervalSince1970: 1695312000) // Fixed date for reproducible tests
+        let record = ObservationRecord(taxonId: "amecro", begin: fixedDate, count: 2, observer: "observer@example.com")
+        
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = [.sortedKeys, .prettyPrinted]
+        
+        let data = try encoder.encode(record)
+        let jsonString = String(data: data, encoding: .utf8)!
+        
+        // Verify observer field is included in JSON
+        #expect(jsonString.contains("\"observer\" : \"observer@example.com\""))
+        
+        // Verify it can be decoded back correctly
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let decoded = try decoder.decode(ObservationRecord.self, from: data)
+        
+        #expect(decoded.observer == "observer@example.com")
+        #expect(decoded.taxonId == "amecro")
+        #expect(decoded.count == 2)
     }
     
     @Test("ObservationRecord child with location")
@@ -169,7 +195,7 @@ struct ObservationRecordLocationTests {
         #expect(childWithoutLocation.location == nil)
         
         // Parent without location, child with location
-        var parentWithoutLocation = ObservationRecord(taxonId: "redwin", count: 1)
+        var parentWithoutLocation = ObservationRecord(taxonId: "redwin", count: 1, observer: "")
         
         let childWithLocation = ObservationRecord(
             parent: &parentWithoutLocation,

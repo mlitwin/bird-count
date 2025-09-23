@@ -7,6 +7,10 @@ import Observation
 
     // Derived data cache
     private var cache = ObservationStoreCache()
+    
+    // Settings store dependency for observer info
+    private var settingsStore: SettingsStore?
+    
     // Backward-compat published accessors for existing call sites
     private(set) var counts: [String:Int] = [:]
 
@@ -17,6 +21,11 @@ import Observation
     private let persistenceKey = "ObservationRecords"
 
     public init() { load(); rebuildDerived() }
+    
+    /// Set the SettingsStore dependency for observer information
+    public func setSettingsStore(_ store: SettingsStore) {
+        self.settingsStore = store
+    }
 
     // MARK: Derived helpers
     private func rebuildDerived() {
@@ -29,7 +38,8 @@ import Observation
 
     // MARK: Mutations
     public func addObservation(_ taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1, location: ObservationLocation? = nil) {
-        observations.append(ObservationRecord(id: UUID(), taxonId: taxonId, begin: begin, end: end, count: max(0, count), location: location))
+        let observer = settingsStore?.loginEmail ?? ""
+        observations.append(ObservationRecord(id: UUID(), taxonId: taxonId, begin: begin, end: end, count: max(0, count), location: location, observer: observer))
         touchRecent(taxonId)
     }
     

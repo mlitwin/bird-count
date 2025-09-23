@@ -28,6 +28,10 @@ struct BirdCountApp: App {
                 .environment(dateRangeStore)
                 .environment(syncSessionManager)
                 .environment(locationManager)
+                .onAppear {
+                    // Set up store dependencies
+                    observationStore.setSettingsStore(settingsStore)
+                }
         }
     }
 }
