@@ -61,6 +61,7 @@
 		B5D190E8062082C0AB7AFD7B /* LeftDrawerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED96AA768B26BFF2333C6D5 /* LeftDrawerView.swift */; };
 		B7A68117A165B96D49F12BCE /* ObservationRecordLocationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5831C01C2F3DB6F6D15AB48A /* ObservationRecordLocationTests.swift */; };
 		BAE59DC44E9938705B0A6BCF /* checklist.json in Resources */ = {isa = PBXBuildFile; fileRef = CC412F9A02FEF839809F38AC /* checklist.json */; };
+		BBABB1F85B3393489B4F9724 /* ObservationStoreLocationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41872F0F1DF51AC09BC9B96A /* ObservationStoreLocationTests.swift */; };
 		BCF2B2A1BD62C977C6FF3609 /* ObservationDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 683F06540EC61740371DE480 /* ObservationDTO.swift */; };
 		C0B46E941915D7EEBD03E60D /* ios_taxonomy_min.json in Resources */ = {isa = PBXBuildFile; fileRef = A9DD5F1234EFBE186A162092 /* ios_taxonomy_min.json */; };
 		C365B63760F17794D9B0605A /* BirdCountApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F3E57E196D1687022B624BA /* BirdCountApp.swift */; };
@@ -75,7 +76,6 @@
 		E310FDDAB749F0B03381009D /* SpeciesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3EC2F235F0B25723256BE9 /* SpeciesListView.swift */; };
 		E3EBCC21F641D4BB140C618B /* ObservationStoreCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D9C8368572CC7976F0E8145 /* ObservationStoreCache.swift */; };
 		E7B00C8061B90FDD9F9041A3 /* CoreLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6177409CCCEA104A666AA11D /* CoreLogicTests.swift */; };
-		E85454B3932214992149350A /* ObservationStoreLocationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F52C502A44A75970FC9424F1 /* ObservationStoreLocationTests.swift */; };
 		EA346BFABBA8BAE1E3688F4D /* DateRangePreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0381ACBC1A7AFAE798219350 /* DateRangePreset.swift */; };
 		F2C31476F4EAEA0FCA29CD01 /* ModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF79995B3B7FC149037EC4C /* ModelsTests.swift */; };
 		F2F79D81B2BCF80CA15A9C4C /* ObservationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11C0F2EB5F5DDCE1C6106B1 /* ObservationStore.swift */; };
@@ -127,6 +127,7 @@
 		2D7AE2C3B7717C8EA9B78229 /* HeaderSpacingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderSpacingView.swift; sourceTree = "<group>"; };
 		2E550332A5E0138A929F3B43 /* SyncSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncSessionManager.swift; sourceTree = "<group>"; };
 		4186A73E1CCA966174627C23 /* BirdCount.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BirdCount.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		41872F0F1DF51AC09BC9B96A /* ObservationStoreLocationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationStoreLocationTests.swift; sourceTree = "<group>"; };
 		423444717CB358DADDC73CC9 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 		48123A84923C3A9D21804AB8 /* ObservationLocationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationLocationTests.swift; sourceTree = "<group>"; };
 		490E29F6D3D7AA78458944AC /* BirdCountCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = BirdCountCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -174,7 +175,6 @@
 		EE5F763F03DD6201966D2395 /* ObservationLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationLogView.swift; sourceTree = "<group>"; };
 		EF1503D4300A927D857CA79D /* AppHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppHeaderView.swift; sourceTree = "<group>"; };
 		F11C0F2EB5F5DDCE1C6106B1 /* ObservationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationStore.swift; sourceTree = "<group>"; };
-		F52C502A44A75970FC9424F1 /* ObservationStoreLocationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationStoreLocationTests.swift; sourceTree = "<group>"; };
 		F6A0C5EC7F393B0C8A4C4510 /* SyncSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncSheet.swift; sourceTree = "<group>"; };
 		FBCE0B9078509DFFC117339F /* ObservationRecordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationRecordView.swift; sourceTree = "<group>"; };
 		FE337F05758535174D947692 /* ObservationExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationExportService.swift; sourceTree = "<group>"; };
@@ -302,6 +302,7 @@
 				130ECD8284C28523033750CE /* DateRangeStoreTests.swift */,
 				CAF79995B3B7FC149037EC4C /* ModelsTests.swift */,
 				48123A84923C3A9D21804AB8 /* ObservationLocationTests.swift */,
+				41872F0F1DF51AC09BC9B96A /* ObservationStoreLocationTests.swift */,
 				BAE4346483A7FCF5504F471D /* ObservationStoreTests.swift */,
 				1F5C38ADF32B9D45D6ED7AAF /* TaxonomyStoreTests.swift */,
 			);
@@ -389,7 +390,6 @@
 				905A41A6B9EC879EAD96F7CA /* BirdCountTests.swift */,
 				06C226BAA24DFFC3791FF932 /* LocationManagerTests.swift */,
 				5831C01C2F3DB6F6D15AB48A /* ObservationRecordLocationTests.swift */,
-				F52C502A44A75970FC9424F1 /* ObservationStoreLocationTests.swift */,
 				0FAB184DAE5C28F995C062DD /* ObservationSyncTests.swift */,
 			);
 			path = Tests;
@@ -568,6 +568,7 @@
 				5B1AA8C7255E0927571DA061 /* DateRangeStoreTests.swift in Sources */,
 				F2C31476F4EAEA0FCA29CD01 /* ModelsTests.swift in Sources */,
 				377DB66A35FF3BE2021A6BF6 /* ObservationLocationTests.swift in Sources */,
+				BBABB1F85B3393489B4F9724 /* ObservationStoreLocationTests.swift in Sources */,
 				5E033E45710125708E279708 /* ObservationStoreTests.swift in Sources */,
 				657490E66225F83841436699 /* TaxonomyStoreTests.swift in Sources */,
 			);
@@ -647,7 +648,6 @@
 				6219220B199141F94E4AF58A /* BirdCountTests.swift in Sources */,
 				0C802E48E252CE8681EC3C28 /* LocationManagerTests.swift in Sources */,
 				B7A68117A165B96D49F12BCE /* ObservationRecordLocationTests.swift in Sources */,
-				E85454B3932214992149350A /* ObservationStoreLocationTests.swift in Sources */,
 				D0E822208F5FD0C78C08D446 /* ObservationSyncTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

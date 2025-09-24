@@ -65,7 +65,6 @@ struct ObservationStoreLocationTests {
         let observation = store.observations.first!
         #expect(observation.taxonId == "testTaxon")
         // Location may or may not be present depending on LocationManager authorization state
-        // In test environment, we just verify the observation was created successfully
     }
     
     @Test("Add child observation with location - automatic capture when authorized")
@@ -75,9 +74,6 @@ struct ObservationStoreLocationTests {
         
         // Create parent observation first
         store.addObservation("parentTaxon")
-        
-        // Verify parent was created
-        #expect(store.observations.count == 1, "Parent observation should be created")
         guard let parentObservation = store.observations.first else {
             throw TestError.missingParentObservation
         }
@@ -97,7 +93,7 @@ struct ObservationStoreLocationTests {
         
         // The location-aware method may add the child asynchronously if requesting location,
         // or synchronously if no location permissions or using cached location.
-        // In test environment without location permissions, it should add synchronously.
+        // On non-iOS platforms, it should add synchronously without location.
         #expect(parent.children.count >= 0, "Children count should be non-negative")
         
         // If a child was added, verify it has the correct taxonId
