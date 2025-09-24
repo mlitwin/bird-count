@@ -25,10 +25,16 @@ struct LocationManagerTests {
         
         // When/Then - Test when not determined
         if locationManager.authorizationStatus == .notDetermined {
-            #expect(locationManager.canRequestPermission == CLLocationManager.locationServicesEnabled())
+            // LocationManager starts with locationServicesEnabled = false and updates asynchronously
+            // to avoid blocking the main thread, so we can't expect it to immediately match
+            // the synchronous CLLocationManager.locationServicesEnabled() call.
+            // Instead, test the expected behavior given the current state.
             #expect(!locationManager.isAuthorized)
             #expect(!locationManager.isDenied)
             #expect(!locationManager.shouldShowSettingsPrompt)
+            
+            // Initially canRequestPermission should be false since locationServicesEnabled starts as false
+            #expect(locationManager.canRequestPermission == false)
         }
     }
     
