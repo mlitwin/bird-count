@@ -194,10 +194,30 @@ struct ObservationLocationTests {
     
     @Test("Equatable conformance")
     func testEquatableConformance() throws {
-        // Given
-        let location1 = ObservationLocation(latitude: 40.7831, longitude: -73.9712, name: "Test")
-        let location2 = ObservationLocation(latitude: 40.7831, longitude: -73.9712, name: "Test")
-        let location3 = ObservationLocation(latitude: 40.7832, longitude: -73.9712, name: "Test")
+        // Given - Use fixed timestamp to avoid flaky comparison
+        let fixedTimestamp = Date(timeIntervalSince1970: 1695312000)
+        
+        let location1 = ObservationLocation(
+            latitude: 40.7831, 
+            longitude: -73.9712, 
+            horizontalAccuracy: 5.0,
+            timestamp: fixedTimestamp,
+            name: "Test"
+        )
+        let location2 = ObservationLocation(
+            latitude: 40.7831, 
+            longitude: -73.9712, 
+            horizontalAccuracy: 5.0,
+            timestamp: fixedTimestamp,
+            name: "Test"
+        )
+        let location3 = ObservationLocation(
+            latitude: 40.7832, 
+            longitude: -73.9712, 
+            horizontalAccuracy: 5.0,
+            timestamp: fixedTimestamp,
+            name: "Test"
+        )
         
         // Then
         #expect(location1 == location2)

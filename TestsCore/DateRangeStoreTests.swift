@@ -7,14 +7,24 @@ struct DateRangeStoreTests {
     func persistsAndLoads() throws {
         let store = DateRangeStore()
         let original = store.dateRange
-        let newRange = DateRange(
-            begin: Calendar.current.date(byAdding: .day, value: -2, to: Date())!,
-            end: Date()
-        )
+        
+        // Use fixed dates to avoid flaky behavior
+        let fixedEndDate = Date(timeIntervalSince1970: 1695312000) // Fixed timestamp
+        let fixedBeginDate = Date(timeIntervalSince1970: 1695312000 - 2 * 24 * 60 * 60) // 2 days earlier
+        
+        let newRange = DateRange(begin: fixedBeginDate, end: fixedEndDate)
         store.update(newRange)
-        let loaded = DateRangeStore().dateRange
-        #expect(loaded == newRange)
-        store.update(original) // restore
+        
+        // Verify the store has the updated range
+        #expect(store.dateRange == newRange)
+        
+        // Test persistence by creating a new store instance
+        // (This tests if the data was actually persisted to storage)
+        let newStore = DateRangeStore()
+        #expect(newStore.dateRange == newRange)
+        
+        // Restore original range
+        store.update(original)
     }
 
     @Test
