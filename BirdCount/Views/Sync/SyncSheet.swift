@@ -49,7 +49,9 @@ struct SyncSheet: View {
                     ProgressView(Strings.Sync.processing.string)
                     
                 case .completed:
-                    CompletedView(mode: mode)
+                    CompletedView(mode: mode, onDismiss: {
+                        dismiss()
+                    })
                     
                 case .error:
                     ErrorView()
@@ -238,8 +240,8 @@ private struct TransferringView: View {
 
 private struct CompletedView: View {
     @Environment(SyncSessionManager.self) private var syncManager
-    @Environment(\.dismiss) private var dismiss
     let mode: SyncMode
+    let onDismiss: () -> Void
     
     var body: some View {
         VStack(spacing: 20) {
@@ -262,7 +264,7 @@ private struct CompletedView: View {
             }
             
             Button(Strings.General.done.string) {
-                dismiss()
+                onDismiss()
             }
             .buttonStyle(.borderedProminent)
         }
