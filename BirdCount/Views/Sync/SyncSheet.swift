@@ -50,7 +50,12 @@ struct SyncSheet: View {
                     
                 case .completed:
                     CompletedView(mode: mode, onDismiss: {
+                        // Dismiss the sheet first. Perform cancel shortly after to avoid
+                        // state changes preventing the active sheet from closing.
                         dismiss()
+                        DispatchQueue.main.async {
+                            syncManager.cancel()
+                        }
                     })
                     
                 case .error:
@@ -89,6 +94,10 @@ struct SyncSheet: View {
             setupIncomingSyncHandler()
             // Start sync immediately when the sheet appears
             startSync()
+        }
+        .onDisappear {
+            // Defensive: make sure we stop any transport activity if the sheet goes away
+            syncManager.cancel()
         }
     }
     
@@ -293,6 +302,7 @@ private struct CompletedView: View {
 
 private struct ErrorView: View {
     @Environment(SyncSessionManager.self) private var syncManager
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         VStack(spacing: 20) {
@@ -307,6 +317,12 @@ private struct ErrorView: View {
                 Text(errorMessage)
                     .multilineTextAlignment(.center)
                     .foregroundColor(.secondary)
+            }
+            
+            Button(Strings.General.done.string) {
+                // Ensure any transport activity is stopped then dismiss
+                syncManager.cancel()
+                dismiss()
             }
         }
     }
