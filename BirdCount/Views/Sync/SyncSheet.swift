@@ -50,8 +50,6 @@ struct SyncSheet: View {
                     
                 case .completed:
                     CompletedView(mode: mode, onDismiss: {
-                        // Dismiss the sheet first. Perform cancel shortly after to avoid
-                        // state changes preventing the active sheet from closing.
                         dismiss()
                         DispatchQueue.main.async {
                             syncManager.cancel()
@@ -320,9 +318,10 @@ private struct ErrorView: View {
             }
             
             Button(Strings.General.done.string) {
-                // Ensure any transport activity is stopped then dismiss
-                syncManager.cancel()
                 dismiss()
+                DispatchQueue.main.async {
+                    syncManager.cancel()
+                }
             }
         }
     }

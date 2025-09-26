@@ -508,11 +508,6 @@ import UIKit
             setState(.error)
             onSyncCompletion?(.failure(error ?? SyncError.transferFailed))
         }
-        
-        // Auto-reset after a brief delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
-            self?.reset()
-        }
     }
     
     private func reset() {
