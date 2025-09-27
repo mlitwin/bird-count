@@ -1,6 +1,6 @@
 import Testing
 import CoreLocation
-@testable import BirdCount
+@testable import BirdCountCore
 
 enum TestError: Error {
     case missingParentObservation
