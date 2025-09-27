@@ -3,11 +3,18 @@ import MapKit
 
 struct ObservationDetailsSheet: View {
     @Environment(TaxonomyStore.self) private var taxonomy
+    @Environment(ObservationStore.self) private var observationStore
     let record: ObservationRecord
     @Environment(\.dismiss) private var dismiss
+    @State private var showCountAdjust: Bool = false
+    
+    // Get the current version of the record from the store to reflect updates
+    private var currentRecord: ObservationRecord {
+        observationStore.findRecord(by: record.id) ?? record
+    }
     
     private var taxon: Taxon? { 
-        taxonomy.species.first { $0.id == record.taxonId }
+        taxonomy.species.first { $0.id == currentRecord.taxonId }
     }
     
     var body: some View {
@@ -15,27 +22,27 @@ struct ObservationDetailsSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     // Main Species Information
-                    SpeciesHeader(taxon: taxon, record: record)
+                    SpeciesHeader(taxon: taxon, record: currentRecord)
                     
                     Divider()
                     
                     // Observation Details
-                    ObservationDetailsSection(record: record)
+                    ObservationDetailsSection(record: currentRecord, onEditCount: { showCountAdjust = true })
                     
                     Divider()
                     
                     // Location Information
-                    LocationDetailsSection(record: record)
+                    LocationDetailsSection(record: currentRecord)
                     
                     Divider()
                     
                     // Child Observations
-                    ChildObservationsSection(record: record, taxonomy: taxonomy)
+                    ChildObservationsSection(record: currentRecord, taxonomy: taxonomy)
                     
                     Divider()
                     
                     // Summary Statistics
-                    SummarySection(record: record)
+                    SummarySection(record: currentRecord)
                 }
                 .padding()
             }
@@ -47,6 +54,11 @@ struct ObservationDetailsSheet: View {
                         dismiss()
                     }
                 }
+            }
+        }
+        .sheet(isPresented: $showCountAdjust) {
+            if let taxon = taxon {
+                CountAdjustSheet(taxon: taxon, parentId: record.id, onDone: { showCountAdjust = false })
             }
         }
     }
@@ -95,6 +107,7 @@ private struct SpeciesHeader: View {
 
 private struct ObservationDetailsSection: View {
     let record: ObservationRecord
+    let onEditCount: () -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -104,7 +117,14 @@ private struct ObservationDetailsSection: View {
             
             DetailRow(label: "Date & Time", value: formattedDateTime)
             DetailRow(label: "Duration", value: formattedDuration)
-            DetailRow(label: "Direct Count", value: "\(record.count)")
+            
+            // Total Count with edit button
+            DetailRowWithAction(
+                label: "Total Count", 
+                value: "\(recursiveCount(record))",
+                actionIcon: "pencil",
+                action: onEditCount
+            )
             
             // Status
             DetailRow(label: Strings.Observation.status.string, value: statusText, valueColor: statusColor)
@@ -224,6 +244,9 @@ private struct ChildObservationsSection: View {
                     .padding(.vertical, 4)
                     .background(Capsule().fill(Color.gray.opacity(0.2)))
             }
+            
+            // Direct count (non-editable)
+            DetailRow(label: "Direct Count", value: "\(record.count)")
             
             if record.children.isEmpty {
                 Text("No child observations")
@@ -402,6 +425,37 @@ private struct DetailRow: View {
     }
 }
 
+private struct DetailRowWithAction: View {
+    let label: String
+    let value: String
+    let actionIcon: String
+    let action: () -> Void
+    var valueColor: Color = .primary
+    
+    var body: some View {
+        HStack {
+            Text(label)
+                .fontWeight(.medium)
+            
+            Spacer()
+            
+            HStack(spacing: 8) {
+                Text(value)
+                    .foregroundStyle(valueColor)
+                    .multilineTextAlignment(.trailing)
+                
+                Button(action: action) {
+                    Image(systemName: actionIcon)
+                        .font(.caption)
+                        .foregroundStyle(.blue)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.vertical, 2)
+    }
+}
+
 private struct CommonnessLabel: View {
     let commonness: Int
     
@@ -470,5 +524,6 @@ private func recursiveCount(_ record: ObservationRecord) -> Int {
     
     ObservationDetailsSheet(record: mockRecord)
         .environment(TaxonomyStore())
+        .environment(ObservationStore())
 }
 #endif
