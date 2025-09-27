@@ -106,6 +106,9 @@ private struct ObservationDetailsSection: View {
             DetailRow(label: "Duration", value: formattedDuration)
             DetailRow(label: "Direct Count", value: "\(record.count)")
             
+            // Status
+            DetailRow(label: Strings.Observation.status.string, value: statusText, valueColor: statusColor)
+            
             // Observer field - show only if not empty
             if !record.observer.isEmpty {
                 DetailRow(label: Strings.Observation.observer.string, value: record.observer)
@@ -138,6 +141,24 @@ private struct ObservationDetailsSection: View {
             } else {
                 return "\(minutes)m"
             }
+        }
+    }
+    
+    private var statusText: String {
+        switch record.status {
+        case .pending:
+            return Strings.Observation.Status.pending.string
+        case .completed:
+            return Strings.Observation.Status.completed.string
+        }
+    }
+    
+    private var statusColor: Color {
+        switch record.status {
+        case .pending:
+            return .orange
+        case .completed:
+            return .green
         }
     }
 }

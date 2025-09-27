@@ -22,17 +22,21 @@ public struct ObservationRecord: Identifiable, Codable, Equatable {
     }
     public var location: ObservationLocation? { data.location }
     public var observer: String { data.observer }
+    public var status: ObservationStatus {
+        get { data.status }
+        set { data.status = newValue }
+    }
 
     // MARK: Initializers
-    public init(id: UUID = UUID(), taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1, location: ObservationLocation? = nil, observer: String = "") {
+    public init(id: UUID = UUID(), taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1, location: ObservationLocation? = nil, observer: String = "", status: ObservationStatus = .completed) {
         let beginTime = begin
-        self.data = ObservationRecordDTO(id: id, parentId: nil, taxonId: taxonId, begin: beginTime, end: end ?? beginTime, count: count, location: location, observer: observer)
+        self.data = ObservationRecordDTO(id: id, parentId: nil, taxonId: taxonId, begin: beginTime, end: end ?? beginTime, count: count, location: location, observer: observer, status: status)
         self.children = []
     }
 
-    public init(parent: inout ObservationRecord, id: UUID = UUID(), taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1, location: ObservationLocation? = nil, observer: String = "") {
+    public init(parent: inout ObservationRecord, id: UUID = UUID(), taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1, location: ObservationLocation? = nil, observer: String = "", status: ObservationStatus = .completed) {
         let beginTime = begin
-        self.data = ObservationRecordDTO(id: id, parentId: parent.id, taxonId: taxonId, begin: beginTime, end: end ?? beginTime, count: count, location: location, observer: observer)
+        self.data = ObservationRecordDTO(id: id, parentId: parent.id, taxonId: taxonId, begin: beginTime, end: end ?? beginTime, count: count, location: location, observer: observer, status: status)
         self.children = []
         parent.children.append(self)
     }
@@ -42,6 +46,12 @@ public struct ObservationRecord: Identifiable, Codable, Equatable {
         var adjusted = child
         adjusted.parentId = self.id
         children.append(adjusted)
+    }
+    
+    /// Update the observation with location and mark as completed
+    public mutating func updateWithLocation(_ location: ObservationLocation?) {
+        data.location = location
+        data.status = .completed
     }
 }
 

@@ -106,12 +106,27 @@ import Observation
         }
         return search(in: observations)
     }
+    
+    /// Update an observation record by UUID at the top level.
+    /// Returns true if the record was found and updated.
+    @discardableResult
+    public func updateRecord(by id: UUID, updater: (inout ObservationRecord) -> Void) -> Bool {
+        for idx in observations.indices {
+            if observations[idx].id == id {
+                updater(&observations[idx])
+                persist()
+                rebuildDerived()
+                return true
+            }
+        }
+        return false
+    }
 
     /// Attach a child observation record to an existing record identified by `parentId`.
     /// Returns true if the parent was found and the child added.
     @discardableResult
-    public func addChildObservation(parentId: UUID, taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1, location: ObservationLocation? = nil, observer: String = "") -> Bool {
-    let newChild = ObservationRecord(id: UUID(), taxonId: taxonId, begin: begin, end: end, count: count, location: location, observer: observer)
+    public func addChildObservation(parentId: UUID, taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1, location: ObservationLocation? = nil, observer: String = "", status: ObservationStatus = .completed) -> Bool {
+        let newChild = ObservationRecord(id: UUID(), taxonId: taxonId, begin: begin, end: end, count: count, location: location, observer: observer, status: status)
         var didAttach = false
         func attach(into array: inout [ObservationRecord]) {
             for idx in array.indices {
@@ -139,63 +154,96 @@ import Observation
     
     #if os(iOS)
     /// Add observation with automatic location capture if permissions allow
+    /// Creates the observation immediately in pending status, then updates with location when available
     public func addObservationWithLocation(_ taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1) {
+        let observer = settingsStore?.loginEmail ?? ""
         let locationManager = LocationManager.shared
+        
+        // Create the observation immediately in pending status
+        let newObservation = ObservationRecord(taxonId: taxonId, begin: begin, end: end, count: count, location: nil, observer: observer, status: .pending)
+        let observationId = newObservation.id
+        observations.append(newObservation)
+        touchRecent(taxonId)
         
         if locationManager.isAuthorized {
             // Check if we have a recent location (within 5 minutes)
             if let currentLocation = locationManager.currentObservationLocation,
                Date().timeIntervalSince(currentLocation.timestamp) < 300 {
-                // Use existing recent location
-                addObservation(taxonId, begin: begin, end: end, count: count, location: currentLocation)
+                // Use existing recent location and mark as completed
+                updateRecord(by: observationId) { record in
+                    record.updateWithLocation(currentLocation)
+                }
             } else {
-                // Request fresh location and add observation when received
+                // Request fresh location and update observation when received
                 locationManager.requestLocation { [weak self] result in
                     switch result {
                     case .success(let location):
-                        self?.addObservation(taxonId, begin: begin, end: end, count: count, location: location)
+                        self?.updateRecord(by: observationId) { record in
+                            record.updateWithLocation(location)
+                        }
                     case .failure(_):
-                        // Failed to get location, add without it
-                        self?.addObservation(taxonId, begin: begin, end: end, count: count, location: nil)
+                        // Failed to get location, mark as completed without location
+                        self?.updateRecord(by: observationId) { record in
+                            record.updateWithLocation(nil)
+                        }
                     }
                 }
-                return // Don't add the observation synchronously, wait for location callback
             }
         } else {
-            // No location permission, add without location
-            addObservation(taxonId, begin: begin, end: end, count: count, location: nil)
+            // No location permission, mark as completed without location
+            updateRecord(by: observationId) { record in
+                record.updateWithLocation(nil)
+            }
         }
     }
     
     /// Add child observation with automatic location capture if permissions allow
+    /// Creates the child observation immediately in pending status, then updates with location when available
     @discardableResult
     public func addChildObservationWithLocation(parentId: UUID, taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1) -> Bool {
-        let locationManager = LocationManager.shared
         let observer = settingsStore?.loginEmail ?? ""
+        let locationManager = LocationManager.shared
         
-        if locationManager.isAuthorized {
-            // Check if we have a recent location (within 5 minutes)
-            if let currentLocation = locationManager.currentObservationLocation,
-               Date().timeIntervalSince(currentLocation.timestamp) < 300 {
-                // Use existing recent location
-                return addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: currentLocation, observer: observer)
-            } else {
-                // Request fresh location and add child observation when received
-                locationManager.requestLocation { [weak self] result in
-                    switch result {
-                    case .success(let location):
-                        _ = self?.addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: location, observer: observer)
-                    case .failure(_):
-                        // Failed to get location, add without it
-                        _ = self?.addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: nil, observer: observer)
+        // Create child observation immediately in pending status
+        let newChild = ObservationRecord(id: UUID(), taxonId: taxonId, begin: begin, end: end, count: count, location: nil, observer: observer, status: .pending)
+        let childId = newChild.id
+        
+        let wasAttached = addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: nil, observer: observer, status: .pending)
+        
+        if wasAttached {
+            if locationManager.isAuthorized {
+                // Check if we have a recent location (within 5 minutes)
+                if let currentLocation = locationManager.currentObservationLocation,
+                   Date().timeIntervalSince(currentLocation.timestamp) < 300 {
+                    // Use existing recent location
+                    updateRecord(by: childId) { record in
+                        record.updateWithLocation(currentLocation)
+                    }
+                } else {
+                    // Request fresh location and update child when received
+                    locationManager.requestLocation { [weak self] result in
+                        switch result {
+                        case .success(let location):
+                            self?.updateRecord(by: childId) { record in
+                                record.updateWithLocation(location)
+                            }
+                        case .failure(_):
+                            // Failed to get location, mark as completed without location
+                            self?.updateRecord(by: childId) { record in
+                                record.updateWithLocation(nil)
+                            }
+                        }
                     }
                 }
-                return true // Optimistically return true since we're adding async
+            } else {
+                // No location permission, mark as completed without location
+                updateRecord(by: childId) { record in
+                    record.updateWithLocation(nil)
+                }
             }
-        } else {
-            // No location permission, add without location
-            return addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: nil, observer: observer)
         }
+        
+        return wasAttached
     }
     #else
     /// Add observation with automatic location capture - not available on this platform

@@ -1,5 +1,11 @@
 import Foundation
 
+/// Status of an observation record - pending location resolution or completed
+public enum ObservationStatus: String, Codable, CaseIterable {
+    case pending = "pending"
+    case completed = "completed"
+}
+
 /// A plain data struct for serialization, containing only the core fields (no children).
 public struct ObservationRecordDTO: Identifiable, Codable, Equatable {
     public let id: UUID
@@ -8,10 +14,11 @@ public struct ObservationRecordDTO: Identifiable, Codable, Equatable {
     public let begin: Date
     public let end: Date
     public var count: Int
-    public let location: ObservationLocation?
+    public var location: ObservationLocation?
     public let observer: String
+    public var status: ObservationStatus
 
-    public init(id: UUID, parentId: UUID? = nil, taxonId: String, begin: Date, end: Date, count: Int, location: ObservationLocation? = nil, observer: String = "") {
+    public init(id: UUID, parentId: UUID? = nil, taxonId: String, begin: Date, end: Date, count: Int, location: ObservationLocation? = nil, observer: String = "", status: ObservationStatus = .completed) {
         self.id = id
         self.parentId = parentId
         self.taxonId = taxonId
@@ -20,6 +27,7 @@ public struct ObservationRecordDTO: Identifiable, Codable, Equatable {
         self.count = count
         self.location = location
         self.observer = observer
+        self.status = status
     }
     
     // Custom coding to handle backwards compatibility
@@ -33,9 +41,10 @@ public struct ObservationRecordDTO: Identifiable, Codable, Equatable {
         count = try container.decode(Int.self, forKey: .count)
         location = try container.decodeIfPresent(ObservationLocation.self, forKey: .location)
         observer = try container.decodeIfPresent(String.self, forKey: .observer) ?? ""
+        status = try container.decodeIfPresent(ObservationStatus.self, forKey: .status) ?? .completed
     }
     
     private enum CodingKeys: String, CodingKey {
-        case id, parentId, taxonId, begin, end, count, location, observer
+        case id, parentId, taxonId, begin, end, count, location, observer, status
     }
 }

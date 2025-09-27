@@ -90,6 +90,12 @@ enum Strings {
         static let delete = LocalizedString("observation.delete")
         static let details = LocalizedString("observation.details")
         static let observer = LocalizedString("observation.observer")
+        static let status = LocalizedString("observation.status")
+        
+        enum Status {
+            static let pending = LocalizedString("observation.status.pending")
+            static let completed = LocalizedString("observation.status.completed")
+        }
     }
     
     // MARK: - Date Range
