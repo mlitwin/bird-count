@@ -121,6 +121,35 @@ import Observation
         }
         return false
     }
+    
+    /// Update a child observation record by parent and child UUID.
+    /// Returns true if the child record was found and updated.
+    @discardableResult
+    public func updateChildRecord(parentId: UUID, childId: UUID, updater: (inout ObservationRecord) -> Void) -> Bool {
+        func updateInChildren(of parent: inout ObservationRecord) -> Bool {
+            for idx in parent.children.indices {
+                if parent.children[idx].id == childId {
+                    updater(&parent.children[idx])
+                    return true
+                }
+                if updateInChildren(of: &parent.children[idx]) {
+                    return true
+                }
+            }
+            return false
+        }
+        
+        for idx in observations.indices {
+            if observations[idx].id == parentId {
+                if updateInChildren(of: &observations[idx]) {
+                    persist()
+                    rebuildDerived()
+                    return true
+                }
+            }
+        }
+        return false
+    }
 
     /// Attach a child observation record to an existing record identified by `parentId`.
     /// Returns true if the parent was found and the child added.
@@ -205,18 +234,23 @@ import Observation
         let locationManager = LocationManager.shared
         
         // Create child observation immediately in pending status
-        let newChild = ObservationRecord(id: UUID(), taxonId: taxonId, begin: begin, end: end, count: count, location: nil, observer: observer, status: .pending)
-        let childId = newChild.id
-        
         let wasAttached = addChildObservation(parentId: parentId, taxonId: taxonId, begin: begin, end: end, count: count, location: nil, observer: observer, status: .pending)
         
         if wasAttached {
+            // Find the child we just added to get its ID
+            guard let parentRecord = findRecord(by: parentId),
+                  let addedChild = parentRecord.children.last else {
+                return true // Child was added but we couldn't find it for location update
+            }
+            
+            let childId = addedChild.id
+            
             if locationManager.isAuthorized {
                 // Check if we have a recent location (within 5 minutes)
                 if let currentLocation = locationManager.currentObservationLocation,
                    Date().timeIntervalSince(currentLocation.timestamp) < 300 {
                     // Use existing recent location
-                    updateRecord(by: childId) { record in
+                    updateChildRecord(parentId: parentId, childId: childId) { record in
                         record.updateWithLocation(currentLocation)
                     }
                 } else {
@@ -224,12 +258,12 @@ import Observation
                     locationManager.requestLocation { [weak self] result in
                         switch result {
                         case .success(let location):
-                            self?.updateRecord(by: childId) { record in
+                            self?.updateChildRecord(parentId: parentId, childId: childId) { record in
                                 record.updateWithLocation(location)
                             }
                         case .failure(_):
                             // Failed to get location, mark as completed without location
-                            self?.updateRecord(by: childId) { record in
+                            self?.updateChildRecord(parentId: parentId, childId: childId) { record in
                                 record.updateWithLocation(nil)
                             }
                         }
@@ -237,7 +271,7 @@ import Observation
                 }
             } else {
                 // No location permission, mark as completed without location
-                updateRecord(by: childId) { record in
+                updateChildRecord(parentId: parentId, childId: childId) { record in
                     record.updateWithLocation(nil)
                 }
             }
