@@ -9,20 +9,14 @@ struct SpeciesRow: View {
         VStack(spacing: 0) {
             HStack(alignment: .center, spacing: 12) {
                 SpeciesRowBasic(taxon: taxon)
-                if let c = taxon.commonness {
-                    Text(commonnessLabel(c))
-                        .font(.footnote)
-                        .padding(4)
-                        .background(RoundedRectangle(cornerRadius: 4).fill(Color.gray.opacity(0.15)))
-                }
                 Spacer()
                 if count > 0 {
                     Text("\(count)")
                         .font(.headline.monospacedDigit())
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(Capsule().fill(Color.accentColor.opacity(0.15)))
-                        .overlay(Capsule().stroke(Color.accentColor, lineWidth: 1))
+                        .background(RoundedRectangle(cornerRadius: 6).fill(Color.accentColor.opacity(0.15)))
+                        .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.accentColor, lineWidth: 1))
                         .accessibilityLabel(String(format: Strings.Accessibility.countLabel.string, taxon.commonName, count))
                 }
             }
@@ -48,16 +42,6 @@ private struct SpeciesRowBasic: View {
                     .foregroundStyle(.secondary)
             }
         }
-    }
-}
-
-private func commonnessLabel(_ c: Int) -> String {
-    switch c { 
-    case 0: return "R"
-    case 1: return "S"
-    case 2: return "U"
-    case 3: return "C"
-    default: return ""
     }
 }
 
