@@ -39,7 +39,7 @@ private struct SpeciesRowBasic: View {
                     .font(.title3.weight(.semibold))
                 Text(taxon.scientificName)
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary.opacity(0.8))
             }
         }
     }

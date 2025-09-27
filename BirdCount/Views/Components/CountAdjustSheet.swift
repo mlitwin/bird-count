@@ -86,7 +86,7 @@ private struct CountHeaderView: View {
                 .font(.headline.weight(.semibold))
             Text(taxon.scientificName)
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.primary.opacity(0.8))
         }
     }
 }
