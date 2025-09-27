@@ -3,7 +3,7 @@ import SwiftUI
 struct ObservationRecordView: View {
     @Environment(TaxonomyStore.self) private var taxonomy
     let record: ObservationRecord
-    @State private var showAdjust: Bool = false
+    @State private var showDetails: Bool = false
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
@@ -30,14 +30,9 @@ struct ObservationRecordView: View {
                 .accessibilityLabel("Count \(totalCount)")
         }
         .contentShape(Rectangle())
-        .onTapGesture { showAdjust = true }
-        .sheet(isPresented: $showAdjust) {
-            if let taxon = taxon {
-                CountAdjustSheet(taxon: taxon, parentId: record.id, onDone: { showAdjust = false })
-            } else {
-                // Fallback: dismiss if taxon not found
-                Color.clear.onAppear { showAdjust = false }
-            }
+        .onTapGesture { showDetails = true }
+        .sheet(isPresented: $showDetails) {
+            ObservationDetailsSheet(record: record)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel)

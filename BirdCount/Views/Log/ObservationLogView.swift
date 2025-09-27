@@ -7,7 +7,6 @@ struct ObservationLogView: View {
     var show: Binding<Bool>? = nil
     @Environment(DateRangeStore.self) private var dateRangeStore
     @State private var exportSheet: Bool = false
-    @State private var selectedRecord: ObservationRecord? = nil
 
     // Flattened list of records (no date filtering here), preserving children so ObservationRecordView can compute recursive totals
     private var display: [ObservationRecord] { buildDisplay() }
@@ -43,14 +42,6 @@ struct ObservationLogView: View {
                                 }
                             }
                         }
-                        .swipeActions(edge: .leading) {
-                            Button {
-                                selectedRecord = rec
-                            } label: {
-                                Label(Strings.Observation.details.string, systemImage: "info.circle")
-                            }
-                            .tint(.blue)
-                        }
                 }
             }
         
@@ -61,9 +52,6 @@ struct ObservationLogView: View {
                 ToolbarItem(placement: .primaryAction) { Button(Strings.Share.export.string) { exportSheet = true }.disabled(display.isEmpty) }
             }
         .sheet(isPresented: $exportSheet) { ShareActivityView(items: [exportText()]) }
-        .sheet(item: $selectedRecord) { record in
-            ObservationDetailsSheet(record: record)
-        }
         .toolbar(.hidden, for: .navigationBar)
         .toolbarBackground(.hidden, for: .navigationBar)
         }
