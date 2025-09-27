@@ -5,7 +5,7 @@ import Testing
 struct CoreLogicTests {
     @Test
     func observationStoreBasicCounts() {
-        let store = ObservationStore()
+        let store = ObservationStore(testing: true)
         store.clearAll()
         store.addObservation("amecro", count: 2)
         store.addObservation("norbla", count: 1)
@@ -35,7 +35,7 @@ struct CoreLogicTests {
 
     @Test
     func observationStoreCountsIncludeChildren() {
-        let store = ObservationStore()
+        let store = ObservationStore(testing: true)
         store.clearAll()
 
         // Create a parent with count 2 and a child with count 3 of the same species
@@ -73,7 +73,7 @@ struct CoreLogicTests {
 
     @Test
     func storeAddChildObservationAPITest() {
-        let store = ObservationStore()
+        let store = ObservationStore(testing: true)
         store.clearAll()
 
         // Create a top-level parent via normal API

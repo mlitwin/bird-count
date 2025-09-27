@@ -5,7 +5,7 @@ import Testing
 struct ObservationStoreTests {
     @Test
     func countsAggregate() throws {
-        let store = ObservationStore()
+        let store = ObservationStore(testing: true)
         store.clearAll()
         store.addObservation("amecro", count: 1)
         store.addObservation("amecro", count: 2)

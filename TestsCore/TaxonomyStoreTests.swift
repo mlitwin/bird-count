@@ -12,7 +12,7 @@ struct TaxonomyStoreTests {
             Taxon(id: "unk", commonName: "Unknown", scientificName: "Incertus", order: 0, rank: "species", commonness: nil)
         ]
         let taxStore = TaxonomyStore(); taxStore.loadPreview(species: taxa)
-        let obsStore = ObservationStore(); obsStore.clearAll()
+        let obsStore = ObservationStore(testing: true); obsStore.clearAll()
         let now = Date()
         // Make them older than 24h to avoid recent bucket
         obsStore.addObservation("c1", begin: now.addingTimeInterval(-26*60*60), end: now.addingTimeInterval(-26*60*60), count: 1)
@@ -32,7 +32,7 @@ struct TaxonomyStoreTests {
             Taxon(id: "commonRecentNewest", commonName: "Common Recent Newest", scientificName: "Communis recentissimus", order: 4, rank: "species", commonness: 3)
         ]
         let taxStore = TaxonomyStore(); taxStore.loadPreview(species: taxa)
-        let obsStore = ObservationStore(); obsStore.clearAll()
+        let obsStore = ObservationStore(testing: true); obsStore.clearAll()
         // Two recent within 24h
         obsStore.addObservation("commonRecentOlder", begin: now.addingTimeInterval(-60*60), end: now.addingTimeInterval(-60*60), count: 1)
         obsStore.addObservation("commonRecentNewest", begin: now.addingTimeInterval(-10*60), end: now.addingTimeInterval(-10*60), count: 1)

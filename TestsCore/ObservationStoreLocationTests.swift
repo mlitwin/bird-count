@@ -12,7 +12,7 @@ struct ObservationStoreLocationTests {
     @Test("Add observation with location")
     func testAddObservationWithLocation() throws {
         // Given
-        let store = ObservationStore()
+        let store = ObservationStore(testing: true)
         let location = ObservationLocation.mock()
         
         // When
@@ -30,7 +30,7 @@ struct ObservationStoreLocationTests {
     @Test("Add child observation with location")
     func testAddChildObservationWithLocation() throws {
         // Given
-        let store = ObservationStore()
+        let store = ObservationStore(testing: true)
         let parentLocation = ObservationLocation.mock(name: "Parent Location")
         let childLocation = ObservationLocation.mock(name: "Child Location", latitude: 41.0, longitude: -74.0)
         
@@ -55,7 +55,7 @@ struct ObservationStoreLocationTests {
     @Test("Add observation with location - automatic capture when authorized")
     func testAddObservationWithLocationAutomatic() throws {
         // Given
-        let store = ObservationStore()
+        let store = ObservationStore(testing: true)
         
         // When - Call location-aware method
         store.addObservationWithLocation("testTaxon")
@@ -70,7 +70,7 @@ struct ObservationStoreLocationTests {
     @Test("Add child observation with location - automatic capture when authorized")
     func testAddChildObservationWithLocationAutomatic() throws {
         // Given
-        let store = ObservationStore()
+        let store = ObservationStore(testing: true)
         
         // Create parent observation first
         store.addObservation("parentTaxon")
@@ -105,7 +105,7 @@ struct ObservationStoreLocationTests {
     @Test("Observation without location")
     func testAddObservationWithoutLocation() throws {
         // Given
-        let store = ObservationStore()
+        let store = ObservationStore(testing: true)
         
         // When
         store.addObservation("testTaxon", location: nil)

@@ -22,6 +22,14 @@ import Observation
 
     public init() { load(); rebuildDerived() }
     
+    /// Test initializer that starts with empty data (doesn't load from UserDefaults)
+    public init(testing: Bool) {
+        if !testing {
+            load()
+        }
+        rebuildDerived()
+    }
+    
     /// Set the SettingsStore dependency for observer information
     public func setSettingsStore(_ store: SettingsStore) {
         self.settingsStore = store
