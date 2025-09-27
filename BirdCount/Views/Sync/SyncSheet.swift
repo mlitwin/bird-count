@@ -12,7 +12,7 @@ struct SyncSheet: View {
     @State private var approvalCompletion: ((Bool) -> Void)?
     
     init(initialMode: SyncMode = .sender) {
-        self.mode = initialMode
+         self.mode = initialMode
     }
     
     var body: some View {
