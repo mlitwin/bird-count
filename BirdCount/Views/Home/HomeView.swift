@@ -16,6 +16,10 @@ struct HomeView: View {
 
     private var filtered: [Taxon] { taxonomy.search(filterText, minCommonness: settings.selectedChecklistId != nil ? settings.minCommonness : nil, maxCommonness: settings.selectedChecklistId != nil ? settings.maxCommonness : nil) }
 
+    private var filteredCounts: [String: Int] {
+        ObservationStoreCache.countsInRange(dateRangeStore.dateRange, from: observations.observations)
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -149,7 +153,11 @@ struct HomeView: View {
                 ContentUnavailableView(Strings.Species.List.empty.string, systemImage: "bird", description: Text(Strings.Species.List.emptyDescription.string))
             }
         } else {
-            SpeciesListView(taxa: filtered, scrollToBottomSignal: scrollToBottomSignal) { taxon in
+            SpeciesListView(
+                taxa: filtered, 
+                counts: filteredCounts,
+                scrollToBottomSignal: scrollToBottomSignal
+            ) { taxon in
                 selectedTaxon = taxon
             }
         }

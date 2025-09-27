@@ -7,6 +7,24 @@ struct ObservationStoreCache {
     private(set) var counts: [String:Int] = [:]
     private(set) var lastObservedAt: [String:Date] = [:]
 
+    /// Static method to compute counts for observations within a date range
+    /// This encapsulates the common filtering logic used by both HomeView and SummaryView
+    static func countsInRange(_ range: DateRange, from allObservations: [ObservationRecord]) -> [String: Int] {
+        // Filter top-level observations first, then let rebuild() handle flattening
+        let filteredObservations = allObservations.compactMap { record -> ObservationRecord? in
+            // Check if record overlaps with the range: record.end >= range.begin && record.begin <= range.end
+            if record.end >= range.begin && record.begin <= range.end {
+                return record
+            }
+            return nil
+        }
+        
+        // Build cache from filtered observations (this handles flattening internally)
+        var tempCache = ObservationStoreCache()
+        tempCache.rebuild(from: filteredObservations)
+        return tempCache.counts
+    }
+
     mutating func rebuild(from observations: [ObservationRecord]) {
         // Recompute counts map: species id -> sum of all counts (including negative child adjustments)
         // and lastObservedAt: most recent end date per species.

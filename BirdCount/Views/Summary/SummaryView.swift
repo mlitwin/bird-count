@@ -9,23 +9,11 @@ struct SummaryView: View {
     }
 
     private var speciesInRange: [SpeciesCountItem] {
-        // Use the same filtering logic as ObservationStore.observationsInRange() 
-        // Filter top-level observations first, then let rebuild() handle flattening
-        let range = dateRangeStore.dateRange
-        let filteredObservations = observations.observations.compactMap { record -> ObservationRecord? in
-            // Check if record overlaps with the range: record.end >= range.begin && record.begin <= range.end
-            if record.end >= range.begin && record.begin <= range.end {
-                return record
-            }
-            return nil
-        }
-        
-        // Build cache from filtered observations (this handles flattening internally)
-        var tempCache = ObservationStoreCache()
-        tempCache.rebuild(from: filteredObservations)
+        // Use the common filtering logic from ObservationStoreCache
+        let counts = ObservationStoreCache.countsInRange(dateRangeStore.dateRange, from: observations.observations)
         
         return taxonomy.species.compactMap { t in
-            if let c = tempCache.counts[t.id], c > 0 {
+            if let c = counts[t.id], c > 0 {
                 return SpeciesCountItem(id: t.id, taxon: t, count: c)
             } else {
                 return nil
