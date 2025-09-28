@@ -3,6 +3,16 @@
     "filename": "BirdCount-1.0.0-33",
     "version": "1.0.0",
     "build": "33",
+    "timestamp": "20250928-113711",
+    "date": "2025-09-28 11:37:23",
+    "ipa_url": "https://antoninus.org/bird-count-ios/docs/builds/BirdCount-1.0.0-33.ipa",
+    "plist_url": "https://antoninus.org/bird-count-ios/docs/builds/BirdCount-1.0.0-33.plist",
+    "install_url": "itms-services://?action=download-manifest&url=https%3A%2F%2Fantoninus.org%2Fbird-count-ios%2Fdocs%2Fbuilds%2FBirdCount-1.0.0-33.plist"
+  },
+  {
+    "filename": "BirdCount-1.0.0-33",
+    "version": "1.0.0",
+    "build": "33",
     "timestamp": "20250928-111706",
     "date": "2025-09-28 11:17:18",
     "ipa_url": "https://antoninus.org/bird-count-ios/docs/builds/BirdCount-1.0.0-33.ipa",

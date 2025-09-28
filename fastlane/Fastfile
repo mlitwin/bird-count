@@ -1,5 +1,6 @@
 require 'json'
 require 'fileutils'
+require 'uri'
 
 default_platform(:ios)
 
@@ -240,6 +241,12 @@ platform :ios do
       end
       
       # Update builds.json with new build information
+      manifest_url = "#{base_url}/#{build_filename}.plist"
+      # Properly encode the manifest URL for itms-services protocol
+      # As per https://stackoverflow.com/questions/4695180/wireless-iphone-app-distribution-problem-with-itms-services-protocol
+      encoded_manifest_url = URI.encode_www_form_component(manifest_url)
+      install_url = "itms-services://?action=download-manifest&url=#{encoded_manifest_url}"
+      
       update_builds_json(
         builds_dir: docs_builds_dir, 
         build_info: {
@@ -249,8 +256,8 @@ platform :ios do
           timestamp: timestamp,
           date: Time.now.strftime("%Y-%m-%d %H:%M:%S"),
           ipa_url: "#{base_url}/#{build_filename}.ipa",
-          plist_url: "#{base_url}/#{build_filename}.plist",
-          install_url: "itms-services://?action=download-manifest&url=#{base_url}/#{build_filename}.plist"
+          plist_url: manifest_url,
+          install_url: install_url
         }
       )
       
@@ -259,7 +266,7 @@ platform :ios do
       UI.success("✅ Ad-Hoc build created and hosted locally!")
       UI.success("📱 IPA: docs/builds/#{build_filename}.ipa")
       UI.success("📋 Manifest: docs/builds/#{build_filename}.plist") 
-      UI.success("🌐 Install URL: itms-services://?action=download-manifest&url=#{base_url}/#{build_filename}.plist")
+      UI.success("🌐 Install URL: #{install_url}")
       UI.important("📌 To use: Host the docs/ directory on HTTPS server and share the install URL")
       
     rescue => e
