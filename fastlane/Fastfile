@@ -427,6 +427,22 @@ platform :ios do
     UI.success("Version bumped: #{current_version} -> #{new_version}")
     UI.success("Build number bumped: #{current_build} -> #{new_build}")
     
+    # Update project.yml to match the new version and build numbers
+    # This prevents XcodeGen from overwriting our changes
+    project_yml_path = "project.yml"
+    project_yml = File.read(project_yml_path)
+    
+    # Replace the version strings in project.yml
+    project_yml.gsub!(/CFBundleShortVersionString: "[^"]*"/, "CFBundleShortVersionString: \"#{new_version}\"")
+    project_yml.gsub!(/CFBundleVersion: "[^"]*"/, "CFBundleVersion: \"#{new_build}\"")
+    
+    # Write back the updated project.yml
+    File.write(project_yml_path, project_yml)
+    UI.success("Updated project.yml with new version: #{new_version} (#{new_build})")
+    
+    # Regenerate project to ensure Info.plist matches project.yml
+    generate
+    
     # Create git tag and commit
     tag = "v#{new_version}-#{new_build}"
     
