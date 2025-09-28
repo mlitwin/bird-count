@@ -429,7 +429,7 @@ platform :ios do
     
     # Update project.yml to match the new version and build numbers
     # This prevents XcodeGen from overwriting our changes
-    project_yml_path = "project.yml"
+    project_yml_path = File.expand_path("../project.yml", __dir__)
     project_yml = File.read(project_yml_path)
     
     # Replace the version strings in project.yml
