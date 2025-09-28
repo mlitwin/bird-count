@@ -1,0 +1,42 @@
+[
+  {
+    "filename": "BirdCount-1.0.0-33",
+    "version": "1.0.0",
+    "build": "33",
+    "timestamp": "20250928-111706",
+    "date": "2025-09-28 11:17:18",
+    "ipa_url": "https://antoninus.org/bird-count-ios/docs/builds/BirdCount-1.0.0-33.ipa",
+    "plist_url": "https://antoninus.org/bird-count-ios/docs/builds/BirdCount-1.0.0-33.plist",
+    "install_url": "itms-services://?action=download-manifest&url=https://antoninus.org/bird-count-ios/docs/builds/BirdCount-1.0.0-33.plist"
+  },
+  {
+    "filename": "BirdCount-1.0.0-33",
+    "version": "1.0.0",
+    "build": "33",
+    "timestamp": "20250928-111441",
+    "date": "2025-09-28 11:14:54",
+    "ipa_url": "https://antoninus.org/bird-count-ios/docs/builds/BirdCount-1.0.0-33.ipa",
+    "plist_url": "https://antoninus.org/bird-count-ios/docs/builds/BirdCount-1.0.0-33.plist",
+    "install_url": "itms-services://?action=download-manifest&url=https://antoninus.org/bird-count-ios/docs/builds/BirdCount-1.0.0-33.plist"
+  },
+  {
+    "filename": "BirdCount-1.0.0-33",
+    "version": "1.0.0",
+    "build": "33",
+    "timestamp": "20250928-111058",
+    "date": "2025-09-28 11:11:10",
+    "ipa_url": "https://antoninus.org/bird-count-ios/docs/builds/BirdCount-1.0.0-33.ipa",
+    "plist_url": "https://antoninus.org/bird-count-ios/docs/builds/BirdCount-1.0.0-33.plist",
+    "install_url": "itms-services://?action=download-manifest&url=https://antoninus.org/bird-count-ios/docs/builds/BirdCount-1.0.0-33.plist"
+  },
+  {
+    "filename": "BirdCount-1.0.0-33",
+    "version": "1.0.0",
+    "build": "33",
+    "timestamp": "20250928-110332",
+    "date": "2025-09-28 11:03:43",
+    "ipa_url": "https://yourdomain.com/docs/builds/BirdCount-1.0.0-33.ipa",
+    "plist_url": "https://yourdomain.com/docs/builds/BirdCount-1.0.0-33.plist",
+    "install_url": "itms-services://?action=download-manifest&url=https://yourdomain.com/docs/builds/BirdCount-1.0.0-33.plist"
+  }
+]

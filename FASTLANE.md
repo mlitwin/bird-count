@@ -75,7 +75,7 @@ DEVELOPMENT_TEAM_ID=352K435X8J \
 	APP_STORE_CONNECT_API_KEY_ID=YOUR_KEY_ID \
 	APP_STORE_CONNECT_ISSUER_ID=YOUR_ISSUER_ID \
 	APP_STORE_CONNECT_API_KEY_PATH=/secure/path/AuthKey_YOUR_KEY_ID.p8 \
-	bundle exec fastlane beta
+	bundle exec fastlane alpha
 ```
 
 ## Testflight users

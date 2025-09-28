@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-YML_FILE="project.yml"
+# Support optional version bump type: patch (default), minor, major
+BUMP_TYPE=${1:-patch}
+
+# Validate bump type
+if [[ ! "$BUMP_TYPE" =~ ^(patch|minor|major)$ ]]; then
+  echo "Error: Invalid bump type '$BUMP_TYPE'. Use: patch, minor, or major" >&2
+  exit 1
+fi
 
 # Test if there are any uncommitted changes
 if ! git diff --quiet; then
@@ -9,60 +16,32 @@ if ! git diff --quiet; then
   exit 1
 fi
 
-if [[ ! -f "$YML_FILE" ]]; then
-  echo "Error: $YML_FILE not found in $(pwd)" >&2
-  exit 1
+echo "Bumping version ($BUMP_TYPE) and build number using fastlane..."
+
+# Use fastlane to increment version number
+if [[ "$BUMP_TYPE" == "patch" ]]; then
+  VERSION_NUMBER=$(bundle exec fastlane run increment_version_number bump_type:patch xcodeproj:BirdCount.xcodeproj | grep -o "The new version number.*" | sed 's/The new version number is: //')
+else
+  VERSION_NUMBER=$(bundle exec fastlane run increment_version_number bump_type:"$BUMP_TYPE" xcodeproj:BirdCount.xcodeproj | grep -o "The new version number.*" | sed 's/The new version number is: //')
 fi
 
-# Extract current value (assumes simple numeric CFBundleVersion with optional quotes)
-CURRENT=$(awk '/CFBundleVersion:[[:space:]]*/ { v=$2; gsub(/"/,"",v); print v; exit }' "$YML_FILE")
-if [[ -z "${CURRENT}" ]]; then
-  echo "Error: CFBundleVersion not found in $YML_FILE" >&2
-  exit 2
-fi
+# Use fastlane to increment build number  
+BUILD_NUMBER=$(bundle exec fastlane run increment_build_number xcodeproj:BirdCount.xcodeproj | grep -o "The new build number.*" | sed 's/The new build number is: //')
 
-if ! [[ "$CURRENT" =~ ^[0-9]+$ ]]; then
-  echo "Error: CFBundleVersion is not a simple number: '$CURRENT'" >&2
-  exit 3
-fi
+echo "New version: $VERSION_NUMBER"
+echo "New build number: $BUILD_NUMBER"
 
-NEXT=$(( CURRENT + 1 ))
+# Regenerate Xcode project to pick up changes
+echo "Regenerating Xcode project..."
+bundle exec fastlane generate
 
-echo "Bumping CFBundleVersion: ${CURRENT} -> ${NEXT}"
-
-# Replace line while preserving leading whitespace and quoting style
-awk -v newv="$NEXT" '
-  /^[[:space:]]*CFBundleVersion:/ {
-    # capture original leading whitespace (spaces/tabs)
-    match($0, /^[[:space:]]*/)
-    lead = substr($0, 1, RLENGTH)
-    # detect existing quotes
-    if ($0 ~ /CFBundleVersion:[[:space:]]*"[0-9]+"/) {
-      printf "%sCFBundleVersion: \"%s\"\n", lead, newv
-    } else {
-      printf "%sCFBundleVersion: %s\n", lead, newv
-    }
-    next
-  }
-  { print }
-' "$YML_FILE" > "$YML_FILE.tmp" && mv "$YML_FILE.tmp" "$YML_FILE"
-
-# Show result
-NEW_VAL=$(awk '/CFBundleVersion:[[:space:]]*/ { v=$2; gsub(/"/,"",v); print v; exit }' "$YML_FILE")
-echo "New CFBundleVersion in $YML_FILE: $NEW_VAL"
-
-# Extract CFBundleShortVersionString for tagging (e.g., 1.2.3)
-SHORT_VER=$(awk '/CFBundleShortVersionString:/ { v=$2; gsub(/"/,"",v); print v; exit }' "$YML_FILE")
-if [[ -z "${SHORT_VER}" ]]; then
-  echo "Warning: CFBundleShortVersionString not found in $YML_FILE; skipping git tag" >&2
-  exit 0
-fi
-
-# Create git tag v<short>-<build> on current HEAD
-TAG="v${SHORT_VER}-${NEW_VAL}"
-
-xcodegen
+# Create git tag v<version>-<build> on current HEAD
+TAG="v${VERSION_NUMBER}-${BUILD_NUMBER}"
 
 # Commit current changes
-git commit -am "Bump CFBundleVersion: ${CURRENT} -> ${NEXT}"
-git tag -a "${TAG}" -m "Release ${SHORT_VER} (${NEW_VAL})"
+git add project.yml BirdCount.xcodeproj
+git commit -m "Bump version to ${VERSION_NUMBER} (${BUILD_NUMBER})"
+git tag -a "${TAG}" -m "Release ${VERSION_NUMBER} (${BUILD_NUMBER})"
+
+echo "✅ Version bumped to ${VERSION_NUMBER} (${BUILD_NUMBER})"
+echo "✅ Tagged as ${TAG}"

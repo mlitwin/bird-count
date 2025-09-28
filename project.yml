@@ -4,10 +4,14 @@ options:
 configs:
   Debug: debug
   Release: release
+  AdHoc: ad-hoc
 settings:
   SWIFT_VERSION: 5.10
   IPHONEOS_DEPLOYMENT_TARGET: 18.5
   DEAD_CODE_STRIPPING: YES
+  ALWAYS_SEARCH_USER_PATHS: NO
+  # Enable agvtool for fastlane's increment_version_number and increment_build_number
+  VERSIONING_SYSTEM: Apple Generic
 
 targets:
   BirdCount:
@@ -30,7 +34,7 @@ targets:
       path: BirdCount/BirdCount/Info.plist
       properties:
         CFBundleShortVersionString: "1.0.0"
-        CFBundleVersion: "36"
+        CFBundleVersion: "33"
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
@@ -49,9 +53,14 @@ targets:
           - "en"
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: org.antoninus.birdcount.app
+      PRODUCT_NAME: BirdCount
       ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
       DEVELOPMENT_TEAM: 352K435X8J
       CODE_SIGN_STYLE: Automatic
+      # AdHoc configuration uses manual signing with BirdCountAdHoc profile
+      PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*][configuration=ad-hoc]: "BirdCountAdHoc"
+      CODE_SIGN_IDENTITY[sdk=iphoneos*][configuration=ad-hoc]: "iPhone Distribution"
+      CODE_SIGN_STYLE[sdk=iphoneos*][configuration=ad-hoc]: Manual
       DEAD_CODE_STRIPPING: YES
     scripts:
       - name: Generate Taxonomy

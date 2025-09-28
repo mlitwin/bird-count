@@ -1,3 +1,6 @@
+require 'json'
+require 'fileutils'
+
 default_platform(:ios)
 
 platform :ios do
@@ -5,10 +8,42 @@ platform :ios do
   desc "Generate Xcode project via XcodeGen"
   lane :generate do
     sh("which xcodegen >/dev/null 2>&1 || brew install xcodegen")
-  # Use absolute path to the repo-root spec to avoid cwd issues
-  spec = File.expand_path('../project.yml', __dir__)
-  # Force regenerate to avoid stale/corrupted project files
-  sh("xcodegen generate --spec #{spec}")
+    # Use absolute path to the repo-root spec to avoid cwd issues
+    spec = File.expand_path('../project.yml', __dir__)
+    # Force regenerate to avoid stale/corrupted project files
+    sh("xcodegen generate --spec #{spec}")
+    
+    # Initialize CURRENT_PROJECT_VERSION if it doesn't exist
+    # This must be done after project generation since XcodeGen doesn't set it
+    setup_agvtool_if_needed
+  end
+
+  # Private helper to set up agvtool CURRENT_PROJECT_VERSION if needed
+  private_lane :setup_agvtool_if_needed do
+    proj = File.expand_path('../BirdCount.xcodeproj', __dir__)
+    
+    # Get CFBundleVersion from Info.plist to use as baseline
+    info_plist_path = File.expand_path('../BirdCount/BirdCount/Info.plist', __dir__)
+    build_from_plist = get_info_plist_value(path: info_plist_path, key: "CFBundleVersion")
+    
+    begin
+      # Check if agvtool is working and CURRENT_PROJECT_VERSION is set
+      current = get_build_number(xcodeproj: proj)
+      
+      # If it returns 1, it likely means CURRENT_PROJECT_VERSION wasn't properly set
+      if current.to_s == "1" && build_from_plist.to_s != "1"
+        UI.message("CURRENT_PROJECT_VERSION appears uninitialized (got 1), setting to match CFBundleVersion: #{build_from_plist}")
+        sh("cd .. && xcrun agvtool new-version -all #{build_from_plist}")
+        UI.success("Initialized CURRENT_PROJECT_VERSION to: #{build_from_plist}")
+      else
+        UI.message("CURRENT_PROJECT_VERSION is already set to: #{current}")
+      end
+    rescue => e
+      # If agvtool fails completely, initialize it
+      UI.message("CURRENT_PROJECT_VERSION not set, initializing from CFBundleVersion: #{build_from_plist}")
+      sh("cd .. && xcrun agvtool new-version -all #{build_from_plist}")
+      UI.success("Initialized CURRENT_PROJECT_VERSION to: #{build_from_plist}")
+    end
   end
 
   # Build the app for the iOS simulator (Debug)
@@ -90,7 +125,7 @@ platform :ios do
 
   # Build and upload a Release build to TestFlight
   desc "Build and upload to TestFlight (Release)"
-  lane :beta do
+  lane :alpha do
     generate
     proj = File.expand_path('../BirdCount.xcodeproj', __dir__)
     # Configure App Store Connect authentication using 3 required env vars only
@@ -98,7 +133,7 @@ platform :ios do
     issuer_id = (ENV['APP_STORE_CONNECT_ISSUER_ID'] || '').strip
     key_raw = (ENV['APP_STORE_CONNECT_API_KEY'] || '').strip
     unless key_id.length > 0 && issuer_id.length > 0 && key_raw.length > 0
-      UI.user_error!("Missing App Store Connect API key env vars. Set APP_STORE_CONNECT_API_KEY_ID, APP_STORE_CONNECT_ISSUER_ID, and APP_STORE_CONNECT_API_KEY (tip: `make fastlane-beta`).")
+      UI.user_error!("Missing App Store Connect API key env vars. Set APP_STORE_CONNECT_API_KEY_ID, APP_STORE_CONNECT_ISSUER_ID, and APP_STORE_CONNECT_API_KEY (tip: `make fastlane-alpha`).")
     end
     asc_api_key = app_store_connect_api_key(
       key_id: key_id,
@@ -145,6 +180,181 @@ platform :ios do
     )
   end
 
+  # Build and host Ad-Hoc builds locally in docs/builds directory
+  desc "Build Ad-Hoc beta and host locally"
+  lane :beta do
+    generate
+    proj = File.expand_path('../BirdCount.xcodeproj', __dir__)
+    
+    # Get current version info for build metadata
+    current_version = get_version_number(xcodeproj: proj, target: "BirdCount")
+    current_build = get_build_number(xcodeproj: proj)
+    timestamp = Time.now.strftime("%Y%m%d-%H%M%S")
+    
+    UI.message("Building Ad-Hoc version #{current_version} (#{current_build})")
+    
+    # Create docs/builds directory if it doesn't exist
+    docs_builds_dir = File.expand_path('../docs/builds', __dir__)
+    FileUtils.mkdir_p(docs_builds_dir)
+    
+    begin
+      # Build the IPA with manifest for over-the-air installation
+      # Note: manifest_display_image_url and manifest_full_size_image_url should be HTTPS URLs
+      base_url = ENV['ADHOC_BASE_URL'] || "https://antoninus.org/bird-count-ios/docs/builds"
+      
+      ipa_path = gym(
+        scheme: "BirdCount",
+        configuration: "AdHoc",
+        project: proj,
+        clean: true,
+        export_method: "ad-hoc",
+        include_symbols: true,
+        include_bitcode: false,
+        export_options: {
+          method: "ad-hoc",
+          provisioningProfiles: {
+            "org.antoninus.birdcount.app" => "BirdCountAdHoc"
+          }
+        },
+        output_directory: "build",
+        output_name: "BirdCount-AdHoc.ipa"
+      )
+      
+      # Copy files to docs/builds with versioned names
+      build_filename = "BirdCount-#{current_version}-#{current_build}"
+      FileUtils.cp(ipa_path, File.join(docs_builds_dir, "#{build_filename}.ipa"))
+      
+      # Look for the generated manifest.plist file
+      manifest_source = File.join("build", "manifest.plist")
+      if File.exist?(manifest_source)
+        FileUtils.cp(manifest_source, File.join(docs_builds_dir, "#{build_filename}.plist"))
+      else
+        # If Xcode didn't generate manifest.plist automatically, create it manually
+        create_manifest_plist(
+          builds_dir: docs_builds_dir, 
+          filename: build_filename, 
+          version: current_version, 
+          build: current_build, 
+          base_url: base_url
+        )
+      end
+      
+      # Update builds.json with new build information
+      update_builds_json(
+        builds_dir: docs_builds_dir, 
+        build_info: {
+          filename: build_filename,
+          version: current_version,
+          build: current_build,
+          timestamp: timestamp,
+          date: Time.now.strftime("%Y-%m-%d %H:%M:%S"),
+          ipa_url: "#{base_url}/#{build_filename}.ipa",
+          plist_url: "#{base_url}/#{build_filename}.plist",
+          install_url: "itms-services://?action=download-manifest&url=#{base_url}/#{build_filename}.plist"
+        }
+      )
+      
+      # Update builds.json
+      
+      UI.success("✅ Ad-Hoc build created and hosted locally!")
+      UI.success("📱 IPA: docs/builds/#{build_filename}.ipa")
+      UI.success("📋 Manifest: docs/builds/#{build_filename}.plist") 
+      UI.success("🌐 Install URL: itms-services://?action=download-manifest&url=#{base_url}/#{build_filename}.plist")
+      UI.important("📌 To use: Host the docs/ directory on HTTPS server and share the install URL")
+      
+    rescue => e
+      if e.message.include?("No profiles") || e.message.include?("BirdCountAdHoc")
+        UI.error("❌ Ad-Hoc build failed: Missing provisioning profile")
+        UI.important("")
+        UI.important("To fix this, you need to create the 'BirdCountAdHoc' provisioning profile:")
+        UI.important("1. Go to Apple Developer Portal → Certificates, Identifiers & Profiles")
+        UI.important("2. Create new Provisioning Profile → Ad Hoc")
+        UI.important("3. Select your app bundle ID: org.antoninus.birdcount.app")
+        UI.important("4. Select your distribution certificate")
+        UI.important("5. Select the devices you want to distribute to")
+        UI.important("6. Name it exactly 'BirdCountAdHoc'")
+        UI.important("7. Download and install it in Xcode")
+        UI.important("")
+        UI.important("Alternative: Run 'make fastlane-alpha' for TestFlight builds (no provisioning profile needed)")
+        UI.user_error!("Please create the BirdCountAdHoc provisioning profile to continue.")
+      else
+        raise e
+      end
+    end
+  end
+
+  # Helper method to create manifest.plist file manually
+  private_lane :create_manifest_plist do |options|
+    builds_dir = options[:builds_dir]
+    filename = options[:filename]
+    version = options[:version]
+    build = options[:build]
+    base_url = options[:base_url]
+    
+    plist_path = File.join(builds_dir, "#{filename}.plist")
+    
+    plist_content = <<~PLIST
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+        <key>items</key>
+        <array>
+            <dict>
+                <key>assets</key>
+                <array>
+                    <dict>
+                        <key>kind</key>
+                        <string>software-package</string>
+                        <key>url</key>
+                        <string>#{base_url}/#{filename}.ipa</string>
+                    </dict>
+                </array>
+                <key>metadata</key>
+                <dict>
+                    <key>bundle-identifier</key>
+                    <string>org.antoninus.birdcount.app</string>
+                    <key>bundle-version</key>
+                    <string>#{version}</string>
+                    <key>kind</key>
+                    <string>software</string>
+                    <key>title</key>
+                    <string>BirdCount</string>
+                </dict>
+            </dict>
+        </array>
+    </dict>
+    </plist>
+    PLIST
+    
+    File.write(plist_path, plist_content)
+    UI.message("Created manifest: #{plist_path}")
+  end
+
+  # Helper method to update builds.json
+  private_lane :update_builds_json do |options|
+    builds_dir = options[:builds_dir]
+    build_info = options[:build_info]
+    
+    builds_json_path = File.join(builds_dir, "builds.json")
+    
+    # Load existing builds or create empty array
+    builds = []
+    if File.exist?(builds_json_path)
+      builds = JSON.parse(File.read(builds_json_path)) rescue []
+    end
+    
+    # Add new build to the beginning of the array (newest first)
+    builds.unshift(build_info)
+    
+    # Keep only the last 10 builds to avoid clutter
+    builds = builds.first(10)
+    
+    # Write updated builds.json
+    File.write(builds_json_path, JSON.pretty_generate(builds))
+    UI.message("Updated builds.json with #{builds.length} builds")
+  end
+
   # Optionally run this once to flip the project to automatic signing for your Team
   desc "Enable Automatic Signing for project (set DEVELOPMENT_TEAM_ID env var)"
   lane :codesign_auto do
@@ -158,5 +368,57 @@ platform :ios do
       path: proj,
       team_id: team_id
     )
+  end
+
+  # Version bumping lanes for better semantic versioning control
+  desc "Bump patch version (e.g., 1.0.0 -> 1.0.1) and build number"
+  lane :bump_patch do
+    bump_version(type: "patch")
+  end
+
+  desc "Bump minor version (e.g., 1.0.0 -> 1.1.0) and build number"
+  lane :bump_minor do
+    bump_version(type: "minor")
+  end
+
+  desc "Bump major version (e.g., 1.0.0 -> 2.0.0) and build number"
+  lane :bump_major do
+    bump_version(type: "major")
+  end
+
+  # Private helper lane for version bumping
+  private_lane :bump_version do |options|
+    type = options[:type] || "patch"
+    
+    # Ensure we have a clean working directory
+    ensure_git_status_clean
+    
+    # Generate project to ensure it's current
+    generate
+    
+    # Get current values for logging
+    current_version = get_version_number(xcodeproj: "BirdCount.xcodeproj", target: "BirdCount")
+    current_build = get_build_number(xcodeproj: "BirdCount.xcodeproj")
+    
+    # Increment version number
+    new_version = increment_version_number(bump_type: type, xcodeproj: "BirdCount.xcodeproj")
+    
+    # Increment build number
+    new_build = increment_build_number(xcodeproj: "BirdCount.xcodeproj")
+    
+    UI.success("Version bumped: #{current_version} -> #{new_version}")
+    UI.success("Build number bumped: #{current_build} -> #{new_build}")
+    
+    # Create git tag and commit
+    tag = "v#{new_version}-#{new_build}"
+    
+    git_add(path: ["project.yml", "BirdCount.xcodeproj"])
+    git_commit(path: ["project.yml", "BirdCount.xcodeproj"], message: "Bump version to #{new_version} (#{new_build})")
+    add_git_tag(tag: tag, message: "Release #{new_version} (#{new_build})")
+    
+    UI.success("✅ Version bumped to #{new_version} (#{new_build})")
+    UI.success("✅ Tagged as #{tag}")
+    
+    { version: new_version, build: new_build, tag: tag }
   end
 end

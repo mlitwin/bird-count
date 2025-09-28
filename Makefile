@@ -1,4 +1,4 @@
-.PHONY: help generate build-test test test-app test-core analyze-tests analyze-bundle list-dests simulators prep-beta fastlane-beta clean
+.PHONY: help generate build-test test test-app test-core analyze-tests analyze-bundle list-dests simulators prep-alpha prep-patch prep-minor prep-major fastlane-alpha fastlane-beta clean
 
 # Configurable variables
 SCHEME ?= BirdCount
@@ -22,7 +22,12 @@ help:
 	@echo "  clean         Clean build artifacts and derived data"
 	@echo "  list-dests    Show valid destinations for the scheme (useful for -destination)"
 	@echo "  simulators    List available Booted/Shutdown simulators via simctl"
-	@echo "  prep-beta     Bump CFBundleVersion in project.yml and regenerate the Xcode project"
+	@echo "  prep-alpha    Bump patch version and build number using fastlane (default for backwards compatibility)"
+	@echo "  prep-patch    Bump patch version (x.y.Z) and build number using fastlane"
+	@echo "  prep-minor    Bump minor version (x.Y.0) and build number using fastlane" 
+	@echo "  prep-major    Bump major version (X.0.0) and build number using fastlane"
+	@echo "  fastlane-alpha Build and upload to TestFlight (Release configuration)"
+	@echo "  fastlane-beta Build Ad-Hoc beta and host locally in docs/builds directory"
 	@echo "Variables (override with VAR=value): SCHEME, PROJECT, SIMULATOR, DEST, CONFIGURATION"
 
 # Regenerate the Xcode project from project.yml
@@ -84,11 +89,22 @@ simulators:
 	@xcrun simctl list devices available
 
 
-fastlane-beta:
-	op run --env-file apple.env -- bundle exec fastlane beta
+fastlane-alpha:
+	op run --env-file apple.env -- bundle exec fastlane alpha
 
-prep-beta:
-	@./scripts/bump-build.sh
+fastlane-beta:
+	bundle exec fastlane beta
+
+prep-alpha: prep-patch
+
+prep-patch:
+	bundle exec fastlane bump_patch
+
+prep-minor:
+	bundle exec fastlane bump_minor
+
+prep-major:
+	bundle exec fastlane bump_major
 
 build-test: generate
 	@echo "🔨 Building for testing..."

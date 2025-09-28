@@ -1,0 +1,49 @@
+// Load and display builds from builds.json
+async function loadBuilds() {
+    const buildsContainer = document.getElementById('builds-list');
+    
+    try {
+        const response = await fetch('builds/builds.json');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const builds = await response.json();
+        
+        if (builds.length === 0) {
+            buildsContainer.innerHTML = '<div class="error">No builds available yet.</div>';
+            return;
+        }
+        
+        // Generate HTML for each build
+        const buildsHtml = builds.map(build => `
+            <div class="build-item">
+                <div class="build-info">
+                    <div class="build-version">v${build.version} (${build.build})</div>
+                    <div class="build-meta">
+                        Built: ${build.date}<br>
+                        File: ${build.filename}.ipa
+                    </div>
+                </div>
+                <a href="${build.install_url}" class="install-btn">Install</a>
+            </div>
+        `).join('');
+        
+        buildsContainer.innerHTML = buildsHtml;
+        
+    } catch (error) {
+        console.error('Error loading builds:', error);
+        buildsContainer.innerHTML = `
+            <div class="error">
+                Error loading builds: ${error.message}<br>
+                <small>Make sure builds.json exists and is accessible.</small>
+            </div>
+        `;
+    }
+}
+
+// Load builds when page loads
+document.addEventListener('DOMContentLoaded', loadBuilds);
+
+// Auto-refresh every 30 seconds to show new builds
+setInterval(loadBuilds, 30000);
