@@ -21,7 +21,9 @@ async function loadBuilds() {
             // Properly encode the manifest URL for itms-services protocol
             const encodedManifestUrl = encodeURIComponent(build.plist_url);
             const installUrl = `itms-services://?action=download-manifest&url=${encodedManifestUrl}`;
-            
+
+            console.log(`plist URL: ${build.plist_url}`);
+            console.log(`Computed install URL: ${installUrl}`);
             return `
                 <div class="build-item">
                     <div class="build-info">
@@ -37,6 +39,12 @@ async function loadBuilds() {
         }).join('');
         
         buildsContainer.innerHTML = buildsHtml;
+        // log the actual value of the install URL for debugging by querying the DOM
+        const firstInstallBtn = document.querySelector('.install-btn');
+        if (firstInstallBtn) {
+            console.log(`First install button href: ${firstInstallBtn.href}`);
+        }
+
         
     } catch (error) {
         console.error('Error loading builds:', error);
