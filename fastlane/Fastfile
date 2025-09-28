@@ -430,6 +430,14 @@ platform :ios do
     # Create git tag and commit
     tag = "v#{new_version}-#{new_build}"
     
+    # Check if tag already exists
+    existing_tags = sh("git tag -l", log: false).strip.split("\n")
+    if existing_tags.include?(tag)
+      UI.important("⚠️  Tag #{tag} already exists, skipping git operations")
+      UI.success("✅ Version is already at #{new_version} (#{new_build})")
+      return { version: new_version, build: new_build, tag: tag }
+    end
+    
     git_add(path: ["project.yml", "BirdCount.xcodeproj"])
     git_commit(path: ["project.yml", "BirdCount.xcodeproj"], message: "Bump version to #{new_version} (#{new_build})")
     add_git_tag(tag: tag, message: "Release #{new_version} (#{new_build})")
