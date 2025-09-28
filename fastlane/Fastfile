@@ -256,8 +256,7 @@ platform :ios do
           timestamp: timestamp,
           date: Time.now.strftime("%Y-%m-%d %H:%M:%S"),
           ipa_url: "#{base_url}/#{build_filename}.ipa",
-          plist_url: manifest_url,
-          install_url: install_url
+          plist_url: manifest_url
         }
       )
       
@@ -351,8 +350,20 @@ platform :ios do
       builds = JSON.parse(File.read(builds_json_path)) rescue []
     end
     
-    # Add new build to the beginning of the array (newest first)
-    builds.unshift(build_info)
+    # Check if a build with the same version and build number already exists
+    existing_index = builds.find_index do |build|
+      build['version'] == build_info[:version] && build['build'] == build_info[:build]
+    end
+    
+    if existing_index
+      # Update the existing build entry with new information
+      builds[existing_index] = build_info
+      UI.message("Updated existing build entry for version #{build_info[:version]} (#{build_info[:build]})")
+    else
+      # Add new build to the beginning of the array (newest first)
+      builds.unshift(build_info)
+      UI.message("Added new build entry for version #{build_info[:version]} (#{build_info[:build]})")
+    end
     
     # Keep only the last 10 builds to avoid clutter
     builds = builds.first(10)

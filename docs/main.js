@@ -16,18 +16,25 @@ async function loadBuilds() {
         }
         
         // Generate HTML for each build
-        const buildsHtml = builds.map(build => `
-            <div class="build-item">
-                <div class="build-info">
-                    <div class="build-version">v${build.version} (${build.build})</div>
-                    <div class="build-meta">
-                        Built: ${build.date}<br>
-                        File: ${build.filename}.ipa
+        const buildsHtml = builds.map(build => {
+            // Compute install URL dynamically from plist_url
+            // Properly encode the manifest URL for itms-services protocol
+            const encodedManifestUrl = encodeURIComponent(build.plist_url);
+            const installUrl = `itms-services://?action=download-manifest&url=${encodedManifestUrl}`;
+            
+            return `
+                <div class="build-item">
+                    <div class="build-info">
+                        <div class="build-version">v${build.version} (${build.build})</div>
+                        <div class="build-meta">
+                            Built: ${build.date}<br>
+                            File: ${build.filename}.ipa
+                        </div>
                     </div>
+                    <a href="${installUrl}" class="install-btn">Install</a>
                 </div>
-                <a href="${build.install_url}" class="install-btn">Install</a>
-            </div>
-        `).join('');
+            `;
+        }).join('');
         
         buildsContainer.innerHTML = buildsHtml;
         
