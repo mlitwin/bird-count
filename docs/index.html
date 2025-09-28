@@ -111,6 +111,25 @@
             color: #856404;
             font-size: 14px;
         }
+        .platform-notice {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        .platform-notice h3 {
+            margin: 0 0 10px 0;
+            color: #721c24;
+        }
+        .platform-notice p, .platform-notice ul {
+            margin: 0;
+            color: #721c24;
+            font-size: 14px;
+        }
+        .platform-notice li {
+            margin-bottom: 4px;
+        }
     </style>
 </head>
 <body>
@@ -118,6 +137,16 @@
         <img src="AppIcon.png" alt="BirdCount" class="app-icon">
         <h1>BirdCount</h1>
         <p>Ad Hoc Build Distribution</p>
+    </div>
+    
+    <div id="platform-notice" class="platform-notice" style="display: none;">
+        <h3>⚠️ iOS Device Required</h3>
+        <p>You're viewing this on a non-iOS device. To install these builds:</p>
+        <ul>
+            <li>Open this page on your iPhone or iPad</li>
+            <li>Use Safari browser (required for app installation)</li>
+            <li>Make sure your device is registered in the provisioning profile</li>
+        </ul>
     </div>
     
     <div class="instructions">
