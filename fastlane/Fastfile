@@ -435,7 +435,7 @@ platform :ios do
     if existing_tags.include?(tag)
       UI.important("⚠️  Tag #{tag} already exists, skipping git operations")
       UI.success("✅ Version is already at #{new_version} (#{new_build})")
-      return { version: new_version, build: new_build, tag: tag }
+      next { version: new_version, build: new_build, tag: tag }
     end
     
     git_add(path: ["project.yml", "BirdCount.xcodeproj"])
