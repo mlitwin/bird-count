@@ -19,7 +19,7 @@ async function loadBuilds() {
         const buildsHtml = builds.map(build => {
             // Compute install URL dynamically from plist_url
             // Properly encode the manifest URL for itms-services protocol
-            const encodedManifestUrl = encodeURIComponent(build.plist_url);
+            const encodedManifestUrl = build.plist_url // encodeURIComponent(build.plist_url);
             const installUrl = `itms-services://?action=download-manifest&url=${encodedManifestUrl}`;
             
             return `
