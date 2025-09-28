@@ -22,6 +22,24 @@ function handleInstallClick(event, installUrl) {
         return false;
     }
     
+    // For iOS Safari, also verify the manifest URL is accessible
+    const manifestUrl = installUrl.match(/url=(.+)$/)[1];
+    const decodedManifestUrl = decodeURIComponent(manifestUrl);
+    console.log(`Checking manifest accessibility: ${decodedManifestUrl}`);
+    
+    // Test manifest accessibility (this will show in console/network tab)
+    fetch(decodedManifestUrl)
+        .then(response => {
+            console.log(`Manifest check result: ${response.status} ${response.statusText}`);
+            if (!response.ok) {
+                alert(`⚠️ Installation Error\n\nThe app manifest file is not accessible (${response.status} ${response.statusText}).\n\nThis usually means:\n1. The files haven't been deployed to the server\n2. The server is not configured properly\n3. The base URL in fastlane might be incorrect`);
+            }
+        })
+        .catch(error => {
+            console.error('Manifest check failed:', error);
+            alert(`⚠️ Installation Error\n\nCannot access the app manifest file.\n\nError: ${error.message}\n\nThis usually means the files haven't been deployed to the HTTPS server yet.`);
+        });
+    
     // Let the default link behavior happen for iOS Safari
     console.log('Proceeding with iOS Safari installation...');
     return true;

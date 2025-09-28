@@ -201,7 +201,7 @@ platform :ios do
     begin
       # Build the IPA with manifest for over-the-air installation
       # Note: manifest_display_image_url and manifest_full_size_image_url should be HTTPS URLs
-      base_url = ENV['ADHOC_BASE_URL'] || "https://antoninus.org/bird-count-ios/docs/builds"
+      base_url = ENV['ADHOC_BASE_URL'] || "https://antoninus.org/bird-count-ios/builds"
       
       ipa_path = gym(
         scheme: "BirdCount",
