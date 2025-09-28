@@ -48,6 +48,44 @@ final class DateRangeStore {
         self.dateRangePreset = initialPreset
     }
 
+    init(testing: Bool) {
+        if testing {
+            // Use default values for testing, don't load from UserDefaults
+            self.dateRange = DateRange.defaultRange()
+            self.dateRangePreset = .custom
+        } else {
+            // Standard initialization (delegate to main init)
+            let storedRange = DateRangeStore.loadFromDefaults()
+            let storedPreset = DateRangeStore.loadPresetFromDefaults()
+            let initialRange: DateRange
+            let initialPreset: DateRangePreset
+
+            if let range = storedRange {
+                initialRange = range
+            } else {
+                initialRange = DateRange.defaultRange()
+            }
+
+            if let preset = storedPreset {
+                initialPreset = preset
+            } else {
+                // Infer preset from range if possible
+                initialPreset = DateRangeStore.inferPreset(for: initialRange)
+            }
+
+            if initialPreset == .today {
+                let now = Date()
+                let cal = Calendar.current
+                let start = cal.startOfDay(for: now)
+                let end = cal.date(byAdding: .day, value: 1, to: start) ?? now
+                self.dateRange = DateRange(begin: start, end: end)
+            } else {
+                self.dateRange = initialRange
+            }
+            self.dateRangePreset = initialPreset
+        }
+    }
+
     func update(_ newRange: DateRange) {
         dateRange = newRange
     }

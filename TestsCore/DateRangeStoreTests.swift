@@ -5,8 +5,12 @@ import Testing
 struct DateRangeStoreTests {
     @Test
     func persistsAndLoads() throws {
-        let store = DateRangeStore()
-        let original = store.dateRange
+        // Clear any existing preferences to ensure clean test
+        UserDefaults.standard.removeObject(forKey: "dateRange")
+        UserDefaults.standard.removeObject(forKey: "dateRangePreset")
+        
+        // Use testing initializer for predictable behavior
+        let store = DateRangeStore(testing: true)
         
         // Use fixed dates to avoid flaky behavior
         let fixedEndDate = Date(timeIntervalSince1970: 1695312000) // Fixed timestamp
@@ -14,17 +18,20 @@ struct DateRangeStoreTests {
         
         let newRange = DateRange(begin: fixedBeginDate, end: fixedEndDate)
         store.update(newRange)
+        // Set preset to custom so it doesn't get recalculated on load
+        store.setPreset(.custom)
         
         // Verify the store has the updated range
         #expect(store.dateRange == newRange)
         
-        // Test persistence by creating a new store instance
+        // Test persistence by creating a new store instance that loads from UserDefaults
         // (This tests if the data was actually persisted to storage)
-        let newStore = DateRangeStore()
+        let newStore = DateRangeStore(testing: false) // This one should load from UserDefaults
         #expect(newStore.dateRange == newRange)
         
-        // Restore original range
-        store.update(original)
+        // Clean up - restore original range
+        UserDefaults.standard.removeObject(forKey: "dateRange")
+        UserDefaults.standard.removeObject(forKey: "dateRangePreset")
     }
 
     @Test
