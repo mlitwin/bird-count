@@ -77,6 +77,7 @@
 		E310FDDAB749F0B03381009D /* SpeciesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3EC2F235F0B25723256BE9 /* SpeciesListView.swift */; };
 		E3EBCC21F641D4BB140C618B /* ObservationStoreCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D9C8368572CC7976F0E8145 /* ObservationStoreCache.swift */; };
 		E7B00C8061B90FDD9F9041A3 /* CoreLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6177409CCCEA104A666AA11D /* CoreLogicTests.swift */; };
+		EA3238544DDFA1A90ECCA378 /* ShareActivitySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D09D0466FE4F33C6D977166 /* ShareActivitySheet.swift */; };
 		EA346BFABBA8BAE1E3688F4D /* DateRangePreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0381ACBC1A7AFAE798219350 /* DateRangePreset.swift */; };
 		F2C31476F4EAEA0FCA29CD01 /* ModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF79995B3B7FC149037EC4C /* ModelsTests.swift */; };
 		F2F79D81B2BCF80CA15A9C4C /* ObservationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11C0F2EB5F5DDCE1C6106B1 /* ObservationStore.swift */; };
@@ -140,6 +141,7 @@
 		6311461BFD1CEF3240DD9AF3 /* SyncApprovalSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncApprovalSheet.swift; sourceTree = "<group>"; };
 		683F06540EC61740371DE480 /* ObservationDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationDTO.swift; sourceTree = "<group>"; };
 		6B0BA1474D059B40D0C1BEDC /* SummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
+		6D09D0466FE4F33C6D977166 /* ShareActivitySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareActivitySheet.swift; sourceTree = "<group>"; };
 		6E9843D7277B138B6C1DBECF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		74ADC22819086097B12402BC /* Taxon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Taxon.swift; sourceTree = "<group>"; };
 		7516073B623E343E4440B200 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -239,6 +241,7 @@
 				FBCE0B9078509DFFC117339F /* ObservationRecordView.swift */,
 				965E0236AD7C27566CDA7512 /* ObservationsSelectorView.swift */,
 				CA105FDD346A2759183A3BEE /* OnScreenKeyboard.swift */,
+				6D09D0466FE4F33C6D977166 /* ShareActivitySheet.swift */,
 				E1AE8BBD3313453070C1CF58 /* ShareActivityView.swift */,
 				FE3EC2F235F0B25723256BE9 /* SpeciesListView.swift */,
 				F73A0EC9E9DB138EA0784C2F /* SpeciesRow.swift */,
@@ -610,6 +613,7 @@
 				3129079F2309F20DB90CB40F /* PayloadV1.swift in Sources */,
 				DA0F562E577225B3765DA0BF /* SettingsStore.swift in Sources */,
 				47FB6008BE8519B9F446ECED /* SettingsView.swift in Sources */,
+				EA3238544DDFA1A90ECCA378 /* ShareActivitySheet.swift in Sources */,
 				DD452196F163874F5DE69BCA /* ShareActivityView.swift in Sources */,
 				E310FDDAB749F0B03381009D /* SpeciesListView.swift in Sources */,
 				43EA14B516E42A868118D263 /* SpeciesRow.swift in Sources */,
