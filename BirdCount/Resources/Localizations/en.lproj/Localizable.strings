@@ -88,6 +88,15 @@
 "export.format.summary" = "Summary Report";
 "export.format.json" = "JSON Data";
 
+// MARK: - Import
+"import.import" = "Import";
+"import.select.file" = "Select File to Import";
+"import.instructions" = "Select a JSON file to import observations. Only JSON format is supported for import.";
+"import.error" = "Import Error";
+"import.success" = "Import Successful";
+"import.success.message" = "Observations have been successfully imported.";
+"import.unknown.error" = "An unknown error occurred during import.";
+
 // MARK: - Sync
 "sync.title" = "Sync Observations";
 "sync.processing" = "Processing...";

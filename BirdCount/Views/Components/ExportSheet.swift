@@ -1,72 +1,70 @@
 import SwiftUI
 
-enum ExportFormat: String, CaseIterable, Identifiable {
-    case summary = "summary"
-    case json = "json"
-    
-    var id: String { self.rawValue }
-    
-    var displayName: String {
-        switch self {
-        case .summary:
-            return Strings.Export.formatSummary.string
-        case .json:
-            return Strings.Export.formatJSON.string
-        }
-    }
-}
-
-struct ShareActivitySheet: View {
+struct ExportSheet: View {
     @Environment(ObservationStore.self) private var observations
     @Environment(TaxonomyStore.self) private var taxonomy
     @Environment(DateRangeStore.self) private var dateRangeStore
+    @Environment(\.dismiss) private var dismiss
     
     @State private var showShareActivityView: Bool = false
     @State private var includeCounts: Bool = false
     @State private var exportFormat: ExportFormat = .summary
     
     var body: some View {
-        VStack(spacing: 20) {
-            // Header
-            Text(Strings.Export.format.string)
-                .font(.headline)
-                .padding(.top)
-            
-            // Export format picker
-            Picker(Strings.Export.format.string, selection: $exportFormat) {
-                ForEach(ExportFormat.allCases) { format in
-                    Text(format.displayName)
-                        .tag(format)
+        NavigationView {
+            VStack(spacing: 20) {
+                // Icon
+                Image(systemName: "square.and.arrow.up")
+                    .font(.system(size: 60))
+                    .foregroundColor(.accentColor)
+                    .padding()
+                
+                // Export format picker
+                Picker(Strings.Export.format.string, selection: $exportFormat) {
+                    ForEach(ExportFormat.allCases) { format in
+                        Text(format.displayName)
+                            .tag(format)
+                    }
                 }
-            }
-            .pickerStyle(SegmentedPickerStyle())
-            .padding(.horizontal)
-            
-            // Include counts toggle (only shown for summary format)
-            if exportFormat == .summary {
-                Toggle(isOn: $includeCounts) {
-                    Text(Strings.Share.includeCounts.string)
+                .pickerStyle(SegmentedPickerStyle())
+                .padding(.horizontal)
+                
+                // Include counts toggle (only shown for summary format)
+                if exportFormat == .summary {
+                    Toggle(isOn: $includeCounts) {
+                        Text(Strings.Share.includeCounts.string)
+                    }
+                    .padding(.horizontal)
+                }
+                
+                // Export button
+                Button(action: {
+                    showShareActivityView = true
+                }) {
+                    Text(Strings.Share.export.string)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.accentColor)
+                        .cornerRadius(10)
                 }
                 .padding(.horizontal)
+                .padding(.bottom)
             }
-            
-            // Share button
-            Button(action: {
-                showShareActivityView = true
-            }) {
-                Text(Strings.Share.export.string)
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.accentColor)
-                    .cornerRadius(10)
+            .navigationTitle(Strings.Export.format.string)
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(Strings.General.cancel.string) {
+                        dismiss()
+                    }
+                }
             }
-            .padding(.horizontal)
-            .padding(.bottom)
         }
         .sheet(isPresented: $showShareActivityView) {
-            SystemShareActivityView(items: [exportContent(format: exportFormat, includeCounts: includeCounts)])
+            ShareActivityView(items: [exportContent(format: exportFormat, includeCounts: includeCounts)])
         }
     }
     
@@ -199,21 +197,9 @@ struct ShareActivitySheet: View {
     }
 }
 
-// MARK: - Private System Share Activity View
-
-private struct SystemShareActivityView: UIViewControllerRepresentable {
-    let items: [Any]
-    
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: items, applicationActivities: nil)
-    }
-    
-    func updateUIViewController(_ vc: UIActivityViewController, context: Context) {}
-}
-
 #if DEBUG
 #Preview {
-    ShareActivitySheet()
+    ExportSheet()
         .environment(ObservationStore())
         .environment(TaxonomyStore())
         .environment(DateRangeStore())

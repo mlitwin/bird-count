@@ -146,6 +146,17 @@ enum Strings {
         static let formatJSON = LocalizedString("export.format.json")
     }
     
+    // MARK: - Import
+    enum Import {
+        static let importData = LocalizedString("import.import")
+        static let selectFile = LocalizedString("import.select.file")
+        static let instructions = LocalizedString("import.instructions")
+        static let error = LocalizedString("import.error")
+        static let success = LocalizedString("import.success")
+        static let successMessage = LocalizedString("import.success.message")
+        static let unknownError = LocalizedString("import.unknown.error")
+    }
+    
     // MARK: - Sync
     enum Sync {
         static let title = LocalizedString("sync.title")

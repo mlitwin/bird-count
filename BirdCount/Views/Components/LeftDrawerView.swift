@@ -12,6 +12,7 @@ struct LeftDrawerView: View {
     @State private var showSyncSheet: Bool = false
     @State private var syncMode: SyncMode = .sender
     @State private var shareSheet: Bool = false
+    @State private var importSheet: Bool = false
     
     var body: some View {
         ZStack {
@@ -57,6 +58,15 @@ struct LeftDrawerView: View {
                         VStack(spacing: 0) {
                             // Share section
                             DrawerMenuSection(title: Strings.Share.title.string) {
+                                DrawerMenuItem(
+                                    icon: "square.and.arrow.down",
+                                    title: Strings.Import.importData.string,
+                                    disabled: false
+                                ) {
+                                    isPresented = false
+                                    importSheet = true
+                                }
+                                
                                 DrawerMenuItem(
                                     icon: "square.and.arrow.up",
                                     title: Strings.Share.export.string,
@@ -115,7 +125,10 @@ struct LeftDrawerView: View {
             }
         }
         .sheet(isPresented: $shareSheet) {
-            ShareActivitySheet()
+            ExportSheet()
+        }
+        .sheet(isPresented: $importSheet) {
+            ImportSheet()
         }
         .sheet(isPresented: $showSyncSheet) {
             SyncSheet(initialMode: syncMode)
