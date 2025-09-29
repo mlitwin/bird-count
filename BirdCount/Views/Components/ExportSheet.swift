@@ -64,7 +64,10 @@ struct ExportSheet: View {
                 }
             }
         }
-        .sheet(isPresented: $showShareActivityView) {
+        .sheet(isPresented: $showShareActivityView, onDismiss: {
+            // Auto-dismiss the export sheet when share sheet closes
+            dismiss()
+        }) {
             ShareActivityView(items: shareItems(format: exportFormat, includeCounts: includeCounts))
         }
     }

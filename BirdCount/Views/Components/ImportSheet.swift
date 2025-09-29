@@ -5,7 +5,7 @@ struct ImportSheet: View {
     @Environment(\.dismiss) private var dismiss
     
     @State private var showDocumentPicker: Bool = false
-    @State private var importError: ImportError? = nil
+    @State private var importError: ImportError?
     @State private var showImportError: Bool = false
     @State private var importSuccess: Bool = false
     @State private var showImportSuccess: Bool = false
@@ -65,7 +65,10 @@ struct ImportSheet: View {
             Text(importError?.localizedDescription ?? Strings.Import.unknownError.string)
         }
         .alert(Strings.Import.success.string, isPresented: $showImportSuccess) {
-            Button(Strings.General.ok.string) { }
+            Button(Strings.General.ok.string) {
+                // Auto-dismiss the sheet after user acknowledges success
+                dismiss()
+            }
         } message: {
             Text(Strings.Import.successMessage.string)
         }
