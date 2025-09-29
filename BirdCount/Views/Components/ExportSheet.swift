@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ExportSheet: View {
     @Environment(ObservationStore.self) private var observations
@@ -64,7 +65,7 @@ struct ExportSheet: View {
             }
         }
         .sheet(isPresented: $showShareActivityView) {
-            ShareActivityView(items: [exportContent(format: exportFormat, includeCounts: includeCounts)])
+            ShareActivityView(items: shareItems(format: exportFormat, includeCounts: includeCounts))
         }
     }
     
@@ -184,6 +185,28 @@ struct ExportSheet: View {
             return String(data: jsonData, encoding: .utf8) ?? "{}"
         } catch {
             return "{\"error\": \"Failed to serialize JSON: \(error.localizedDescription)\"}"
+        }
+    }
+    
+    private func shareItems(format: ExportFormat, includeCounts: Bool = false) -> [Any] {
+        let content = exportContent(format: format, includeCounts: includeCounts)
+        
+        switch format {
+        case .summary:
+            // For summary text, use simple string sharing
+            return [content]
+        case .json:
+            // For JSON, create a temporary file with proper .json extension
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            let dateString = dateFormatter.string(from: Date())
+            let filename = "bird-observations-\(dateString).json"
+            
+            return [TemporaryFileItem(
+                content: content,
+                filename: filename,
+                utType: .json
+            )]
         }
     }
     
