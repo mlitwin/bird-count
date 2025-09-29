@@ -83,6 +83,11 @@
 "share.accessibility.settings" = "Settings";
 "share.accessibility.edit.range" = "Edit range";
 
+// MARK: - Export Formats
+"export.format" = "Export Format";
+"export.format.summary" = "Summary Report";
+"export.format.json" = "JSON Data";
+
 // MARK: - Sync
 "sync.title" = "Sync Observations";
 "sync.processing" = "Processing...";

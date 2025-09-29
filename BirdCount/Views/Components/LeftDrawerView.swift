@@ -1,5 +1,21 @@
 import SwiftUI
 
+enum ExportFormat: String, CaseIterable, Identifiable {
+    case summary = "summary"
+    case json = "json"
+    
+    var id: String { self.rawValue }
+    
+    var displayName: String {
+        switch self {
+        case .summary:
+            return Strings.Export.formatSummary.string
+        case .json:
+            return Strings.Export.formatJSON.string
+        }
+    }
+}
+
 struct LeftDrawerView: View {
     @Binding var isPresented: Bool
     @Binding var showSettings: Bool
@@ -12,7 +28,9 @@ struct LeftDrawerView: View {
     @State private var showSyncSheet: Bool = false
     @State private var syncMode: SyncMode = .sender
     @State private var shareSheet: Bool = false
+    @State private var showShareActivityView: Bool = false
     @State private var includeCounts: Bool = false
+    @State private var exportFormat: ExportFormat = .summary
     
     var body: some View {
         ZStack {
@@ -116,14 +134,49 @@ struct LeftDrawerView: View {
             }
         }
         .sheet(isPresented: $shareSheet) {
-            VStack(spacing: 16) {
-                Toggle(isOn: $includeCounts) {
-                    Text(Strings.Share.includeCounts.string)
+            VStack(spacing: 20) {
+                // Header
+                Text(Strings.Export.format.string)
+                    .font(.headline)
+                    .padding(.top)
+                
+                // Export format picker
+                Picker(Strings.Export.format.string, selection: $exportFormat) {
+                    ForEach(ExportFormat.allCases) { format in
+                        Text(format.displayName)
+                            .tag(format)
+                    }
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .padding(.horizontal)
+                
+                // Include counts toggle (only shown for summary format)
+                if exportFormat == .summary {
+                    Toggle(isOn: $includeCounts) {
+                        Text(Strings.Share.includeCounts.string)
+                    }
+                    .padding(.horizontal)
+                }
+                
+                // Share button
+                Button(action: {
+                    shareSheet = false
+                    showShareActivityView = true
+                }) {
+                    Text(Strings.Share.export.string)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.accentColor)
+                        .cornerRadius(10)
                 }
                 .padding(.horizontal)
-                ShareActivityView(items: [exportText(includeCounts: includeCounts)])
+                .padding(.bottom)
             }
-            .padding()
+        }
+        .sheet(isPresented: $showShareActivityView) {
+            ShareActivityView(items: [exportContent(format: exportFormat, includeCounts: includeCounts)])
         }
         .sheet(isPresented: $showSyncSheet) {
             SyncSheet(initialMode: syncMode)
@@ -192,6 +245,70 @@ struct LeftDrawerView: View {
             }
         }
         return lines.joined(separator: "\n")
+    }
+    
+    private func exportJSON() -> String {
+        let (effStart, effEnd) = effectiveRange
+        let all: [ObservationRecord] = flatten(observations.observations)
+        let filtered = all.filter { $0.end >= effStart && $0.begin <= effEnd }
+        
+        // Create JSON structure suitable for importing
+        let exportData: [String: Any] = [
+            "metadata": [
+                "exportDate": ISO8601DateFormatter().string(from: Date()),
+                "dateRange": [
+                    "begin": ISO8601DateFormatter().string(from: effStart),
+                    "end": ISO8601DateFormatter().string(from: effEnd)
+                ],
+                "totalObservations": filtered.count
+            ],
+            "observations": filtered.map { record in
+                [
+                    "id": record.id.uuidString,
+                    "taxonId": record.taxonId,
+                    "count": record.count,
+                    "begin": ISO8601DateFormatter().string(from: record.begin),
+                    "end": ISO8601DateFormatter().string(from: record.end),
+                    "location": record.location.map { location in
+                        [
+                            "latitude": location.latitude,
+                            "longitude": location.longitude,
+                            "horizontalAccuracy": location.horizontalAccuracy,
+                            "timestamp": ISO8601DateFormatter().string(from: location.timestamp),
+                            "altitude": location.altitude as Any,
+                            "verticalAccuracy": location.verticalAccuracy as Any,
+                            "name": location.name as Any,
+                            "notes": location.notes as Any
+                        ]
+                    } as Any,
+                    "children": record.children.map { child in
+                        [
+                            "id": child.id.uuidString,
+                            "taxonId": child.taxonId,
+                            "count": child.count,
+                            "begin": ISO8601DateFormatter().string(from: child.begin),
+                            "end": ISO8601DateFormatter().string(from: child.end)
+                        ]
+                    }
+                ]
+            }
+        ]
+        
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: exportData, options: .prettyPrinted)
+            return String(data: jsonData, encoding: .utf8) ?? "{}"
+        } catch {
+            return "{\"error\": \"Failed to serialize JSON: \(error.localizedDescription)\"}"
+        }
+    }
+    
+    private func exportContent(format: ExportFormat, includeCounts: Bool = false) -> String {
+        switch format {
+        case .summary:
+            return exportText(includeCounts: includeCounts)
+        case .json:
+            return exportJSON()
+        }
     }
 }
 

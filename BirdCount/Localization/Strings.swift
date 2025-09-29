@@ -139,6 +139,13 @@ enum Strings {
         }
     }
     
+    // MARK: - Export Formats
+    enum Export {
+        static let format = LocalizedString("export.format")
+        static let formatSummary = LocalizedString("export.format.summary")
+        static let formatJSON = LocalizedString("export.format.json")
+    }
+    
     // MARK: - Sync
     enum Sync {
         static let title = LocalizedString("sync.title")
