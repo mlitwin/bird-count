@@ -79,11 +79,13 @@ public class ObservationImportService {
                 continue
             }
             
-            // Check if parent exists in store or was imported
-            let parentExists = store.findRecord(by: parentId) != nil ||
-                              recordsToImport.contains { $0.id == parentId }
+            // Skip if parent is being imported in this batch (already handled above)
+            if recordsToImport.contains(where: { $0.id == parentId }) {
+                continue
+            }
             
-            if parentExists {
+            // Check if parent exists in store only (not being imported)
+            if store.findRecord(by: parentId) != nil {
                 // Try to attach to existing parent in store
                 if store.addChildObservation(
                     parentId: parentId,
@@ -96,20 +98,17 @@ public class ObservationImportService {
                 ) {
                     // Successfully attached to existing parent
                     continue
-                } else {
-                    // Parent will be available after import, queue for later
-                    orphanedChildren.append(child)
                 }
-            } else {
-                // Parent doesn't exist, skip this child
-                continue
             }
+            
+            // Parent doesn't exist or attachment failed, skip this child
+            continue
         }
         
         // Import the parent records (this triggers rebuild automatically)
         store.importObservations(recordsToImport)
         
-        // Attach orphaned children to newly imported parents
+        // Attach orphaned children to newly imported parents (if any)
         for child in orphanedChildren {
             guard let parentId = child.parentId else { continue }
             store.addChildObservation(

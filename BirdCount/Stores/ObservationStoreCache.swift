@@ -26,24 +26,34 @@ struct ObservationStoreCache {
     }
 
     mutating func rebuild(from observations: [ObservationRecord]) {
-        // Recompute counts map: species id -> sum of all counts using totalCount for hierarchies
-        // and lastObservedAt: most recent end date per species.
+        // Recompute counts map: species id -> sum of all counts per taxonId
+        // Process each record and its children individually by their own taxonId
         counts = [:]
         lastObservedAt = [:]
         
-        // Use totalCount method to handle parent-child hierarchies automatically
         for record in observations {
-            let previousCount = counts[record.taxonId, default: 0]
-            counts[record.taxonId, default: 0] += record.totalCount
-            let newCount = counts[record.taxonId]!
-            print("🐦 Cache: taxonId=\(record.taxonId), totalCount=\(record.totalCount), \(previousCount) -> \(newCount) (+\(record.totalCount))")
-            
-            let ts = record.end
-            if let existing = lastObservedAt[record.taxonId] {
-                if ts > existing { lastObservedAt[record.taxonId] = ts }
-            } else {
-                lastObservedAt[record.taxonId] = ts
-            }
+            processRecord(record)
+        }
+    }
+    
+    private mutating func processRecord(_ record: ObservationRecord) {
+        // Add this record's count to its taxonId
+        let previousCount = counts[record.taxonId, default: 0]
+        counts[record.taxonId, default: 0] += record.count
+        let newCount = counts[record.taxonId]!
+        print("🐦 Cache: taxonId=\(record.taxonId), count=\(record.count), \(previousCount) -> \(newCount) (+\(record.count))")
+        
+        // Update lastObservedAt
+        let ts = record.end
+        if let existing = lastObservedAt[record.taxonId] {
+            if ts > existing { lastObservedAt[record.taxonId] = ts }
+        } else {
+            lastObservedAt[record.taxonId] = ts
+        }
+        
+        // Recursively process children
+        for child in record.children {
+            processRecord(child)
         }
     }
 

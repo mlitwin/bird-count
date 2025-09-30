@@ -70,7 +70,7 @@ struct ObservationImportTests {
         let store = ObservationStore(testing: true)
         store.clearAll()
         
-        // Create JSON data with parent-child relationships
+        // Create JSON data with parent-child relationships using flattened format
         let jsonData = """
         {
             "metadata": {
@@ -79,7 +79,7 @@ struct ObservationImportTests {
                     "begin": "2025-09-28T10:00:00Z",
                     "end": "2025-09-28T14:00:00Z"
                 },
-                "totalObservations": 1
+                "totalObservations": 3
             },
             "observations": [
                 {
@@ -87,23 +87,23 @@ struct ObservationImportTests {
                     "taxonId": "amecro",
                     "count": 5,
                     "begin": "2025-09-28T11:00:00Z",
-                    "end": "2025-09-28T11:05:00Z",
-                    "children": [
-                        {
-                            "id": "11111111-1111-1111-1111-111111111111",
-                            "taxonId": "amecro",
-                            "count": 2,
-                            "begin": "2025-09-28T11:01:00Z",
-                            "end": "2025-09-28T11:02:00Z"
-                        },
-                        {
-                            "id": "22222222-2222-2222-2222-222222222222",
-                            "taxonId": "amecro",
-                            "count": 3,
-                            "begin": "2025-09-28T11:03:00Z",
-                            "end": "2025-09-28T11:04:00Z"
-                        }
-                    ]
+                    "end": "2025-09-28T11:05:00Z"
+                },
+                {
+                    "id": "11111111-1111-1111-1111-111111111111",
+                    "taxonId": "amecro", 
+                    "count": 2,
+                    "begin": "2025-09-28T11:01:00Z",
+                    "end": "2025-09-28T11:02:00Z",
+                    "parentId": "12345678-1234-1234-1234-123456789abc"
+                },
+                {
+                    "id": "22222222-2222-2222-2222-222222222222",
+                    "taxonId": "amecro",
+                    "count": 3,
+                    "begin": "2025-09-28T11:03:00Z",
+                    "end": "2025-09-28T11:04:00Z",
+                    "parentId": "12345678-1234-1234-1234-123456789abc"
                 }
             ]
         }
@@ -112,11 +112,10 @@ struct ObservationImportTests {
         // Import the data
         try ObservationJSONImportService.importFromJSON(jsonData, into: store)
         
-        // Verify import results - flattening counts parent + children as separate records
-        // This matches the behavior in the UI where recursiveCount adds parent + children
+        // Verify import results - parent with children properly reconstructed
         #expect(store.totalSpeciesObserved == 1)
-        #expect(store.totalIndividuals == 15) // Flattened: Parent: 5 + Child1: 2 + Child2: 3 + Parent again somehow = 15
-        #expect(store.count(for: "amecro") == 15)
+        #expect(store.totalIndividuals == 10) // Parent: 5 + Child1: 2 + Child2: 3 = 10 (using totalCount)
+        #expect(store.count(for: "amecro") == 10)
     }
     
     @Test 
