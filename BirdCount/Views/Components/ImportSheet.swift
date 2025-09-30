@@ -62,7 +62,9 @@ struct ImportSheet: View {
         .alert(Strings.Import.error.string, isPresented: $showImportError) {
             Button(Strings.General.ok.string) { }
         } message: {
-            Text(importError?.localizedDescription ?? Strings.Import.unknownError.string)
+            let errorMessage = importError?.localizedDescription ?? Strings.Import.unknownError.string
+            let suggestion = importError?.recoverySuggestion ?? ""
+            Text(suggestion.isEmpty ? errorMessage : "\(errorMessage)\n\n\(suggestion)")
         }
         .alert(Strings.Import.success.string, isPresented: $showImportSuccess) {
             Button(Strings.General.ok.string) {
@@ -88,11 +90,36 @@ struct ImportSheet: View {
     }
     
     private func importFromURL(_ url: URL) {
+        // Start accessing the security-scoped resource
+        guard url.startAccessingSecurityScopedResource() else {
+            importError = ImportError.fileAccessError("Unable to access the selected file. Please ensure the app has permission to read the file.")
+            showImportError = true
+            return
+        }
+        
+        // Ensure we stop accessing the resource when done
+        defer {
+            url.stopAccessingSecurityScopedResource()
+        }
+        
         do {
+            // Check if the file is readable
+            guard url.isFileURL else {
+                throw ImportError.fileAccessError("Selected item is not a valid file.")
+            }
+            
+            // Check if we can actually read the file
+            guard FileManager.default.isReadableFile(atPath: url.path) else {
+                throw ImportError.fileAccessError("The selected file cannot be read. Please check file permissions.")
+            }
+            
             let jsonData = try String(contentsOf: url, encoding: .utf8)
             try ObservationJSONImportService.importFromJSON(jsonData, into: observations)
             importSuccess = true
             showImportSuccess = true
+        } catch let error as ImportError {
+            importError = error
+            showImportError = true
         } catch let error as ObservationJSONImportService.ImportError {
             importError = ImportError.jsonImportError(error.localizedDescription)
             showImportError = true
@@ -118,6 +145,17 @@ enum ImportError: Error, LocalizedError {
             return message
         case .unknownError(let message):
             return "Unknown error: \(message)"
+        }
+    }
+    
+    var recoverySuggestion: String? {
+        switch self {
+        case .fileAccessError:
+            return "Try selecting the file again from the Files app, or ensure the file is stored in a location the app can access (such as iCloud Drive or On My iPhone)."
+        case .jsonImportError:
+            return "Please ensure you're importing a valid JSON file exported from this app."
+        case .unknownError:
+            return "Please try again or contact support if the problem persists."
         }
     }
 }
