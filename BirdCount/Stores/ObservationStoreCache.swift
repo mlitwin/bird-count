@@ -41,7 +41,6 @@ struct ObservationStoreCache {
         let previousCount = counts[record.taxonId, default: 0]
         counts[record.taxonId, default: 0] += record.count
         let newCount = counts[record.taxonId]!
-        print("🐦 Cache: taxonId=\(record.taxonId), count=\(record.count), \(previousCount) -> \(newCount) (+\(record.count))")
         
         // Update lastObservedAt
         let ts = record.end
