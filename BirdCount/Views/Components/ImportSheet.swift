@@ -1,4 +1,5 @@
 import SwiftUI
+import Foundation
 
 struct ImportSheet: View {
     @Environment(ObservationStore.self) private var observations
@@ -8,71 +9,37 @@ struct ImportSheet: View {
     @State private var importError: ImportError?
     @State private var showImportError: Bool = false
     @State private var importSuccess: Bool = false
-    @State private var showImportSuccess: Bool = false
     
     var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                // Icon
-                Image(systemName: "square.and.arrow.down")
-                    .font(.system(size: 60))
-                    .foregroundColor(.accentColor)
-                    .padding()
-                
-                // Instructions
-                Text(Strings.Import.instructions.string)
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                
-                // Import button
-                Button(action: {
-                    showDocumentPicker = true
-                }) {
-                    Text(Strings.Import.importData.string)
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.accentColor)
-                        .cornerRadius(10)
+        if importSuccess {
+            // Show success view
+            SuccessView(
+                title: Strings.Import.success.string,
+                message: Strings.Import.successMessage.string,
+                onDismiss: {
+                    dismiss()
                 }
-                .padding(.horizontal)
-                .padding(.bottom)
+            )
+        } else {
+            // Empty view that immediately shows the file picker
+            Color.clear
+            .onAppear {
+                showDocumentPicker = true
             }
-            .navigationTitle(Strings.Import.selectFile.string)
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarBackButtonHidden(true)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(Strings.General.cancel.string) {
-                        dismiss()
-                    }
-                }
+            .fileImporter(
+                isPresented: $showDocumentPicker,
+                allowedContentTypes: [.json],
+                allowsMultipleSelection: false
+            ) { result in
+                handleImport(result: result)
             }
-        }
-        .fileImporter(
-            isPresented: $showDocumentPicker,
-            allowedContentTypes: [.json],
-            allowsMultipleSelection: false
-        ) { result in
-            handleImport(result: result)
-        }
-        .alert(Strings.Import.error.string, isPresented: $showImportError) {
-            Button(Strings.General.ok.string) { }
-        } message: {
-            let errorMessage = importError?.localizedDescription ?? Strings.Import.unknownError.string
-            let suggestion = importError?.recoverySuggestion ?? ""
-            Text(suggestion.isEmpty ? errorMessage : "\(errorMessage)\n\n\(suggestion)")
-        }
-        .alert(Strings.Import.success.string, isPresented: $showImportSuccess) {
-            Button(Strings.General.ok.string) {
-                // Auto-dismiss the sheet after user acknowledges success
-                dismiss()
+            .alert(Strings.Import.error.string, isPresented: $showImportError) {
+                Button(Strings.General.ok.string) { }
+            } message: {
+                let errorMessage = importError?.localizedDescription ?? Strings.Import.unknownError.string
+                let suggestion = importError?.recoverySuggestion ?? ""
+                Text(suggestion.isEmpty ? errorMessage : "\(errorMessage)\n\n\(suggestion)")
             }
-        } message: {
-            Text(Strings.Import.successMessage.string)
         }
     }
     
@@ -81,11 +48,21 @@ struct ImportSheet: View {
     private func handleImport(result: Result<[URL], Error>) {
         switch result {
         case .success(let urls):
-            guard let url = urls.first else { return }
+            guard let url = urls.first else { 
+                // User cancelled the file picker, dismiss the sheet
+                dismiss()
+                return 
+            }
             importFromURL(url)
         case .failure(let error):
-            importError = ImportError.fileAccessError(error.localizedDescription)
-            showImportError = true
+            // Check if this is a cancellation error
+            if (error as NSError).code == NSUserCancelledError {
+                // User cancelled, dismiss the sheet
+                dismiss()
+            } else {
+                importError = ImportError.fileAccessError(error.localizedDescription)
+                showImportError = true
+            }
         }
     }
     
@@ -116,7 +93,6 @@ struct ImportSheet: View {
             let jsonData = try String(contentsOf: url, encoding: .utf8)
             try ObservationJSONImportService.importFromJSON(jsonData, into: observations)
             importSuccess = true
-            showImportSuccess = true
         } catch let error as ImportError {
             importError = error
             showImportError = true

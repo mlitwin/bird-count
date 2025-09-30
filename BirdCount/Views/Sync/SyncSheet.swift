@@ -251,30 +251,12 @@ private struct CompletedView: View {
     let onDismiss: () -> Void
     
     var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 60))
-                .foregroundColor(.green)
-            
-            Text(Strings.Sync.complete.string)
-                .font(.headline)
-            
-            VStack(spacing: 8) {
-                Text(successMessage)
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.secondary)
-                
-                Text(recordCountMessage)
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.primary)
-                    .font(.subheadline)
-            }
-            
-            Button(Strings.General.done.string) {
-                onDismiss()
-            }
-            .buttonStyle(.borderedProminent)
-        }
+        SuccessView(
+            title: Strings.Sync.complete.string,
+            message: successMessage,
+            recordCountMessage: recordCountMessage,
+            onDismiss: onDismiss
+        )
     }
     
     private var successMessage: String {
