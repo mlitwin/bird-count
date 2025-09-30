@@ -9,6 +9,7 @@ struct ImportSheet: View {
     @State private var importError: ImportError?
     @State private var showImportError: Bool = false
     @State private var importSuccess: Bool = false
+    @State private var importStatistics: ImportStatistics?
     
     var body: some View {
         if importSuccess {
@@ -16,6 +17,7 @@ struct ImportSheet: View {
             SuccessView(
                 title: Strings.Import.success.string,
                 message: Strings.Import.successMessage.string,
+                recordCountMessage: formatImportStatistics(importStatistics),
                 onDismiss: {
                     dismiss()
                 }
@@ -91,7 +93,8 @@ struct ImportSheet: View {
             }
             
             let jsonData = try String(contentsOf: url, encoding: .utf8)
-            try ObservationJSONImportService.importFromJSON(jsonData, into: observations)
+            let statistics = try ObservationJSONImportService.importFromJSON(jsonData, into: observations)
+            importStatistics = statistics
             importSuccess = true
         } catch let error as ImportError {
             importError = error
@@ -102,6 +105,23 @@ struct ImportSheet: View {
         } catch {
             importError = ImportError.unknownError(error.localizedDescription)
             showImportError = true
+        }
+    }
+    
+    // MARK: - Helper Functions
+    
+    private func formatImportStatistics(_ statistics: ImportStatistics?) -> String? {
+        guard let stats = statistics else { return nil }
+        
+        if stats.newRecordsImported == 0 {
+            return "No new records imported (all \(stats.totalRecordsProcessed) records were already present)"
+        } else if stats.duplicatesSkipped == 0 {
+            let recordWord = stats.newRecordsImported == 1 ? "record" : "records"
+            return "\(stats.newRecordsImported) \(recordWord) imported"
+        } else {
+            let newRecordWord = stats.newRecordsImported == 1 ? "record" : "records"
+            let duplicateWord = stats.duplicatesSkipped == 1 ? "duplicate" : "duplicates"
+            return "\(stats.newRecordsImported) new \(newRecordWord) imported, \(stats.duplicatesSkipped) \(duplicateWord) skipped"
         }
     }
 }

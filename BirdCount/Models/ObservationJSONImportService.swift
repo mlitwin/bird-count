@@ -7,8 +7,9 @@ public class ObservationJSONImportService {
     /// Import observations from JSON export data into the observation store.
     /// - Parameter jsonData: The JSON data string from export
     /// - Parameter into: The observation store to import into
+    /// - Returns: ImportStatistics with details about the import operation
     /// - Throws: ImportError for various failure conditions
-    public static func importFromJSON(_ jsonData: String, into store: ObservationStore) throws {
+    public static func importFromJSON(_ jsonData: String, into store: ObservationStore) throws -> ImportStatistics {
         // Parse JSON
         guard let data = jsonData.data(using: .utf8) else {
             throw ImportError.invalidJSONFormat("Unable to convert string to data")
@@ -50,8 +51,8 @@ public class ObservationJSONImportService {
             observations: observationDTOs
         )
         
-        // Use existing import service
-        try ObservationImportService.importFromSync(payload, into: store)
+        // Use existing import service and return statistics
+        return try ObservationImportService.importFromSync(payload, into: store)
     }
     
     /// Convert a JSON observation object to ObservationRecordDTO

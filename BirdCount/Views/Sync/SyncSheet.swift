@@ -129,7 +129,7 @@ struct SyncSheet: View {
     
     private func importObservations(_ payload: PayloadV1) {
         do {
-            try ObservationImportService.importFromSync(payload, into: observationStore)
+            let _ = try ObservationImportService.importFromSync(payload, into: observationStore)
         } catch {
             print("Import failed: \(error)")
         }

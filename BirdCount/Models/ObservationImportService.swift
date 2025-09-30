@@ -1,5 +1,18 @@
 import Foundation
 
+/// Statistics about an import operation
+public struct ImportStatistics {
+    public let totalRecordsProcessed: Int
+    public let newRecordsImported: Int
+    public let duplicatesSkipped: Int
+    
+    public init(totalRecordsProcessed: Int, newRecordsImported: Int, duplicatesSkipped: Int) {
+        self.totalRecordsProcessed = totalRecordsProcessed
+        self.newRecordsImported = newRecordsImported
+        self.duplicatesSkipped = duplicatesSkipped
+    }
+}
+
 /// Service for importing observation data from sync operations.
 /// Handles deduplication, parent-child relationship reconstruction, and atomic imports.
 public class ObservationImportService {
@@ -7,8 +20,9 @@ public class ObservationImportService {
     /// Import observations from a sync payload into the observation store.
     /// - Parameter payload: The PayloadV1 containing observations to import
     /// - Parameter into: The observation store to import into
+    /// - Returns: ImportStatistics with details about the import operation
     /// - Throws: ImportError for various failure conditions
-    public static func importFromSync(_ payload: PayloadV1, into store: ObservationStore) throws {
+    public static func importFromSync(_ payload: PayloadV1, into store: ObservationStore) throws -> ImportStatistics {
         // Validate schema version
         guard payload.schemaVersion == 1 else {
             throw ImportError.unsupportedSchemaVersion(payload.schemaVersion)
@@ -25,12 +39,14 @@ public class ObservationImportService {
             childrenByParent[parentId, default: []].append(child)
         }
         
-        // Build complete records with children
+        // Build complete records with children and track statistics
         var recordsToImport: [ObservationRecord] = []
+        var duplicatesSkipped = 0
         
         for parentDTO in parentRecords {
             // Skip if this record already exists (deduplicate by UUID)
             if store.findRecord(by: parentDTO.id) != nil {
+                duplicatesSkipped += 1
                 continue
             }
             
@@ -70,7 +86,7 @@ public class ObservationImportService {
         }
         
         // Handle orphaned children (children whose parents weren't in the payload or were duplicates)
-        var orphanedChildren: [ObservationRecordDTO] = []
+        let orphanedChildren: [ObservationRecordDTO] = []
         for child in childRecords {
             guard let parentId = child.parentId else { continue }
             
@@ -109,9 +125,10 @@ public class ObservationImportService {
         store.importObservations(recordsToImport)
         
         // Attach orphaned children to newly imported parents (if any)
+        var orphanedChildrenAttached = 0
         for child in orphanedChildren {
             guard let parentId = child.parentId else { continue }
-            store.addChildObservation(
+            if store.addChildObservation(
                 parentId: parentId,
                 taxonId: child.taxonId,
                 begin: child.begin,
@@ -119,8 +136,20 @@ public class ObservationImportService {
                 count: child.count,
                 location: child.location,
                 observer: child.observer
-            )
+            ) {
+                orphanedChildrenAttached += 1
+            }
         }
+        
+        // Calculate statistics
+        let totalProcessed = payload.observations.count
+        let newRecordsImported = recordsToImport.count + orphanedChildrenAttached
+        
+        return ImportStatistics(
+            totalRecordsProcessed: totalProcessed,
+            newRecordsImported: newRecordsImported,
+            duplicatesSkipped: duplicatesSkipped
+        )
     }
     
     public enum ImportError: Error, Equatable, LocalizedError {
