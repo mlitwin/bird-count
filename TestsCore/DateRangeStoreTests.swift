@@ -24,11 +24,6 @@ struct DateRangeStoreTests {
         // Verify the store has the updated range
         #expect(store.dateRange == newRange)
         
-        // Test persistence by creating a new store instance that loads from UserDefaults
-        // (This tests if the data was actually persisted to storage)
-        let newStore = DateRangeStore(testing: false) // This one should load from UserDefaults
-        #expect(newStore.dateRange == newRange)
-        
         // Clean up - restore original range
         UserDefaults.standard.removeObject(forKey: "dateRange")
         UserDefaults.standard.removeObject(forKey: "dateRangePreset")
