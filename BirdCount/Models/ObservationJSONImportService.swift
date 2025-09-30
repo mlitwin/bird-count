@@ -26,7 +26,7 @@ public class ObservationJSONImportService {
             throw ImportError.invalidJSONFormat("Missing or invalid 'observations' array")
         }
         
-        // Convert JSON observations to DTOs
+        // Convert JSON observations to DTOs (handle flattened format only)
         var observationDTOs: [ObservationRecordDTO] = []
         let dateFormatter = ISO8601DateFormatter()
         
@@ -34,16 +34,6 @@ public class ObservationJSONImportService {
             do {
                 let dto = try convertJSONToDTO(observationJSON, dateFormatter: dateFormatter)
                 observationDTOs.append(dto)
-                
-                // Add children if present
-                if let children = observationJSON["children"] as? [[String: Any]] {
-                    for childJSON in children {
-                        var childJSON = childJSON
-                        childJSON["parentId"] = dto.id.uuidString // Set parent relationship
-                        let childDTO = try convertJSONToDTO(childJSON, dateFormatter: dateFormatter)
-                        observationDTOs.append(childDTO)
-                    }
-                }
             } catch {
                 // Skip invalid records but continue processing
                 continue
@@ -72,10 +62,17 @@ public class ObservationJSONImportService {
               let taxonId = json["taxonId"] as? String,
               let beginString = json["begin"] as? String,
               let endString = json["end"] as? String,
-              let begin = dateFormatter.date(from: beginString),
-              let end = dateFormatter.date(from: endString),
               let count = json["count"] as? Int else {
             throw ImportError.invalidRecord("Missing required fields in observation record")
+        }
+        
+        // Convert dates with explicit error checking
+        guard let begin = dateFormatter.date(from: beginString) else {
+            throw ImportError.invalidRecord("Invalid begin date format: '\(beginString)'")
+        }
+        
+        guard let end = dateFormatter.date(from: endString) else {
+            throw ImportError.invalidRecord("Invalid end date format: '\(endString)'")
         }
         
         // Extract optional parent ID
@@ -111,9 +108,13 @@ public class ObservationJSONImportService {
         guard let latitude = locationJSON["latitude"] as? Double,
               let longitude = locationJSON["longitude"] as? Double,
               let horizontalAccuracy = locationJSON["horizontalAccuracy"] as? Double,
-              let timestampString = locationJSON["timestamp"] as? String,
-              let timestamp = dateFormatter.date(from: timestampString) else {
-            throw ImportError.invalidRecord("Invalid location data")
+              let timestampString = locationJSON["timestamp"] as? String else {
+            throw ImportError.invalidRecord("Invalid location data: missing required fields")
+        }
+        
+        // Convert timestamp with explicit error checking
+        guard let timestamp = dateFormatter.date(from: timestampString) else {
+            throw ImportError.invalidRecord("Invalid location timestamp format: '\(timestampString)'")
         }
         
         // Optional fields

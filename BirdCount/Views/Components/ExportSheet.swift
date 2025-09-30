@@ -82,15 +82,15 @@ struct ExportSheet: View {
     }
     
     private var speciesInRange: [SpeciesCountItem] {
-        // Aggregate counts within the selected range (dynamic for relative presets)
-        // Respect child observations by flattening the tree and summing each node that overlaps the range.
+        // Filter parent observations by range overlap, then use totalCount for each
         let (effStart, effEnd) = effectiveRange
-        let all: [ObservationRecord] = flatten(observations.observations)
-        let filtered = all.filter { $0.end >= effStart && $0.begin <= effEnd }
-        // Sum raw counts (children may be negative to zero-out a parent)
+        let filtered = observations.observations.filter { $0.end >= effStart && $0.begin <= effEnd }
+        
+        // Use totalCount method to handle parent-child hierarchies
         let counts = filtered.reduce(into: [String:Int]()) { acc, r in
-            acc[r.taxonId, default: 0] += r.count
+            acc[r.taxonId, default: 0] += r.totalCount
         }
+        
         return taxonomy.species.compactMap { t in
             if let c = counts[t.id], c > 0 {
                 return SpeciesCountItem(id: t.id, taxon: t, count: c)
@@ -99,18 +99,6 @@ struct ExportSheet: View {
             }
         }
         .sorted { $0.taxon.order < $1.taxon.order }
-    }
-
-    // Flatten nested observations so filtering happens per node (parent and children)
-    private func flatten(_ records: [ObservationRecord]) -> [ObservationRecord] {
-        var result: [ObservationRecord] = []
-        result.reserveCapacity(records.count)
-        func walk(_ r: ObservationRecord) {
-            result.append(r)
-            if !r.children.isEmpty { r.children.forEach(walk) }
-        }
-        records.forEach(walk)
-        return result
     }
 
     private var effectiveRange: (Date, Date) {
@@ -138,8 +126,51 @@ struct ExportSheet: View {
     
     private func exportJSON() -> String {
         let (effStart, effEnd) = effectiveRange
-        let all: [ObservationRecord] = flatten(observations.observations)
-        let filtered = all.filter { $0.end >= effStart && $0.begin <= effEnd }
+        let filtered = observations.observations.filter { $0.end >= effStart && $0.begin <= effEnd }
+        
+        // Flatten to individual observation entries with proper parentId references
+        var allObservations: [[String: Any]] = []
+        
+        func addObservation(_ record: ObservationRecord, parentId: UUID? = nil) {
+            var observation: [String: Any] = [
+                "id": record.id.uuidString,
+                "taxonId": record.taxonId,
+                "count": record.count,
+                "begin": ISO8601DateFormatter().string(from: record.begin),
+                "end": ISO8601DateFormatter().string(from: record.end)
+            ]
+            
+            // Add parentId if this is a child observation
+            if let parentId = parentId {
+                observation["parentId"] = parentId.uuidString
+            }
+            
+            // Add location if present
+            if let location = record.location {
+                observation["location"] = [
+                    "latitude": location.latitude,
+                    "longitude": location.longitude,
+                    "horizontalAccuracy": location.horizontalAccuracy,
+                    "timestamp": ISO8601DateFormatter().string(from: location.timestamp),
+                    "altitude": location.altitude as Any,
+                    "verticalAccuracy": location.verticalAccuracy as Any,
+                    "name": location.name as Any,
+                    "notes": location.notes as Any
+                ]
+            }
+            
+            allObservations.append(observation)
+            
+            // Recursively add children
+            for child in record.children {
+                addObservation(child, parentId: record.id)
+            }
+        }
+        
+        // Process all filtered parent observations
+        for record in filtered {
+            addObservation(record)
+        }
         
         // Create JSON structure suitable for importing
         let exportData: [String: Any] = [
@@ -149,44 +180,23 @@ struct ExportSheet: View {
                     "begin": ISO8601DateFormatter().string(from: effStart),
                     "end": ISO8601DateFormatter().string(from: effEnd)
                 ],
-                "totalObservations": filtered.count
+                "totalObservations": allObservations.count
             ],
-            "observations": filtered.map { record in
-                [
-                    "id": record.id.uuidString,
-                    "taxonId": record.taxonId,
-                    "count": record.count,
-                    "begin": ISO8601DateFormatter().string(from: record.begin),
-                    "end": ISO8601DateFormatter().string(from: record.end),
-                    "location": record.location.map { location in
-                        [
-                            "latitude": location.latitude,
-                            "longitude": location.longitude,
-                            "horizontalAccuracy": location.horizontalAccuracy,
-                            "timestamp": ISO8601DateFormatter().string(from: location.timestamp),
-                            "altitude": location.altitude as Any,
-                            "verticalAccuracy": location.verticalAccuracy as Any,
-                            "name": location.name as Any,
-                            "notes": location.notes as Any
-                        ]
-                    } as Any,
-                    "children": record.children.map { child in
-                        [
-                            "id": child.id.uuidString,
-                            "taxonId": child.taxonId,
-                            "count": child.count,
-                            "begin": ISO8601DateFormatter().string(from: child.begin),
-                            "end": ISO8601DateFormatter().string(from: child.end)
-                        ]
-                    }
-                ]
-            }
+            "observations": allObservations
         ]
         
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: exportData, options: .prettyPrinted)
-            return String(data: jsonData, encoding: .utf8) ?? "{}"
+            let jsonString = String(data: jsonData, encoding: .utf8) ?? "{}"
+            
+            // Log JSON to console for debugging
+            print("📄 JSON Export:")
+            print(jsonString)
+            print("📄 End JSON Export")
+            
+            return jsonString
         } catch {
+            print("❌ JSON Export Error: \(error.localizedDescription)")
             return "{\"error\": \"Failed to serialize JSON: \(error.localizedDescription)\"}"
         }
     }

@@ -34,6 +34,36 @@ struct CoreLogicTests {
     }
 
     @Test
+    func observationRecordTotalCount() {
+        // Test simple record without children
+        let simple = ObservationRecord(taxonId: "amecro", count: 3)
+        #expect(simple.totalCount == 3)
+        
+        // Test parent with one child
+        var parent = ObservationRecord(taxonId: "amecro", count: 2)
+        let child1 = ObservationRecord(parent: &parent, taxonId: "norbla", count: 4)
+        #expect(parent.totalCount == 6) // 2 + 4
+        #expect(child1.totalCount == 4) // just the child's count
+        
+        // Test parent with multiple children
+        let _ = ObservationRecord(parent: &parent, taxonId: "cangoo", count: 1)
+        #expect(parent.totalCount == 7) // 2 + 4 + 1
+        
+        // Test nested children (grandchildren) - need var for child3 to add grandchild
+        var child3 = ObservationRecord(parent: &parent, taxonId: "blujay", count: 3)
+        let grandchild = ObservationRecord(parent: &child3, taxonId: "redwin", count: 2)
+        
+        // Update the parent's children array with the modified child3 that now has a grandchild
+        if let index = parent.children.firstIndex(where: { $0.id == child3.id }) {
+            parent.children[index] = child3
+        }
+        
+        #expect(parent.totalCount == 12) // 2 + 4 + 1 + 3 + 2
+        #expect(child3.totalCount == 5) // 3 + 2
+        #expect(grandchild.totalCount == 2) // just the grandchild's count
+    }
+
+    @Test
     func observationStoreCountsIncludeChildren() {
         let store = ObservationStore(testing: true)
         store.clearAll()

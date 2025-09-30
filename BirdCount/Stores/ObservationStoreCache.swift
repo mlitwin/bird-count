@@ -26,18 +26,17 @@ struct ObservationStoreCache {
     }
 
     mutating func rebuild(from observations: [ObservationRecord]) {
-        // Recompute counts map: species id -> sum of all counts (including negative child adjustments)
+        // Recompute counts map: species id -> sum of all counts using totalCount for hierarchies
         // and lastObservedAt: most recent end date per species.
-        // Uses the same flattening logic as SummaryView for consistency.
         counts = [:]
         lastObservedAt = [:]
         
-        // Flatten nested observations so counting happens per node (parent and children)
-        let flattened = flatten(observations)
-        
-        // Sum raw counts (children may be negative to adjust parent totals)
-        for record in flattened {
-            counts[record.taxonId, default: 0] += record.count
+        // Use totalCount method to handle parent-child hierarchies automatically
+        for record in observations {
+            let previousCount = counts[record.taxonId, default: 0]
+            counts[record.taxonId, default: 0] += record.totalCount
+            let newCount = counts[record.taxonId]!
+            print("🐦 Cache: taxonId=\(record.taxonId), totalCount=\(record.totalCount), \(previousCount) -> \(newCount) (+\(record.totalCount))")
             
             let ts = record.end
             if let existing = lastObservedAt[record.taxonId] {
@@ -46,18 +45,6 @@ struct ObservationStoreCache {
                 lastObservedAt[record.taxonId] = ts
             }
         }
-    }
-    
-    // Flatten nested observations so filtering/counting happens per node (parent and children)
-    private func flatten(_ records: [ObservationRecord]) -> [ObservationRecord] {
-        var result: [ObservationRecord] = []
-        result.reserveCapacity(records.count)
-        func walk(_ r: ObservationRecord) {
-            result.append(r)
-            if !r.children.isEmpty { r.children.forEach(walk) }
-        }
-        records.forEach(walk)
-        return result
     }
 
     func count(for id: String) -> Int { counts[id] ?? 0 }

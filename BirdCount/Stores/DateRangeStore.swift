@@ -155,7 +155,9 @@ final class DateRangeStore {
                 end: now
             )
         case .all:
-            dateRange = DateRange(begin: .distantPast, end: now)
+            // Use distantFuture instead of now to ensure all observations are included,
+            // including those with timestamps at or after the current moment
+            dateRange = DateRange(begin: .distantPast, end: .distantFuture)
         case .custom:
             // Do not change dateRange
             break
