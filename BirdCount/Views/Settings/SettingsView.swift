@@ -14,6 +14,19 @@ struct SettingsView: View {
     private func binding<Value>(_ keyPath: ReferenceWritableKeyPath<SettingsStore, Value>) -> Binding<Value> {
         Binding(get: { settings[keyPath: keyPath] }, set: { settings[keyPath: keyPath] = $0 })
     }
+    
+    // Version string with build number
+    private var versionString: String {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "-"
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "-"
+        if version != "-" && build != "-" {
+            return "\(version) (\(build))"
+        } else if version != "-" {
+            return version
+        } else {
+            return "-"
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -36,7 +49,11 @@ struct SettingsView: View {
                     Button(role: .destructive) { confirmClear = true } label: { Text("Clear all counts") }
                 }
                 Section("About") {
-                    HStack { Text("Version"); Spacer(); Text(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "-") }
+                    HStack { 
+                        Text("Version"); 
+                        Spacer(); 
+                        Text(versionString)
+                    }
                 }
             }
             .navigationTitle("Settings")
