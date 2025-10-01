@@ -11,6 +11,7 @@ struct HomeView: View {
     @State private var bottomControlsHeight: CGFloat = 0
     @State private var sheetContentHeight: CGFloat = 0
     @State private var filterFocused: Bool = false
+    @State private var recentlyUpdatedSpeciesId: String? = nil
     // Keep CountAdjustSheet aligned with SpeciesListView bottom
     private let speciesListBottomPadding: CGFloat = 48
 
@@ -103,8 +104,14 @@ struct HomeView: View {
                                     onCommitted: { didAdd in
                                         if didAdd {
                                             filterText = ""
+                                            // Set the recently updated species for pulse animation
+                                            recentlyUpdatedSpeciesId = taxon.id
                                             // Trigger scroll to bottom so newest/recent species are visible
                                             scrollToBottomSignal &+= 1
+                                            // Clear the pulse after animation completes
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                                                recentlyUpdatedSpeciesId = nil
+                                            }
                                         }
                                     }
                                 )
@@ -156,7 +163,8 @@ struct HomeView: View {
             SpeciesListView(
                 taxa: filtered, 
                 counts: filteredCounts,
-                scrollToBottomSignal: scrollToBottomSignal
+                scrollToBottomSignal: scrollToBottomSignal,
+                recentlyUpdatedSpeciesId: recentlyUpdatedSpeciesId
             ) { taxon in
                 selectedTaxon = taxon
             }

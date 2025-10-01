@@ -3,7 +3,10 @@ import SwiftUI
 struct SpeciesRow: View {
     let taxon: Taxon
     let count: Int
+    let shouldPulse: Bool
     let onSelect: (Taxon) -> Void
+    
+    @State private var isPulsing = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -17,6 +20,15 @@ struct SpeciesRow: View {
                         .padding(.vertical, 4)
                         .background(RoundedRectangle(cornerRadius: 6).fill(Color.accentColor.opacity(0.15)))
                         .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.accentColor, lineWidth: 1))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6)
+                                .strokeBorder(
+                                    Color.green,
+                                    lineWidth: isPulsing ? 2 : 0
+                                )
+                                .opacity(isPulsing ? 1 : 0)
+                                .animation(.easeInOut(duration: 1.0), value: isPulsing)
+                        )
                         .accessibilityLabel(String(format: Strings.Accessibility.countLabel.string, taxon.commonName, count))
                 }
             }
@@ -24,6 +36,15 @@ struct SpeciesRow: View {
             .onTapGesture { onSelect(taxon) }
             .padding(.horizontal)
             .padding(.vertical, 8)
+            .onChange(of: shouldPulse) { _, newValue in
+                if newValue {
+                    isPulsing = true
+                    // Stop pulsing after animation completes
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { // Single 1.0s ease cycle
+                        isPulsing = false
+                    }
+                }
+            }
             Divider()
         }
     }
@@ -57,6 +78,7 @@ private struct SpeciesRowBasic: View {
             commonness: 3
         ),
         count: 5,
+        shouldPulse: false,
         onSelect: { _ in }
     )
     .padding()
@@ -73,6 +95,24 @@ private struct SpeciesRowBasic: View {
             commonness: 0
         ),
         count: 0,
+        shouldPulse: false,
+        onSelect: { _ in }
+    )
+    .padding()
+}
+
+#Preview("Species Row with pulse") {
+    SpeciesRow(
+        taxon: Taxon(
+            id: "sample-id-3",
+            commonName: "Pulsing Warbler",
+            scientificName: "Setophaga pulsans",
+            order: 3,
+            rank: "species",
+            commonness: 1
+        ),
+        count: 2,
+        shouldPulse: true,
         onSelect: { _ in }
     )
     .padding()

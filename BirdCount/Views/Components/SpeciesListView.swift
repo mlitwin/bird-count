@@ -6,11 +6,14 @@ struct SpeciesListView: View {
     let onSelect: (Taxon) -> Void
     // External trigger: increment to request scrolling to the bottom
     let scrollToBottomSignal: Int
+    // External trigger: species ID that was recently updated (for pulse animation)
+    let recentlyUpdatedSpeciesId: String?
 
-    init(taxa: [Taxon], counts: [String:Int] = [:], scrollToBottomSignal: Int = 0, onSelect: @escaping (Taxon) -> Void) {
+    init(taxa: [Taxon], counts: [String:Int] = [:], scrollToBottomSignal: Int = 0, recentlyUpdatedSpeciesId: String? = nil, onSelect: @escaping (Taxon) -> Void) {
         self.taxa = taxa
         self.counts = counts
         self.scrollToBottomSignal = scrollToBottomSignal
+        self.recentlyUpdatedSpeciesId = recentlyUpdatedSpeciesId
         self.onSelect = onSelect
     }
 
@@ -24,6 +27,7 @@ struct SpeciesListView: View {
                                 SpeciesRow(
                                     taxon: taxon,
                                     count: counts[taxon.id] ?? 0,
+                                    shouldPulse: recentlyUpdatedSpeciesId == taxon.id,
                                     onSelect: onSelect
                                 )
                                 .id(taxon.id)
