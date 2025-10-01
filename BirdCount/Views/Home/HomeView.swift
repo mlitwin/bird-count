@@ -14,7 +14,7 @@ struct HomeView: View {
     // Keep CountAdjustSheet aligned with SpeciesListView bottom
     private let speciesListBottomPadding: CGFloat = 48
 
-    private var filtered: [Taxon] { taxonomy.search(filterText, minCommonness: settings.selectedChecklistId != nil ? settings.minCommonness : nil, maxCommonness: settings.selectedChecklistId != nil ? settings.maxCommonness : nil) }
+    private var filtered: [Taxon] { taxonomy.search(filterText, minCommonness: settings.selectedChecklistId != nil ? settings.minCommonness : nil, maxCommonness: settings.selectedChecklistId != nil ? settings.maxCommonness : nil, dateRange: dateRangeStore.dateRange) }
 
     private var filteredCounts: [String: Int] {
         ObservationStoreCache.countsInRange(dateRangeStore.dateRange, from: observations.observations)

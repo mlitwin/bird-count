@@ -16,7 +16,6 @@ import Observation
 
     struct Recent: Identifiable, Codable, Equatable { let id: String; var lastUpdated: Date }
     private(set) var recent: [Recent] = [] // most-recent first
-    private let recentLimit = 20
 
     private let persistenceKey = "ObservationRecords"
 
@@ -93,7 +92,7 @@ import Observation
     }
     
     /// Filter observations to only include those that overlap with the given date range
-    private func observationsInRange(_ range: DateRange) -> [ObservationRecord] {
+    func observationsInRange(_ range: DateRange) -> [ObservationRecord] {
         return observations.compactMap { record -> ObservationRecord? in
             // Check if record overlaps with the range: record.end >= range.begin && record.begin <= range.end
             if record.end >= range.begin && record.begin <= range.end {
@@ -308,7 +307,6 @@ import Observation
         let now = Date()
         if let idx = recent.firstIndex(where: { $0.id == id }) { recent[idx].lastUpdated = now } else { recent.insert(Recent(id: id, lastUpdated: now), at: 0) }
         recent.sort { $0.lastUpdated > $1.lastUpdated }
-        if recent.count > recentLimit { recent.removeLast(recent.count - recentLimit) }
     }
 
     // MARK: Persistence
@@ -333,6 +331,7 @@ final class ObservationStoreProxy {
     private weak var store: ObservationStore?
     func register(_ store: ObservationStore) { self.store = store }
     func lastDatesSnapshot() -> [String:Date] { store?.cacheSnapshotLastObserved() ?? [:] }
+    func observationsInRange(_ range: DateRange) -> [ObservationRecord] { store?.observationsInRange(range) ?? [] }
 }
 
 private extension ObservationStore {

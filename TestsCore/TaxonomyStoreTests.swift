@@ -14,11 +14,15 @@ struct TaxonomyStoreTests {
         let taxStore = TaxonomyStore(); taxStore.loadPreview(species: taxa)
         let obsStore = ObservationStore(testing: true); obsStore.clearAll()
         let now = Date()
-        // Make them older than 24h to avoid recent bucket
+        // Make them older than the current date range to avoid recent bucket
         obsStore.addObservation("c1", begin: now.addingTimeInterval(-26*60*60), end: now.addingTimeInterval(-26*60*60), count: 1)
         obsStore.addObservation("c0", begin: now.addingTimeInterval(-25*60*60), end: now.addingTimeInterval(-25*60*60), count: 1)
         ObservationStoreProxy.shared.register(obsStore)
-        let ids = taxStore.search("").map { $0.id }
+        
+        // Set up a date range that excludes the old observations (only covers last hour)
+        let rangeStart = now.addingTimeInterval(-60*60) // 1 hour ago
+        let dateRange = DateRange(begin: rangeStart, end: now)
+        let ids = taxStore.search("", dateRange: dateRange).map { $0.id }
         #expect(ids == ["c0", "c1", "c3", "unk"]) // rare → scarce → common → unknown
     }
 
@@ -33,14 +37,18 @@ struct TaxonomyStoreTests {
         ]
         let taxStore = TaxonomyStore(); taxStore.loadPreview(species: taxa)
         let obsStore = ObservationStore(testing: true); obsStore.clearAll()
-        // Two recent within 24h
+        // Two recent within the current date range
         obsStore.addObservation("commonRecentOlder", begin: now.addingTimeInterval(-60*60), end: now.addingTimeInterval(-60*60), count: 1)
         obsStore.addObservation("commonRecentNewest", begin: now.addingTimeInterval(-10*60), end: now.addingTimeInterval(-10*60), count: 1)
-        // Older observations outside 24h for others
+        // Older observations outside the current date range
         obsStore.addObservation("rareOld", begin: now.addingTimeInterval(-3*24*60*60), end: now.addingTimeInterval(-3*24*60*60), count: 1)
         obsStore.addObservation("scarceOld", begin: now.addingTimeInterval(-2*24*60*60), end: now.addingTimeInterval(-2*24*60*60), count: 1)
         ObservationStoreProxy.shared.register(obsStore)
-        let ids = taxStore.search("").map { $0.id }
+        
+        // Set up a date range that includes observations from the last 2 hours
+        let rangeStart = now.addingTimeInterval(-2*60*60) // 2 hours ago
+        let dateRange = DateRange(begin: rangeStart, end: now)
+        let ids = taxStore.search("", dateRange: dateRange).map { $0.id }
         #expect(ids == ["rareOld", "scarceOld", "commonRecentOlder", "commonRecentNewest"])
     }
 }

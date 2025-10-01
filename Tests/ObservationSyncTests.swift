@@ -62,7 +62,7 @@ struct ObservationSyncTests {
         
         // Import the payload
         do {
-            try ObservationImportService.importFromSync(payload, into: observationStore)
+            let _ = try ObservationImportService.importFromSync(payload, into: observationStore)
         } catch {
             #expect(Bool(false), "Import failed with error: \(error)")
             return

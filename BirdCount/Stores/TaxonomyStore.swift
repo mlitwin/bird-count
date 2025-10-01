@@ -111,7 +111,7 @@ import Observation
         return [nameToAbbreviation(common), nameToAbbreviation(scientific)].filter { !$0.isEmpty }
     }
 
-    func search(_ text: String, minCommonness: Int? = nil, maxCommonness: Int? = nil) -> [Taxon] {
+    func search(_ text: String, minCommonness: Int? = nil, maxCommonness: Int? = nil, dateRange: DateRange? = nil) -> [Taxon] {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         let needle = trimmed.lowercased()
         // Two-phase filter:
@@ -135,39 +135,83 @@ import Observation
             }
         }
         // Then sort by derived order with a recency bucket:
-        // 1) Species seen in the last 24h are always at the bottom, ordered older→newer so the most recent are last.
+        // 1) Species seen within the current date range are always at the bottom, ordered older→newer so the most recent are last.
         // 2) All others are ordered as before: least→most common; tie-break by recency older→newer; then taxonomy order, then name.
-        let lastDates: [String:Date]? = {
+        let effectiveDateRange = dateRange ?? DateRange.defaultRange()
+        let observationsInRange = ObservationStoreProxy.shared.observationsInRange(effectiveDateRange)
+        
+        // Get taxon IDs and their latest dates within the date range
+        let recentTaxonIds = Set(observationsInRange.map { $0.taxonId })
+        let lastDatesInRange: [String:Date] = {
+            var latestDates: [String:Date] = [:]
+            for obs in observationsInRange {
+                let currentLatest = latestDates[obs.taxonId] ?? Date.distantPast
+                if obs.end > currentLatest {
+                    latestDates[obs.taxonId] = obs.end
+                }
+            }
+            return latestDates
+        }()
+        
+        // Fallback to global last dates for non-recent species
+        let globalLastDates: [String:Date]? = {
             let snapshot = ObservationStoreProxy.shared.lastDatesSnapshot()
             return snapshot.isEmpty ? nil : snapshot
         }()
-        let cutoff = Date().addingTimeInterval(-24 * 60 * 60)
-        return filtered.sorted { compareTaxa($0, $1, lastDates: lastDates, cutoff: cutoff) }
+        
+
+        
+        return filtered.sorted { compareTaxa($0, $1, globalLastDates: globalLastDates, recentTaxonIds: recentTaxonIds, lastDatesInRange: lastDatesInRange) }
     }
 }
 
 private extension TaxonomyStore {
     /// Comparison used for species sorting in search results.
     /// - Rules:
-    ///   1. Species seen within last 24h go to the bottom; within this bucket order older→newer.
+    ///   1. Species seen within the current date range go to the bottom; within this bucket order older→newer.
     ///   2. Others: order by commonness ascending; tie-break older→newer; then taxonomy order; then name.
-    func compareTaxa(_ a: Taxon, _ b: Taxon, lastDates: [String:Date]?, cutoff: Date) -> Bool {
-        let ca = a.commonness ?? Int.max
-        let cb = b.commonness ?? Int.max
-        let da = lastDates?[a.id]
-        let db = lastDates?[b.id]
-        let ra = (da != nil) && (da! >= cutoff)
-        let rb = (db != nil) && (db! >= cutoff)
+    func compareTaxa(_ a: Taxon, _ b: Taxon, globalLastDates: [String:Date]?, recentTaxonIds: Set<String>, lastDatesInRange: [String:Date]) -> Bool {
+        // Check if species was observed within the current date range
+        let ra = recentTaxonIds.contains(a.id)
+        let rb = recentTaxonIds.contains(b.id)
+        
+        // For recent species, use dates within range; for non-recent, use global dates
+        let da = ra ? lastDatesInRange[a.id] : globalLastDates?[a.id]
+        let db = rb ? lastDatesInRange[b.id] : globalLastDates?[b.id]
+        
+        // Recent species go to bottom; within recent bucket order by date older→newer
         if ra != rb { return !ra && rb } // non-recent first; recent to bottom
         if ra && rb {
-            if da != db { return (da ?? .distantPast) < (db ?? .distantPast) }
-            // fall through to stable tie-breakers
+            return compareByLastObservedDate(dateA: da, dateB: db)
         }
+        
+        // For non-recent species, apply stable tie-breakers
+        return applyStableTieBreakers(a, b, dateA: da, dateB: db)
+    }
+
+    
+    /// Compare two taxa by their last observed dates (older first)
+    private func compareByLastObservedDate(dateA: Date?, dateB: Date?) -> Bool {
+        return (dateA ?? .distantPast) < (dateB ?? .distantPast)
+    }
+    
+    /// Apply stable tie-breakers in order: commonness, last observed date, taxonomy order, common name
+    private func applyStableTieBreakers(_ a: Taxon, _ b: Taxon, dateA: Date?, dateB: Date?) -> Bool {
+        let ca = a.commonness ?? Int.max
+        let cb = b.commonness ?? Int.max
+        
+        // 1. Compare by commonness (rare to common)
         if ca != cb { return ca < cb }
-        if let da, let db, da != db { return da < db } // older first
-        if da == nil && db != nil { return true }
-        if da != nil && db == nil { return false }
+        
+        // 2. Compare by last observed date (older first)
+        if let dateA, let dateB, dateA != dateB { return dateA < dateB }
+        if dateA == nil && dateB != nil { return true }
+        if dateA != nil && dateB == nil { return false }
+        
+        // 3. Compare by taxonomy order
         if a.order != b.order { return a.order < b.order }
+        
+        // 4. Compare by common name (alphabetical)
         return a.commonName < b.commonName
     }
 }
