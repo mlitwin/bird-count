@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 public struct ObservationsSelectorView: View {
     @Environment(DateRangeStore.self) private var dateRangeStore
@@ -66,7 +67,7 @@ public struct ObservationsSelectorView: View {
         .onChange(of: dateRangeStore.dateRange.begin) { _, _ in syncPresetWithCurrentRange() }
         .onChange(of: dateRangeStore.dateRange.end) { _, _ in syncPresetWithCurrentRange() }
         // Auto-update when the calendar day changes while the app is active
-        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged).receive(on: DispatchQueue.main)) { _ in
             if dateRangeStore.dateRangePreset == .today {
                 dateRangeStore.applyPreset(.today)
             }
