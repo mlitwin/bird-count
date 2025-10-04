@@ -22,12 +22,8 @@ struct SpeciesRow: View {
                         .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.accentColor, lineWidth: 1))
                         .overlay(
                             RoundedRectangle(cornerRadius: 6)
-                                .strokeBorder(
-                                    Color.green,
-                                    lineWidth: isPulsing ? 2 : 0
-                                )
-                                .opacity(isPulsing ? 1 : 0)
-                                .animation(.easeInOut(duration: 1.0), value: isPulsing)
+                                .stroke(Color.green.opacity(0.8), lineWidth: isPulsing ? 2 : 0)
+                                .animation(.easeOut(duration: 0.5), value: isPulsing)
                         )
                         .accessibilityLabel(String(format: Strings.Accessibility.countLabel.string, taxon.commonName, count))
                 }
@@ -36,13 +32,22 @@ struct SpeciesRow: View {
             .onTapGesture { onSelect(taxon) }
             .padding(.horizontal)
             .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.green.opacity(isPulsing ? 0.15 : 0))
+                    .animation(.easeOut(duration: 0.5), value: isPulsing)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.green.opacity(0.8), lineWidth: isPulsing ? 2 : 0)
+                    .animation(.easeOut(duration: 0.5), value: isPulsing)
+            )
             .onChange(of: shouldPulse) { _, newValue in
                 if newValue {
                     isPulsing = true
-                    // Stop pulsing after animation completes
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { // Single 1.0s ease cycle
-                        isPulsing = false
-                    }
+                } else {
+                    // Trigger fade-out when shouldPulse becomes false
+                    isPulsing = false
                 }
             }
             Divider()
