@@ -1,4 +1,4 @@
-.PHONY: help generate build-test test test-app test-core analyze-tests analyze-bundle list-dests simulators prep-alpha prep-patch prep-minor prep-major fastlane-alpha fastlane-beta clean
+.PHONY: help generate build-test test test-app test-core analyze-tests analyze-bundle list-dests simulators prep-alpha prep-patch prep-minor prep-major fastlane-alpha fastlane-beta screenshots clean
 
 # Configurable variables
 SCHEME ?= BirdCount
@@ -28,6 +28,7 @@ help:
 	@echo "  prep-major    Bump major version (X.0.0) and build number using fastlane"
 	@echo "  fastlane-alpha Build and upload to TestFlight (Release configuration)"
 	@echo "  fastlane-beta Build Ad-Hoc beta and host locally in docs/builds directory"
+	@echo "  screenshots   Generate App Store screenshots using fastlane snapshot"
 	@echo "Variables (override with VAR=value): SCHEME, PROJECT, SIMULATOR, DEST, CONFIGURATION"
 
 # Regenerate the Xcode project from project.yml
@@ -105,6 +106,9 @@ prep-minor:
 
 prep-major:
 	bundle exec fastlane bump_major
+
+screenshots:
+	bundle exec fastlane screenshots
 
 build-test: generate
 	@echo "🔨 Building for testing..."

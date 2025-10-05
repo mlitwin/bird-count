@@ -95,6 +95,14 @@ Bump minor version (e.g., 1.0.0 -> 1.1.0) and build number
 
 Bump major version (e.g., 1.0.0 -> 2.0.0) and build number
 
+### ios screenshots
+
+```sh
+[bundle exec] fastlane ios screenshots
+```
+
+Generate screenshots for App Store submission
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.

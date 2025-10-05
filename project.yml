@@ -116,6 +116,21 @@ targets:
       CODE_SIGNING_ALLOWED: NO
       DEAD_CODE_STRIPPING: YES
 
+  BirdCountUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "18.5"
+    sources:
+      - path: UITests
+    dependencies:
+      - target: BirdCount
+    settings:
+      GENERATE_INFOPLIST_FILE: YES
+      PRODUCT_BUNDLE_IDENTIFIER: org.antoninus.birdcount.app.uitests
+      DEVELOPMENT_TEAM: 352K435X8J
+      CODE_SIGNING_ALLOWED: NO
+      DEAD_CODE_STRIPPING: YES
+
 schemes:
   BirdCount:
     build:
@@ -125,6 +140,8 @@ schemes:
       targets:
         - name: BirdCountTests
           parallelizable: true
+        - name: BirdCountUITests
+          parallelizable: false
   BirdCountCore:
     build:
       targets:

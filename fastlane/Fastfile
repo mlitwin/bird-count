@@ -404,6 +404,22 @@ platform :ios do
     bump_version(type: "major")
   end
 
+  # Generate App Store screenshots
+  desc "Generate screenshots for App Store submission"
+  lane :screenshots do
+    generate
+    
+    # Clear any existing screenshots
+    clear_derived_data
+    
+    # Take screenshots using snapshot
+    # Configuration is read from fastlane/Snapfile
+    snapshot()
+    
+    UI.success("📸 Screenshots generated in screenshots/ directory")
+    UI.important("Review screenshots and upload to App Store Connect")
+  end
+
   # Private helper lane for version bumping
   private_lane :bump_version do |options|
     type = options[:type] || "patch"

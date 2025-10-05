@@ -45,7 +45,7 @@ struct SpeciesListView: View {
                 .defaultScrollAnchor(.bottom)
                 .scrollPosition(id: $scrolledToID, anchor: .bottom)
                 .onChange(of: scrollToBottomSignal) { _, _ in
-                    let targetId: AnyHashable = taxa.last?.id ?? "__species_bottom_anchor__"
+                        let targetId: AnyHashable = taxa.last?.id ?? "__species_bottom_anchor__"
                     targetScrollID = targetId
                     
                     withAnimation(.easeOut(duration: 0.2)) {
