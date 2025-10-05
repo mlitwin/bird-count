@@ -26,7 +26,7 @@ help:
 	@echo "  prep-patch    Bump patch version (x.y.Z) and build number using fastlane"
 	@echo "  prep-minor    Bump minor version (x.Y.0) and build number using fastlane" 
 	@echo "  prep-major    Bump major version (X.0.0) and build number using fastlane"
-	@echo "  fastlane-alpha Build and upload to TestFlight (Release configuration)"
+	@echo "  fastlane-alpha Build and upload to TestFlight (uses fastlane/ReleaseNotes.md)"
 	@echo "  fastlane-beta Build Ad-Hoc beta and host locally in docs/builds directory"
 	@echo "  screenshots   Generate App Store screenshots using fastlane snapshot"
 	@echo "Variables (override with VAR=value): SCHEME, PROJECT, SIMULATOR, DEST, CONFIGURATION"

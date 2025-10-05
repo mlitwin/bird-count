@@ -173,10 +173,27 @@ platform :ios do
       output_name: "BirdCount.ipa"
     )
 
+    # Read release notes from the generated file
+    release_notes_path = File.expand_path("./ReleaseNotes.md", __dir__)
+    changelog_text = if File.exist?(release_notes_path)
+                       raw_notes = File.read(release_notes_path).strip
+                       # TestFlight has a 4000 character limit for changelog
+                       if raw_notes.length > 4000
+                         UI.important("Release notes are too long (#{raw_notes.length} chars), truncating to 4000 characters for TestFlight")
+                         raw_notes[0..3996] + "..."
+                       else
+                         raw_notes
+                       end
+                     else
+                       ENV['BETA_CHANGELOG'] || "Beta build"
+                     end
+    
+    UI.message("Using changelog for TestFlight (#{changelog_text.length} chars):\n#{changelog_text}")
+    
     upload_to_testflight(
       ipa: ipa_path,
       skip_waiting_for_build_processing: false,
-      changelog: ENV['BETA_CHANGELOG'] || "Beta build",
+      changelog: changelog_text,
       api_key: asc_api_key
     )
   end
@@ -421,6 +438,7 @@ platform :ios do
   end
 
   # Generate release notes from git commits since last tag
+  # Used by prep-alpha target and automatically read by alpha lane for TestFlight
   desc "Generate release notes from git commits since last tag"
   lane :generate_release_notes do
     # Get the most recent tag
