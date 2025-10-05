@@ -65,8 +65,6 @@ struct SpeciesListView: View {
                 .scrollPosition(id: $scrolledToID, anchor: .bottom)
                 .onChange(of: scrollToBottomSignal) { _, newSignal in
                     let targetId: AnyHashable = taxa.last?.id ?? "__species_bottom_anchor__"
-                    print("📊 SpeciesListView: Scroll signal changed to \(newSignal), targeting \(targetId)")
-                    
                     // Immediate scroll (no animation)
                     reader.scrollTo(targetId, anchor: .bottom)
                 }
@@ -90,13 +88,11 @@ struct SpeciesListView: View {
                 }
                 .onChange(of: recentlyUpdatedSpeciesId) { _, newValue in
                     if newValue != nil {
-                        print("✨ SpeciesListView: Species \(newValue!) updated - starting pulse animation")
                         // Start the pulse animation immediately
                         showPulseAnimation = true
                         
                         // Auto-fade after a fixed duration
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                            print("🎭 SpeciesListView: Auto-fading pulse for species \(newValue!)")
                             showPulseAnimation = false
                         }
                     }

@@ -35,21 +35,28 @@ struct SpeciesRow: View {
             .background(
                 RoundedRectangle(cornerRadius: 8)
                     .fill(Color.green.opacity(isPulsing ? 0.15 : 0))
-                    .animation(.easeOut(duration: 0.5), value: isPulsing)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.green.opacity(0.8), lineWidth: isPulsing ? 2 : 0)
-                    .animation(.easeOut(duration: 0.5), value: isPulsing)
             )
-            .onChange(of: shouldPulse) { _, newValue in
-                if newValue {
+                    .onChange(of: shouldPulse) { _, newValue in
+            if newValue {
+                // Quick fade-in (0.3 seconds)
+                withAnimation(.easeIn(duration: 0.3)) {
                     isPulsing = true
-                } else {
-                    // Trigger fade-out when shouldPulse becomes false
-                    isPulsing = false
                 }
+                
+                // Slow fade-out after delay (1.7 seconds after fade-in completes)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    withAnimation(.easeOut(duration: 1.7)) {
+                        isPulsing = false
+                    }
+                }
+            } else {
+                isPulsing = false
             }
+        }
             Divider()
         }
     }
