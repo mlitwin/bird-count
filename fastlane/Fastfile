@@ -420,6 +420,42 @@ platform :ios do
     UI.important("Review screenshots and upload to App Store Connect")
   end
 
+  # Generate release notes from git commits since last tag
+  desc "Generate release notes from git commits since last tag"
+  lane :generate_release_notes do
+    # Get the most recent tag
+    latest_tag = sh("git tag -l --sort=-version:refname | head -1", log: false).strip
+    
+    if latest_tag.empty?
+      UI.important("No existing tags found, generating notes from all commits")
+      git_range = "HEAD"
+    else
+      UI.message("Generating release notes since tag: #{latest_tag}")
+      git_range = "#{latest_tag}..HEAD"
+    end
+    
+    # Get commit messages since the last tag
+    commits = sh("git log #{git_range} --oneline --no-merges", log: false).strip
+    
+    if commits.empty?
+      UI.important("No new commits found since #{latest_tag}")
+      release_notes = "No changes since last release."
+    else
+      # Format commits as a bulleted list
+      commit_lines = commits.split("\n").map { |line| "• #{line}" }
+      release_notes = "Changes since #{latest_tag}:\n\n#{commit_lines.join("\n")}"
+    end
+    
+    # Write to fastlane/ReleaseNotes.md
+    release_notes_path = File.expand_path("./ReleaseNotes.md", __dir__)
+    File.write(release_notes_path, release_notes)
+    
+    UI.success("📝 Release notes generated: #{release_notes_path}")
+    UI.message("Content:\n#{release_notes}")
+    
+    release_notes_path
+  end
+
   # Private helper lane for version bumping
   private_lane :bump_version do |options|
     type = options[:type] || "patch"

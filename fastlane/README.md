@@ -103,6 +103,14 @@ Bump major version (e.g., 1.0.0 -> 2.0.0) and build number
 
 Generate screenshots for App Store submission
 
+### ios generate_release_notes
+
+```sh
+[bundle exec] fastlane ios generate_release_notes
+```
+
+Generate release notes from git commits since last tag
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.

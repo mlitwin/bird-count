@@ -22,7 +22,7 @@ help:
 	@echo "  clean         Clean build artifacts and derived data"
 	@echo "  list-dests    Show valid destinations for the scheme (useful for -destination)"
 	@echo "  simulators    List available Booted/Shutdown simulators via simctl"
-	@echo "  prep-alpha    Bump patch version and build number using fastlane (default for backwards compatibility)"
+	@echo "  prep-alpha    Generate release notes and bump patch version using fastlane"
 	@echo "  prep-patch    Bump patch version (x.y.Z) and build number using fastlane"
 	@echo "  prep-minor    Bump minor version (x.Y.0) and build number using fastlane" 
 	@echo "  prep-major    Bump major version (X.0.0) and build number using fastlane"
@@ -96,7 +96,13 @@ fastlane-alpha:
 fastlane-beta:
 	bundle exec fastlane beta
 
-prep-alpha: prep-patch
+prep-alpha:
+	@echo "🗒️ Generating release notes from git history..."
+	bundle exec fastlane generate_release_notes
+	@echo "📝 Release notes generated in fastlane/ReleaseNotes.md"
+	@echo "⬆️ Bumping version numbers..."
+	bundle exec fastlane bump_patch
+	@echo "✅ Alpha preparation complete!"
 
 prep-patch:
 	bundle exec fastlane bump_patch
