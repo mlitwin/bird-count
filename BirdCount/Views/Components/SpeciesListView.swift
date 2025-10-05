@@ -39,7 +39,6 @@ struct SpeciesListView: View {
     
     @State private var showPulseAnimation = false
     @State private var scrolledToID: AnyHashable? = nil
-    @State private var targetScrollID: AnyHashable? = nil
 
     init(taxa: [Taxon], counts: [String:Int] = [:], scrollToBottomSignal: Int = 0, recentlyUpdatedSpeciesId: String? = nil, onSelect: @escaping (Taxon) -> Void) {
         self.taxa = taxa
@@ -64,24 +63,14 @@ struct SpeciesListView: View {
                 }
                 .defaultScrollAnchor(.bottom)
                 .scrollPosition(id: $scrolledToID, anchor: .bottom)
-                .onChange(of: scrollToBottomSignal) { _, _ in
-                        let targetId: AnyHashable = taxa.last?.id ?? "__species_bottom_anchor__"
-                    targetScrollID = targetId
+                .onChange(of: scrollToBottomSignal) { _, newSignal in
+                    let targetId: AnyHashable = taxa.last?.id ?? "__species_bottom_anchor__"
+                    print("📊 SpeciesListView: Scroll signal changed to \(newSignal), targeting \(targetId)")
                     
-                    withAnimation(.easeOut(duration: 0.2)) {
-                        reader.scrollTo(targetId, anchor: .bottom)
-                    }
+                    // Immediate scroll (no animation)
+                    reader.scrollTo(targetId, anchor: .bottom)
                 }
-                .onChange(of: scrolledToID) { _, newID in
-                    // Check if we've reached our target scroll position
-                    if let targetID = targetScrollID, newID == targetID {
-                        // Scroll has completed, wait a bit then fade
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                            showPulseAnimation = false
-                        }
-                        targetScrollID = nil // Clear the target
-                    }
-                }
+                // Removed scroll completion detection - using immediate approach instead
                 // Keep bottom alignment when the data set changes (e.g., clearing filters)
                 .onChange(of: taxa.map { $0.id }) { _, newIds in
                     let targetId: AnyHashable = newIds.last ?? "__species_bottom_anchor__"
@@ -101,8 +90,15 @@ struct SpeciesListView: View {
                 }
                 .onChange(of: recentlyUpdatedSpeciesId) { _, newValue in
                     if newValue != nil {
+                        print("✨ SpeciesListView: Species \(newValue!) updated - starting pulse animation")
                         // Start the pulse animation immediately
                         showPulseAnimation = true
+                        
+                        // Auto-fade after a fixed duration
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                            print("🎭 SpeciesListView: Auto-fading pulse for species \(newValue!)")
+                            showPulseAnimation = false
+                        }
                     }
                 }
             }
