@@ -100,7 +100,10 @@ prep-alpha:
 	@echo "🗒️ Generating release notes from git history..."
 	bundle exec fastlane generate_release_notes
 	@echo "📝 Release notes generated in fastlane/ReleaseNotes.md"
+	@echo "📄 Review the release notes above before proceeding"
 	@echo "⬆️ Bumping version numbers..."
+	git add fastlane/ReleaseNotes.md
+	git commit -m "Update release notes for alpha release"
 	bundle exec fastlane bump_patch
 	@echo "✅ Alpha preparation complete!"
 
