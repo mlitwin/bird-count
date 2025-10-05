@@ -1,5 +1,33 @@
 import SwiftUI
 
+private struct SpeciesListContent: View {
+    let taxa: [Taxon]
+    let counts: [String: Int]
+    let recentlyUpdatedSpeciesId: String?
+    let showPulseAnimation: Bool
+    let onSelect: (Taxon) -> Void
+    let minHeight: CGFloat
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            LazyVStack(spacing: 6) {
+                ForEach(taxa) { taxon in
+                    SpeciesRow(
+                        taxon: taxon,
+                        count: counts[taxon.id] ?? 0,
+                        shouldPulse: recentlyUpdatedSpeciesId == taxon.id && showPulseAnimation,
+                        onSelect: onSelect
+                    )
+                    .id(taxon.id)
+                }
+            }
+            // Fallback anchor when list is empty
+            Color.clear.frame(height: 1).id("__species_bottom_anchor__")
+        }
+        .frame(minHeight: minHeight, alignment: .bottom)
+    }
+}
+
 struct SpeciesListView: View {
     let taxa: [Taxon]
     let counts: [String:Int]
@@ -25,22 +53,14 @@ struct SpeciesListView: View {
         GeometryReader { proxy in
             ScrollViewReader { reader in
                 ScrollView {
-                    VStack(spacing: 0) {
-                        LazyVStack(spacing: 6) {
-                            ForEach(taxa) { taxon in
-                                SpeciesRow(
-                                    taxon: taxon,
-                                    count: counts[taxon.id] ?? 0,
-                                    shouldPulse: recentlyUpdatedSpeciesId == taxon.id && showPulseAnimation,
-                                    onSelect: onSelect
-                                )
-                                .id(taxon.id)
-                            }
-                        }
-                        // Fallback anchor when list is empty
-                        Color.clear.frame(height: 1).id("__species_bottom_anchor__")
-                    }
-                    .frame(minHeight: proxy.size.height, alignment: .bottom)
+                    SpeciesListContent(
+                        taxa: taxa,
+                        counts: counts,
+                        recentlyUpdatedSpeciesId: recentlyUpdatedSpeciesId,
+                        showPulseAnimation: showPulseAnimation,
+                        onSelect: onSelect,
+                        minHeight: proxy.size.height
+                    )
                 }
                 .defaultScrollAnchor(.bottom)
                 .scrollPosition(id: $scrolledToID, anchor: .bottom)
