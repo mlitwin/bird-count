@@ -32,7 +32,7 @@ struct ObservationDetailsSheet: View {
                     Divider()
                     
                     // Location Information
-                    LocationDetailsSection(record: currentRecord)
+                    LocationDetailsSection(record: currentRecord, onSearchStateChanged: nil)
                     
                     Divider()
                     
@@ -179,47 +179,6 @@ private struct ObservationDetailsSection: View {
             return .orange
         case .completed:
             return .green
-        }
-    }
-}
-
-private struct LocationDetailsSection: View {
-    let record: ObservationRecord
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Location")
-                .font(.headline)
-                .fontWeight(.semibold)
-            
-            if let location = record.location, location.isValid {
-                // Map View
-                LocationMapView(location: location)
-                    .frame(height: 200)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3), lineWidth: 1))
-                
-                // Location Details
-                VStack(alignment: .leading, spacing: 8) {
-                    DetailRow(label: "Name", value: location.displayName)
-                    DetailRow(label: "Coordinates", value: location.formattedCoordinates())
-                    DetailRow(label: "Accuracy", value: "\(location.accuracyDescription) (±\(Int(location.horizontalAccuracy))m)")
-                    
-                    if let altitude = location.altitude {
-                        DetailRow(label: "Altitude", value: "\(Int(altitude))m")
-                    }
-                    
-                    DetailRow(label: "Recorded", value: location.timestamp.formatted(date: .omitted, time: .standard))
-                    
-                    if let notes = location.notes, !notes.isEmpty {
-                        DetailRow(label: "Notes", value: notes)
-                    }
-                }
-            } else {
-                Text("No location data available")
-                    .foregroundStyle(.secondary)
-                    .italic()
-            }
         }
     }
 }

@@ -245,6 +245,16 @@ enum Strings {
         static let settingsPrompt = LocalizedString("location.settings.prompt")
         static let settingsButton = LocalizedString("location.settings.button")
         
+        enum Edit {
+            static let searchPlaceholder = LocalizedString("location.edit.search.placeholder")
+            static let recent = LocalizedString("location.edit.recent")
+            static let clearField = LocalizedString("location.edit.clear.field")
+            static let searching = LocalizedString("location.edit.searching")
+            static let cancel = LocalizedString("location.edit.cancel")
+            static let accept = LocalizedString("location.edit.accept")
+            static let noResults = LocalizedString("location.edit.no.results")
+        }
+        
         enum Accuracy {
             static let excellent = LocalizedString("location.accuracy.excellent")
             static let good = LocalizedString("location.accuracy.good")

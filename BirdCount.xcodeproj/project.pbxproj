@@ -490,8 +490,6 @@
 				222E9243F8C6B7A39AAAAA95 /* PBXTargetDependency */,
 			);
 			name = BirdCountTests;
-			packageProductDependencies = (
-			);
 			productName = BirdCountTests;
 			productReference = E88A4BACD0DF593F50C9EF1D /* BirdCountTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -510,8 +508,6 @@
 				B68B5EE51C92B0E96596F4A4 /* PBXTargetDependency */,
 			);
 			name = BirdCountCoreTests;
-			packageProductDependencies = (
-			);
 			productName = BirdCountCoreTests;
 			productReference = 041EE40F67A670AB0EA1B053 /* BirdCountCoreTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -528,8 +524,6 @@
 				0E9F8B6BE50E36CC61238DC8 /* PBXTargetDependency */,
 			);
 			name = BirdCountUITests;
-			packageProductDependencies = (
-			);
 			productName = BirdCountUITests;
 			productReference = AF39092AD53E0B711EC8E2B3 /* BirdCountUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -545,8 +539,6 @@
 			dependencies = (
 			);
 			name = BirdCountCore;
-			packageProductDependencies = (
-			);
 			productName = BirdCountCore;
 			productReference = 490E29F6D3D7AA78458944AC /* BirdCountCore.framework */;
 			productType = "com.apple.product-type.framework";
@@ -563,8 +555,6 @@
 			dependencies = (
 			);
 			name = BirdCount;
-			packageProductDependencies = (
-			);
 			productName = BirdCount;
 			productReference = 4186A73E1CCA966174627C23 /* BirdCount.app */;
 			productType = "com.apple.product-type.application";
@@ -602,6 +592,7 @@
 			mainGroup = 24611EC614CC6D7A1864CA29;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
+			productRefGroup = 593A6844D89FD614BB1D61E8 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -784,7 +775,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*][configuration=ad-hoc]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Automatic;
-				"CODE_SIGN_STYLE[sdk=iphoneos*][configuration=ad-hoc]" = Manual;
+				"CODE_SIGN_STYLE[sdk=iphoneos*][configuration=ad-hoc]" = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 352K435X8J;
 				INFOPLIST_FILE = BirdCount/BirdCount/Info.plist;
@@ -806,6 +797,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 352K435X8J;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -827,6 +819,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 352K435X8J;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -859,8 +852,10 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 352K435X8J;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -999,6 +994,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 352K435X8J;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1020,6 +1016,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 352K435X8J;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1041,6 +1038,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 352K435X8J;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1062,8 +1060,10 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 352K435X8J;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1081,8 +1081,10 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 352K435X8J;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1099,10 +1101,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 46;
 				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 352K435X8J;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 46;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -1123,10 +1127,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 46;
 				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 352K435X8J;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 46;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -1150,7 +1156,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*][configuration=ad-hoc]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Automatic;
-				"CODE_SIGN_STYLE[sdk=iphoneos*][configuration=ad-hoc]" = Manual;
+				"CODE_SIGN_STYLE[sdk=iphoneos*][configuration=ad-hoc]" = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 352K435X8J;
 				INFOPLIST_FILE = BirdCount/BirdCount/Info.plist;
@@ -1172,6 +1178,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 352K435X8J;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1192,10 +1199,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 46;
 				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 352K435X8J;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 46;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -1219,7 +1228,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*][configuration=ad-hoc]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Automatic;
-				"CODE_SIGN_STYLE[sdk=iphoneos*][configuration=ad-hoc]" = Manual;
+				"CODE_SIGN_STYLE[sdk=iphoneos*][configuration=ad-hoc]" = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 352K435X8J;
 				INFOPLIST_FILE = BirdCount/BirdCount/Info.plist;

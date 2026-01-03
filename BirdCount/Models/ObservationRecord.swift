@@ -26,7 +26,10 @@ public struct ObservationRecord: Identifiable, Codable, Equatable {
         return count + children.reduce(0) { $0 + $1.totalCount }
     }
     
-    public var location: ObservationLocation? { data.location }
+    public var location: ObservationLocation? {
+        get { data.location }
+        set { data.location = newValue }
+    }
     public var observer: String { data.observer }
     public var status: ObservationStatus {
         get { data.status }

@@ -50,6 +50,14 @@ import Observation
         touchRecent(taxonId)
     }
     
+    public func updateLocation(for id: UUID, location: ObservationLocation) {
+        if let index = observations.firstIndex(where: { $0.id == id }) {
+            var record = observations[index]
+            record.location = location
+            observations[index] = record
+        }
+    }
+    
     /// Import multiple observations at once (used by sync operations)
     public func importObservations(_ records: [ObservationRecord]) {
         observations.append(contentsOf: records)

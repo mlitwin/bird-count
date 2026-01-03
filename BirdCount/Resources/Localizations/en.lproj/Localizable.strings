@@ -189,3 +189,12 @@
 "location.error.recovery.enable.services" = "Enable Location Services in Settings";
 "location.error.recovery.grant.permission" = "Grant location permission in Settings";
 "location.error.recovery.try.again" = "Try again later";
+
+// MARK: - Location Edit
+"location.edit.search.placeholder" = "Search for a location";
+"location.edit.recent" = "Recent Locations";
+"location.edit.clear.field" = "Clear search field";
+"location.edit.searching" = "Searching...";
+"location.edit.cancel" = "Cancel";
+"location.edit.no.results" = "No results found";
+"location.edit.accept" = "Use this location";
