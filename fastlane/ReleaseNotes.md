@@ -1,5 +1,6 @@
 Changes since v1.0.12-45:
 
+• 07f8801 Update release notes for alpha release
 • fb8b9f6 fastlane update
 • beb36f9 Update release notes for alpha release
 • f55f7db Update release notes for alpha release
