@@ -38,6 +38,7 @@
 		50E6FE2FF48EEC8A338ABD21 /* ObservationLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF2F46315BDAC6BEDF1AA1C /* ObservationLocation.swift */; };
 		50EE06DA5183920B0950A212 /* Taxon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74ADC22819086097B12402BC /* Taxon.swift */; };
 		523C39EC6322BD2B9D47FA9C /* PayloadV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65AC4B6E1A3FAEA5DB80436 /* PayloadV1.swift */; };
+		53EA81BC7187990974647CFA /* LocationDetailsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D13E17FBFFCB94E03FB1A7C0 /* LocationDetailsSection.swift */; };
 		53F58B3E96FF062E75BC2628 /* ObservationJSONImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB12E82781CB9796FB9325C9 /* ObservationJSONImportService.swift */; };
 		5B1AA8C7255E0927571DA061 /* DateRangeStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130ECD8284C28523033750CE /* DateRangeStoreTests.swift */; };
 		5B4143CF290C1B88ED929590 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3DA21F8B7A04FA9A2B01542 /* HomeView.swift */; };
@@ -194,6 +195,7 @@
 		CEA5730A98F05F30514E60A1 /* CommonnessRangeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonnessRangeView.swift; sourceTree = "<group>"; };
 		CED96AA768B26BFF2333C6D5 /* LeftDrawerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftDrawerView.swift; sourceTree = "<group>"; };
 		D126F22854D45BBBEFC25C7F /* Strings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Strings.swift; sourceTree = "<group>"; };
+		D13E17FBFFCB94E03FB1A7C0 /* LocationDetailsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationDetailsSection.swift; sourceTree = "<group>"; };
 		D33D33A059C7E1BBC989BE48 /* ImportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportSheet.swift; sourceTree = "<group>"; };
 		DADA4B0CCFCE53D3C7F061C8 /* DateRange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateRange.swift; sourceTree = "<group>"; };
 		E1AE8BBD3313453070C1CF58 /* ShareActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareActivityView.swift; sourceTree = "<group>"; };
@@ -265,6 +267,7 @@
 				2D7AE2C3B7717C8EA9B78229 /* HeaderSpacingView.swift */,
 				D33D33A059C7E1BBC989BE48 /* ImportSheet.swift */,
 				CED96AA768B26BFF2333C6D5 /* LeftDrawerView.swift */,
+				D13E17FBFFCB94E03FB1A7C0 /* LocationDetailsSection.swift */,
 				CCCBE3E988878FA83F955105 /* NumericPad.swift */,
 				FBCE0B9078509DFFC117339F /* ObservationRecordView.swift */,
 				965E0236AD7C27566CDA7512 /* ObservationsSelectorView.swift */,
@@ -662,6 +665,7 @@
 				5B4143CF290C1B88ED929590 /* HomeView.swift in Sources */,
 				1FFDBC736FF0463C6A8BF74E /* ImportSheet.swift in Sources */,
 				B5D190E8062082C0AB7AFD7B /* LeftDrawerView.swift in Sources */,
+				53EA81BC7187990974647CFA /* LocationDetailsSection.swift in Sources */,
 				96073CB1F7877A63206DE6D6 /* LocationManager.swift in Sources */,
 				7803ACA26233782463A7568B /* MockSyncTransport.swift in Sources */,
 				2599DEF5D927CA3279EC427C /* NetworkSyncTransport.swift in Sources */,
