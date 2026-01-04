@@ -175,9 +175,12 @@ struct LocationDetailsSection: View {
                 
             } else if !showSearchResults {
                 // Read-only view - only show when not searching
-                if let location = record.location, location.isValid {
+                // Use the latest record from the observation store so the view reflects recent updates
+                let currentRecord = observationStore.findRecord(by: record.id) ?? record
+                if let location = currentRecord.location, location.isValid {
                     // Map View
                     LocationMapView(location: location)
+                        .id("loc-\(location.latitude)-\(location.longitude)-\(Int(location.timestamp.timeIntervalSince1970))")
                         .frame(height: 200)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3), lineWidth: 1))
@@ -186,7 +189,7 @@ struct LocationDetailsSection: View {
                     VStack(alignment: .leading, spacing: 8) {
                         DetailRow(label: "Name", value: location.displayName)
                         DetailRow(label: "Coordinates", value: location.formattedCoordinates())
-                        DetailRow(label: "Accuracy", value: "\(location.accuracyDescription) (±\(Int(location.horizontalAccuracy))m)")
+                        DetailRow(label: "Accuracy", value: "\(location.accuracyDescription) (±\(Int(location.horizontalAccuracy)))m")
                         
                         if let altitude = location.altitude {
                             DetailRow(label: "Altitude", value: "\(Int(altitude))m")
@@ -601,6 +604,9 @@ private struct LocationMapView: View {
         }
         .mapStyle(.standard)
         .mapControlVisibility(.hidden) // Hide default controls for cleaner look in details view
+        .onChange(of: location) { _, _ in
+            updateCameraPosition()
+        }
     }
     
     private var coordinate: CLLocationCoordinate2D {
@@ -608,6 +614,23 @@ private struct LocationMapView: View {
             latitude: location.latitude,
             longitude: location.longitude
         )
+    }
+    
+    private func updateCameraPosition() {
+        // Compute appropriate span based on accuracy
+        let span: MKCoordinateSpan
+        if location.horizontalAccuracy <= 50 {
+            span = MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+        } else if location.horizontalAccuracy <= 200 {
+            span = MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
+        } else {
+            span = MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+        }
+        
+        let region = MKCoordinateRegion(center: coordinate, span: span)
+        withAnimation(.easeInOut(duration: 0.6)) {
+            cameraPosition = .region(region)
+        }
     }
 }
 
@@ -626,7 +649,7 @@ private struct EditableLocationMapView: View {
                     }
                     .tag("current-location") // Add tag to help with updates
                     
-                    // Accuracy circle if accuracy is reasonable to show  
+                    // Accuracy circle if accuracy is reasonable to show
                     if location.horizontalAccuracy > 0 && location.horizontalAccuracy <= 1000 {
                         MapCircle(center: currentCoordinate, radius: location.horizontalAccuracy)
                             .foregroundStyle(.blue.opacity(0.2))
@@ -640,11 +663,14 @@ private struct EditableLocationMapView: View {
                 handleMapTap(at: screenCoordinate, with: reader)
             }
         }
-        .onChange(of: location?.latitude) { _, _ in
-            // Force map to update when location changes
-        }
-        .onChange(of: location?.longitude) { _, _ in
-            // Force map to update when location changes
+        .onChange(of: location) { newLocation, _ in
+            // Update binding when location changes
+            if let newLocation = newLocation {
+                cameraPosition = .region(MKCoordinateRegion(
+                    center: CLLocationCoordinate2D(latitude: newLocation.latitude, longitude: newLocation.longitude),
+                    span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+                ))
+            }
         }
     }
     
