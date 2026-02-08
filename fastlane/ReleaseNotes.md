@@ -1,9 +1,7 @@
-Changes since v1.0.12-45:
+Changes since v1.0.13-46:
 
-• 07f8801 Update release notes for alpha release
-• fb8b9f6 fastlane update
-• beb36f9 Update release notes for alpha release
-• f55f7db Update release notes for alpha release
-• 4ad2ece Update release notes for alpha release
-• dcf581e missing file
-• 97018c6 build
+• acb8a0a verbiage on export
+• 3235406 scroll flash white bug
+• fe4fe94 cleanup agents.md
+• 53e53c6 cleanups get ready
+• b53a17d build
