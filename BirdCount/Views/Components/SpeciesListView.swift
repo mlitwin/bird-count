@@ -69,13 +69,17 @@ struct SpeciesListView: View {
                     reader.scrollTo(targetId, anchor: .bottom)
                 }
                 // Keep bottom alignment when the data set changes (e.g., filtering)
-                // Update the scroll position binding synchronously to avoid blank flash during rapid typing
+                // Use immediate scrollTo (no async, no animation) to avoid blank flash during rapid typing
                 .onChange(of: taxa.map { $0.id }) { _, newIds in
-                    scrolledToID = newIds.last ?? "__species_bottom_anchor__"
+                    let targetId: AnyHashable = newIds.last ?? "__species_bottom_anchor__"
+                    scrolledToID = targetId
+                    reader.scrollTo(targetId, anchor: .bottom)
                 }
                 .onAppear {
-                    // Ensure initial positioning at bottom via the scroll position binding
-                    scrolledToID = taxa.last?.id ?? "__species_bottom_anchor__"
+                    // Ensure initial positioning at bottom
+                    let targetId: AnyHashable = taxa.last?.id ?? "__species_bottom_anchor__"
+                    scrolledToID = targetId
+                    reader.scrollTo(targetId, anchor: .bottom)
                 }
                 .onChange(of: recentlyUpdatedSpeciesId) { _, newValue in
                     if newValue != nil {
