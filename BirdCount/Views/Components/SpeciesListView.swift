@@ -68,23 +68,14 @@ struct SpeciesListView: View {
                     // Immediate scroll (no animation)
                     reader.scrollTo(targetId, anchor: .bottom)
                 }
-                // Removed scroll completion detection - using immediate approach instead
-                // Keep bottom alignment when the data set changes (e.g., clearing filters)
+                // Keep bottom alignment when the data set changes (e.g., filtering)
+                // Update the scroll position binding synchronously to avoid blank flash during rapid typing
                 .onChange(of: taxa.map { $0.id }) { _, newIds in
-                    let targetId: AnyHashable = newIds.last ?? "__species_bottom_anchor__"
-                    // Defer until after layout to ensure the last row exists
-                    DispatchQueue.main.async {
-                        withAnimation(.easeOut(duration: 0.5)) {
-                            reader.scrollTo(targetId, anchor: .bottom)
-                        }
-                    }
+                    scrolledToID = newIds.last ?? "__species_bottom_anchor__"
                 }
                 .onAppear {
-                    // Ensure initial positioning at bottom
-                    DispatchQueue.main.async {
-                        let targetId: AnyHashable = taxa.last?.id ?? "__species_bottom_anchor__"
-                        reader.scrollTo(targetId, anchor: .bottom)
-                    }
+                    // Ensure initial positioning at bottom via the scroll position binding
+                    scrolledToID = taxa.last?.id ?? "__species_bottom_anchor__"
                 }
                 .onChange(of: recentlyUpdatedSpeciesId) { _, newValue in
                     if newValue != nil {
