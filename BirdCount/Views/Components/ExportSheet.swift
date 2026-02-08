@@ -106,10 +106,64 @@ struct ExportSheet: View {
         return (range.begin, range.end)
     }
 
+    /// Returns a display string for the active date range, with first letter lowercased for presets
+    private var rangeSummaryForExport: String {
+        let preset = dateRangeStore.dateRangePreset
+        let startDate = dateRangeStore.dateRange.begin
+        let endDate = dateRangeStore.dateRange.end
+
+        // For presets, return the preset name with first letter lowercased
+        switch preset {
+        case .all:
+            return Strings.DateRange.allTime.string.lowercasingFirst
+        case .today:
+            return Strings.DateRange.today.string.lowercasingFirst
+        case .lastHour, .last7Days:
+            return preset.rawValue.lowercased()
+        case .custom:
+            break
+        }
+
+        // Custom range: format the date range
+        let cal = Calendar.current
+        let sameDay = cal.isDate(startDate, inSameDayAs: endDate)
+
+        // Check if this is a complete day (starts at midnight, ends at midnight next day)
+        let isCompleteDay = cal.isDate(startDate, equalTo: cal.startOfDay(for: startDate), toGranularity: .second) &&
+                           cal.isDate(endDate, equalTo: cal.startOfDay(for: endDate), toGranularity: .second) &&
+                           cal.dateInterval(of: .day, for: startDate)?.end == endDate
+
+        if isCompleteDay {
+            return ExportFormatters.mdy.string(from: startDate)
+        }
+
+        let sameYear = cal.component(.year, from: startDate) == cal.component(.year, from: endDate)
+        let sameMonth = sameYear && cal.component(.month, from: startDate) == cal.component(.month, from: endDate)
+
+        let startHM = ExportFormatters.hm.string(from: startDate)
+        let endHM = ExportFormatters.hm.string(from: endDate)
+
+        if sameDay {
+            return "\(ExportFormatters.mdy.string(from: startDate)) \(startHM) – \(endHM)"
+        } else if sameMonth {
+            let startMD = ExportFormatters.md.string(from: startDate)
+            let endD = String(cal.component(.day, from: endDate))
+            return "\(startMD) \(startHM) – \(endD) \(endHM)"
+        } else if sameYear {
+            let startMD = ExportFormatters.md.string(from: startDate)
+            let endMD = ExportFormatters.md.string(from: endDate)
+            return "\(startMD) \(startHM) – \(endMD) \(endHM)"
+        } else {
+            let startMDY = ExportFormatters.mdy.string(from: startDate)
+            let endMDY = ExportFormatters.mdy.string(from: endDate)
+            return "\(startMDY) \(startHM) – \(endMDY) \(endHM)"
+        }
+    }
+
     private func exportText(includeCounts: Bool = false) -> String {
         let species = speciesInRange
         var lines: [String] = []
-        lines.append("\(Strings.Species.observed.string): \(species.count)")
+        lines.append("\(species.count) \(Strings.Species.species.string) \(rangeSummaryForExport)")
         if includeCounts {
             lines.append("\(Strings.Species.individuals.string): \(species.reduce(0) { $0 + $1.count })")
         }
@@ -201,24 +255,34 @@ struct ExportSheet: View {
         }
     }
     
+    private var exportSubject: String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .long
+        dateFormatter.timeStyle = .none
+        let dateString = dateFormatter.string(from: Date())
+        return String(format: Strings.Export.subject.string, dateString)
+    }
+
     private func shareItems(format: ExportFormat, includeCounts: Bool = false) -> [Any] {
         let content = exportContent(format: format, includeCounts: includeCounts)
-        
+        let subject = exportSubject
+
         switch format {
         case .summary:
-            // For summary text, use simple string sharing
-            return [content]
+            // For summary text, use TextShareItem to support subject line (e.g., email)
+            return [TextShareItem(content: content, subject: subject)]
         case .json:
             // For JSON, create a temporary file with proper .json extension
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
             let dateString = dateFormatter.string(from: Date())
             let filename = "bird-observations-\(dateString).json"
-            
+
             return [TemporaryFileItem(
                 content: content,
                 filename: filename,
-                utType: .json
+                utType: .json,
+                subject: subject
             )]
         }
     }
@@ -230,6 +294,36 @@ struct ExportSheet: View {
         case .json:
             return exportJSON()
         }
+    }
+}
+
+// MARK: - Date Formatters for Export
+
+private enum ExportFormatters {
+    static let hm: DateFormatter = {
+        let df = DateFormatter()
+        df.timeStyle = .short
+        df.dateStyle = .none
+        return df
+    }()
+    static let md: DateFormatter = {
+        let df = DateFormatter()
+        df.setLocalizedDateFormatFromTemplate("MMMd")
+        return df
+    }()
+    static let mdy: DateFormatter = {
+        let df = DateFormatter()
+        df.setLocalizedDateFormatFromTemplate("MMMdyyyy")
+        return df
+    }()
+}
+
+// MARK: - String Extension for Lowercasing First Character
+
+private extension String {
+    var lowercasingFirst: String {
+        guard let first = self.first else { return self }
+        return first.lowercased() + self.dropFirst()
     }
 }
 

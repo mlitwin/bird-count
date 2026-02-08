@@ -1,4 +1,4 @@
-import Foundation
+ import Foundation
 
 /// Available export formats for observation data
 enum ExportFormat: String, CaseIterable, Identifiable {

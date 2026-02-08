@@ -144,6 +144,7 @@ enum Strings {
         static let format = LocalizedString("export.format")
         static let formatSummary = LocalizedString("export.format.summary")
         static let formatJSON = LocalizedString("export.format.json")
+        static let subject = LocalizedString("export.subject")
     }
     
     // MARK: - Import

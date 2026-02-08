@@ -87,6 +87,7 @@
 "export.format" = "Export Format";
 "export.format.summary" = "Summary Report";
 "export.format.json" = "JSON Data";
+"export.subject" = "Birds %@";
 
 // MARK: - Import
 "import.import" = "Import";
