@@ -1,4 +1,3 @@
-Changes since v1.0.14-47:
+Changes since v1.0.15-48:
 
-• 4c30aa9 fix scrolling regression
-• d8f6741 Update release notes for alpha release
+• b0d96bc build
