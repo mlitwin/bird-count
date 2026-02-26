@@ -26,6 +26,95 @@ struct TaxonomyStoreTests {
         #expect(ids == ["c0", "c1", "c3", "unk"]) // rare → scarce → common → unknown
     }
 
+    // MARK: - Proximate bucket (bucket C)
+
+    @Test
+    func searchPutsProximateSpeciesBetweenBuckets() throws {
+        // Verifies bucket order: B (non-recent, non-proximate) → C (proximate) → A (in-range)
+        // "proximate" is rare (commonness 0) — in bucket B alone it would sort above "nonRecent"
+        // (commonness 3), but bucket C membership overrides commonness ordering.
+        let now = Date()
+        let taxa = [
+            Taxon(id: "nonRecent", commonName: "Non Recent", scientificName: "Vetus absentus", order: 1, rank: "species", commonness: 3),
+            Taxon(id: "proximate", commonName: "Proximate", scientificName: "Proximus localis", order: 2, rank: "species", commonness: 0),
+            Taxon(id: "recent", commonName: "Recent", scientificName: "Recens activus", order: 3, rank: "species", commonness: 0)
+        ]
+        let taxStore = TaxonomyStore(); taxStore.loadPreview(species: taxa)
+        let obsStore = ObservationStore(testing: true); obsStore.clearAll()
+
+        // "recent" falls within the 2-hour active date range
+        obsStore.addObservation("recent", begin: now.addingTimeInterval(-30 * 60), end: now.addingTimeInterval(-30 * 60), count: 1)
+
+        // "proximate" is 3 days ago (outside 2h range, inside 14-day window) with a location
+        let loc = ObservationLocation(latitude: 37.7749, longitude: -122.4194)
+        let threeDaysAgo = now.addingTimeInterval(-3 * 24 * 3600)
+        obsStore.addObservation("proximate", begin: threeDaysAgo, end: threeDaysAgo, count: 1, location: loc)
+
+        // "nonRecent" is 20 days ago — outside the 14-day proximate window entirely
+        let twentyDaysAgo = now.addingTimeInterval(-20 * 24 * 3600)
+        obsStore.addObservation("nonRecent", begin: twentyDaysAgo, end: twentyDaysAgo, count: 1)
+
+        ObservationStoreProxy.shared.register(obsStore)
+        let dateRange = DateRange(begin: now.addingTimeInterval(-2 * 3600), end: now)
+        let ids = taxStore.search("", dateRange: dateRange).map { $0.id }
+        #expect(ids == ["nonRecent", "proximate", "recent"])
+    }
+
+    @Test
+    func searchNoLocationRecordIsNotProximate() throws {
+        // A record within the 14-day window but with no location must NOT enter bucket C.
+        let now = Date()
+        let taxa = [
+            Taxon(id: "noLoc", commonName: "No Location", scientificName: "Absens locus", order: 1, rank: "species", commonness: 3),
+            Taxon(id: "hasLoc", commonName: "Has Location", scientificName: "Praesens locus", order: 2, rank: "species", commonness: 0)
+        ]
+        let taxStore = TaxonomyStore(); taxStore.loadPreview(species: taxa)
+        let obsStore = ObservationStore(testing: true); obsStore.clearAll()
+
+        let threeDaysAgo = now.addingTimeInterval(-3 * 24 * 3600)
+        let loc = ObservationLocation(latitude: 37.7749, longitude: -122.4194)
+        // noLoc: within window, no location → should stay in bucket B
+        obsStore.addObservation("noLoc", begin: threeDaysAgo, end: threeDaysAgo, count: 1)
+        // hasLoc: within window, with location → should enter bucket C
+        obsStore.addObservation("hasLoc", begin: threeDaysAgo.addingTimeInterval(-3600), end: threeDaysAgo.addingTimeInterval(-3600), count: 1, location: loc)
+
+        ObservationStoreProxy.shared.register(obsStore)
+        let dateRange = DateRange(begin: now.addingTimeInterval(-3600), end: now)
+        let ids = taxStore.search("", dateRange: dateRange).map { $0.id }
+        // noLoc stays in bucket B (commonness 3 → bottom of B), hasLoc in bucket C
+        #expect(ids == ["noLoc", "hasLoc"])
+    }
+
+    @Test
+    func searchSortsProximateByFrequencyThenDate() throws {
+        // Within bucket C, sort is: lower frequency first, then older date first.
+        // freq1 (1 entry), freq2 (2 entries), freq3 (3 entries) → ascending frequency at bottom.
+        let now = Date()
+        let taxa = [
+            Taxon(id: "freq1", commonName: "Freq 1", scientificName: "Unicus semel", order: 1, rank: "species", commonness: 3),
+            Taxon(id: "freq3", commonName: "Freq 3", scientificName: "Tertius ter", order: 2, rank: "species", commonness: 3),
+            Taxon(id: "freq2", commonName: "Freq 2", scientificName: "Secundus bis", order: 3, rank: "species", commonness: 3)
+        ]
+        let taxStore = TaxonomyStore(); taxStore.loadPreview(species: taxa)
+        let obsStore = ObservationStore(testing: true); obsStore.clearAll()
+
+        let loc = ObservationLocation(latitude: 37.7749, longitude: -122.4194)
+        let base = now.addingTimeInterval(-5 * 24 * 3600) // 5 days ago, inside 14-day window
+
+        obsStore.addObservation("freq1", begin: base, end: base, count: 1, location: loc)
+        obsStore.addObservation("freq2", begin: base, end: base, count: 1, location: loc)
+        obsStore.addObservation("freq2", begin: base.addingTimeInterval(3600), end: base.addingTimeInterval(3600), count: 1, location: loc)
+        obsStore.addObservation("freq3", begin: base, end: base, count: 1, location: loc)
+        obsStore.addObservation("freq3", begin: base.addingTimeInterval(3600), end: base.addingTimeInterval(3600), count: 1, location: loc)
+        obsStore.addObservation("freq3", begin: base.addingTimeInterval(7200), end: base.addingTimeInterval(7200), count: 1, location: loc)
+
+        ObservationStoreProxy.shared.register(obsStore)
+        // Active range covers only the last hour — all observations fall outside it (bucket C candidates)
+        let dateRange = DateRange(begin: now.addingTimeInterval(-3600), end: now)
+        let ids = taxStore.search("", dateRange: dateRange).map { $0.id }
+        #expect(ids == ["freq1", "freq2", "freq3"])
+    }
+
     @Test
     func searchPutsRecentSpeciesAtBottom() throws {
         let now = Date()

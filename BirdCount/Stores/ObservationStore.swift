@@ -110,6 +110,22 @@ import Observation
         }
     }
 
+    /// Return a flat list of all records (top-level and children) whose end date falls within
+    /// [cutoff, rangeEnd] and whose individual count > 0.
+    func observationsInWindow(from cutoff: Date, to rangeEnd: Date) -> [ObservationRecord] {
+        var result: [ObservationRecord] = []
+        func collect(_ records: [ObservationRecord]) {
+            for record in records {
+                if record.count > 0 && record.end >= cutoff && record.end <= rangeEnd {
+                    result.append(record)
+                }
+                collect(record.children)
+            }
+        }
+        collect(observations)
+        return result
+    }
+
     /// Find an observation record by UUID, searching recursively through children.
     public func findRecord(by id: UUID) -> ObservationRecord? {
         func search(in array: [ObservationRecord]) -> ObservationRecord? {
@@ -333,18 +349,17 @@ import Observation
     }
 }
 
-// MARK: - Lightweight proxy to expose last-observed snapshot without coupling stores
+// MARK: - Lightweight proxy to expose observation data without coupling stores
 final class ObservationStoreProxy {
     static let shared = ObservationStoreProxy()
     private weak var store: ObservationStore?
     func register(_ store: ObservationStore) { self.store = store }
-    func lastDatesSnapshot() -> [String:Date] { store?.cacheSnapshotLastObserved() ?? [:] }
     func observationsInRange(_ range: DateRange) -> [ObservationRecord] { store?.observationsInRange(range) ?? [] }
+    func observationsInWindow(from cutoff: Date, to rangeEnd: Date) -> [ObservationRecord] {
+        store?.observationsInWindow(from: cutoff, to: rangeEnd) ?? []
+    }
 }
 
-private extension ObservationStore {
-    func cacheSnapshotLastObserved() -> [String:Date] { cache.lastObservedAt }
-}
 
 #if DEBUG
 extension ObservationStore {

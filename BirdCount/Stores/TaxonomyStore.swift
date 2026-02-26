@@ -154,37 +154,65 @@ import Observation
             return latestDates
         }()
         
-        // Fallback to global last dates for non-recent species
-        let globalLastDates: [String:Date]? = {
-            let snapshot = ObservationStoreProxy.shared.lastDatesSnapshot()
-            return snapshot.isEmpty ? nil : snapshot
-        }()
-        
+        // Compute proximate context: species observed within 14 days of dateRange.end,
+        // at locations within 32 km of the most recent located observation in that window.
+        let proximateWindowSeconds: TimeInterval = 14 * 24 * 3600
+        let proximateMaxDistanceMeters: Double = 32_187 // ~20 miles
+        let windowCutoff = effectiveDateRange.end.addingTimeInterval(-proximateWindowSeconds)
+        let windowRecords = ObservationStoreProxy.shared.observationsInWindow(from: windowCutoff, to: effectiveDateRange.end)
 
-        
-        return filtered.sorted { compareTaxa($0, $1, globalLastDates: globalLastDates, recentTaxonIds: recentTaxonIds, lastDatesInRange: lastDatesInRange) }
+        // Proximate anchor: location of the most recent located record in the window
+        let proximateAnchor: ObservationLocation? = windowRecords
+            .filter { $0.location != nil }
+            .max(by: { $0.end < $1.end })?.location
+
+        var proximateTaxonIds: Set<String> = []
+        var proximateFrequency: [String: Int] = [:]
+        var lastProximateDates: [String: Date] = [:]
+        if let anchor = proximateAnchor {
+            for record in windowRecords {
+                guard let loc = record.location else { continue }
+                guard loc.distance(to: anchor) <= proximateMaxDistanceMeters else { continue }
+                guard !recentTaxonIds.contains(record.taxonId) else { continue }
+                proximateTaxonIds.insert(record.taxonId)
+                proximateFrequency[record.taxonId, default: 0] += 1
+                let current = lastProximateDates[record.taxonId] ?? .distantPast
+                if record.end > current { lastProximateDates[record.taxonId] = record.end }
+            }
+        }
+
+        return filtered.sorted { compareTaxa($0, $1, recentTaxonIds: recentTaxonIds, lastDatesInRange: lastDatesInRange, proximateTaxonIds: proximateTaxonIds, proximateFrequency: proximateFrequency, lastProximateDates: lastProximateDates) }
     }
 }
 
 private extension TaxonomyStore {
     /// Comparison used for species sorting in search results.
-    /// - Rules:
-    ///   1. Species seen within the current date range go to the bottom; within this bucket order older→newer.
-    ///   2. Others: order by commonness ascending; then taxonomy order; then name.
-    func compareTaxa(_ a: Taxon, _ b: Taxon, globalLastDates: [String:Date]?, recentTaxonIds: Set<String>, lastDatesInRange: [String:Date]) -> Bool {
-        // Check if species was observed within the current date range
+    /// - Bucket A (bottom): observed within the active date range, ordered older→newer.
+    /// - Bucket C (middle): proximate — observed within 14 days of dateRange.end and within
+    ///   32 km of the proximate anchor, ordered by frequency ascending (most frequent at bottom),
+    ///   tie-broken by last proximate date older→newer.
+    /// - Bucket B (top): everything else, ordered by commonness ascending then taxonomy then name.
+    func compareTaxa(_ a: Taxon, _ b: Taxon, recentTaxonIds: Set<String>, lastDatesInRange: [String:Date], proximateTaxonIds: Set<String>, proximateFrequency: [String:Int], lastProximateDates: [String:Date]) -> Bool {
         let ra = recentTaxonIds.contains(a.id)
         let rb = recentTaxonIds.contains(b.id)
-        
-        // Recent species go to bottom; within recent bucket order by date older→newer
-        if ra != rb { return !ra && rb } // non-recent first; recent to bottom
-        if ra && rb {
-            let da = lastDatesInRange[a.id]
-            let db = lastDatesInRange[b.id]
-            return compareByLastObservedDate(dateA: da, dateB: db)
+
+        // Bucket A: recent species go to bottom, ordered older→newer within bucket
+        if ra != rb { return !ra && rb }
+        if ra && rb { return compareByLastObservedDate(dateA: lastDatesInRange[a.id], dateB: lastDatesInRange[b.id]) }
+
+        let pa = proximateTaxonIds.contains(a.id)
+        let pb = proximateTaxonIds.contains(b.id)
+
+        // Bucket C: proximate species sort above bucket B, below bucket A
+        if pa != pb { return !pa && pb }
+        if pa && pb {
+            let fa = proximateFrequency[a.id, default: 0]
+            let fb = proximateFrequency[b.id, default: 0]
+            if fa != fb { return fa < fb } // lower frequency first; highest frequency at bottom
+            return compareByLastObservedDate(dateA: lastProximateDates[a.id], dateB: lastProximateDates[b.id])
         }
-        
-        // For non-recent species, apply stable tie-breakers
+
+        // Bucket B: stable sort by commonness, taxonomy order, name
         return applyStableTieBreakers(a, b)
     }
 
