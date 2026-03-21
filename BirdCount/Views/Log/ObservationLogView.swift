@@ -7,6 +7,7 @@ struct ObservationLogView: View {
     var show: Binding<Bool>? = nil
     @Environment(DateRangeStore.self) private var dateRangeStore
     @State private var exportSheet: Bool = false
+    @State private var adjustRecord: ObservationRecord? = nil
 
     // Flattened list of records (no date filtering here), preserving children so ObservationRecordView can compute recursive totals
     private var display: [ObservationRecord] { buildDisplay() }
@@ -26,8 +27,18 @@ struct ObservationLogView: View {
                 
                 List(display) { rec in
                     ObservationRecordView(record: rec)
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                            let total = recursiveCount(rec)
+                        .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                            if taxonomy.species.contains(where: { $0.id == rec.taxonId }) {
+                                Button {
+                                    adjustRecord = rec
+                                } label: {
+                                    Label(Strings.Observation.adjust.string, systemImage: "plus.circle")
+                                }
+                                .tint(.accentColor)
+                            }
+                        }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            let total = rec.totalCount
                             if total > 0 {
                                 Button(role: .destructive) {
                                     _ = observationsStore.addChildObservationWithLocation(
@@ -52,6 +63,11 @@ struct ObservationLogView: View {
                 ToolbarItem(placement: .primaryAction) { Button(Strings.Share.export.string) { exportSheet = true }.disabled(display.isEmpty) }
             }
         .sheet(isPresented: $exportSheet) { ShareActivityView(items: [exportText()]) }
+        .sheet(item: $adjustRecord) { rec in
+            if let taxon = taxonomy.species.first(where: { $0.id == rec.taxonId }) {
+                CountAdjustSheet(taxon: taxon, parentId: rec.id, onDone: { adjustRecord = nil })
+            }
+        }
         .toolbar(.hidden, for: .navigationBar)
         .toolbarBackground(.hidden, for: .navigationBar)
         }
@@ -65,18 +81,14 @@ struct ObservationLogView: View {
         for r in display {
             let taxonName = speciesById[r.taxonId]?.commonName ?? Strings.Observation.unknown.string
             if r.begin == r.end {
-                lines.append("\(formatter.string(from: r.begin))\t\(taxonName)\t×\(recursiveCount(r))")
+                lines.append("\(formatter.string(from: r.begin))\t\(taxonName)\t×\(r.totalCount)")
             } else {
-                lines.append("\(formatter.string(from: r.begin)) – \(formatter.string(from: r.end))\t\(taxonName)\t×\(recursiveCount(r))")
+                lines.append("\(formatter.string(from: r.begin)) – \(formatter.string(from: r.end))\t\(taxonName)\t×\(r.totalCount)")
             }
         }
         return lines.joined(separator: "\n")
     }
 
-    // Recursive total helper mirrored from ObservationRecordView for export
-    private func recursiveCount(_ r: ObservationRecord) -> Int {
-        r.count + r.children.map { recursiveCount($0) }.reduce(0, +)
-    }
 }
 
 #if DEBUG

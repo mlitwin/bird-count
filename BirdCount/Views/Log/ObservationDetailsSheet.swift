@@ -89,7 +89,7 @@ private struct SpeciesHeader: View {
                 Spacer()
                 
                 // Total count badge
-                Text("×\(recursiveCount(record))")
+                Text("×\(record.totalCount)")
                     .font(.title3.monospacedDigit())
                     .fontWeight(.semibold)
                     .padding(.horizontal, 12)
@@ -120,8 +120,8 @@ private struct ObservationDetailsSection: View {
             
             // Total Count with edit button
             DetailRowWithAction(
-                label: "Total Count", 
-                value: "\(recursiveCount(record))",
+                label: "Total Count",
+                value: "\(record.totalCount)",
                 actionIcon: "pencil",
                 action: onEditCount
             )
@@ -259,7 +259,7 @@ private struct SummarySection: View {
                 .font(.headline)
                 .fontWeight(.semibold)
             
-            let totalCount = recursiveCount(record)
+            let totalCount = record.totalCount
             let childCount = record.children.count
             let adjustments = record.children.filter { $0.count != 0 }.count
             
@@ -449,12 +449,6 @@ private struct CommonnessLabel: View {
         default: return .gray
         }
     }
-}
-
-// MARK: - Helper Functions
-
-private func recursiveCount(_ record: ObservationRecord) -> Int {
-    record.count + record.children.map { recursiveCount($0) }.reduce(0, +)
 }
 
 // MARK: - Preview

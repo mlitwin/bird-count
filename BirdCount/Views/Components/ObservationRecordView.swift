@@ -63,8 +63,5 @@ struct ObservationRecordView: View {
     }
 
     // MARK: - Totals
-    private var totalCount: Int { recursiveCount(record) }
-    private func recursiveCount(_ r: ObservationRecord) -> Int {
-        r.count + r.children.map { recursiveCount($0) }.reduce(0, +)
-    }
+    private var totalCount: Int { record.totalCount }
 }

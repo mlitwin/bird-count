@@ -6,8 +6,9 @@ private struct SpeciesListContent: View {
     let recentlyUpdatedSpeciesId: String?
     let showPulseAnimation: Bool
     let onSelect: (Taxon) -> Void
+    let onQuickAdd: (Taxon) -> Void
     let minHeight: CGFloat
-    
+
     var body: some View {
         VStack(spacing: 0) {
             LazyVStack(spacing: 6) {
@@ -16,7 +17,8 @@ private struct SpeciesListContent: View {
                         taxon: taxon,
                         count: counts[taxon.id] ?? 0,
                         shouldPulse: recentlyUpdatedSpeciesId == taxon.id && showPulseAnimation,
-                        onSelect: onSelect
+                        onSelect: onSelect,
+                        onQuickAdd: onQuickAdd
                     )
                     .id(taxon.id)
                 }
@@ -32,20 +34,22 @@ struct SpeciesListView: View {
     let taxa: [Taxon]
     let counts: [String:Int]
     let onSelect: (Taxon) -> Void
+    let onQuickAdd: (Taxon) -> Void
     // External trigger: increment to request scrolling to the bottom
     let scrollToBottomSignal: Int
     // External trigger: species ID that was recently updated (for pulse animation)
     let recentlyUpdatedSpeciesId: String?
-    
+
     @State private var showPulseAnimation = false
     @State private var scrolledToID: AnyHashable? = nil
 
-    init(taxa: [Taxon], counts: [String:Int] = [:], scrollToBottomSignal: Int = 0, recentlyUpdatedSpeciesId: String? = nil, onSelect: @escaping (Taxon) -> Void) {
+    init(taxa: [Taxon], counts: [String:Int] = [:], scrollToBottomSignal: Int = 0, recentlyUpdatedSpeciesId: String? = nil, onSelect: @escaping (Taxon) -> Void, onQuickAdd: @escaping (Taxon) -> Void = { _ in }) {
         self.taxa = taxa
         self.counts = counts
         self.scrollToBottomSignal = scrollToBottomSignal
         self.recentlyUpdatedSpeciesId = recentlyUpdatedSpeciesId
         self.onSelect = onSelect
+        self.onQuickAdd = onQuickAdd
     }
 
     var body: some View {
@@ -58,6 +62,7 @@ struct SpeciesListView: View {
                         recentlyUpdatedSpeciesId: recentlyUpdatedSpeciesId,
                         showPulseAnimation: showPulseAnimation,
                         onSelect: onSelect,
+                        onQuickAdd: onQuickAdd,
                         minHeight: proxy.size.height
                     )
                 }

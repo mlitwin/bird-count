@@ -34,7 +34,7 @@ struct CountAdjustSheet: View, Identifiable {
     private func initialize() {
         // If we're adjusting from a record context (parentId present), start with current recursive total for that record
         if let pid = parentId, let parent = observations.findRecord(by: pid) {
-            tempCount = recursiveCount(parent)
+            tempCount = parent.totalCount
         } else {
             // Default for new root additions
             tempCount = 1
@@ -59,7 +59,7 @@ struct CountAdjustSheet: View, Identifiable {
         var didAddRootObservation = false
         if let pid = parentId, let parent = observations.findRecord(by: pid) {
             // Compute delta from current recursive total to desired total and add as a child (can be negative)
-            let currentTotal = recursiveCount(parent)
+            let currentTotal = parent.totalCount
             let delta = tempCount - currentTotal
             if delta != 0 {
                 _ = observations.addChildObservationWithLocation(parentId: pid, taxonId: taxon.id, begin: Date(), end: nil, count: delta)
@@ -125,11 +125,6 @@ private struct StepControlsView: View {
             .buttonStyle(.plain)
         }
     }
-}
-
-// MARK: - Local helpers
-private func recursiveCount(_ r: ObservationRecord) -> Int {
-    r.count + r.children.map { recursiveCount($0) }.reduce(0, +)
 }
 
 private struct ActionBarView: View {

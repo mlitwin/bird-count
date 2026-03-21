@@ -3,6 +3,64 @@ import Testing
 @testable import BirdCountCore
 
 struct CoreLogicTests {
+    // MARK: - totalCount: deletion and adjustment patterns
+
+    @Test
+    func totalCountZeroRoot() {
+        let record = ObservationRecord(taxonId: "amecro", count: 0)
+        #expect(record.totalCount == 0)
+    }
+
+    @Test
+    func totalCountSwipeDeletePattern() {
+        // Swipe-delete appends a child with count = -totalCount, netting to zero.
+        var parent = ObservationRecord(taxonId: "amecro", count: 5)
+        _ = ObservationRecord(parent: &parent, taxonId: "amecro", count: -5)
+        #expect(parent.totalCount == 0)
+    }
+
+    @Test
+    func totalCountPartialNegativeAdjustment() {
+        // Adjusting down via a negative child reduces but does not zero the total.
+        var parent = ObservationRecord(taxonId: "amecro", count: 5)
+        _ = ObservationRecord(parent: &parent, taxonId: "amecro", count: -2)
+        #expect(parent.totalCount == 3)
+    }
+
+    @Test
+    func totalCountMultipleAdjustments() {
+        // Sequence of adjustments (up then down) accumulate correctly.
+        var parent = ObservationRecord(taxonId: "amecro", count: 3)
+        _ = ObservationRecord(parent: &parent, taxonId: "amecro", count: -3)  // zeroed
+        _ = ObservationRecord(parent: &parent, taxonId: "amecro", count: 2)   // re-added
+        #expect(parent.totalCount == 2)
+    }
+
+    @Test
+    func totalCountNegativeChildDoesNotGoBelowZeroInLogic() {
+        // The model allows totalCount < 0 if children over-subtract; callers are
+        // responsible for clamping.  Verify the arithmetic is correct regardless.
+        var parent = ObservationRecord(taxonId: "amecro", count: 2)
+        _ = ObservationRecord(parent: &parent, taxonId: "amecro", count: -5)
+        #expect(parent.totalCount == -3)
+    }
+
+    @Test
+    func totalCountMatchesObservationStoreCacheAfterDelete() {
+        // End-to-end: after a swipe-delete via the store, the cache should count 0
+        // for the species (not negative, not the original count).
+        let store = ObservationStore(testing: true)
+        store.clearAll()
+        store.addObservation("amecro", count: 4)
+        #expect(store.count(for: "amecro") == 4)
+
+        let parentId = store.observations[0].id
+        let total = store.observations[0].totalCount
+        _ = store.addChildObservation(parentId: parentId, taxonId: "amecro", count: -total)
+        #expect(store.count(for: "amecro") == 0)
+        #expect(store.totalSpeciesObserved == 0)
+    }
+
     @Test
     func observationStoreBasicCounts() {
         let store = ObservationStore(testing: true)

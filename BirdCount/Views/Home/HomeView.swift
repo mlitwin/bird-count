@@ -161,13 +161,23 @@ struct HomeView: View {
             }
         } else {
             SpeciesListView(
-                taxa: filtered, 
+                taxa: filtered,
                 counts: filteredCounts,
                 scrollToBottomSignal: scrollToBottomSignal,
-                recentlyUpdatedSpeciesId: recentlyUpdatedSpeciesId
-            ) { taxon in
-                selectedTaxon = taxon
-            }
+                recentlyUpdatedSpeciesId: recentlyUpdatedSpeciesId,
+                onSelect: { taxon in
+                    selectedTaxon = taxon
+                },
+                onQuickAdd: { taxon in
+                    observations.addObservationWithLocation(taxon.id, count: 1)
+                    filterText = ""
+                    recentlyUpdatedSpeciesId = taxon.id
+                    scrollToBottomSignal &+= 1
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                        recentlyUpdatedSpeciesId = nil
+                    }
+                }
+            )
         }
     }
 }
