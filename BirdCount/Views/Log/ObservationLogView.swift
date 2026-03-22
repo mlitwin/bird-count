@@ -14,8 +14,8 @@ struct ObservationLogView: View {
 
     private func buildDisplay() -> [ObservationRecord] {
         let all = observationsStore.observations
-        // Keep original records (with children) and just sort by begin
-        return all.sorted { $0.begin > $1.begin }
+        // Oldest first so the most recent entry sits at the bottom (bottom-anchored view)
+        return all.sorted { $0.begin < $1.begin }
     }
 
 
@@ -25,34 +25,44 @@ struct ObservationLogView: View {
                 // Header spacing to account for floating AppHeaderView
                 HeaderSpacingView()
                 
-                List(display) { rec in
-                    ObservationRecordView(record: rec)
-                        .swipeActions(edge: .leading, allowsFullSwipe: false) {
-                            if taxonomy.species.contains(where: { $0.id == rec.taxonId }) {
-                                Button {
-                                    adjustRecord = rec
-                                } label: {
-                                    Label(Strings.Observation.adjust.string, systemImage: "plus.circle")
-                                }
-                                .tint(.accentColor)
-                            }
-                        }
-                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                            let total = rec.totalCount
-                            if total > 0 {
-                                Button(role: .destructive) {
-                                    _ = observationsStore.addChildObservationWithLocation(
-                                        parentId: rec.id,
-                                        taxonId: rec.taxonId,
-                                        begin: Date(),
-                                        end: nil,
-                                        count: -total
-                                    )
-                                } label: {
-                                    Label(Strings.Observation.delete.string, systemImage: "trash")
+                // List is used (not BottomAnchoredScrollView) to preserve native swipe actions.
+                // The same bottom-anchor pattern is applied directly via defaultScrollAnchor.
+                ScrollViewReader { reader in
+                    List(display) { rec in
+                        ObservationRecordView(record: rec)
+                            .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                                if taxonomy.species.contains(where: { $0.id == rec.taxonId }) {
+                                    Button {
+                                        adjustRecord = rec
+                                    } label: {
+                                        Label(Strings.Observation.adjust.string, systemImage: "plus.circle")
+                                    }
+                                    .tint(.accentColor)
                                 }
                             }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                let total = rec.totalCount
+                                if total > 0 {
+                                    Button(role: .destructive) {
+                                        _ = observationsStore.addChildObservationWithLocation(
+                                            parentId: rec.id,
+                                            taxonId: rec.taxonId,
+                                            begin: Date(),
+                                            end: nil,
+                                            count: -total
+                                        )
+                                    } label: {
+                                        Label(Strings.Observation.delete.string, systemImage: "trash")
+                                    }
+                                }
+                            }
+                    }
+                    .defaultScrollAnchor(.bottom)
+                    .onAppear {
+                        if let last = display.last {
+                            reader.scrollTo(last.id, anchor: .bottom)
                         }
+                    }
                 }
             }
         
