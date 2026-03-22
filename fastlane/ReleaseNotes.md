@@ -1,4 +1,5 @@
-Changes since v1.0.16-49:
+Changes since v1.0.17-50:
 
-• 0525364 Update release notes for alpha release
-• 8767e9b Add swipe gestures, proximate sort bucket, and observation model improvements
+• 35ba496 Make ObservationLogView bottom-anchored (newest entry at bottom)
+• 75f6efc Regenerate Xcode schemes and version bump from fastlane alpha
+• 624178c Extract BottomAnchoredScrollView and fix unexpected scroll snapping
