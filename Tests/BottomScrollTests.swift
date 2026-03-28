@@ -45,6 +45,48 @@ struct BottomAnchoredScrollViewTests {
         #expect(view.scrollToBottomTrigger == 7)
     }
 
+    @Test("Default scrollToBottomOnChange is nil")
+    func defaultOnChange() {
+        let view = BottomAnchoredScrollView { EmptyView() }
+        #expect(view.scrollToBottomOnChange == nil)
+    }
+
+    @Test("scrollToBottomOnChange is preserved at init")
+    func customOnChange() {
+        let token = AnyHashable(Set(["a", "b"]))
+        let view = BottomAnchoredScrollView(scrollToBottomOnChange: token) { EmptyView() }
+        #expect(view.scrollToBottomOnChange == token)
+    }
+
+    @Test("Set-based token: same IDs different order produce equal tokens (no scroll snap on re-sort)")
+    func setTokenIsOrderIndependent() {
+        // A re-sort produces the same Set — should NOT trigger scrollToBottomOnChange
+        let ids1 = ["amecro", "norbla", "blujay"]
+        let ids2 = ["blujay", "amecro", "norbla"] // same IDs, different order
+        let token1 = AnyHashable(Set(ids1))
+        let token2 = AnyHashable(Set(ids2))
+        #expect(token1 == token2)
+    }
+
+    @Test("Set-based token: different IDs produce different tokens (filter change triggers scroll)")
+    func setTokenDiffersOnFilterChange() {
+        // A filter change produces a different Set — SHOULD trigger scrollToBottomOnChange
+        let ids1 = ["amecro", "norbla", "blujay"]
+        let ids2 = ["amecro"] // filtered
+        let token1 = AnyHashable(Set(ids1))
+        let token2 = AnyHashable(Set(ids2))
+        #expect(token1 != token2)
+    }
+
+    @Test("Renders with scrollToBottomOnChange set without crash")
+    func rendersWithOnChange() {
+        let token = AnyHashable(Set(["species-1", "species-2"]))
+        let v = render(BottomAnchoredScrollView(scrollToBottomOnChange: token) {
+            Text("Content")
+        })
+        #expect(v.bounds.height > 0)
+    }
+
     @Test("Renders with no content without crash")
     func rendersEmpty() {
         let v = render(BottomAnchoredScrollView { EmptyView() })

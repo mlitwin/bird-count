@@ -53,7 +53,14 @@ struct SpeciesListView: View {
     }
 
     var body: some View {
-        BottomAnchoredScrollView(scrollToBottomTrigger: scrollToBottomSignal) {
+        // scrollToBottomOnChange uses a Set (not an Array) so that sort-order
+        // changes — same species, different bucket positions — do not trigger
+        // a scroll, while filter changes that add or remove species do.
+        let visibleIdSet = AnyHashable(Set(taxa.map { $0.id }))
+        return BottomAnchoredScrollView(
+            scrollToBottomTrigger: scrollToBottomSignal,
+            scrollToBottomOnChange: visibleIdSet
+        ) {
             SpeciesListContent(
                 taxa: taxa,
                 counts: counts,
