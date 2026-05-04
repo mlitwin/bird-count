@@ -1,5 +1,5 @@
-Changes since v1.0.17-50:
+Changes since v1.0.18-51:
 
-• 35ba496 Make ObservationLogView bottom-anchored (newest entry at bottom)
-• 75f6efc Regenerate Xcode schemes and version bump from fastlane alpha
-• 624178c Extract BottomAnchoredScrollView and fix unexpected scroll snapping
+• f87fc47 Redesign sync as unified sheet, shared date range picker, and bug fixes
+• 7efe413 Regenerate Xcode schemes and version bump from fastlane alpha
+• 80f5fbf Fix bottom-anchor lost after filter clear/expand
