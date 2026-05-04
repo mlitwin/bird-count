@@ -1,80 +1,52 @@
 import Foundation
 
-/// Protocol abstraction for different sync transport implementations.
-/// Primary implementation uses Network Framework with WebSocket over TLS.
-protocol SyncTransport {
-    // MARK: - State
-    var state: SyncState { get }
-    var discoveredPeers: [SyncPeer] { get }
-    var connectedPeers: [SyncPeer] { get }
-    var progress: Double { get }
-    var errorMessage: String? { get }
-    
-    // MARK: - Discovery
-    /// Start browsing for peers to sync with (sender mode)
-    func startBrowsing()
-    
-    /// Start advertising for incoming sync requests (receiver mode)
-    func startAdvertising(onIncomingSync: @escaping (PayloadV1, @escaping (Bool) -> Void) -> Void)
-    
-    // MARK: - Connection
-    /// Connect to a discovered peer (sender initiates connection)
-    func connect(to peer: SyncPeer)
-    
-    /// Send sync payload to connected peer
-    func sendSync(payload: PayloadV1, completion: @escaping (Result<Void, Error>) -> Void)
-    
-    /// Cancel current operation and reset to idle
-    func cancel()
-}
+// MARK: - State
 
-/// Common peer representation that works across different transport implementations
-struct SyncPeer: Identifiable, Equatable {
-    let id: String
-    let displayName: String
-    let metadata: [String: String]
-    
-    static func == (lhs: SyncPeer, rhs: SyncPeer) -> Bool {
-        lhs.id == rhs.id
-    }
-}
-
-/// Common sync states used by all transport implementations
-enum SyncState {
+enum SyncState: Equatable {
     case idle
-    case browsing
-    case advertising
-    case connecting
-    case connected
+    case discovering
+    case handshaking(peerName: String)
+    case readyToSync(info: SyncReadyInfo)
     case transferring
-    case receivingApproval
-    case completed
-    case error
+    case completed(stats: SyncCompletionStats)
+    case incompatible(reason: String)
+    case error(message: String)
 }
 
-/// Common sync errors
+// MARK: - Errors
+
 enum SyncError: Error, LocalizedError {
     case notConnected
     case transferFailed
     case cancelled
     case networkUnavailable
-    case securityError
-    case timeout
-    
+    case incompatibleRoles
+    case invalidData
+
     var errorDescription: String? {
         switch self {
-        case .notConnected:
-            return "No device connected for sync"
-        case .transferFailed:
-            return "Sync transfer failed"
-        case .cancelled:
-            return "Sync was cancelled"
-        case .networkUnavailable:
-            return "Network unavailable for sync"
-        case .securityError:
-            return "Security error during sync"
-        case .timeout:
-            return "Sync connection timed out"
+        case .notConnected: return "No device connected for sync"
+        case .transferFailed: return "Sync transfer failed"
+        case .cancelled: return "Sync was cancelled"
+        case .networkUnavailable: return "Network unavailable for sync"
+        case .incompatibleRoles: return "Both devices have incompatible sync roles"
+        case .invalidData: return "Invalid sync data received"
         }
     }
+}
+
+// MARK: - Protocol
+
+protocol SyncTransport: AnyObject {
+    var state: SyncState { get }
+
+    /// Start advertising and browsing simultaneously. The hello is sent to any peer that connects.
+    func startDiscovery(localHello: SyncHelloMessage)
+
+    /// Initiate transfer once in .readyToSync. Pass the payload to send, or nil if receiveOnly.
+    /// The transport is responsible for importing received data.
+    func initiateSync(payload: PayloadV1?, receiveInto store: ObservationStore) async
+
+    /// Cancel everything and return to .idle.
+    func cancel()
 }

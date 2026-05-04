@@ -85,50 +85,12 @@ public class ObservationImportService {
             recordsToImport.append(parentRecord)
         }
         
-        // Handle orphaned children (children whose parents weren't in the payload or were duplicates)
-        let orphanedChildren: [ObservationRecordDTO] = []
+        // Attach children whose parent already exists in the store (not being imported in this batch).
         for child in childRecords {
             guard let parentId = child.parentId else { continue }
-            
-            // Skip if this child already exists
-            if store.findRecord(by: child.id) != nil {
-                continue
-            }
-            
-            // Skip if parent is being imported in this batch (already handled above)
-            if recordsToImport.contains(where: { $0.id == parentId }) {
-                continue
-            }
-            
-            // Check if parent exists in store only (not being imported)
-            if store.findRecord(by: parentId) != nil {
-                // Try to attach to existing parent in store
-                if store.addChildObservation(
-                    parentId: parentId,
-                    taxonId: child.taxonId,
-                    begin: child.begin,
-                    end: child.end,
-                    count: child.count,
-                    location: child.location,
-                    observer: child.observer
-                ) {
-                    // Successfully attached to existing parent
-                    continue
-                }
-            }
-            
-            // Parent doesn't exist or attachment failed, skip this child
-            continue
-        }
-        
-        // Import the parent records (this triggers rebuild automatically)
-        store.importObservations(recordsToImport)
-        
-        // Attach orphaned children to newly imported parents (if any)
-        var orphanedChildrenAttached = 0
-        for child in orphanedChildren {
-            guard let parentId = child.parentId else { continue }
-            if store.addChildObservation(
+            guard store.findRecord(by: child.id) == nil else { continue }
+            guard !recordsToImport.contains(where: { $0.id == parentId }) else { continue }
+            _ = store.addChildObservation(
                 parentId: parentId,
                 taxonId: child.taxonId,
                 begin: child.begin,
@@ -136,14 +98,15 @@ public class ObservationImportService {
                 count: child.count,
                 location: child.location,
                 observer: child.observer
-            ) {
-                orphanedChildrenAttached += 1
-            }
+            )
         }
-        
+
+        // Import the parent records (this triggers rebuild automatically)
+        store.importObservations(recordsToImport)
+
         // Calculate statistics
         let totalProcessed = payload.observations.count
-        let newRecordsImported = recordsToImport.count + orphanedChildrenAttached
+        let newRecordsImported = recordsToImport.count
         
         return ImportStatistics(
             totalRecordsProcessed: totalProcessed,
@@ -167,12 +130,3 @@ public class ObservationImportService {
     }
 }
 
-// MARK: - ObservationStore Extension
-extension ObservationStore {
-    /// Public access to rebuildDerived for sync operations
-    public func rebuildDerivedPublic() {
-        // Force a rebuild by modifying the observations array
-        let currentObservations = observations
-        observations = currentObservations
-    }
-}

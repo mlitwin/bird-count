@@ -106,57 +106,16 @@ struct ExportSheet: View {
         return (range.begin, range.end)
     }
 
-    /// Returns a display string for the active date range, with first letter lowercased for presets
+    /// Returns a display string for the active date range, with first letter lowercased for presets.
     private var rangeSummaryForExport: String {
         let preset = dateRangeStore.dateRangePreset
-        let startDate = dateRangeStore.dateRange.begin
-        let endDate = dateRangeStore.dateRange.end
-
-        // For presets, return the preset name with first letter lowercased
         switch preset {
-        case .all:
-            return Strings.DateRange.allTime.string.lowercasingFirst
-        case .today:
-            return Strings.DateRange.today.string.lowercasingFirst
         case .lastHour, .last7Days:
             return preset.rawValue.lowercased()
         case .custom:
-            break
-        }
-
-        // Custom range: format the date range
-        let cal = Calendar.current
-        let sameDay = cal.isDate(startDate, inSameDayAs: endDate)
-
-        // Check if this is a complete day (starts at midnight, ends at midnight next day)
-        let isCompleteDay = cal.isDate(startDate, equalTo: cal.startOfDay(for: startDate), toGranularity: .second) &&
-                           cal.isDate(endDate, equalTo: cal.startOfDay(for: endDate), toGranularity: .second) &&
-                           cal.dateInterval(of: .day, for: startDate)?.end == endDate
-
-        if isCompleteDay {
-            return ExportFormatters.mdy.string(from: startDate)
-        }
-
-        let sameYear = cal.component(.year, from: startDate) == cal.component(.year, from: endDate)
-        let sameMonth = sameYear && cal.component(.month, from: startDate) == cal.component(.month, from: endDate)
-
-        let startHM = ExportFormatters.hm.string(from: startDate)
-        let endHM = ExportFormatters.hm.string(from: endDate)
-
-        if sameDay {
-            return "\(ExportFormatters.mdy.string(from: startDate)) \(startHM) – \(endHM)"
-        } else if sameMonth {
-            let startMD = ExportFormatters.md.string(from: startDate)
-            let endD = String(cal.component(.day, from: endDate))
-            return "\(startMD) \(startHM) – \(endD) \(endHM)"
-        } else if sameYear {
-            let startMD = ExportFormatters.md.string(from: startDate)
-            let endMD = ExportFormatters.md.string(from: endDate)
-            return "\(startMD) \(startHM) – \(endMD) \(endHM)"
-        } else {
-            let startMDY = ExportFormatters.mdy.string(from: startDate)
-            let endMDY = ExportFormatters.mdy.string(from: endDate)
-            return "\(startMDY) \(startHM) – \(endMDY) \(endHM)"
+            return dateRangeStore.dateRange.formattedSummary()
+        default:
+            return dateRangeStore.dateRange.formattedSummary(preset: preset).lowercasingFirst
         }
     }
 
@@ -241,16 +200,8 @@ struct ExportSheet: View {
         
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: exportData, options: .prettyPrinted)
-            let jsonString = String(data: jsonData, encoding: .utf8) ?? "{}"
-            
-            // Log JSON to console for debugging
-            print("📄 JSON Export:")
-            print(jsonString)
-            print("📄 End JSON Export")
-            
-            return jsonString
+            return String(data: jsonData, encoding: .utf8) ?? "{}"
         } catch {
-            print("❌ JSON Export Error: \(error.localizedDescription)")
             return "{\"error\": \"Failed to serialize JSON: \(error.localizedDescription)\"}"
         }
     }
@@ -295,27 +246,6 @@ struct ExportSheet: View {
             return exportJSON()
         }
     }
-}
-
-// MARK: - Date Formatters for Export
-
-private enum ExportFormatters {
-    static let hm: DateFormatter = {
-        let df = DateFormatter()
-        df.timeStyle = .short
-        df.dateStyle = .none
-        return df
-    }()
-    static let md: DateFormatter = {
-        let df = DateFormatter()
-        df.setLocalizedDateFormatFromTemplate("MMMd")
-        return df
-    }()
-    static let mdy: DateFormatter = {
-        let df = DateFormatter()
-        df.setLocalizedDateFormatFromTemplate("MMMdyyyy")
-        return df
-    }()
 }
 
 // MARK: - String Extension for Lowercasing First Character

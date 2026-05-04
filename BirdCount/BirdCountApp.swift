@@ -16,7 +16,6 @@ struct BirdCountApp: App {
     @State private var observationStore = ObservationStore()
     @State private var settingsStore = SettingsStore()
     @State private var dateRangeStore = DateRangeStore()
-    @State private var syncSessionManager = SyncSessionManager()
     @State private var locationManager = LocationManager.shared
 
     var body: some Scene {
@@ -26,7 +25,6 @@ struct BirdCountApp: App {
                 .environment(observationStore)
                 .environment(settingsStore)
                 .environment(dateRangeStore)
-                .environment(syncSessionManager)
                 .environment(locationManager)
                 .onAppear {
                     // Set up store dependencies

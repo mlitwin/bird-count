@@ -4,7 +4,7 @@
 SCHEME ?= BirdCount
 PROJECT ?= BirdCount.xcodeproj
 SIMULATOR ?= iPhone 16
-OS ?= latest
+OS ?= 18.5
 DEST ?= platform=iOS Simulator,name=$(SIMULATOR),OS=$(OS)
 CONFIGURATION ?= Debug
 

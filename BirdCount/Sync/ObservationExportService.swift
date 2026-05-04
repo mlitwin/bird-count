@@ -1,28 +1,35 @@
 import Foundation
-import UIKit
 
 /// Service for exporting observation data for sync operations.
 /// Handles filtering records by date range and converting to sync payload format.
 public class ObservationExportService {
-    
+
+    /// Compute a lightweight summary of what would be sent (without building the full payload).
+    static func summaryForSync(in range: DateRange, from store: ObservationStore) -> SyncSendSummary {
+        let filtered = filterRecords(from: store.observations, in: range)
+        let flat = flattenToDTO(records: filtered)
+        let speciesCount = Set(flat.map { $0.taxonId }).count
+        return SyncSendSummary(
+            observationCount: flat.count,
+            speciesCount: speciesCount,
+            dateRangeBegin: range.begin,
+            dateRangeEnd: range.end
+        )
+    }
+
     /// Export observations for sync within the specified date range.
-    /// - Parameter range: The date range to filter observations
-    /// - Parameter from: The observation store to export from
-    /// - Returns: PayloadV1 containing the filtered observations
-    public static func exportForSync(in range: DateRange, from store: ObservationStore) -> PayloadV1 {
+    /// - Parameter displayName: The sender's display name to embed in the payload.
+    /// - Parameter range: The date range to filter observations.
+    /// - Parameter from: The observation store to export from.
+    public static func exportForSync(displayName: String, in range: DateRange, from store: ObservationStore) -> PayloadV1 {
         let filteredRecords = filterRecords(from: store.observations, in: range)
         let flattenedDTOs = flattenToDTO(records: filteredRecords)
-        
-        // Get app version
         let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Unknown"
-        
-        // Get device name for sender display
-        let deviceName = UIDevice.current.name
-        
+
         return PayloadV1(
             schemaVersion: 1,
             appVersion: appVersion,
-            senderDisplayName: deviceName,
+            senderDisplayName: displayName,
             rangeStart: range.begin,
             rangeEnd: range.end,
             observations: flattenedDTOs

@@ -25,6 +25,5 @@ struct HeaderSpacingView: View {
     .environment(ObservationStore())
     .environment(TaxonomyStore())
     .environment(DateRangeStore())
-    .environment(SyncSessionManager())
 }
 #endif

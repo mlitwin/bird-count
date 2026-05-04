@@ -3,531 +3,376 @@ import Network
 import Observation
 import UIKit
 
-/// Network Framework-based implementation of SyncTransport.
-/// Uses WebSocket over TLS with pre-shared key authentication.
-@Observable final class NetworkSyncTransport: NSObject, SyncTransport {
-    
-    // MARK: - SyncTransport Implementation
+@Observable final class NetworkSyncTransport: SyncTransport {
+
+    // MARK: - SyncTransport
+
     private(set) var state: SyncState = .idle
-    private(set) var discoveredPeers: [SyncPeer] = []
-    private(set) var connectedPeers: [SyncPeer] = []
-    private(set) var progress: Double = 0.0
-    private(set) var errorMessage: String?
-    
-    // MARK: - Private Properties
+
+    // MARK: - Private
+
     private let serviceType = "_birdcount._tcp"
     private let peerID = UUID()
+    private let queue = DispatchQueue(label: "network-sync", qos: .userInitiated)
+
     private var listener: NWListener?
     private var browser: NWBrowser?
-    private var connections: [String: NWConnection] = [:]
-    private var peerEndpoints: [String: NWEndpoint] = [:] // Track endpoints by peer ID
-    private let queue = DispatchQueue(label: "network-sync", qos: .userInitiated)
-    
-    // Sync-specific properties
-    private var pendingPayload: PayloadV1?
-    private var onSyncCompletion: ((Result<Void, Error>) -> Void)?
-    private var onIncomingSync: ((PayloadV1, @escaping (Bool) -> Void) -> Void)?
-    
-    // MARK: - Initialization
-    override init() {
-        super.init()
-        print("🌐 NetworkSyncTransport initialized with peer ID: \(peerID.uuidString)")
-    }
-    
+
+    // The single active connection (first one that completes handshake wins)
+    private var connection: NWConnection?
+    private var peerConnection: NWConnection?  // incoming connection before peer ID known
+
+    // Peer endpoints keyed by peerID string
+    private var peerEndpoints: [String: NWEndpoint] = [:]
+
+    private var localHello: SyncHelloMessage?
+    private var peerHello: SyncHelloMessage?
+
+    // Continuation for initiateSync to wait on incoming payload
+    private var receiveContinuation: CheckedContinuation<PayloadV1?, Never>?
+
     // MARK: - SyncTransport Methods
-    
-    func startBrowsing() {
+
+    func startDiscovery(localHello: SyncHelloMessage) {
         guard state == .idle else { return }
-        
-        print("🌐 Starting to browse for peers...")
-        setState(.browsing)
-        
-        // Create browser with explicit local domain to avoid DNS policy issues
-        let browserParameters = NWParameters.tcp
-        browserParameters.includePeerToPeer = true
-        browserParameters.allowLocalEndpointReuse = true
-        
-        browser = NWBrowser(
-            for: .bonjourWithTXTRecord(type: serviceType, domain: "local."),
-            using: browserParameters
+        self.localHello = localHello
+        setState(.discovering)
+        startListener(localHello: localHello)
+        startBrowser()
+    }
+
+    func initiateSync(payload: PayloadV1?, receiveInto store: ObservationStore) async {
+        guard case .readyToSync(let info) = state,
+              let conn = connection else { return }
+
+        setState(.transferring)
+
+        if info.localWillSend, let payload {
+            do {
+                try await sendPayload(payload, over: conn)
+            } catch {
+                setState(.error(message: "Send failed: \(error.localizedDescription)"))
+                return
+            }
+        }
+
+        var receivedCount = 0
+        var duplicatesSkipped = 0
+
+        if info.peerWillSend != nil {
+            let incoming = await withCheckedContinuation { continuation in
+                self.receiveContinuation = continuation
+            }
+            if let incoming {
+                let stats = try? ObservationImportService.importFromSync(incoming, into: store)
+                receivedCount = stats?.newRecordsImported ?? 0
+                duplicatesSkipped = stats?.duplicatesSkipped ?? 0
+            }
+        }
+
+        // Connection failure resumes the continuation with nil and sets .error state.
+        // Don't overwrite that with .completed.
+        guard case .transferring = state else { return }
+
+        let stats = SyncCompletionStats(
+            sentCount: payload?.observations.count ?? 0,
+            receivedCount: receivedCount,
+            duplicatesSkipped: duplicatesSkipped
         )
-        
-        browser?.browseResultsChangedHandler = { [weak self] results, changes in
-            guard let self = self else { return }
-            self.handleBrowseResults(results, changes: changes)
-        }
-        
-        browser?.stateUpdateHandler = { [weak self] state in
-            guard let self = self else { return }
-            self.handleBrowserState(state)
-        }
-        
-        browser?.start(queue: queue)
-        print("🌐 Browser started for service type: \(serviceType) on local domain")
+        setState(.completed(stats: stats))
     }
-    
-    func startAdvertising(onIncomingSync: @escaping (PayloadV1, @escaping (Bool) -> Void) -> Void) {
-        guard state == .idle else { return }
-        
-        print("🌐 Starting to advertise...")
-        self.onIncomingSync = onIncomingSync
-        setState(.advertising)
-        
-        do {
-            let parameters = createNetworkParameters()
-            listener = try NWListener(using: parameters)
-            
-            // Create TXT record with peer information
-            var txtRecord = NWTXTRecord()
-            txtRecord["peerID"] = peerID.uuidString
-            txtRecord["displayName"] = UIDevice.current.name
-            
-            listener?.service = NWListener.Service(
-                type: serviceType,
-                domain: "local.", // Explicit local domain
-                txtRecord: txtRecord.data
-            )
-            
-            listener?.newConnectionHandler = { [weak self] connection in
-                self?.handleNewConnection(connection)
-            }
-            
-            listener?.stateUpdateHandler = { [weak self] state in
-                self?.handleListenerState(state)
-            }
-            
-            listener?.start(queue: queue)
-            print("🌐 Listener started for service type: \(serviceType) on local domain")
-            
-        } catch {
-            setError("Failed to start advertising: \(error.localizedDescription)")
-        }
-    }
-    
-    func connect(to peer: SyncPeer) {
-        guard state == .browsing else { return }
-        
-        print("🌐 Attempting to connect to peer: \(peer.displayName)")
-        setState(.connecting)
-        
-        // Find the endpoint for this peer from browse results
-        guard let endpoint = findEndpoint(for: peer) else {
-            setError("Could not find endpoint for peer")
-            return
-        }
-        
-        let parameters = createNetworkParameters()
-        let connection = NWConnection(to: endpoint, using: parameters)
-        
-        connection.stateUpdateHandler = { [weak self] state in
-            self?.handleConnectionState(state, for: peer, connection: connection)
-        }
-        
-        connection.start(queue: queue)
-        connections[peer.id] = connection
-    }
-    
-    func sendSync(payload: PayloadV1, completion: @escaping (Result<Void, Error>) -> Void) {
-        guard state == .connected, !connectedPeers.isEmpty else {
-            completion(.failure(SyncError.notConnected))
-            return
-        }
-        
-        self.pendingPayload = payload
-        self.onSyncCompletion = completion
-        
-        do {
-            let encoder = JSONEncoder()
-            encoder.dateEncodingStrategy = .iso8601
-            let data = try encoder.encode(payload)
-            
-            setState(.transferring)
-            
-            // Send to first connected peer
-            if let firstPeer = connectedPeers.first,
-               let connection = connections[firstPeer.id] {
-                sendMessage(data, to: connection)
-                startProgressAnimation()
-            } else {
-                completion(.failure(SyncError.notConnected))
-                reset()
-            }
-            
-        } catch {
-            completion(.failure(error))
-            reset()
-        }
-    }
-    
+
     func cancel() {
         reset()
     }
-    
-    // MARK: - Private Network Framework Methods
-    
-    private func createNetworkParameters() -> NWParameters {
-        // Create WebSocket parameters with better configuration for local network
+
+    // MARK: - Listener
+
+    private func startListener(localHello: SyncHelloMessage) {
+        do {
+            let parameters = makeParameters()
+            listener = try NWListener(using: parameters)
+
+            var txt = NWTXTRecord()
+            txt["peerID"] = peerID.uuidString
+            txt["displayName"] = localHello.displayName
+
+            listener?.service = NWListener.Service(
+                type: serviceType,
+                domain: "local.",
+                txtRecord: txt.data
+            )
+
+            listener?.newConnectionHandler = { [weak self] conn in
+                self?.handleIncomingConnection(conn)
+            }
+
+            listener?.stateUpdateHandler = { [weak self] s in
+                if case .failed(let err) = s {
+                    DispatchQueue.main.async {
+                        self?.setState(.error(message: self?.friendlyNetworkError(err) ?? err.localizedDescription))
+                    }
+                }
+            }
+
+            listener?.start(queue: queue)
+        } catch {
+            setState(.error(message: "Failed to start listener: \(error.localizedDescription)"))
+        }
+    }
+
+    // MARK: - Browser
+
+    private func startBrowser() {
+        let params = NWParameters.tcp
+        params.includePeerToPeer = true
+        params.allowLocalEndpointReuse = true
+
+        browser = NWBrowser(
+            for: .bonjourWithTXTRecord(type: serviceType, domain: "local."),
+            using: params
+        )
+
+        browser?.browseResultsChangedHandler = { [weak self] _, changes in
+            self?.handleBrowseChanges(changes)
+        }
+
+        browser?.stateUpdateHandler = { [weak self] s in
+            if case .failed(let err) = s {
+                DispatchQueue.main.async {
+                    self?.setState(.error(message: self?.friendlyNetworkError(err) ?? err.localizedDescription))
+                }
+            }
+        }
+
+        browser?.start(queue: queue)
+    }
+
+    private func handleBrowseChanges(_ changes: Set<NWBrowser.Result.Change>) {
+        for change in changes {
+            if case .added(let result) = change {
+                handleBrowseResult(result)
+            }
+        }
+    }
+
+    private func handleBrowseResult(_ result: NWBrowser.Result) {
+        guard case .bonjour(let txt) = result.metadata,
+              let remotePeerIDStr = txt["peerID"],
+              let remotePeerID = UUID(uuidString: remotePeerIDStr) else { return }
+
+        // Avoid connecting to ourselves
+        guard remotePeerID != peerID else { return }
+
+        peerEndpoints[remotePeerIDStr] = result.endpoint
+
+        // UUID tiebreaker: smaller UUID initiates the connection
+        guard peerID.uuidString < remotePeerIDStr else { return }
+
+        // Only connect if we haven't already
+        guard connection == nil, state == .discovering else { return }
+
+        let displayName = txt["displayName"] ?? "Unknown Device"
+        DispatchQueue.main.async { [weak self] in
+            self?.initiateConnection(to: result.endpoint, peerName: displayName)
+        }
+    }
+
+    // MARK: - Connection (outgoing)
+
+    private func initiateConnection(to endpoint: NWEndpoint, peerName: String) {
+        guard state == .discovering else { return }
+        setState(.handshaking(peerName: peerName))
+
+        let conn = NWConnection(to: endpoint, using: makeParameters())
+        connection = conn
+
+        conn.stateUpdateHandler = { [weak self] s in
+            self?.handleConnectionState(s, connection: conn)
+        }
+
+        conn.start(queue: queue)
+    }
+
+    // MARK: - Connection (incoming)
+
+    private func handleIncomingConnection(_ conn: NWConnection) {
+        // Only accept if we haven't connected yet
+        guard connection == nil, state == .discovering else {
+            conn.cancel()
+            return
+        }
+        connection = conn
+
+        conn.stateUpdateHandler = { [weak self] s in
+            self?.handleConnectionState(s, connection: conn)
+        }
+
+        conn.start(queue: queue)
+    }
+
+    // MARK: - Connection state
+
+    private func handleConnectionState(_ s: NWConnection.State, connection: NWConnection) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            switch s {
+            case .ready:
+                self.onConnectionReady(connection)
+            case .failed(let err):
+                // Resume any pending receive continuation so initiateSync doesn't hang.
+                self.receiveContinuation?.resume(returning: nil)
+                self.receiveContinuation = nil
+                self.setState(.error(message: self.friendlyNetworkError(err)))
+            case .cancelled:
+                if case .idle = self.state {} else {
+                    self.setState(.idle)
+                }
+            default:
+                break
+            }
+        }
+    }
+
+    private func onConnectionReady(_ conn: NWConnection) {
+        guard let localHello else { return }
+        startReceiving(on: conn)
+        sendHello(localHello, over: conn)
+    }
+
+    // MARK: - Receive loop
+
+    private func startReceiving(on conn: NWConnection) {
+        conn.receiveMessage { [weak self] data, _, _, error in
+            guard let self else { return }
+            if let data {
+                self.handleReceivedData(data)
+            }
+            if error == nil {
+                self.startReceiving(on: conn)
+            }
+        }
+    }
+
+    private func handleReceivedData(_ data: Data) {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
+        guard let msg = try? decoder.decode(SyncMessage.self, from: data) else {
+            DispatchQueue.main.async { self.setState(.error(message: "Invalid data received")) }
+            return
+        }
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            switch msg.type {
+            case .hello:
+                if let hello = msg.hello { self.handlePeerHello(hello) }
+            case .payload:
+                if let payload = msg.payload { self.handleIncomingPayload(payload) }
+            }
+        }
+    }
+
+    private func handlePeerHello(_ peerHello: SyncHelloMessage) {
+        guard let localHello else { return }
+        self.peerHello = peerHello
+
+        if let info = SyncReadyInfo.negotiate(local: localHello, peer: peerHello) {
+            setState(.readyToSync(info: info))
+        } else {
+            setState(.incompatible(reason: "Both devices have the same directional role"))
+        }
+    }
+
+    private func handleIncomingPayload(_ payload: PayloadV1) {
+        if let continuation = receiveContinuation {
+            receiveContinuation = nil
+            continuation.resume(returning: payload)
+        }
+    }
+
+    // MARK: - Send helpers
+
+    private func sendHello(_ hello: SyncHelloMessage, over conn: NWConnection) {
+        let msg = SyncMessage.helloMessage(hello)
+        guard let data = try? makeEncoder().encode(msg) else { return }
+        sendData(data, over: conn)
+    }
+
+    private func sendPayload(_ payload: PayloadV1, over conn: NWConnection) async throws {
+        let msg = SyncMessage.payloadMessage(payload)
+        let data = try makeEncoder().encode(msg)
+        return try await withCheckedThrowingContinuation { continuation in
+            let metadata = NWProtocolWebSocket.Metadata(opcode: .binary)
+            let context = NWConnection.ContentContext(identifier: "sync", metadata: [metadata])
+            conn.send(content: data, contentContext: context, completion: .contentProcessed { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            })
+        }
+    }
+
+    private func sendData(_ data: Data, over conn: NWConnection) {
+        let metadata = NWProtocolWebSocket.Metadata(opcode: .binary)
+        let context = NWConnection.ContentContext(identifier: "sync", metadata: [metadata])
+        conn.send(content: data, contentContext: context, completion: .contentProcessed { _ in })
+    }
+
+    // MARK: - Utilities
+
+    private func makeParameters() -> NWParameters {
         let ws = NWProtocolWebSocket.Options(.version13)
         let tcp = NWProtocolTCP.Options()
-        
-        // Enable TCP keepalive for better connection health
         tcp.enableKeepalive = true
         tcp.keepaliveIdle = 10
         tcp.keepaliveInterval = 5
         tcp.keepaliveCount = 3
-        
-        let parameters = NWParameters(tls: nil, tcp: tcp)
-        parameters.defaultProtocolStack.applicationProtocols.insert(ws, at: 0)
-        
-        // Configure for local network usage
-        parameters.includePeerToPeer = true
-        parameters.allowLocalEndpointReuse = true
-        parameters.allowFastOpen = false // Disable for better compatibility
-        
-        // Set service class for sync operations
-        parameters.serviceClass = .responsiveData
-        
-        return parameters
+
+        let params = NWParameters(tls: nil, tcp: tcp)
+        params.defaultProtocolStack.applicationProtocols.insert(ws, at: 0)
+        params.includePeerToPeer = true
+        params.allowLocalEndpointReuse = true
+        params.serviceClass = .responsiveData
+        return params
     }
-    
-    private func handleBrowseResults(_ results: Set<NWBrowser.Result>, changes: Set<NWBrowser.Result.Change>) {
-        // Handle browse results directly - they are already called on queue
-        for change in changes {
-            switch change {
-            case .added(let result):
-                self.addDiscoveredPeer(from: result)
-            case .removed(let result):
-                self.removeDiscoveredPeer(from: result)
-            case .changed(_, let new, _):
-                self.updateDiscoveredPeer(from: new)
-            case .identical:
-                // No action needed for identical peers
-                break
-            @unknown default:
-                break
-            }
-        }
+
+    private func makeEncoder() -> JSONEncoder {
+        let e = JSONEncoder()
+        e.dateEncodingStrategy = .iso8601
+        return e
     }
-    
-    private func addDiscoveredPeer(from result: NWBrowser.Result) {
-        let peer = createSyncPeer(from: result)
-        if !discoveredPeers.contains(where: { $0.id == peer.id }) {
-            discoveredPeers.append(peer)
-            peerEndpoints[peer.id] = result.endpoint // Store endpoint for connection
-            print("🌐 Found peer: \(peer.displayName)")
-        }
-    }
-    
-    private func removeDiscoveredPeer(from result: NWBrowser.Result) {
-        let peer = createSyncPeer(from: result)
-        discoveredPeers.removeAll { $0.id == peer.id }
-        peerEndpoints.removeValue(forKey: peer.id) // Clean up endpoint tracking
-        print("🌐 Lost peer: \(peer.displayName)")
-    }
-    
-    private func updateDiscoveredPeer(from result: NWBrowser.Result) {
-        let peer = createSyncPeer(from: result)
-        if let index = discoveredPeers.firstIndex(where: { $0.id == peer.id }) {
-            discoveredPeers[index] = peer
-        }
-    }
-    
-    private func createSyncPeer(from result: NWBrowser.Result) -> SyncPeer {
-        var displayName = "Unknown Device"
-        var peerIdString = UUID().uuidString
-        var metadata: [String: String] = [:]
-        
-        if case .bonjour(let txtRecord) = result.metadata {
-            if let name = txtRecord["displayName"] {
-                displayName = name
-                metadata["displayName"] = name
-            }
-            if let peerID = txtRecord["peerID"] {
-                peerIdString = peerID
-                metadata["peerID"] = peerID
-            }
-        }
-        
-        return SyncPeer(id: peerIdString, displayName: displayName, metadata: metadata)
-    }
-    
-    private func findEndpoint(for peer: SyncPeer) -> NWEndpoint? {
-        return peerEndpoints[peer.id]
-    }
-    
-    private func handleNewConnection(_ connection: NWConnection) {
-        print("🌐 New incoming connection")
-        
-        connection.stateUpdateHandler = { [weak self] state in
-            self?.handleIncomingConnectionState(state, connection: connection)
-        }
-        
-        connection.start(queue: queue)
-    }
-    
-    private func handleConnectionState(_ state: NWConnection.State, for peer: SyncPeer, connection: NWConnection) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            switch state {
-            case .setup:
-                // Connection is being set up
-                break
-                
-            case .waiting(let error):
-                print("🌐 Connection waiting: \(error.localizedDescription)")
-                
-            case .preparing:
-                // Connection is preparing
-                break
-                
-            case .ready:
-                print("🌐 Connected to peer: \(peer.displayName)")
-                self.connectedPeers.append(peer)
-                self.setState(.connected)
-                self.startReceiving(on: connection)
-                
-            case .failed(let error):
-                print("🌐 Connection failed: \(error.localizedDescription)")
-                self.setError("Connection failed: \(error.localizedDescription)")
-                self.connections.removeValue(forKey: peer.id)
-                
-            case .cancelled:
-                print("🌐 Connection cancelled for peer: \(peer.displayName)")
-                self.connections.removeValue(forKey: peer.id)
-                self.connectedPeers.removeAll { $0.id == peer.id }
-                
-            @unknown default:
-                break
-            }
-        }
-    }
-    
-    private func handleIncomingConnectionState(_ state: NWConnection.State, connection: NWConnection) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            switch state {
-            case .setup:
-                // Connection is being set up
-                break
-                
-            case .waiting(let error):
-                print("🌐 Incoming connection waiting: \(error.localizedDescription)")
-                
-            case .preparing:
-                // Connection is preparing
-                break
-                
-            case .ready:
-                print("🌐 Incoming connection ready")
-                self.setState(.connected)
-                self.startReceiving(on: connection)
-                
-            case .failed(let error):
-                print("🌐 Incoming connection failed: \(error.localizedDescription)")
-                
-            case .cancelled:
-                print("🌐 Incoming connection cancelled")
-                
-            @unknown default:
-                break
-            }
-        }
-    }
-    
-    private func handleBrowserState(_ state: NWBrowser.State) {
-        switch state {
-        case .setup:
-            print("🌐 Browser setup")
-            
-        case .ready:
-            print("🌐 Browser ready")
-            
-        case .failed(let error):
-            print("🌐 Browser failed with error: \(error)")
-            DispatchQueue.main.async { [weak self] in
-                // Check for DNS policy error (nw_browser_fail_on_dns_error_locked)
-                let errorDescription = error.localizedDescription
-                if errorDescription.contains("PolicyDenied") || errorDescription.contains("65570") {
-                    // DNS Policy error - common in simulator
-                    self?.setError("Network discovery blocked by system policy. Try on a physical device or check network permissions.")
-                } else {
-                    self?.setError("Browser failed: \(error.localizedDescription)")
-                }
-            }
-            
-        case .cancelled:
-            print("🌐 Browser cancelled")
-            
-        case .waiting(let error):
-            print("🌐 Browser waiting: \(error.localizedDescription)")
-            // Don't treat waiting as an error - it might recover
-            
-        @unknown default:
-            break
-        }
-    }
-    
-    private func handleListenerState(_ state: NWListener.State) {
-        switch state {
-        case .setup:
-            print("🌐 Listener setup")
-            
-        case .ready:
-            print("🌐 Listener ready and advertising")
-            
-        case .failed(let error):
-            print("🌐 Listener failed with error: \(error)")
-            DispatchQueue.main.async { [weak self] in
-                // Check for DNS policy error (nw_browser_fail_on_dns_error_locked)
-                let errorDescription = error.localizedDescription
-                if errorDescription.contains("PolicyDenied") || errorDescription.contains("65570") {
-                    // DNS Policy error - common in simulator
-                    self?.setError("Network advertising blocked by system policy. Try on a physical device or check network permissions.")
-                } else {
-                    self?.setError("Listener failed: \(error.localizedDescription)")
-                }
-            }
-            
-        case .cancelled:
-            print("🌐 Listener cancelled")
-            
-        case .waiting(let error):
-            print("🌐 Listener waiting: \(error.localizedDescription)")
-            // Don't treat waiting as an error - it might recover
-            
-        @unknown default:
-            break
-        }
-    }
-    
-    private func sendMessage(_ data: Data, to connection: NWConnection) {
-        let metadata = NWProtocolWebSocket.Metadata(opcode: .binary)
-        let context = NWConnection.ContentContext(identifier: "sync", metadata: [metadata])
-        
-        connection.send(content: data, contentContext: context, completion: .contentProcessed { [weak self] error in
-            if let error = error {
-                DispatchQueue.main.async {
-                    self?.onSyncCompletion?(.failure(error))
-                    self?.setError("Send failed: \(error.localizedDescription)")
-                }
-            } else {
-                // Message sent successfully - complete transfer
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-                    self?.completeTransfer(success: true)
-                }
-            }
-        })
-    }
-    
-    private func startReceiving(on connection: NWConnection) {
-        connection.receiveMessage { [weak self] data, context, isComplete, error in
-            if let error = error {
-                print("🌐 Receive error: \(error.localizedDescription)")
-                return
-            }
-            
-            if let data = data {
-                self?.handleReceivedMessage(data)
-            }
-            
-            if !isComplete {
-                self?.startReceiving(on: connection)
-            }
-        }
-    }
-    
-    private func handleReceivedMessage(_ data: Data) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            do {
-                let decoder = JSONDecoder()
-                decoder.dateDecodingStrategy = .iso8601
-                let payload = try decoder.decode(PayloadV1.self, from: data)
-                
-                // If we're in receiver mode, present the payload for user approval
-                if let onIncomingSync = self.onIncomingSync {
-                    self.setState(.receivingApproval)
-                    onIncomingSync(payload) { [weak self] accepted in
-                        DispatchQueue.main.async {
-                            if accepted {
-                                self?.completeTransfer(success: true)
-                            } else {
-                                self?.setError("Sync declined")
-                            }
-                        }
-                    }
-                } else {
-                    // We're in sender mode and got an unexpected message
-                    self.completeTransfer(success: true)
-                }
-                
-            } catch {
-                self.setError("Invalid sync data received")
-            }
-        }
-    }
-    
-    // MARK: - Utility Methods
-    
+
     private func setState(_ newState: SyncState) {
-        print("🌐 State change: \(state) -> \(newState)")
         state = newState
-        if newState != .transferring {
-            progress = 0.0
-        }
-        if newState == .idle {
-            errorMessage = nil
-        }
     }
-    
-    private func setError(_ message: String) {
-        errorMessage = message
-        setState(.error)
-    }
-    
-    private func startProgressAnimation() {
-        // Simulate progress for better UX
-        progress = 0.1
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            self?.progress = 0.5
+
+    private func friendlyNetworkError(_ error: Error) -> String {
+        let desc = error.localizedDescription
+        if desc.contains("PolicyDenied") || desc.contains("65570") {
+            return "Network discovery blocked by system policy. Try on a physical device."
         }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            self?.progress = 0.8
-        }
+        return desc
     }
-    
-    private func completeTransfer(success: Bool, error: Error? = nil) {
-        if success {
-            progress = 1.0
-            setState(.completed)
-            onSyncCompletion?(.success(()))
-        } else {
-            setState(.error)
-            onSyncCompletion?(.failure(error ?? SyncError.transferFailed))
-        }
-    }
-    
+
     private func reset() {
+        receiveContinuation?.resume(returning: nil)
+        receiveContinuation = nil
+
         browser?.cancel()
         listener?.cancel()
-        
-        for connection in connections.values {
-            connection.cancel()
-        }
-        
+        connection?.cancel()
+
         browser = nil
         listener = nil
-        connections.removeAll()
-        peerEndpoints.removeAll() // Clear endpoint tracking
-        pendingPayload = nil
-        onSyncCompletion = nil
-        onIncomingSync = nil
-        
-        discoveredPeers.removeAll()
-        connectedPeers.removeAll()
+        connection = nil
+        peerEndpoints.removeAll()
+        localHello = nil
+        peerHello = nil
+
         setState(.idle)
     }
 }

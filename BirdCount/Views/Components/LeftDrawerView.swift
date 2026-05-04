@@ -7,10 +7,9 @@ struct LeftDrawerView: View {
     @Environment(ObservationStore.self) private var observations
     @Environment(TaxonomyStore.self) private var taxonomy
     @Environment(DateRangeStore.self) private var dateRangeStore
-    
-    // Internal state for sync functionality
+    @Environment(SettingsStore.self) private var settingsStore
+
     @State private var showSyncSheet: Bool = false
-    @State private var syncMode: SyncMode = .sender
     @State private var shareSheet: Bool = false
     @State private var importSheet: Bool = false
     
@@ -78,20 +77,9 @@ struct LeftDrawerView: View {
                                 
                                 DrawerMenuItem(
                                     icon: "iphone.radiowaves.left.and.right",
-                                    title: Strings.Share.sendNearby.string,
-                                    disabled: observations.totalIndividuals(in: dateRangeStore.dateRange) == 0
+                                    title: "Sync with Nearby Phones"
                                 ) {
                                     isPresented = false
-                                    syncMode = .sender
-                                    showSyncSheet = true
-                                }
-                                
-                                DrawerMenuItem(
-                                    icon: "wave.3.right",
-                                    title: Strings.Share.receiveNearby.string
-                                ) {
-                                    isPresented = false
-                                    syncMode = .receiver
                                     showSyncSheet = true
                                 }
                             }
@@ -131,7 +119,11 @@ struct LeftDrawerView: View {
             ImportSheet()
         }
         .sheet(isPresented: $showSyncSheet) {
-            SyncSheet(initialMode: syncMode)
+            SyncSheet(
+                observationStore: observations,
+                settingsStore: settingsStore,
+                dateRangeStore: dateRangeStore
+            )
         }
     }
     
@@ -207,6 +199,7 @@ private struct DrawerMenuItem: View {
         .environment(ObservationStore())
         .environment(TaxonomyStore())
         .environment(DateRangeStore())
+        .environment(SettingsStore())
     }
 }
 #endif

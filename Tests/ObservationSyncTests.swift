@@ -20,7 +20,7 @@ struct ObservationSyncTests {
         let range = DateRange(begin: startDate, end: endDate)
         
         // Export observations for sync
-        let payload = ObservationExportService.exportForSync(in: range, from: observationStore)
+        let payload = ObservationExportService.exportForSync(displayName: "Test Device", in: range, from: observationStore)
         
         // Verify payload structure
         #expect(payload.schemaVersion == 1)
@@ -57,26 +57,17 @@ struct ObservationSyncTests {
             observations: observations
         )
         
-        // Verify store is initially empty
         #expect(observationStore.observations.count == 0)
-        
-        // Import the payload
+
         do {
             let _ = try ObservationImportService.importFromSync(payload, into: observationStore)
         } catch {
             #expect(Bool(false), "Import failed with error: \(error)")
             return
         }
-        
-        // Debug output
-        print("Imported observations count: \(observationStore.observations.count)")
-        for obs in observationStore.observations {
-            print("- \(obs.taxonId): count=\(obs.count), observer='\(obs.observer)'")
-        }
-        
-        // Verify observations were imported
+
         #expect(observationStore.observations.count == 2)
-        
+
         let importedTaxa = Set(observationStore.observations.map { $0.taxonId })
         #expect(importedTaxa.contains("redwin"))
         #expect(importedTaxa.contains("blujay"))
@@ -106,9 +97,10 @@ struct ObservationSyncTests {
             observations: [duplicateObservation, newObservation]
         )
         
-        // Import the payload
         do {
-            try ObservationImportService.importFromSync(payload, into: observationStore)
+            let stats = try ObservationImportService.importFromSync(payload, into: observationStore)
+            #expect(stats.duplicatesSkipped == 1)
+            #expect(stats.newRecordsImported == 1)
         } catch {
             #expect(Bool(false), "Import failed with error: \(error)")
             return
@@ -123,6 +115,34 @@ struct ObservationSyncTests {
         #expect(existingObservation?.count == 1) // Original count, not the duplicate's count
     }
     
+    @Test func testOrphanedChildAttachesToExistingParent() throws {
+        let store = ObservationStore()
+        store.clearAll()
+
+        let parentId = UUID()
+        let parent = ObservationRecord(id: parentId, taxonId: "amecro", begin: Date(), end: nil, count: 1, observer: "")
+        store.importObservations([parent])
+        #expect(store.observations.count == 1)
+        #expect(store.observations.first?.children.isEmpty == true)
+
+        // Payload contains only the child — parent is already in the store.
+        let childObs = ObservationRecordDTO(
+            id: UUID(), parentId: parentId, taxonId: "amecro",
+            begin: Date(), end: Date(), count: 1, observer: "peer@example.com"
+        )
+        let payload = PayloadV1(
+            schemaVersion: 1, appVersion: "1.0", senderDisplayName: "Peer",
+            rangeStart: Date().addingTimeInterval(-3600), rangeEnd: Date(),
+            observations: [childObs]
+        )
+
+        let stats = try ObservationImportService.importFromSync(payload, into: store)
+        #expect(stats.totalRecordsProcessed == 1)
+        // Parent record count stays the same; child attaches to existing parent.
+        #expect(store.observations.count == 1)
+        #expect(store.observations.first?.children.count == 1)
+    }
+
     @Test func testUnsupportedSchemaVersion() {
         let observationStore = ObservationStore()
         
