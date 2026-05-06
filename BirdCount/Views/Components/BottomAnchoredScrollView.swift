@@ -46,13 +46,28 @@ struct BottomAnchoredScrollView<Content: View>: View {
                 }
                 .defaultScrollAnchor(.bottom)
                 .onAppear {
-                    reader.scrollTo(Self.anchorID, anchor: .bottom)
+                    withAnimation(.none) {
+                        reader.scrollTo(Self.anchorID, anchor: .bottom)
+                    }
                 }
                 .onChange(of: scrollToBottomTrigger) { _, _ in
-                    reader.scrollTo(Self.anchorID, anchor: .bottom)
+                    // Explicit no-animation: in iOS 26 scrollTo inherits the ambient
+                    // transaction, which is animated when fired from onChange.
+                    withAnimation(.none) {
+                        reader.scrollTo(Self.anchorID, anchor: .bottom)
+                    }
                 }
                 .onChange(of: scrollToBottomOnChange) { _, _ in
-                    reader.scrollTo(Self.anchorID, anchor: .bottom)
+                    // Defer one actor turn so the layout pass for the new content
+                    // completes before we try to scroll. Without the defer the anchor
+                    // position is still calculated against the old content height,
+                    // leaving the view blank or near the top when a filter expands
+                    // the list. withAnimation(.none) suppresses the iOS 26 animation.
+                    Task { @MainActor [reader] in
+                        withAnimation(.none) {
+                            reader.scrollTo(Self.anchorID, anchor: .bottom)
+                        }
+                    }
                 }
             }
         }

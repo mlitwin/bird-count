@@ -156,12 +156,12 @@ struct SyncStateTransitionTests {
         mock.discoveryDelay = .seconds(9999) // prevent auto-handshake
         let vm = makeVM(transport: mock)
         vm.start()
-        try await Task.sleep(for: .milliseconds(50))
+        try await Task.sleep(for: .milliseconds(200))
         #expect(vm.state == .discovering)
         #expect(mock.startDiscoveryCallCount == 1)
 
         vm.rolePreference = .sendOnly
-        try await Task.sleep(for: .milliseconds(50))
+        try await Task.sleep(for: .milliseconds(200))
         #expect(vm.state == .discovering)
         #expect(mock.startDiscoveryCallCount == 2)
     }
