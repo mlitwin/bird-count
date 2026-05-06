@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// A ScrollView anchored to the bottom: content grows upward and the view
-/// starts scrolled to the bottom. The minimum content height fills the available
-/// space so short lists remain bottom-aligned rather than top-aligned.
+/// starts scrolled to the bottom. Short lists are bottom-aligned within the
+/// available space.
 ///
 /// ## Scrolling to the bottom
 ///
@@ -12,63 +12,33 @@ import SwiftUI
 ///   e.g. immediately after appending a new item.
 ///
 /// - `scrollToBottomOnChange`: an `AnyHashable` token whose *identity* drives
-///   the scroll. When its value changes the view scrolls to the bottom. Pass
-///   a value that changes when the content *set* changes but stays equal when
-///   the content is merely re-sorted — e.g. `AnyHashable(Set(ids))`.
-///   This re-anchors the view after a filter/search resets the content without
-///   snapping on every sort-order update.
-///
-/// ## Why not `defaultScrollAnchor` alone?
-///
-/// `defaultScrollAnchor(.bottom)` only sets the *initial* position; it does
-/// not re-anchor when content size changes. If content shrinks (e.g. a filter
-/// narrows the list) the scroll offset is clamped to the smaller range, and
-/// when the content later expands that same low offset sits near the top of
-/// the new large list. The explicit `scrollTo` calls handle this.
+///   the scroll. When its value changes the view scrolls to the bottom after
+///   a one-actor-turn defer so layout can settle with the new content size.
+///   Pass a value that changes when the content *set* changes but stays equal
+///   when the content is merely re-sorted — e.g. `AnyHashable(Set(ids))`.
 struct BottomAnchoredScrollView<Content: View>: View {
     var scrollToBottomTrigger: Int = 0
     var scrollToBottomOnChange: AnyHashable? = nil
     @ViewBuilder var content: () -> Content
 
-    private static var anchorID: String { "__bottom_anchor__" }
+    @State private var scrollPosition = ScrollPosition(edge: .bottom)
 
     var body: some View {
-        GeometryReader { proxy in
-            ScrollViewReader { reader in
-                ScrollView {
-                    VStack(spacing: 0) {
-                        content()
-                        Color.clear
-                            .frame(height: 1)
-                            .id(Self.anchorID)
-                    }
-                    .frame(minHeight: proxy.size.height, alignment: .bottom)
-                }
-                .defaultScrollAnchor(.bottom)
-                .onAppear {
-                    withAnimation(.none) {
-                        reader.scrollTo(Self.anchorID, anchor: .bottom)
-                    }
-                }
-                .onChange(of: scrollToBottomTrigger) { _, _ in
-                    // Explicit no-animation: in iOS 26 scrollTo inherits the ambient
-                    // transaction, which is animated when fired from onChange.
-                    withAnimation(.none) {
-                        reader.scrollTo(Self.anchorID, anchor: .bottom)
-                    }
-                }
-                .onChange(of: scrollToBottomOnChange) { _, _ in
-                    // Defer one actor turn so the layout pass for the new content
-                    // completes before we try to scroll. Without the defer the anchor
-                    // position is still calculated against the old content height,
-                    // leaving the view blank or near the top when a filter expands
-                    // the list. withAnimation(.none) suppresses the iOS 26 animation.
-                    Task { @MainActor [reader] in
-                        withAnimation(.none) {
-                            reader.scrollTo(Self.anchorID, anchor: .bottom)
-                        }
-                    }
-                }
+        ScrollView {
+            content()
+        }
+        .defaultScrollAnchor(.bottom, for: .initialOffset)
+        .defaultScrollAnchor(.bottom, for: .sizeChanges)
+        .defaultScrollAnchor(.bottom, for: .alignment)
+        .scrollPosition($scrollPosition)
+        .onChange(of: scrollToBottomTrigger) { _, _ in
+            scrollPosition.scrollTo(edge: .bottom)
+        }
+        .onChange(of: scrollToBottomOnChange) { _, _ in
+            // Defer one actor turn so layout settles with the new content
+            // size before scrolling (filter-expand / content-swap path).
+            Task { @MainActor in
+                scrollPosition.scrollTo(edge: .bottom)
             }
         }
     }

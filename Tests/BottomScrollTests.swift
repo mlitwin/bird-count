@@ -169,10 +169,10 @@ struct BottomAnchoredScrollViewBehaviorTests {
         #expect(sv.contentOffset.y >= maxOffset - bottomScrollTolerance,
                 "Should snap to bottom after trigger")
 
-        // Regression check: in iOS 26, scrollTo was inheriting the onChange animation transaction.
-        // withAnimation(.none) must suppress it — no animation keys should be active.
+        // ScrollPosition.scrollTo(edge:) is instant by default (animation is opt-in),
+        // so no animation keys should be active on the scroll view's layer.
         let animKeys = sv.layer.animationKeys() ?? []
-        #expect(animKeys.isEmpty, "scrollTo must not animate (iOS 26 regression: inherited transaction)")
+        #expect(animKeys.isEmpty, "scrollTo must not animate")
     }
 
     @Test("Content set change scrolls to bottom after deferred layout (filter-clear path)")
