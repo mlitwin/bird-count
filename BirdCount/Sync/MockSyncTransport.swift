@@ -27,6 +27,7 @@ import Observation
     // MARK: - SyncTransport
 
     private(set) var state: SyncState = .idle
+    private(set) var peerInitiatedSync: Bool = false
 
     private var localHello: SyncHelloMessage?
     private var discoveryTask: Task<Void, Never>?
@@ -82,7 +83,14 @@ import Observation
         discoveryTask = nil
         localHello = nil
         capturedSentPayload = nil
+        peerInitiatedSync = false
         state = .idle
+    }
+
+    /// Simulates the peer sending a .syncStart message, as the real transport does when the
+    /// initiator calls initiateSync(). Use in tests to exercise the non-initiator path.
+    func triggerPeerInitiatedSync() {
+        peerInitiatedSync = true
     }
 
     // MARK: - Private

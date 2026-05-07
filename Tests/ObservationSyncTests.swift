@@ -2,164 +2,125 @@ import Foundation
 import Testing
 @testable import BirdCount
 
+@Suite("ObservationSync")
 struct ObservationSyncTests {
-    
-    @Test func testExportForSync() {
-        let observationStore = ObservationStore()
-        
-        // Clear any existing observations to ensure clean state
-        observationStore.clearAll()
-        
-        // Add some test observations
-        observationStore.addObservation("amecro", begin: Date(), end: nil, count: 2)
-        observationStore.addObservation("norbla", begin: Date().addingTimeInterval(-3600), end: nil, count: 1)
-        
-        // Create a date range that includes all observations
-        let startDate = Date().addingTimeInterval(-7200) // 2 hours ago
-        let endDate = Date().addingTimeInterval(3600)    // 1 hour from now
-        let range = DateRange(begin: startDate, end: endDate)
-        
-        // Export observations for sync
-        let payload = ObservationExportService.exportForSync(displayName: "Test Device", in: range, from: observationStore)
-        
-        // Verify payload structure
-        #expect(payload.schemaVersion == 1)
-        #expect(!payload.appVersion.isEmpty)
-        #expect(!payload.senderDisplayName.isEmpty)
-        #expect(payload.rangeStart == startDate)
-        #expect(payload.rangeEnd == endDate)
-        #expect(payload.observations.count == 2)
-        
-        // Check individual observations
-        let taxonIds = Set(payload.observations.map { $0.taxonId })
-        #expect(taxonIds.contains("amecro"))
-        #expect(taxonIds.contains("norbla"))
-    }
-    
-    @Test func testImportFromSync() {
-        let observationStore = ObservationStore()
-        
-        // Clear any existing observations to ensure clean state
-        observationStore.clearAll()
-        
-        // Create a payload to import
-        let observations = [
-            ObservationRecordDTO(id: UUID(), parentId: nil, taxonId: "redwin", begin: Date(), end: Date(), count: 3, observer: "test@example.com"),
-            ObservationRecordDTO(id: UUID(), parentId: nil, taxonId: "blujay", begin: Date(), end: Date(), count: 1, observer: "test@example.com")
-        ]
-        
-        let payload = PayloadV1(
-            schemaVersion: 1,
-            appVersion: "1.0.0",
-            senderDisplayName: "Test Device",
-            rangeStart: Date().addingTimeInterval(-3600),
-            rangeEnd: Date(),
-            observations: observations
-        )
-        
-        #expect(observationStore.observations.count == 0)
 
-        do {
-            let _ = try ObservationImportService.importFromSync(payload, into: observationStore)
-        } catch {
-            #expect(Bool(false), "Import failed with error: \(error)")
-            return
-        }
+    // MARK: - Helpers
 
-        #expect(observationStore.observations.count == 2)
-
-        let importedTaxa = Set(observationStore.observations.map { $0.taxonId })
-        #expect(importedTaxa.contains("redwin"))
-        #expect(importedTaxa.contains("blujay"))
-    }
-    
-    @Test func testImportDeduplication() {
-        let observationStore = ObservationStore()
-        
-        // Clear any existing observations to ensure clean state
-        observationStore.clearAll()
-        
-        // Add an observation to the store
-        let existingId = UUID()
-        let existingRecord = ObservationRecord(id: existingId, taxonId: "amecro", begin: Date(), end: nil, count: 1, observer: "")
-        observationStore.importObservations([existingRecord])
-        
-        // Create a payload with the same observation ID (should be deduplicated)
-        let duplicateObservation = ObservationRecordDTO(id: existingId, parentId: nil, taxonId: "amecro", begin: Date(), end: Date(), count: 2, observer: "test@example.com")
-        let newObservation = ObservationRecordDTO(id: UUID(), parentId: nil, taxonId: "norbla", begin: Date(), end: Date(), count: 1, observer: "test@example.com")
-        
-        let payload = PayloadV1(
-            schemaVersion: 1,
-            appVersion: "1.0.0",
-            senderDisplayName: "Test Device",
-            rangeStart: Date().addingTimeInterval(-3600),
-            rangeEnd: Date(),
-            observations: [duplicateObservation, newObservation]
-        )
-        
-        do {
-            let stats = try ObservationImportService.importFromSync(payload, into: observationStore)
-            #expect(stats.duplicatesSkipped == 1)
-            #expect(stats.newRecordsImported == 1)
-        } catch {
-            #expect(Bool(false), "Import failed with error: \(error)")
-            return
-        }
-        
-        // Verify only the new observation was added (duplicate was skipped)
-        #expect(observationStore.observations.count == 2)
-        
-        // Verify the existing observation was not modified
-        let existingObservation = observationStore.findRecord(by: existingId)
-        #expect(existingObservation != nil)
-        #expect(existingObservation?.count == 1) // Original count, not the duplicate's count
-    }
-    
-    @Test func testOrphanedChildAttachesToExistingParent() throws {
+    private func makeStore() -> ObservationStore {
         let store = ObservationStore()
         store.clearAll()
+        return store
+    }
 
-        let parentId = UUID()
-        let parent = ObservationRecord(id: parentId, taxonId: "amecro", begin: Date(), end: nil, count: 1, observer: "")
-        store.importObservations([parent])
-        #expect(store.observations.count == 1)
-        #expect(store.observations.first?.children.isEmpty == true)
+    private func makeRange() -> DateRange {
+        DateRange(begin: Date().addingTimeInterval(-7200), end: Date().addingTimeInterval(3600))
+    }
 
-        // Payload contains only the child — parent is already in the store.
-        let childObs = ObservationRecordDTO(
-            id: UUID(), parentId: parentId, taxonId: "amecro",
-            begin: Date(), end: Date(), count: 1, observer: "peer@example.com"
+    private func makePayload(taxonIds: [String], observer: String = "peer@example.com") -> PayloadV1 {
+        let obs = taxonIds.map { taxonId in
+            ObservationRecordDTO(id: UUID(), taxonId: taxonId,
+                                 begin: Date(), end: Date(), count: 1, observer: observer)
+        }
+        return PayloadV1(
+            schemaVersion: 1, appVersion: "1.0", senderDisplayName: "Peer",
+            rangeStart: Date().addingTimeInterval(-3600), rangeEnd: Date(),
+            observations: obs
         )
+    }
+
+    // MARK: - Export
+
+    @Test func exportIncludesAllObservationsInRange() {
+        let store = makeStore()
+        store.addObservation("amecro", begin: Date(), end: nil, count: 2)
+        store.addObservation("norbla", begin: Date().addingTimeInterval(-3600), end: nil, count: 1)
+
+        let range = makeRange()
+        let payload = ObservationExportService.exportForSync(displayName: "Test Device", in: range, from: store)
+
+        #expect(payload.schemaVersion == 1)
+        #expect(!payload.appVersion.isEmpty)
+        #expect(payload.rangeStart == range.begin)
+        #expect(payload.rangeEnd == range.end)
+        #expect(Set(payload.observations.map { $0.taxonId }) == ["amecro", "norbla"])
+    }
+
+    @Test func exportExcludesObservationsOutsideRange() {
+        let store = makeStore()
+        store.addObservation("amecro", begin: Date(), end: nil, count: 1)
+
+        // Range in the far past — should capture nothing
+        let pastRange = DateRange(
+            begin: Date().addingTimeInterval(-86400 * 365),
+            end: Date().addingTimeInterval(-86400 * 364)
+        )
+        let payload = ObservationExportService.exportForSync(displayName: "Test", in: pastRange, from: store)
+        #expect(payload.observations.isEmpty)
+    }
+
+    // MARK: - Import
+
+    @Test func importAddsNewObservations() throws {
+        let store = makeStore()
+        _ = try ObservationImportService.importFromSync(makePayload(taxonIds: ["redwin", "blujay"]), into: store)
+        #expect(store.observations.count == 2)
+        #expect(Set(store.observations.map { $0.taxonId }) == ["redwin", "blujay"])
+    }
+
+    @Test func importDeduplicatesByID() throws {
+        let store = makeStore()
+        let existingId = UUID()
+        store.importObservations([ObservationRecord(id: existingId, taxonId: "amecro",
+                                                    begin: Date(), end: nil, count: 1, observer: "")])
+
         let payload = PayloadV1(
             schemaVersion: 1, appVersion: "1.0", senderDisplayName: "Peer",
             rangeStart: Date().addingTimeInterval(-3600), rangeEnd: Date(),
-            observations: [childObs]
+            observations: [
+                ObservationRecordDTO(id: existingId, taxonId: "amecro",
+                                     begin: Date(), end: Date(), count: 99, observer: "peer@example.com"),
+                ObservationRecordDTO(id: UUID(), taxonId: "norbla",
+                                     begin: Date(), end: Date(), count: 1, observer: "peer@example.com")
+            ]
         )
-
         let stats = try ObservationImportService.importFromSync(payload, into: store)
+
+        #expect(stats.duplicatesSkipped == 1)
+        #expect(stats.newRecordsImported == 1)
+        #expect(store.observations.count == 2)
+        // Original count preserved — duplicate was skipped, not applied
+        #expect(store.findRecord(by: existingId)?.count == 1)
+    }
+
+    @Test func orphanedChildAttachesToExistingParent() throws {
+        let store = makeStore()
+        let parentId = UUID()
+        store.importObservations([ObservationRecord(id: parentId, taxonId: "amecro",
+                                                    begin: Date(), end: nil, count: 1, observer: "")])
+
+        let payload = PayloadV1(
+            schemaVersion: 1, appVersion: "1.0", senderDisplayName: "Peer",
+            rangeStart: Date().addingTimeInterval(-3600), rangeEnd: Date(),
+            observations: [ObservationRecordDTO(id: UUID(), parentId: parentId, taxonId: "amecro",
+                                                begin: Date(), end: Date(), count: 1, observer: "peer@example.com")]
+        )
+        let stats = try ObservationImportService.importFromSync(payload, into: store)
+
         #expect(stats.totalRecordsProcessed == 1)
-        // Parent record count stays the same; child attaches to existing parent.
         #expect(store.observations.count == 1)
         #expect(store.observations.first?.children.count == 1)
     }
 
-    @Test func testUnsupportedSchemaVersion() {
-        let observationStore = ObservationStore()
-        
-        // Clear any existing observations to ensure clean state
-        observationStore.clearAll()
-        
+    @Test func unsupportedSchemaVersionThrows() {
+        let store = makeStore()
         let payload = PayloadV1(
-            schemaVersion: 999, // Unsupported version
-            appVersion: "1.0.0",
-            senderDisplayName: "Test Device",
-            rangeStart: Date().addingTimeInterval(-3600),
-            rangeEnd: Date(),
+            schemaVersion: 999, appVersion: "1.0", senderDisplayName: "Test",
+            rangeStart: Date().addingTimeInterval(-3600), rangeEnd: Date(),
             observations: []
         )
-        
         #expect(throws: ObservationImportService.ImportError.unsupportedSchemaVersion(999)) {
-            try ObservationImportService.importFromSync(payload, into: observationStore)
+            try ObservationImportService.importFromSync(payload, into: store)
         }
     }
 }

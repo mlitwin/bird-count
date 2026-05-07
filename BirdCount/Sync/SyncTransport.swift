@@ -40,6 +40,10 @@ enum SyncError: Error, LocalizedError {
 protocol SyncTransport: AnyObject {
     var state: SyncState { get }
 
+    /// True when the peer has sent a syncStart message. The VM uses this to auto-initiate the
+    /// non-initiator's side of a bidirectional sync without requiring a user tap on both devices.
+    var peerInitiatedSync: Bool { get }
+
     /// Start advertising and browsing simultaneously. The hello is sent to any peer that connects.
     func startDiscovery(localHello: SyncHelloMessage)
 

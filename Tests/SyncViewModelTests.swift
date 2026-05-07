@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import BirdCount
 
-// Helpers shared across tests
+// MARK: - Test Helpers
 
 private func makeStore(observations: [(taxonId: String, count: Int)] = []) -> ObservationStore {
     let store = ObservationStore()
@@ -36,6 +36,34 @@ private func makeVM(
     )
 }
 
+/// Build a payload with the given taxon IDs. Each observation gets a fresh UUID.
+private func makeIncomingPayload(
+    taxonIds: [String],
+    observer: String = "peer@example.com"
+) -> PayloadV1 {
+    let obs = taxonIds.map { taxonId in
+        ObservationRecordDTO(id: UUID(), taxonId: taxonId,
+                             begin: Date(), end: Date(), count: 1, observer: observer)
+    }
+    return PayloadV1(
+        schemaVersion: 1, appVersion: "1.0", senderDisplayName: "Peer",
+        rangeStart: Date().addingTimeInterval(-3600), rangeEnd: Date(),
+        observations: obs
+    )
+}
+
+/// Asserts the VM is in `.completed` and returns the stats; records an issue and returns nil otherwise.
+private func requireCompleted(
+    _ state: SyncState,
+    sourceLocation: SourceLocation = #_sourceLocation
+) -> SyncCompletionStats? {
+    guard case .completed(let stats) = state else {
+        Issue.record("Expected .completed, got \(state)", sourceLocation: sourceLocation)
+        return nil
+    }
+    return stats
+}
+
 // MARK: - Display Name
 
 struct SyncDisplayNameTests {
@@ -54,30 +82,16 @@ struct SyncDisplayNameTests {
 
 struct SyncLocalSummaryTests {
     @Test func summaryReflectsObservations() {
-        let store = makeStore(observations: [("amecro", 2), ("norbla", 1)])
-        let filter = makeFilter()
-        let vm = SyncViewModel(
-            transport: MockSyncTransport(),
-            observationStore: store,
-            settingsStore: makeSettings(),
-            initialFilter: filter
-        )
+        let vm = makeVM(observations: [("amecro", 2), ("norbla", 1)])
         #expect(vm.localSendSummary.observationCount == 2)
         #expect(vm.localSendSummary.speciesCount == 2)
     }
 
     @Test func summaryUpdatesWhenFilterChanges() {
-        let store = makeStore(observations: [("amecro", 2)])
-        let oldFilter = makeFilter()
-        let vm = SyncViewModel(
-            transport: MockSyncTransport(),
-            observationStore: store,
-            settingsStore: makeSettings(),
-            initialFilter: oldFilter
-        )
-        // Narrow the filter to the far past — no observations in range
-        let emptyFilter = DateRange(begin: Date().addingTimeInterval(-86400 * 365), end: Date().addingTimeInterval(-86400 * 364))
-        vm.syncFilter = emptyFilter
+        let vm = makeVM(observations: [("amecro", 2)])
+        let pastRange = DateRange(begin: Date().addingTimeInterval(-86400 * 365),
+                                  end: Date().addingTimeInterval(-86400 * 364))
+        vm.syncFilter = pastRange
         #expect(vm.localSendSummary.observationCount == 0)
     }
 }
@@ -87,7 +101,7 @@ struct SyncLocalSummaryTests {
 struct SyncStateTransitionTests {
     @Test func startsDiscovering() async throws {
         let mock = MockSyncTransport()
-        mock.discoveryDelay = .seconds(9999) // prevent auto-discovery
+        mock.discoveryDelay = .seconds(9999)
         let vm = makeVM(transport: mock)
         vm.start()
         try await Task.sleep(for: .milliseconds(50))
@@ -109,10 +123,7 @@ struct SyncStateTransitionTests {
         let mock = MockSyncTransport()
         mock.discoveryDelay = .milliseconds(50)
         mock.simulatedPeerHello = SyncHelloMessage(
-            displayName: "Peer",
-            peerID: UUID(),
-            rolePreference: .sendOnly,
-            sendSummary: nil
+            displayName: "Peer", peerID: UUID(), rolePreference: .sendOnly, sendSummary: nil
         )
         let vm = makeVM(transport: mock)
         vm.rolePreference = .sendOnly
@@ -127,10 +138,7 @@ struct SyncStateTransitionTests {
         let mock = MockSyncTransport()
         mock.discoveryDelay = .milliseconds(50)
         mock.simulatedPeerHello = SyncHelloMessage(
-            displayName: "Peer",
-            peerID: UUID(),
-            rolePreference: .receiveOnly,
-            sendSummary: nil
+            displayName: "Peer", peerID: UUID(), rolePreference: .receiveOnly, sendSummary: nil
         )
         let vm = makeVM(transport: mock)
         vm.rolePreference = .receiveOnly
@@ -153,7 +161,7 @@ struct SyncStateTransitionTests {
 
     @Test func roleChangeWhileDiscovering_restartsDiscovery() async throws {
         let mock = MockSyncTransport()
-        mock.discoveryDelay = .seconds(9999) // prevent auto-handshake
+        mock.discoveryDelay = .seconds(9999)
         let vm = makeVM(transport: mock)
         vm.start()
         try await Task.sleep(for: .milliseconds(200))
@@ -167,41 +175,21 @@ struct SyncStateTransitionTests {
     }
 }
 
-// MARK: - Sync Execution
+// MARK: - Sync Execution (Initiator Path)
 
 struct SyncExecutionTests {
     @Test func sendAndReceive_bothTransfer() async throws {
-        let incomingObs = [ObservationRecordDTO(
-            id: UUID(), parentId: nil, taxonId: "redwin",
-            begin: Date(), end: Date(), count: 2, observer: "peer@example.com"
-        )]
-        let incomingPayload = PayloadV1(
-            schemaVersion: 1, appVersion: "1.0", senderDisplayName: "Peer",
-            rangeStart: Date().addingTimeInterval(-3600), rangeEnd: Date(),
-            observations: incomingObs
-        )
-
         let mock = MockSyncTransport()
         mock.discoveryDelay = .milliseconds(50)
-        mock.simulatedIncomingPayload = incomingPayload
+        mock.simulatedIncomingPayload = makeIncomingPayload(taxonIds: ["redwin"])
 
-        let store = makeStore(observations: [("amecro", 1)])
-        let vm = SyncViewModel(
-            transport: mock,
-            observationStore: store,
-            settingsStore: makeSettings(email: "local@example.com"),
-            initialFilter: makeFilter()
-        )
-
+        let vm = makeVM(transport: mock, observations: [("amecro", 1)])
         vm.start()
         try await Task.sleep(for: .milliseconds(300))
         vm.initiateSync()
         try await Task.sleep(for: .milliseconds(500))
 
-        guard case .completed(let stats) = vm.state else {
-            Issue.record("Expected .completed, got \(vm.state)")
-            return
-        }
+        guard let stats = requireCompleted(vm.state) else { return }
         #expect(stats.sentCount == 1)
         #expect(stats.receivedCount == 1)
         #expect(mock.capturedSentPayload != nil)
@@ -211,10 +199,8 @@ struct SyncExecutionTests {
         let mock = MockSyncTransport()
         mock.discoveryDelay = .milliseconds(50)
         mock.simulatedPeerHello = SyncHelloMessage(
-            displayName: "Peer", peerID: UUID(),
-            rolePreference: .receiveOnly, sendSummary: nil
+            displayName: "Peer", peerID: UUID(), rolePreference: .receiveOnly, sendSummary: nil
         )
-        mock.simulatedIncomingPayload = nil
 
         let vm = makeVM(transport: mock, observations: [("amecro", 1)])
         vm.rolePreference = .sendOnly
@@ -223,36 +209,21 @@ struct SyncExecutionTests {
         vm.initiateSync()
         try await Task.sleep(for: .milliseconds(500))
 
-        guard case .completed(let stats) = vm.state else {
-            Issue.record("Expected .completed, got \(vm.state)")
-            return
-        }
+        guard let stats = requireCompleted(vm.state) else { return }
         #expect(stats.sentCount == 1)
         #expect(stats.receivedCount == 0)
     }
 
     @Test func receiveOnly_nothingSent() async throws {
-        let incomingObs = [ObservationRecordDTO(
-            id: UUID(), parentId: nil, taxonId: "blujay",
-            begin: Date(), end: Date(), count: 1, observer: "peer@example.com"
-        )]
-        let incomingPayload = PayloadV1(
-            schemaVersion: 1, appVersion: "1.0", senderDisplayName: "Peer",
-            rangeStart: Date().addingTimeInterval(-3600), rangeEnd: Date(),
-            observations: incomingObs
-        )
-
         let mock = MockSyncTransport()
         mock.discoveryDelay = .milliseconds(50)
         mock.simulatedPeerHello = SyncHelloMessage(
-            displayName: "Peer", peerID: UUID(),
-            rolePreference: .sendOnly,
-            sendSummary: SyncSendSummary(
-                observationCount: 1, speciesCount: 1,
-                dateRangeBegin: Date().addingTimeInterval(-3600), dateRangeEnd: Date()
-            )
+            displayName: "Peer", peerID: UUID(), rolePreference: .sendOnly,
+            sendSummary: SyncSendSummary(observationCount: 1, speciesCount: 1,
+                                         dateRangeBegin: Date().addingTimeInterval(-3600),
+                                         dateRangeEnd: Date())
         )
-        mock.simulatedIncomingPayload = incomingPayload
+        mock.simulatedIncomingPayload = makeIncomingPayload(taxonIds: ["blujay"])
 
         let vm = makeVM(transport: mock, observations: [("amecro", 1)])
         vm.rolePreference = .receiveOnly
@@ -261,60 +232,245 @@ struct SyncExecutionTests {
         vm.initiateSync()
         try await Task.sleep(for: .milliseconds(500))
 
-        guard case .completed(let stats) = vm.state else {
-            Issue.record("Expected .completed, got \(vm.state)")
-            return
-        }
+        guard let stats = requireCompleted(vm.state) else { return }
         #expect(stats.sentCount == 0)
         #expect(stats.receivedCount == 1)
         #expect(mock.capturedSentPayload == nil)
     }
 
-    @Test func completionStats_correctCounts() async throws {
-        // Pre-populate store with one record that will be a duplicate
-        let duplicateID = UUID()
+    @Test func completionStats_duplicatesSkipped() async throws {
         let store = makeStore()
-        store.importObservations([ObservationRecord(
-            id: duplicateID, taxonId: "amecro", begin: Date(), end: nil, count: 1, observer: ""
-        )])
-
-        let incomingObs = [
-            ObservationRecordDTO(id: duplicateID, parentId: nil, taxonId: "amecro",
-                                 begin: Date(), end: Date(), count: 1, observer: "p@e.com"),
-            ObservationRecordDTO(id: UUID(), parentId: nil, taxonId: "norbla",
-                                 begin: Date(), end: Date(), count: 1, observer: "p@e.com")
-        ]
-        let incomingPayload = PayloadV1(
+        let duplicateID = UUID()
+        store.importObservations([ObservationRecord(id: duplicateID, taxonId: "amecro",
+                                                    begin: Date(), end: nil, count: 1, observer: "")])
+        let payload = PayloadV1(
             schemaVersion: 1, appVersion: "1.0", senderDisplayName: "Peer",
             rangeStart: Date().addingTimeInterval(-3600), rangeEnd: Date(),
-            observations: incomingObs
+            observations: [
+                ObservationRecordDTO(id: duplicateID, taxonId: "amecro",
+                                     begin: Date(), end: Date(), count: 1, observer: "p@e.com"),
+                ObservationRecordDTO(id: UUID(), taxonId: "norbla",
+                                     begin: Date(), end: Date(), count: 1, observer: "p@e.com")
+            ]
         )
 
         let mock = MockSyncTransport()
         mock.discoveryDelay = .milliseconds(50)
-        mock.simulatedIncomingPayload = incomingPayload
+        mock.simulatedIncomingPayload = payload
 
-        let vm = SyncViewModel(
-            transport: mock,
-            observationStore: store,
-            settingsStore: makeSettings(email: "local@example.com"),
-            initialFilter: makeFilter()
-        )
+        let vm = SyncViewModel(transport: mock, observationStore: store,
+                               settingsStore: makeSettings(email: "local@example.com"),
+                               initialFilter: makeFilter())
         vm.start()
         try await Task.sleep(for: .milliseconds(300))
         vm.initiateSync()
         try await Task.sleep(for: .milliseconds(500))
 
-        guard case .completed(let stats) = vm.state else {
-            Issue.record("Expected .completed, got \(vm.state)")
-            return
-        }
+        guard let stats = requireCompleted(vm.state) else { return }
         #expect(stats.receivedCount == 1)
         #expect(stats.duplicatesSkipped == 1)
     }
 }
 
-// MARK: - Role Negotiation Logic
+// MARK: - Non-Initiator Path (Auto-Initiation)
+
+/// These tests verify the non-initiator side: the VM auto-calls initiateSync() when the peer
+/// signals .syncStart, without requiring a user tap on the second device.
+@Suite("SyncNonInitiator")
+struct SyncNonInitiatorTests {
+
+    @Test func autoInitiates_whenPeerSignals_whileReadyToSync() async throws {
+        let mock = MockSyncTransport()
+        mock.discoveryDelay = .milliseconds(50)
+        let vm = makeVM(transport: mock)
+        vm.start()
+        try await Task.sleep(for: .milliseconds(300))
+        if case .readyToSync = vm.state { } else {
+            Issue.record("Precondition: expected .readyToSync, got \(vm.state)"); return
+        }
+
+        mock.triggerPeerInitiatedSync()
+        try await Task.sleep(for: .milliseconds(500))
+
+        if case .completed = vm.state { } else {
+            Issue.record("Expected .completed after peer-initiated sync, got \(vm.state)")
+        }
+    }
+
+    @Test func autoInitiates_whenPeerSignals_beforeHandshake() async throws {
+        // .syncStart arrives before the hello exchange finishes.
+        // The VM should defer auto-initiation until it reaches .readyToSync.
+        let mock = MockSyncTransport()
+        mock.discoveryDelay = .milliseconds(200)
+        let vm = makeVM(transport: mock)
+        vm.start()
+
+        try await Task.sleep(for: .milliseconds(50))
+        #expect(vm.state == .discovering, "Precondition: must still be discovering")
+
+        mock.triggerPeerInitiatedSync()  // arrives before handshake
+
+        // Let the handshake complete and auto-initiation fire
+        try await Task.sleep(for: .milliseconds(800))
+        if case .completed = vm.state { } else {
+            Issue.record("Expected .completed; peerInitiatedSync before handshake should defer until readyToSync, got \(vm.state)")
+        }
+    }
+
+    @Test func nonInitiator_receivesIncomingPayload() async throws {
+        let mock = MockSyncTransport()
+        mock.discoveryDelay = .milliseconds(50)
+        mock.simulatedIncomingPayload = makeIncomingPayload(taxonIds: ["norbla", "blujay"])
+
+        let vm = makeVM(transport: mock)
+        vm.rolePreference = .receiveOnly
+        vm.start()
+        try await Task.sleep(for: .milliseconds(300))
+        mock.triggerPeerInitiatedSync()
+        try await Task.sleep(for: .milliseconds(500))
+
+        guard let stats = requireCompleted(vm.state) else { return }
+        #expect(stats.sentCount == 0)
+        #expect(stats.receivedCount == 2)
+    }
+
+    @Test func peerInitiatedSync_resetOnCancel() async throws {
+        let mock = MockSyncTransport()
+        mock.discoveryDelay = .seconds(9999)
+        let vm = makeVM(transport: mock)
+        vm.start()
+        try await Task.sleep(for: .milliseconds(50))
+        mock.triggerPeerInitiatedSync()
+        #expect(mock.peerInitiatedSync == true)
+
+        vm.cancel()
+        #expect(mock.peerInitiatedSync == false)
+    }
+}
+
+// MARK: - Bidirectional Sync Simulation
+
+/// Exercises both sides of a bidirectional sync independently using separate VM + mock pairs.
+/// In production both sides communicate over the network; here we simulate each side in isolation.
+@Suite("SyncBidirectional")
+struct SyncBidirectionalTests {
+
+    @Test func bothSides_completeWithCorrectStats() async throws {
+        // Initiator side: user taps "Sync"
+        let initiatorMock = MockSyncTransport()
+        initiatorMock.discoveryDelay = .milliseconds(50)
+        initiatorMock.simulatedIncomingPayload = makeIncomingPayload(taxonIds: ["norbla"])
+        let initiatorVM = makeVM(transport: initiatorMock, observations: [("amecro", 1)])
+        initiatorVM.start()
+        try await Task.sleep(for: .milliseconds(300))
+        initiatorVM.initiateSync()
+        try await Task.sleep(for: .milliseconds(500))
+
+        guard let initiatorStats = requireCompleted(initiatorVM.state) else { return }
+        #expect(initiatorStats.sentCount == 1)
+        #expect(initiatorStats.receivedCount == 1)
+
+        // Non-initiator side: peer signals .syncStart; VM auto-initiates
+        let nonInitiatorMock = MockSyncTransport()
+        nonInitiatorMock.discoveryDelay = .milliseconds(50)
+        nonInitiatorMock.simulatedIncomingPayload = makeIncomingPayload(taxonIds: ["amecro"])
+        let nonInitiatorVM = makeVM(transport: nonInitiatorMock, observations: [("norbla", 1)])
+        nonInitiatorVM.start()
+        try await Task.sleep(for: .milliseconds(300))
+        nonInitiatorMock.triggerPeerInitiatedSync()
+        try await Task.sleep(for: .milliseconds(500))
+
+        guard let nonInitiatorStats = requireCompleted(nonInitiatorVM.state) else { return }
+        #expect(nonInitiatorStats.sentCount == 1)
+        #expect(nonInitiatorStats.receivedCount == 1)
+    }
+
+    @Test func initiator_sendOnly_nonInitiator_receiveOnly() async throws {
+        // A sends (sendOnly), B receives (receiveOnly).
+        // A initiates; B auto-initiates via peerInitiatedSync.
+        let senderMock = MockSyncTransport()
+        senderMock.discoveryDelay = .milliseconds(50)
+        senderMock.simulatedPeerHello = SyncHelloMessage(
+            displayName: "Receiver", peerID: UUID(), rolePreference: .receiveOnly, sendSummary: nil
+        )
+        // Each tuple is one ObservationRecord; sentCount == number of records exported.
+        let senderVM = makeVM(transport: senderMock, observations: [("amecro", 1), ("norbla", 1)])
+        senderVM.rolePreference = .sendOnly
+        senderVM.start()
+        try await Task.sleep(for: .milliseconds(300))
+        senderVM.initiateSync()
+        try await Task.sleep(for: .milliseconds(500))
+
+        guard let senderStats = requireCompleted(senderVM.state) else { return }
+        #expect(senderStats.sentCount == 2)
+        #expect(senderStats.receivedCount == 0)
+
+        let receiverMock = MockSyncTransport()
+        receiverMock.discoveryDelay = .milliseconds(50)
+        receiverMock.simulatedPeerHello = SyncHelloMessage(
+            displayName: "Sender", peerID: UUID(), rolePreference: .sendOnly,
+            sendSummary: SyncSendSummary(observationCount: 2, speciesCount: 2,
+                                         dateRangeBegin: Date().addingTimeInterval(-3600),
+                                         dateRangeEnd: Date())
+        )
+        receiverMock.simulatedIncomingPayload = makeIncomingPayload(taxonIds: ["amecro", "norbla"])
+        let receiverVM = makeVM(transport: receiverMock)
+        receiverVM.rolePreference = .receiveOnly
+        receiverVM.start()
+        try await Task.sleep(for: .milliseconds(300))
+        receiverMock.triggerPeerInitiatedSync()
+        try await Task.sleep(for: .milliseconds(500))
+
+        guard let receiverStats = requireCompleted(receiverVM.state) else { return }
+        #expect(receiverStats.sentCount == 0)
+        #expect(receiverStats.receivedCount == 2)
+    }
+}
+
+// MARK: - Restart
+
+struct SyncRestartTests {
+    @Test func restart_fromCompleted_resumesDiscovery() async throws {
+        let mock = MockSyncTransport()
+        mock.discoveryDelay = .milliseconds(50)
+        let vm = makeVM(transport: mock)
+        vm.start()
+        try await Task.sleep(for: .milliseconds(300))
+        vm.initiateSync()
+        try await Task.sleep(for: .milliseconds(500))
+        guard case .completed = vm.state else {
+            Issue.record("Precondition: expected .completed, got \(vm.state)"); return
+        }
+
+        mock.discoveryDelay = .seconds(9999)
+        vm.restart()
+        try await Task.sleep(for: .milliseconds(100))
+
+        #expect(vm.state == .discovering)
+        #expect(mock.startDiscoveryCallCount == 2)
+        #expect(mock.peerInitiatedSync == false)
+    }
+
+    @Test func restart_clearsNonInitiatorFlag() async throws {
+        let mock = MockSyncTransport()
+        mock.discoveryDelay = .milliseconds(50)
+        let vm = makeVM(transport: mock)
+        vm.start()
+        try await Task.sleep(for: .milliseconds(300))
+        mock.triggerPeerInitiatedSync()
+        try await Task.sleep(for: .milliseconds(500))
+        guard case .completed = vm.state else {
+            Issue.record("Precondition: expected .completed, got \(vm.state)"); return
+        }
+
+        mock.discoveryDelay = .seconds(9999)
+        vm.restart()
+        try await Task.sleep(for: .milliseconds(100))
+        #expect(mock.peerInitiatedSync == false, "peerInitiatedSync must be cleared on restart")
+    }
+}
+
+// MARK: - Role Negotiation
 
 struct RoleNegotiationTests {
     @Test func sendAndReceive_vs_sendAndReceive_bothTransfer() {
@@ -348,15 +504,10 @@ struct RoleNegotiationTests {
 
 struct SyncMessageCodecTests {
     private let encoder: JSONEncoder = {
-        let e = JSONEncoder()
-        e.dateEncodingStrategy = .iso8601
-        return e
+        let e = JSONEncoder(); e.dateEncodingStrategy = .iso8601; return e
     }()
-
     private let decoder: JSONDecoder = {
-        let d = JSONDecoder()
-        d.dateDecodingStrategy = .iso8601
-        return d
+        let d = JSONDecoder(); d.dateDecodingStrategy = .iso8601; return d
     }()
 
     // ISO8601 encoder has second precision; truncate to avoid sub-second mismatch on decode.
@@ -366,50 +517,39 @@ struct SyncMessageCodecTests {
 
     @Test func helloRoundTrip() throws {
         let hello = SyncHelloMessage(
-            displayName: "test@example.com",
-            peerID: UUID(),
+            displayName: "test@example.com", peerID: UUID(),
             rolePreference: .sendAndReceive,
-            sendSummary: SyncSendSummary(
-                observationCount: 10,
-                speciesCount: 4,
-                dateRangeBegin: sec(Date().addingTimeInterval(-3600)),
-                dateRangeEnd: sec(Date())
-            )
+            sendSummary: SyncSendSummary(observationCount: 10, speciesCount: 4,
+                                         dateRangeBegin: sec(Date().addingTimeInterval(-3600)),
+                                         dateRangeEnd: sec(Date()))
         )
-        let msg = SyncMessage.helloMessage(hello)
-        let data = try encoder.encode(msg)
-        let decoded = try decoder.decode(SyncMessage.self, from: data)
+        let decoded = try decoder.decode(SyncMessage.self, from: encoder.encode(SyncMessage.helloMessage(hello)))
         #expect(decoded.type == .hello)
         #expect(decoded.hello == hello)
     }
 
     @Test func payloadRoundTrip() throws {
-        let obs = ObservationRecordDTO(
-            id: UUID(), taxonId: "amecro",
-            begin: Date(), end: Date(), count: 3, observer: "x@y.com"
-        )
-        let payload = PayloadV1(
-            schemaVersion: 1, appVersion: "1.0", senderDisplayName: "Alice",
-            rangeStart: Date().addingTimeInterval(-3600), rangeEnd: Date(),
-            observations: [obs]
-        )
-        let msg = SyncMessage.payloadMessage(payload)
-        let data = try encoder.encode(msg)
-        let decoded = try decoder.decode(SyncMessage.self, from: data)
+        let obs = ObservationRecordDTO(id: UUID(), taxonId: "amecro",
+                                       begin: Date(), end: Date(), count: 3, observer: "x@y.com")
+        let payload = PayloadV1(schemaVersion: 1, appVersion: "1.0", senderDisplayName: "Alice",
+                                rangeStart: Date().addingTimeInterval(-3600), rangeEnd: Date(),
+                                observations: [obs])
+        let decoded = try decoder.decode(SyncMessage.self, from: encoder.encode(SyncMessage.payloadMessage(payload)))
         #expect(decoded.type == .payload)
         #expect(decoded.payload?.observations.count == 1)
     }
 
+    @Test func syncStartRoundTrip() throws {
+        let decoded = try decoder.decode(SyncMessage.self, from: encoder.encode(SyncMessage.syncStartMessage()))
+        #expect(decoded.type == .syncStart)
+        #expect(decoded.hello == nil)
+        #expect(decoded.payload == nil)
+    }
+
     @Test func receiveOnlyHello_hasNilSendSummary() throws {
-        let hello = SyncHelloMessage(
-            displayName: "recv@example.com",
-            peerID: UUID(),
-            rolePreference: .receiveOnly,
-            sendSummary: nil
-        )
-        let msg = SyncMessage.helloMessage(hello)
-        let data = try encoder.encode(msg)
-        let decoded = try decoder.decode(SyncMessage.self, from: data)
+        let hello = SyncHelloMessage(displayName: "recv@example.com", peerID: UUID(),
+                                     rolePreference: .receiveOnly, sendSummary: nil)
+        let decoded = try decoder.decode(SyncMessage.self, from: encoder.encode(SyncMessage.helloMessage(hello)))
         #expect(decoded.hello?.sendSummary == nil)
     }
 }

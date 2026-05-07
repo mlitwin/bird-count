@@ -69,6 +69,11 @@ import UIKit
         state = .idle
     }
 
+    func restart() {
+        cancel()
+        start()
+    }
+
     // MARK: - Private
 
     private func buildHello() -> SyncHelloMessage {
@@ -89,13 +94,20 @@ import UIKit
     }
 
     /// Keeps self.state in sync with transport.state using recursive observation tracking.
+    /// Also auto-initiates sync when the peer signals it started (non-initiator path).
     private func trackTransportState() {
         withObservationTracking {
             state = transport.state
+            _ = transport.peerInitiatedSync
         } onChange: {
             Task { @MainActor [weak self] in
                 guard let self else { return }
-                self.state = self.transport.state
+                let newState = self.transport.state
+                let peerInitiated = self.transport.peerInitiatedSync
+                self.state = newState
+                if peerInitiated, case .readyToSync = newState {
+                    self.initiateSync()
+                }
                 self.trackTransportState()
             }
         }

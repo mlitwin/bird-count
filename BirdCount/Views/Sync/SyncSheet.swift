@@ -203,7 +203,21 @@ struct SyncSheet: View {
         case .transferring:
             EmptyView()
 
-        case .completed, .incompatible, .error:
+        case .completed, .error:
+            HStack(spacing: 12) {
+                Button(Strings.General.done.string) {
+                    vm.cancel()
+                    dismiss()
+                }
+                .buttonStyle(.bordered)
+                .frame(maxWidth: .infinity)
+
+                Button("Sync Again") { vm.restart() }
+                    .buttonStyle(.borderedProminent)
+                    .frame(maxWidth: .infinity)
+            }
+
+        case .incompatible:
             Button(Strings.General.done.string) {
                 vm.cancel()
                 dismiss()

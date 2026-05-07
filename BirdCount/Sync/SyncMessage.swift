@@ -46,6 +46,7 @@ struct SyncMessage: Codable {
     enum MessageType: String, Codable {
         case hello
         case payload
+        case syncStart
     }
 
     static func helloMessage(_ hello: SyncHelloMessage) -> SyncMessage {
@@ -54,6 +55,10 @@ struct SyncMessage: Codable {
 
     static func payloadMessage(_ payload: PayloadV1) -> SyncMessage {
         SyncMessage(version: 2, type: .payload, hello: nil, payload: payload)
+    }
+
+    static func syncStartMessage() -> SyncMessage {
+        SyncMessage(version: 2, type: .syncStart, hello: nil, payload: nil)
     }
 }
 

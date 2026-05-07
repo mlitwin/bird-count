@@ -8,6 +8,7 @@ import UIKit
     // MARK: - SyncTransport
 
     private(set) var state: SyncState = .idle
+    private(set) var peerInitiatedSync: Bool = false
 
     // MARK: - Private
 
@@ -30,6 +31,8 @@ import UIKit
 
     // Continuation for initiateSync to wait on incoming payload
     private var receiveContinuation: CheckedContinuation<PayloadV1?, Never>?
+    // Payload buffered when it arrives before initiateSync sets up the continuation
+    private var bufferedPayload: PayloadV1?
 
     // MARK: - SyncTransport Methods
 
@@ -47,6 +50,9 @@ import UIKit
 
         setState(.transferring)
 
+        // Signal the peer so the non-initiator auto-starts its side of the sync.
+        sendSyncStart(over: conn)
+
         if info.localWillSend, let payload {
             do {
                 try await sendPayload(payload, over: conn)
@@ -60,8 +66,16 @@ import UIKit
         var duplicatesSkipped = 0
 
         if info.peerWillSend != nil {
-            let incoming = await withCheckedContinuation { continuation in
-                self.receiveContinuation = continuation
+            // The peer's payload may have arrived before we set up the continuation (race on
+            // the non-initiator path). Use the buffer if present; otherwise wait normally.
+            let incoming: PayloadV1?
+            if let buffered = bufferedPayload {
+                bufferedPayload = nil
+                incoming = buffered
+            } else {
+                incoming = await withCheckedContinuation { continuation in
+                    self.receiveContinuation = continuation
+                }
             }
             if let incoming {
                 let stats = try? ObservationImportService.importFromSync(incoming, into: store)
@@ -285,6 +299,8 @@ import UIKit
                 if let hello = msg.hello { self.handlePeerHello(hello) }
             case .payload:
                 if let payload = msg.payload { self.handleIncomingPayload(payload) }
+            case .syncStart:
+                self.handleSyncStart()
             }
         }
     }
@@ -300,14 +316,27 @@ import UIKit
         }
     }
 
+    private func handleSyncStart() {
+        peerInitiatedSync = true
+    }
+
     private func handleIncomingPayload(_ payload: PayloadV1) {
         if let continuation = receiveContinuation {
             receiveContinuation = nil
             continuation.resume(returning: payload)
+        } else {
+            // Arrived before initiateSync set up the continuation — buffer for pickup.
+            bufferedPayload = payload
         }
     }
 
     // MARK: - Send helpers
+
+    private func sendSyncStart(over conn: NWConnection) {
+        let msg = SyncMessage.syncStartMessage()
+        guard let data = try? makeEncoder().encode(msg) else { return }
+        sendData(data, over: conn)
+    }
 
     private func sendHello(_ hello: SyncHelloMessage, over conn: NWConnection) {
         let msg = SyncMessage.helloMessage(hello)
@@ -376,6 +405,8 @@ import UIKit
     private func reset() {
         receiveContinuation?.resume(returning: nil)
         receiveContinuation = nil
+        bufferedPayload = nil
+        peerInitiatedSync = false
 
         browser?.cancel()
         listener?.cancel()
