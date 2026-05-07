@@ -1,5 +1,6 @@
-Changes since v1.0.18-51:
+Changes since v1.0.19-52:
 
-• f87fc47 Redesign sync as unified sheet, shared date range picker, and bug fixes
-• 7efe413 Regenerate Xcode schemes and version bump from fastlane alpha
-• 80f5fbf Fix bottom-anchor lost after filter clear/expand
+• 2b49380 Fix sync completion paths and simplify sync UI
+• 43ed2b4 Migrate BottomAnchoredScrollView to iOS 18 ScrollPosition API
+• 9394165 Add scroll-to-bottom design doc with current solution and iOS 18 migration path
+• db98ad8 Fix iOS 26 scroll regression in BottomAnchoredScrollView and harden tests
