@@ -3,6 +3,7 @@ import SwiftUI
 struct SyncSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var vm: SyncViewModel
+    @State private var showRangePicker = false
 
     init(observationStore: ObservationStore, settingsStore: SettingsStore, dateRangeStore: DateRangeStore) {
         _vm = State(wrappedValue: SyncViewModel(
@@ -18,7 +19,9 @@ struct SyncSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     rolePicker
-                    localSummarySection
+                    if vm.rolePreference != .receiveOnly {
+                        filterRow
+                    }
                     Divider()
                     discoverySection
                     actionSection
@@ -36,9 +39,11 @@ struct SyncSheet: View {
                 }
             }
         }
+        .sheet(isPresented: $showRangePicker) {
+            DateRangePickerSheet(range: $vm.syncFilter)
+        }
         .onAppear { vm.start() }
         .onDisappear { vm.cancel() }
-        // No child .sheet() calls — all state transitions are rendered inline.
     }
 
     // MARK: - Role Picker
@@ -57,36 +62,7 @@ struct SyncSheet: View {
         }
     }
 
-    // MARK: - Local Summary
-
-    @State private var showRangePicker = false
-
-    private var localSummarySection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("What you'll send")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            if vm.rolePreference == .receiveOnly {
-                Text("Nothing — receive only mode")
-                    .foregroundStyle(.secondary)
-            } else {
-                let summary = vm.localSendSummary
-                HStack {
-                    Label(
-                        "\(summary.observationCount) observation\(summary.observationCount == 1 ? "" : "s") · \(summary.speciesCount) species",
-                        systemImage: "binoculars"
-                    )
-                    .font(.body)
-                    Spacer()
-                }
-                filterRow
-            }
-        }
-        .sheet(isPresented: $showRangePicker) {
-            DateRangePickerSheet(range: $vm.syncFilter)
-        }
-    }
+    // MARK: - Filter Row
 
     private var filterRow: some View {
         HStack {
@@ -166,7 +142,7 @@ struct SyncSheet: View {
                     let s = vm.localSendSummary
                     HStack {
                         Image(systemName: "arrow.up.circle").foregroundStyle(.blue)
-                        Text("You'll send \(s.observationCount) observation\(s.observationCount == 1 ? "" : "s")")
+                        Text("Sending \(s.speciesCount) species")
                     }
                     .font(.subheadline)
                 }
@@ -174,7 +150,7 @@ struct SyncSheet: View {
                 if let peerSummary = info.peerWillSend {
                     HStack {
                         Image(systemName: "arrow.down.circle").foregroundStyle(.green)
-                        Text("You'll receive \(peerSummary.observationCount) observation\(peerSummary.observationCount == 1 ? "" : "s")")
+                        Text("Receiving \(peerSummary.speciesCount) species")
                     }
                     .font(.subheadline)
                 }
@@ -225,7 +201,6 @@ struct SyncSheet: View {
                 .frame(maxWidth: .infinity)
 
         case .transferring:
-            // Spinner shown inline in discoverySection; no button while in flight.
             EmptyView()
 
         case .completed, .incompatible, .error:

@@ -219,15 +219,30 @@ import UIKit
             switch s {
             case .ready:
                 self.onConnectionReady(connection)
+
             case .failed(let err):
-                // Resume any pending receive continuation so initiateSync doesn't hang.
+                if let cont = self.receiveContinuation {
+                    // Still waiting for the peer's payload — unblock and surface the error.
+                    self.receiveContinuation = nil
+                    cont.resume(returning: nil)
+                    self.setState(.error(message: self.friendlyNetworkError(err)))
+                } else if case .transferring = self.state {
+                    // Payload already received (or send-only path). The connection
+                    // dropped after the data transferred — let initiateSync finish.
+                } else {
+                    self.setState(.error(message: self.friendlyNetworkError(err)))
+                }
+
+            case .cancelled:
+                // Always unblock a pending receive so initiateSync is never stuck.
                 self.receiveContinuation?.resume(returning: nil)
                 self.receiveContinuation = nil
-                self.setState(.error(message: self.friendlyNetworkError(err)))
-            case .cancelled:
-                if case .idle = self.state {} else {
-                    self.setState(.idle)
+                // If a transfer is in flight, let initiateSync complete on its own.
+                guard case .transferring = self.state else {
+                    if case .idle = self.state {} else { self.setState(.idle) }
+                    return
                 }
+
             default:
                 break
             }
