@@ -71,8 +71,8 @@ Tests that assert scroll position must:
 - Use `async/await` + `Task.sleep` (not `RunLoop.main.run`) — the RunLoop-blocking approach starves concurrent `@MainActor` tasks, including `withObservationTracking` callbacks in other test suites.
 - Accept a ~60pt tolerance on the "at bottom" position assertion — `defaultScrollAnchor(.bottom)` consistently lands ~54pt short of `contentSize − bounds.height` on iPhone 16, believed to be a safe-area inset offset that SwiftUI applies internally. The exact UIScrollView formula is not publicly documented.
 
-### iOS 26 transaction inheritance
-`withAnimation(.none)` suppresses the inherited transaction today, but this is a workaround for undocumented behavior. Future Swift or SwiftUI versions could change how transactions propagate through actor boundaries (especially `Task { @MainActor in }`).
+### iOS 26 transaction inheritance (confirmed regression)
+iOS 26 changed how SwiftUI propagates animation transactions: both `onChange` callbacks and `Task { @MainActor in }` bodies now inherit the ambient transaction. `withAnimation(.none)` must be applied at each call site where an instant snap is required, including inside deferred Tasks. Confirmed on iOS 26 device; not present on iOS 18.
 
 ### No user-scroll guard
 The current implementation always re-anchors to the bottom on trigger/onChange. If a user has scrolled up to review history and a new item arrives, the view yanks them back to the bottom. A chat-style "new messages" badge with optional auto-scroll would be better UX for high-frequency updates.
@@ -134,9 +134,11 @@ Key advantages over the current approach:
 | Current (`ScrollViewReader`) | iOS 18 (`ScrollPosition`) |
 |---|---|
 | No `.id()` sentinel needed | ✓ No `.id()` sentinel needed |
-| `withAnimation(.none)` required (transaction inheritance) | ✓ **Animation is opt-in** — instant by default, no `withAnimation(.none)` needed |
-| iOS 26 regression risk | ✓ Avoids the problem by design |
+| `withAnimation(.none)` required (transaction inheritance) | `withAnimation(.none)` still required on iOS 26+ (see note below) |
+| Sentinel `Color.clear` anchor view needed | ✓ No sentinel needed |
 | Can't detect user's scroll position | ✓ Bidirectional: `.isPositionedByUser` tells you the user manually scrolled |
+
+**Animation suppression on iOS 26+:** The WWDC 2024 documentation described `ScrollPosition.scrollTo(edge:)` as "animation opt-in — instant by default." This holds on iOS 18. On iOS 26, Apple changed SwiftUI transaction propagation so that `onChange` passes its animated context to `scrollTo`, producing a visible slide. The fix is the same `withAnimation(.none)` wrapper used with `ScrollViewReader`. This must also be applied *inside* `Task { @MainActor in }` on the deferred path, as iOS 26 propagates transactions across actor-boundary task hops.
 
 **`defaultScrollAnchor(.bottom, for: .sizeChanges)` (iOS 18):** This role tells the scroll view to maintain bottom anchoring when the *content size* changes. For simple cases (a new item appended to the same list), this could eliminate the `onChange` handler entirely. **Caveat:** when the *entire item set* is replaced (filter cleared = wholly different collection), the behavior is less predictable — the `.sizeChanges` role may not re-anchor. The explicit `Task { @MainActor in position.scrollTo(edge: .bottom) }` call is still the reliable fallback.
 

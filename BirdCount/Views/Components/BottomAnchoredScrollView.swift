@@ -32,13 +32,20 @@ struct BottomAnchoredScrollView<Content: View>: View {
         .defaultScrollAnchor(.bottom, for: .alignment)
         .scrollPosition($scrollPosition)
         .onChange(of: scrollToBottomTrigger) { _, _ in
-            scrollPosition.scrollTo(edge: .bottom)
+            // withAnimation(.none) suppresses the animated transaction that onChange
+            // passes to ScrollPosition.scrollTo on iOS 26+. Without this, scrollTo
+            // inherits the ambient animation and produces a visible slide.
+            withAnimation(.none) {
+                scrollPosition.scrollTo(edge: .bottom)
+            }
         }
         .onChange(of: scrollToBottomOnChange) { _, _ in
             // Defer one actor turn so layout settles with the new content
             // size before scrolling (filter-expand / content-swap path).
             Task { @MainActor in
-                scrollPosition.scrollTo(edge: .bottom)
+                withAnimation(.none) {
+                    scrollPosition.scrollTo(edge: .bottom)
+                }
             }
         }
     }

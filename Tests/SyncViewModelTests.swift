@@ -104,7 +104,9 @@ struct SyncStateTransitionTests {
         mock.discoveryDelay = .seconds(9999)
         let vm = makeVM(transport: mock)
         vm.start()
-        try await Task.sleep(for: .milliseconds(50))
+        // 200ms gives the observation-tracking Task { @MainActor in } time to run
+        // even under main actor load from parallel test suites.
+        try await Task.sleep(for: .milliseconds(200))
         #expect(vm.state == .discovering)
     }
 
@@ -276,7 +278,9 @@ struct SyncExecutionTests {
 
 /// These tests verify the non-initiator side: the VM auto-calls initiateSync() when the peer
 /// signals .syncStart, without requiring a user tap on the second device.
-@Suite("SyncNonInitiator")
+/// .serialized prevents within-suite parallelism; these tests use Task.sleep for timing and
+/// compete for the main actor with other async test suites.
+@Suite("SyncNonInitiator", .serialized)
 struct SyncNonInitiatorTests {
 
     @Test func autoInitiates_whenPeerSignals_whileReadyToSync() async throws {
@@ -352,7 +356,9 @@ struct SyncNonInitiatorTests {
 
 /// Exercises both sides of a bidirectional sync independently using separate VM + mock pairs.
 /// In production both sides communicate over the network; here we simulate each side in isolation.
-@Suite("SyncBidirectional")
+// .serialized prevents parallel execution; each test runs two full sync flows back-to-back
+// and competes with scroll view tests for the main actor when run concurrently.
+@Suite("SyncBidirectional", .serialized)
 struct SyncBidirectionalTests {
 
     @Test func bothSides_completeWithCorrectStats() async throws {
@@ -429,6 +435,7 @@ struct SyncBidirectionalTests {
 
 // MARK: - Restart
 
+@Suite(.serialized)
 struct SyncRestartTests {
     @Test func restart_fromCompleted_resumesDiscovery() async throws {
         let mock = MockSyncTransport()
@@ -458,7 +465,7 @@ struct SyncRestartTests {
         vm.start()
         try await Task.sleep(for: .milliseconds(300))
         mock.triggerPeerInitiatedSync()
-        try await Task.sleep(for: .milliseconds(500))
+        try await Task.sleep(for: .milliseconds(700))
         guard case .completed = vm.state else {
             Issue.record("Precondition: expected .completed, got \(vm.state)"); return
         }
