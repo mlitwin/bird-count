@@ -74,6 +74,9 @@ Tests that assert scroll position must:
 ### iOS 26 transaction inheritance (confirmed regression)
 iOS 26 changed how SwiftUI propagates animation transactions: both `onChange` callbacks and `Task { @MainActor in }` bodies now inherit the ambient transaction. `withAnimation(.none)` must be applied at each call site where an instant snap is required, including inside deferred Tasks. Confirmed on iOS 26 device; not present on iOS 18.
 
+### `defaultScrollAnchor(.bottom, for: .sizeChanges)` animates on iOS 26
+The `.sizeChanges` role fires inside the layout pass with whatever animation transaction is ambient at that moment. On iOS 26, that ambient transaction is animated (spring), so every content-size change produces a visible scroll spring, bypassing our `withAnimation(.none)` guards entirely — those guards only cover explicit `scrollPosition.scrollTo()` call sites, not SwiftUI-internal anchor adjustments. Fix: do not use `.sizeChanges`; rely exclusively on the two explicit `onChange` triggers which are both wrapped in `withAnimation(.none)`. All content-change cases (new observation, filter cleared, filter applied) already fire one of the two explicit triggers.
+
 ### No user-scroll guard
 The current implementation always re-anchors to the bottom on trigger/onChange. If a user has scrolled up to review history and a new item arrives, the view yanks them back to the bottom. A chat-style "new messages" badge with optional auto-scroll would be better UX for high-frequency updates.
 

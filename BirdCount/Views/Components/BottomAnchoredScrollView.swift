@@ -28,8 +28,11 @@ struct BottomAnchoredScrollView<Content: View>: View {
             content()
         }
         .defaultScrollAnchor(.bottom, for: .initialOffset)
-        .defaultScrollAnchor(.bottom, for: .sizeChanges)
         .defaultScrollAnchor(.bottom, for: .alignment)
+        // .sizeChanges intentionally omitted: on iOS 26 it fires inside the layout pass
+        // with the ambient (animated) transaction, producing a visible spring scroll.
+        // All content-change cases are handled explicitly by the two onChange triggers
+        // below, both of which use withAnimation(.none).
         .scrollPosition($scrollPosition)
         .onChange(of: scrollToBottomTrigger) { _, _ in
             // withAnimation(.none) suppresses the animated transaction that onChange
