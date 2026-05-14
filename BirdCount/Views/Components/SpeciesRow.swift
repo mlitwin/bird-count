@@ -1,13 +1,39 @@
 import SwiftUI
+import Observation
+
+/// Shared observable state for the species-row pulse animation.
+/// Injected via environment so only SpeciesRow re-renders on animation changes,
+/// not SpeciesListView, SpeciesListContent, or BottomAnchoredScrollView.
+@Observable final class PulseAnimationState {
+    private(set) var recentlyUpdatedSpeciesId: String? = nil
+    private(set) var showPulseAnimation: Bool = false
+    private var clearTask: Task<Void, Never>? = nil
+
+    @MainActor func trigger(speciesId: String) {
+        clearTask?.cancel()
+        recentlyUpdatedSpeciesId = speciesId
+        showPulseAnimation = true
+        clearTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2))
+            guard !Task.isCancelled else { return }
+            showPulseAnimation = false
+            recentlyUpdatedSpeciesId = nil
+        }
+    }
+}
 
 struct SpeciesRow: View {
     let taxon: Taxon
     let count: Int
-    let shouldPulse: Bool
     let onSelect: (Taxon) -> Void
     let onQuickAdd: (Taxon) -> Void
 
+    @Environment(PulseAnimationState.self) private var pulseState
     @State private var isPulsing = false
+
+    private var shouldPulse: Bool {
+        pulseState.recentlyUpdatedSpeciesId == taxon.id && pulseState.showPulseAnimation
+    }
     @State private var swipeOffset: CGFloat = 0
 
     private let swipeThreshold: CGFloat = 72
@@ -113,21 +139,22 @@ private struct SpeciesRowBasic: View {
 #Preview("Species Row with count") {
     SpeciesRow(
         taxon: Taxon(id: "sample-id", commonName: "American Robin", scientificName: "Turdus migratorius", order: 1, rank: "species", commonness: 3),
-        count: 5, shouldPulse: false, onSelect: { _ in }, onQuickAdd: { _ in }
-    ).padding()
+        count: 5, onSelect: { _ in }, onQuickAdd: { _ in }
+    ).padding().environment(PulseAnimationState())
 }
 
 #Preview("Species Row without count") {
     SpeciesRow(
         taxon: Taxon(id: "sample-id-2", commonName: "Rare Warbler", scientificName: "Setophaga rara", order: 2, rank: "species", commonness: 0),
-        count: 0, shouldPulse: false, onSelect: { _ in }, onQuickAdd: { _ in }
-    ).padding()
+        count: 0, onSelect: { _ in }, onQuickAdd: { _ in }
+    ).padding().environment(PulseAnimationState())
 }
 
 #Preview("Species Row with pulse") {
+    let pulse = PulseAnimationState()
     SpeciesRow(
         taxon: Taxon(id: "sample-id-3", commonName: "Pulsing Warbler", scientificName: "Setophaga pulsans", order: 3, rank: "species", commonness: 1),
-        count: 2, shouldPulse: true, onSelect: { _ in }, onQuickAdd: { _ in }
-    ).padding()
+        count: 2, onSelect: { _ in }, onQuickAdd: { _ in }
+    ).padding().environment(pulse)
 }
 #endif

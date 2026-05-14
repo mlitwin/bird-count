@@ -4,52 +4,53 @@ import SwiftUI
 /// starts scrolled to the bottom. Short lists are bottom-aligned within the
 /// available space.
 ///
-/// ## Scrolling to the bottom
+/// ## Two triggers
 ///
-/// Two triggers are available and can be used independently or together:
+/// - **`scrollToBottomOnChange: AnyHashable?`** — when the *content set* changes
+///   (e.g. filter applied/cleared, items added/removed). Applied as `.id(...)` to
+///   the entire `ScrollView`, which tears down the underlying `UIScrollView`. The
+///   fresh `UIScrollView` has no stale `contentSize`, and
+///   `defaultScrollAnchor(.bottom, for: .initialOffset)` re-fires for the new
+///   instance, landing the rebuilt content at the bottom.
 ///
-/// - `scrollToBottomTrigger`: increment an `Int` to fire a one-shot jump,
-///   e.g. immediately after appending a new item.
+///   This works around a known SwiftUI bug where `UIScrollView.contentSize` does
+///   not refresh after a `LazyVStack`'s data set changes. SwiftUI's scroll-geometry
+///   abstraction sees the new size, but the backing `UIScrollView` property stays
+///   stale and clamps any scroll attempt to the old maximum. `.id` on the inner
+///   content rebuilds the `LazyVStack` but does not reset the `UIScrollView`; only
+///   `.id` on the `ScrollView` itself does. See docs/scroll-to-bottom.md.
 ///
-/// - `scrollToBottomOnChange`: an `AnyHashable` token whose *identity* drives
-///   the scroll. When its value changes the view scrolls to the bottom after
-///   a one-actor-turn defer so layout can settle with the new content size.
-///   Pass a value that changes when the content *set* changes but stays equal
-///   when the content is merely re-sorted — e.g. `AnyHashable(Set(ids))`.
+/// - **`scrollToBottomTrigger: Int`** — increment for a one-shot scroll to the
+///   bottom when the content *set* is unchanged (e.g. observation added without
+///   active filter; row re-sorted to the bottom). Uses
+///   `ScrollViewReader.proxy.scrollTo` against a zero-height sentinel anchored
+///   after the content. Reliable on this path because the `LazyVStack` is stable
+///   across the scroll.
 struct BottomAnchoredScrollView<Content: View>: View {
     var scrollToBottomTrigger: Int = 0
     var scrollToBottomOnChange: AnyHashable? = nil
     @ViewBuilder var content: () -> Content
 
-    @State private var scrollPosition = ScrollPosition(edge: .bottom)
+    @State private var sentinelID = UUID()
 
     var body: some View {
         ScrollView {
-            content()
-        }
-        .defaultScrollAnchor(.bottom, for: .initialOffset)
-        .defaultScrollAnchor(.bottom, for: .alignment)
-        // .sizeChanges intentionally omitted: on iOS 26 it fires inside the layout pass
-        // with the ambient (animated) transaction, producing a visible spring scroll.
-        // All content-change cases are handled explicitly by the two onChange triggers
-        // below, both of which use withAnimation(.none).
-        .scrollPosition($scrollPosition)
-        .onChange(of: scrollToBottomTrigger) { _, _ in
-            // withAnimation(.none) suppresses the animated transaction that onChange
-            // passes to ScrollPosition.scrollTo on iOS 26+. Without this, scrollTo
-            // inherits the ambient animation and produces a visible slide.
-            withAnimation(.none) {
-                scrollPosition.scrollTo(edge: .bottom)
-            }
-        }
-        .onChange(of: scrollToBottomOnChange) { _, _ in
-            // Defer one actor turn so layout settles with the new content
-            // size before scrolling (filter-expand / content-swap path).
-            Task { @MainActor in
-                withAnimation(.none) {
-                    scrollPosition.scrollTo(edge: .bottom)
+            ScrollViewReader { proxy in
+                VStack(spacing: 0) {
+                    content()
+                    Color.clear.frame(height: 0).id(sentinelID)
+                }
+                .onChange(of: scrollToBottomTrigger) { _, _ in
+                    var t = Transaction(animation: .none)
+                    t.disablesAnimations = true
+                    withTransaction(t) {
+                        proxy.scrollTo(sentinelID, anchor: .bottom)
+                    }
                 }
             }
         }
+        .id(scrollToBottomOnChange)
+        .defaultScrollAnchor(.bottom, for: .initialOffset)
+        .defaultScrollAnchor(.bottom, for: .alignment)
     }
 }

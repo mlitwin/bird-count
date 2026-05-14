@@ -1,4 +1,4 @@
-# Scroll-to-Bottom in SwiftUI: Problem, Current Solution, and Alternatives
+# Scroll-to-Bottom in SwiftUI: Problem, Solution, and Debugging History
 
 ## The problem
 
@@ -8,166 +8,151 @@
 2. **Snap to the bottom when a new item is appended** — tapping a species increments its count. The row re-sorts to the bottom; the list should jump there instantly, with no visible animation.
 3. **Re-anchor to the bottom when the content set expands** — the user clears a filter, causing the list to grow from a short filtered set back to a full list. The scroll position (a low offset) would now sit near the top of the taller list; the view should jump back to the bottom.
 
-### Why `defaultScrollAnchor(.bottom)` alone isn't enough
-
-`defaultScrollAnchor(.bottom)` (iOS 17) sets the *initial* content offset. It does not re-anchor when content size changes. When a filter narrows the list, the scroll offset is clamped to the smaller content range. When the filter is later cleared and content expands, that same low offset sits near the top of the new taller list — leaving the view appearing blank or showing stale content.
+The problematic scenario: user types filter → list shrinks → user scrolls → user quick-adds a species → filter clears → list expands → scroll must land at the bottom.
 
 ---
 
-## Current solution (`BottomAnchoredScrollView`)
+## Solution
 
-```
-GeometryReader { proxy in
-    ScrollViewReader { reader in
-        ScrollView {
-            VStack(spacing: 0) {
-                content()
-                Color.clear.frame(height: 1).id("__bottom_anchor__")
-            }
-            .frame(minHeight: proxy.size.height, alignment: .bottom)
+Two-line fix in `BottomAnchoredScrollView`:
+
+```swift
+ScrollView {
+    ScrollViewReader { proxy in
+        VStack(spacing: 0) {
+            content()
+            Color.clear.frame(height: 0).id(sentinelID)
         }
-        .defaultScrollAnchor(.bottom)
-        .onAppear { withAnimation(.none) { reader.scrollTo("__bottom_anchor__", anchor: .bottom) } }
         .onChange(of: scrollToBottomTrigger) { _, _ in
-            withAnimation(.none) { reader.scrollTo("__bottom_anchor__", anchor: .bottom) }
-        }
-        .onChange(of: scrollToBottomOnChange) { _, _ in
-            Task { @MainActor [reader] in
-                withAnimation(.none) { reader.scrollTo("__bottom_anchor__", anchor: .bottom) }
-            }
+            scrollToSentinel(proxy: proxy)
         }
     }
 }
+.id(scrollToBottomOnChange)                          // key line
+.defaultScrollAnchor(.bottom, for: .initialOffset)
+.defaultScrollAnchor(.bottom, for: .alignment)
 ```
 
-### Key elements
+When `scrollToBottomOnChange` (the content-set identity, `AnyHashable(Set(taxa.map { $0.id }))`) changes:
 
-| Element | Purpose |
+1. `.id(...)` invalidates the entire `ScrollView` view. SwiftUI tears down the underlying `UIScrollView`.
+2. A fresh `UIScrollView` is constructed with no stale `contentSize` state.
+3. `defaultScrollAnchor(.bottom, for: .initialOffset)` fires for the new instance.
+4. The new `UIScrollView` lays out the rebuilt content and lands at the bottom.
+
+### Why `.id` on inner content does NOT work
+
+A first attempt placed `.id(...)` on the `content()` closure (matching the Swift Forums advice for `List`-hosted `LazyVStack`s). SwiftUI tore down and rebuilt `SpeciesListContent` and its `LazyVStack`, but the surrounding `ScrollView` (and underlying `UIScrollView`) were untouched. The `UIScrollView` kept its stale `contentSize`, and any scroll attempt — `proxy.scrollTo(sentinel)`, explicit `setContentOffset`, re-firing `defaultScrollAnchor` — was clamped to the old maximum.
+
+Logs confirmed: `[SLC] body taxa.count=11145` fired (rebuild happened) and `[BASV] UIKit contentSize: 161130pt → 761570pt` fired in SwiftUI's scroll-geometry abstraction, but `[BASV] UIKit contentOffset.y` reported 160602 — UIScrollView's own clamp on the still-stale 161130 contentSize.
+
+Moving `.id(...)` outward to the `ScrollView` was the missing step. The Swift Forums advice technically applies to a `List` container — in our pure `ScrollView`/`LazyVStack` topology, only tearing down the `ScrollView` itself resets the `UIScrollView`.
+
+### Trade-offs accepted
+
+- **Teardown cost**: The `ScrollView` is destroyed and recreated on every content-set change (filter applied/cleared). This happens only on user action; no observed performance issue.
+- **Per-row `@State` is destroyed**: e.g. `SpeciesRow.isPulsing`. The pulse animation is short-lived and re-driven from `PulseAnimationState` in the environment, so this is fine.
+- **Sort-only changes do not trigger rebuild**: `scrollToBottomOnChange` is a `Set` (not an `Array`). Re-sorting the same species doesn't change the set, so no teardown. The same-set scroll path uses `scrollToBottomTrigger` + `proxy.scrollTo(sentinel)`.
+
+### Two triggers, summary
+
+| Trigger | When | Mechanism |
+|---|---|---|
+| `scrollToBottomOnChange: AnyHashable?` | Content set changes (filter, add/remove items) | `.id(token)` on `ScrollView` → fresh `UIScrollView` → `defaultScrollAnchor(.initialOffset)` |
+| `scrollToBottomTrigger: Int` | Same content set, sort changed (observation added without filter) | `proxy.scrollTo(sentinelID, anchor: .bottom)` via `ScrollViewReader` |
+
+### `PulseAnimationState` (kept from the debugging journey)
+
+The pulse animation state (`recentlyUpdatedSpeciesId`, `showPulseAnimation`) moved from `SpeciesListView` `@State` to an `@Observable` class in the environment. This was originally a hypothesis-fix (we thought pulse-driven re-renders were destabilizing the scroll), but even though it wasn't the root cause, the architecture is cleaner: only `SpeciesRow` re-renders on pulse changes, not the scroll-view hierarchy.
+
+---
+
+## Debugging history
+
+### Attempt 1: `ScrollPosition.scrollTo(edge:.bottom)` + `onGeometryChange`
+
+**Approach**: Used `@State private var scrollPosition = ScrollPosition(edge: .bottom)` with `.scrollPosition($scrollPosition)` binding. `onGeometryChange` detected SwiftUI height changes; `scrollEpoch` + `lastScrollTargetHeight` guards prevented spurious scrolls.
+
+**Result**: Failed. The `.scrollPosition($scrollPosition)` bidirectional binding continuously syncs UIKit's current `contentOffset` back to SwiftUI `scrollPosition`. When `scrollPosition.scrollTo(edge:.bottom)` fires, the binding update (reflecting UIKit's interim position) arrives in the same render batch and overrides the explicit scroll command. The view stayed at the wrong offset.
+
+Also attempted `scrollPosition.scrollTo(point: CGPoint(x:0, y: targetY))` with explicit y coordinate calculated from `onScrollGeometryChange(contentSize)`. Same result — command ignored by the binding sync.
+
+### Attempt 2: `ScrollViewReader` + `proxy.scrollTo(sentinel)` — first version
+
+**Approach**: Replaced `ScrollPosition` with `ScrollViewReader`. A zero-height `Color.clear.frame(height:0).id(sentinelID)` sentinel sits outside the `LazyVStack` (non-lazy, so position always known). Scroll commands use `proxy.scrollTo(sentinelID, anchor:.bottom)`.
+
+Added `scrollPending: Bool` + UUID token + 350 ms timer to guard a deferred corrective scroll from `onScrollGeometryChange(contentSize)`. Pre-emptive scroll fires immediately in `onChange(scrollToBottomOnChange)`; corrective fires after UIKit propagates new `contentSize`.
+
+**Root cause discovered**: `onScrollGeometryChange(contentSize)` placed **inside** `ScrollViewReader` never fires. The modifier does not connect to the enclosing `ScrollView` when nested inside `ScrollViewReader`. The corrective path was dead.
+
+### Attempt 3: Move `onScrollGeometryChange(contentSize)` to `ScrollView` level
+
+**Approach**: Added `ProxyHolder` class (stores `ScrollViewProxy` to bridge the scope gap). Moved `onScrollGeometryChange(contentSize)` to a modifier on the `ScrollView` itself. Pre-emptive scroll + corrective scroll both present.
+
+**Result**: Corrective scroll began firing. But the scroll still landed at 160597 (old filtered-list bottom, ~161125 − 466). Log showed `onScrollGeometryChange(contentSize)` fires **before** `onChange(scrollToBottomOnChange)`, so `scrollPending=false` when the size change is reported — the corrective guard always fails. The pre-emptive scroll (fired in `onChange`) was being overridden by subsequent re-renders.
+
+### Attempt 4: Deferred `DispatchQueue.main.async` in `onChange`
+
+**Approach**: Removed `scrollPending`, `ProxyHolder`, and `onScrollGeometryChange(contentSize)` corrective. In `onChange(scrollToBottomOnChange)`, defer the scroll one run-loop tick via `DispatchQueue.main.async` with a UUID token for cancellation.
+
+**Hypothesis**: Deferring lets same-batch re-renders (showPulseAnimation) settle first; scroll resolves in a clean pass with correct LazyVStack height.
+
+**Result**: Failed. Log showed `showPulseAnimation=true` re-render fired **before** the deferred, and an additional re-render fired **after** `scrollTo(sentinel) sent`. The scroll resolved in the post-deferred render with wrong height.
+
+### Attempt 5: Move `showPulseAnimation` to `@Observable` environment
+
+**Hypothesis**: `showPulseAnimation` flowing as a prop through `SpeciesListView → SpeciesListContent` caused full content re-renders that destabilized LazyVStack height estimates when `proxy.scrollTo` resolved. Moving it to `@Observable PulseAnimationState` (environment) would limit re-renders to `SpeciesRow` only.
+
+**Result**: Eliminated the `showPulseAnimation` re-renders entirely. Scroll still failed at 160597.
+
+### Attempt 6: Direct UIScrollView access via `UIViewRepresentable`
+
+**Approach**: Replace `proxy.scrollTo` with direct UIKit `setContentOffset`. A `UIViewRepresentable` "finder" view traverses the UIKit hierarchy and captures the enclosing `UIScrollView`. `scrollToBottom()` reads UIKit's actual `contentSize` and bounds, then sets `contentOffset` directly.
+
+**Result**: Failed. `sv.contentSize.height` reads 161125 even when SwiftUI's `onScrollGeometryChange` simultaneously reports 761569.
+
+### Attempt 7: `layoutIfNeeded()` before reading contentSize
+
+**Approach**: Force UIKit to commit any pending layout before reading `contentSize`.
+
+**Result**: Failed. Log line:
+
+```
+[BASV] setContentOffset y=160597pt (contentSize: 161125→161125 after layoutIfNeeded, bounds=528)
+```
+
+`layoutIfNeeded()` does not change `contentSize`. UIKit has no pending layout to commit — UIKit believes 161125 is already correct.
+
+### Attempt 8: Fixed `.frame(height: 68)` on each row
+
+**Approach**: Apply a fixed-height frame to every `SpeciesRow` so `LazyVStack` can answer "what is my total height?" synchronously as N × 68, without realizing items it hasn't rendered. Hypothesis: with a deterministic per-row height, `UIScrollView.contentSize` should propagate to 761569 immediately.
+
+**Result**: Failed. Behavior identical to the unfixed-height case — `UIScrollView.contentSize` still reads 161125 after filter clear, scroll still lands at 160597. The fixed row height did not compel UIKit's contentSize to propagate.
+
+This rules out the LazyVStack-height-estimation theory entirely. The disconnect between SwiftUI's scroll geometry (761569) and `UIScrollView.contentSize` (161125) is not caused by LazyVStack uncertainty about row heights — it's something deeper in how SwiftUI's `ScrollView` manages its UIKit backing.
+
+### True root cause: SwiftUI scroll geometry ≠ `UIScrollView.contentSize`
+
+The most important finding: SwiftUI maintains its own scroll geometry abstraction separate from the underlying `UIScrollView`'s properties.
+
+| Reader | Value reported |
 |---|---|
-| `GeometryReader` at root | Captures available height so short lists stay bottom-aligned (via `frame(minHeight:alignment:)`) rather than top-aligned |
-| Sentinel `Color.clear.id("__bottom_anchor__")` | Named target for `scrollTo` — a 1pt transparent view at the very end of content |
-| `defaultScrollAnchor(.bottom)` | Sets initial scroll position to the bottom without a visible scroll |
-| `onAppear` `scrollTo` | Belt-and-suspenders for initial position; `defaultScrollAnchor` can land slightly off due to safe-area insets |
-| `scrollToBottomTrigger: Int` | Caller increments an `Int` to fire a one-shot jump (new observation appended) |
-| `scrollToBottomOnChange: AnyHashable?` | Token that changes identity when the *content set* changes (filter cleared); uses `AnyHashable(Set(ids))` so re-sorting the same IDs doesn't trigger a spurious scroll |
-| `withAnimation(.none)` | **iOS 26 regression fix.** `scrollTo` inherits the ambient SwiftUI transaction. When called from `onChange`, the ambient transaction is animated, causing a visible scroll instead of a snap. `withAnimation(.none)` explicitly clears the transaction. |
-| `Task { @MainActor in }` in `scrollToBottomOnChange` | **Filter-expand fix.** `onChange` fires before the layout engine has processed the new content size. Calling `scrollTo` synchronously fires against the *old* layout and does nothing. Suspending via `Task` yields one actor turn, letting the layout pass complete before the scroll command fires. |
+| `onScrollGeometryChange { $0.contentSize.height }` | **761569** (full list) |
+| `uiScrollView.contentSize.height` (direct read) | **161125** (stale) |
+| `uiScrollView.contentSize.height` after `layoutIfNeeded()` | **161125** (unchanged) |
 
-### Two-trigger design
+SwiftUI tells `onScrollGeometryChange` observers the new estimated size, but does not propagate that value to the `UIScrollView` property. `UIScrollView.contentSize` stays at the old filtered-list size until something else (presumably actual user scrolling into the new region) triggers re-estimation.
 
-`scrollToBottomTrigger` (Int) and `scrollToBottomOnChange` (AnyHashable?) are separate because they handle different timing:
+This rules out **every** direct-UIKit approach: `setContentOffset` is clamped by `UIScrollView.contentSize`, which we cannot force to grow. SwiftUI's scroll geometry is read-only from outside.
 
-- **Trigger** (`Int`): Fires immediately from `onChange`, no deferral needed. Used when the same content list gets a new item appended — layout has already happened.
-- **OnChange** (`AnyHashable?`): Fires deferred via `Task`. Used when the entire content *set* changes (filter cleared) — layout must settle first.
-
-The `AnyHashable(Set(ids))` token is order-independent: sorting the same species different ways does not change the set, so no spurious scroll. Adding or removing items changes the set, triggering re-anchor.
-
----
-
-## Known weaknesses
-
-### Test fragility
-Tests that assert scroll position must:
-- Use `async/await` + `Task.sleep` (not `RunLoop.main.run`) — the RunLoop-blocking approach starves concurrent `@MainActor` tasks, including `withObservationTracking` callbacks in other test suites.
-- Accept a ~60pt tolerance on the "at bottom" position assertion — `defaultScrollAnchor(.bottom)` consistently lands ~54pt short of `contentSize − bounds.height` on iPhone 16, believed to be a safe-area inset offset that SwiftUI applies internally. The exact UIScrollView formula is not publicly documented.
-
-### iOS 26 transaction inheritance (confirmed regression)
-iOS 26 changed how SwiftUI propagates animation transactions: both `onChange` callbacks and `Task { @MainActor in }` bodies now inherit the ambient transaction. `withAnimation(.none)` must be applied at each call site where an instant snap is required, including inside deferred Tasks. Confirmed on iOS 26 device; not present on iOS 18.
-
-### `defaultScrollAnchor(.bottom, for: .sizeChanges)` animates on iOS 26
-The `.sizeChanges` role fires inside the layout pass with whatever animation transaction is ambient at that moment. On iOS 26, that ambient transaction is animated (spring), so every content-size change produces a visible scroll spring, bypassing our `withAnimation(.none)` guards entirely — those guards only cover explicit `scrollPosition.scrollTo()` call sites, not SwiftUI-internal anchor adjustments. Fix: do not use `.sizeChanges`; rely exclusively on the two explicit `onChange` triggers which are both wrapped in `withAnimation(.none)`. All content-change cases (new observation, filter cleared, filter applied) already fire one of the two explicit triggers.
-
-### No user-scroll guard
-The current implementation always re-anchors to the bottom on trigger/onChange. If a user has scrolled up to review history and a new item arrives, the view yanks them back to the bottom. A chat-style "new messages" badge with optional auto-scroll would be better UX for high-frequency updates.
-
----
-
-## Alternative approaches (iOS 17–18+)
-
-### iOS 17: `scrollPosition(id:)` + `.scrollTargetLayout()`
-
-Apple introduced a declarative alternative at WWDC 2023:
-
-```swift
-@State var scrolledToID: Item.ID? = nil
-
-ScrollView {
-    LazyVStack {
-        ForEach(items) { item in ItemView(item).id(item.id) }
-    }
-    .scrollTargetLayout()
-}
-.scrollPosition(id: $scrolledToID)
-.onChange(of: items) {
-    Task { @MainActor in scrolledToID = items.last?.id }
-}
-```
-
-The binding is *bidirectional* — when the user scrolls manually, `scrolledToID` updates to reflect the visible item. This makes a user-scroll guard straightforward: check whether `scrolledToID == items.last?.id` before deciding to auto-scroll.
-
-**Limitations:**
-- Requires each item to have an `.id()` modifier and a `Hashable` identifier.
-- Requires `.scrollTargetLayout()` on the content container.
-- Does not work with `List` — `ScrollView` only.
-- Setting the bound ID in `onChange` still fires before layout for content-expansion cases; the `Task { @MainActor in }` deferral is still needed.
-- Animation suppression requires the same `withAnimation(.none)` wrapper (same transaction inheritance problem as `ScrollViewReader`).
-- **Bug (iOS 17.0–17.3):** `LazyVStack + defaultScrollAnchor(.bottom)` renders blank on second+ view opens. Fixed in iOS 17.4.
-
-### iOS 18: `ScrollPosition` struct + `scrollTo(edge: .bottom)`
-
-The cleanest public API for this use case. Introduced at WWDC 2024:
-
-```swift
-@State private var position = ScrollPosition(edge: .bottom)
-
-ScrollView {
-    LazyVStack {
-        ForEach(items) { item in ItemView(item) }
-    }
-}
-.scrollPosition($position)
-.defaultScrollAnchor(.bottom, for: .sizeChanges)   // stay-anchored on content growth
-.onChange(of: items) {
-    Task { @MainActor in position.scrollTo(edge: .bottom) }
-}
-```
-
-Key advantages over the current approach:
-
-| Current (`ScrollViewReader`) | iOS 18 (`ScrollPosition`) |
-|---|---|
-| No `.id()` sentinel needed | ✓ No `.id()` sentinel needed |
-| `withAnimation(.none)` required (transaction inheritance) | `withAnimation(.none)` still required on iOS 26+ (see note below) |
-| Sentinel `Color.clear` anchor view needed | ✓ No sentinel needed |
-| Can't detect user's scroll position | ✓ Bidirectional: `.isPositionedByUser` tells you the user manually scrolled |
-
-**Animation suppression on iOS 26+:** The WWDC 2024 documentation described `ScrollPosition.scrollTo(edge:)` as "animation opt-in — instant by default." This holds on iOS 18. On iOS 26, Apple changed SwiftUI transaction propagation so that `onChange` passes its animated context to `scrollTo`, producing a visible slide. The fix is the same `withAnimation(.none)` wrapper used with `ScrollViewReader`. This must also be applied *inside* `Task { @MainActor in }` on the deferred path, as iOS 26 propagates transactions across actor-boundary task hops.
-
-**`defaultScrollAnchor(.bottom, for: .sizeChanges)` (iOS 18):** This role tells the scroll view to maintain bottom anchoring when the *content size* changes. For simple cases (a new item appended to the same list), this could eliminate the `onChange` handler entirely. **Caveat:** when the *entire item set* is replaced (filter cleared = wholly different collection), the behavior is less predictable — the `.sizeChanges` role may not re-anchor. The explicit `Task { @MainActor in position.scrollTo(edge: .bottom) }` call is still the reliable fallback.
-
-**Layout timing:** `Task { @MainActor in }` deferral is still needed for the content-expansion case. This is a fundamental SwiftUI rendering pipeline constraint, not specific to the API.
-
-### Not recommended: Inverted/flipped view
-
-Applying `.rotationEffect(.radians(.pi)).scaleEffect(x: -1, y: 1)` to the ScrollView and each cell to reverse the coordinate system was a pre-iOS 17 workaround. As of iOS 18, it breaks accessibility hit testing (UIWindow behavior change). Do not use for new code.
-
----
-
-## Migration path
-
-The current `BottomAnchoredScrollView` works correctly on iOS 17+ with the `withAnimation(.none)` + `Task` fixes in place. If the app's minimum deployment target moves to iOS 18, it is worth migrating to `ScrollPosition` to:
-
-1. Eliminate the `withAnimation(.none)` transaction suppression (and its iOS 26 brittleness).
-2. Eliminate the sentinel `Color.clear` anchor view.
-3. Gain bidirectional scroll position awareness for a future user-scroll guard.
-4. Use `defaultScrollAnchor(.bottom, for: .sizeChanges)` to handle the simple-append case declaratively.
-
-The `Task { @MainActor in }` deferral and the two-trigger design (immediate vs. deferred) remain valid regardless of which API is used.
+It also rules out the `proxy.scrollTo` / `ScrollPosition.scrollTo` approaches, because they ultimately set `UIScrollView.contentOffset` and hit the same clamp. The breakthrough was realizing that `.id(...)` on the `ScrollView` itself tears down the `UIScrollView` and lets `defaultScrollAnchor(.initialOffset)` re-fire for a fresh instance — see the **Solution** section above.
 
 ---
 
 ## References
 
+- [Swift Forums — LazyVStack not refreshing content size correctly](https://forums.swift.org/t/lazyvstack-not-refreshing-content-size-correctly-for-child-list-container-view-in-swiftui/54299) — workaround for `List`-hosted LazyVStack
+- [Apple Developer Forums — LazyVStack with ScrollView's new defaultScrollAnchor](https://developer.apple.com/forums/thread/741406) — same content-size propagation issue, ScrollView variant
 - [WWDC 2023 — Beyond scroll views (iOS 17 scroll APIs)](https://developer.apple.com/videos/play/wwdc2023/10159/)
 - [WWDC 2024 — Scroll APIs (iOS 18 `ScrollPosition` struct)](https://developer.apple.com/videos/play/wwdc2024/)
 - [Apple Developer Docs — `ScrollPosition`](https://developer.apple.com/documentation/swiftui/scrollposition)
@@ -175,7 +160,4 @@ The `Task { @MainActor in }` deferral and the two-trigger design (immediate vs. 
 - [Fatbobman — The Evolution of SwiftUI Scroll Control APIs](https://fatbobman.com/en/posts/the-evolution-of-swiftui-scroll-control-apis/)
 - [Swift with Majid — Mastering ScrollView: Scroll Position](https://swiftwithmajid.com/2023/06/27/mastering-scrollview-in-swiftui-scroll-position/)
 - [Swift with Majid — Mastering ScrollView: Scroll Geometry](https://swiftwithmajid.com/2024/06/25/mastering-scrollview-in-swiftui-scroll-geometry/)
-- [Use Your Loaf — SwiftUI Default Scroll Anchor](https://useyourloaf.com/blog/swiftui-default-scroll-anchor/)
-- [Medium — SwiftUI: 2.5 Reliable Ways to Scroll to the Bottom](https://medium.com/@itsuki.enjoy/swiftui-2-5-reliable-ways-to-automatically-scroll-to-the-bottom-of-scrollview-1581711e957c)
 - [iOS 26 animation regression with @MainActor / Swift 6.2](https://medium.com/@yagodemartin/ios-26-animation-regression-mainactor-swift-6-2-f93b27b7b2d4)
-- [Apple Developer Forums — LazyVStack + scrollPosition race](https://developer.apple.com/forums/thread/741406)

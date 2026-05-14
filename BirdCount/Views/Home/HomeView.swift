@@ -11,7 +11,7 @@ struct HomeView: View {
     @State private var bottomControlsHeight: CGFloat = 0
     @State private var sheetContentHeight: CGFloat = 0
     @State private var filterFocused: Bool = false
-    @State private var recentlyUpdatedSpeciesId: String? = nil
+    @State private var pulseState = PulseAnimationState()
     // Keep CountAdjustSheet aligned with SpeciesListView bottom
     private let speciesListBottomPadding: CGFloat = 48
 
@@ -69,7 +69,7 @@ struct HomeView: View {
                     if newValue.isEmpty { filterFocused = false }
                 }
             }
-            
+
             // Hide the nav bar entirely so it doesn't reserve space at the top
             .toolbar(.hidden, for: .navigationBar)
             .toolbarBackground(.hidden, for: .navigationBar)
@@ -80,7 +80,7 @@ struct HomeView: View {
             .task {
                 if let id = settings.selectedChecklistId { taxonomy.loadChecklist(id: id) }
             }
-            // No range-based recompute here
+            .environment(pulseState)
             // Present CountAdjustSheet as a custom bottom overlay, shifted up by the bottom controls height
             .overlay(alignment: .bottom) {
                 if let taxon = selectedTaxon {
@@ -103,14 +103,11 @@ struct HomeView: View {
                                     },
                                     onCommitted: { didAdd in
                                         if didAdd {
+                                            let hadFilter = !filterText.isEmpty
                                             filterText = ""
-                                            // Set the recently updated species for pulse animation
-                                            recentlyUpdatedSpeciesId = taxon.id
-                                            // Trigger scroll to bottom so newest/recent species are visible
-                                            scrollToBottomSignal &+= 1
-                                            // Clear the pulse after animation completes
-                                            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                                                recentlyUpdatedSpeciesId = nil
+                                            pulseState.trigger(speciesId: taxon.id)
+                                            if !hadFilter {
+                                                scrollToBottomSignal &+= 1
                                             }
                                         }
                                     }
@@ -164,17 +161,16 @@ struct HomeView: View {
                 taxa: filtered,
                 counts: filteredCounts,
                 scrollToBottomSignal: scrollToBottomSignal,
-                recentlyUpdatedSpeciesId: recentlyUpdatedSpeciesId,
                 onSelect: { taxon in
                     selectedTaxon = taxon
                 },
                 onQuickAdd: { taxon in
                     observations.addObservationWithLocation(taxon.id, count: 1)
+                    let hadFilter = !filterText.isEmpty
                     filterText = ""
-                    recentlyUpdatedSpeciesId = taxon.id
-                    scrollToBottomSignal &+= 1
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                        recentlyUpdatedSpeciesId = nil
+                    pulseState.trigger(speciesId: taxon.id)
+                    if !hadFilter {
+                        scrollToBottomSignal &+= 1
                     }
                 }
             )
@@ -198,7 +194,7 @@ private struct SheetContentHeightKey: PreferenceKey {
     }
 }
 
-    
+
 
 // MARK: - Filter Bar
 
