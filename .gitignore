@@ -1,0 +1,24 @@
+# macOS
+.DS_Store
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars.secret
+crash.log
+
+# Node
+node_modules/
+
+# Xcode / iOS
+DerivedData/
+xcuserdata/
+*.xcuserstate
+
+# Swift Package Manager
+.build/
+.swiftpm/xcode/
+
+# Claude Code local settings
+.claude/settings.local.json
