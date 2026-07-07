@@ -22,6 +22,7 @@
 		1FC3EA44A81F6C94E57C3757 /* CountAdjustSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFA8094EBAC869E648D7F854 /* CountAdjustSheet.swift */; };
 		1FFDBC736FF0463C6A8BF74E /* ImportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33D33A059C7E1BBC989BE48 /* ImportSheet.swift */; };
 		208E0E02373AB724A6117666 /* Taxon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74ADC22819086097B12402BC /* Taxon.swift */; };
+		217681FB3F7E0BA82C7A9EB1 /* CloudConfigTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD5CA0E3C376B95BE1EA2C72 /* CloudConfigTests.swift */; };
 		25504B0B7E81C5314B41B4D1 /* DateRangePickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42D71A3B0980DD2D610E2485 /* DateRangePickerSheet.swift */; };
 		2599DEF5D927CA3279EC427C /* NetworkSyncTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = E62366A5F44389EFC3E8E7BB /* NetworkSyncTransport.swift */; };
 		266C5C735539D12FBDCA74B1 /* sync-response.json in Resources */ = {isa = PBXBuildFile; fileRef = 717853D943BB556FBFB3885D /* sync-response.json */; };
@@ -77,6 +78,7 @@
 		84F3149A7B109FB43BB628BD /* ViewConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D7F2012E653F5E1BF69E0D /* ViewConstants.swift */; };
 		87C235802D01F7FC1E551882 /* SyncTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17B59B4533BFF5B8EDB3E0D /* SyncTransport.swift */; };
 		88723733D4405DC1AA55DB13 /* NumericPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCBE3E988878FA83F955105 /* NumericPad.swift */; };
+		8AECC4A83ED77A4A5505C932 /* cloud-config.json in Resources */ = {isa = PBXBuildFile; fileRef = CB1762F3F0912449C759255A /* cloud-config.json */; };
 		8CBC66555D3B77474B42746A /* ObservationExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE337F05758535174D947692 /* ObservationExportService.swift */; };
 		9011BEC0A95145374777045E /* TaxonomyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 102D036CF7E1F208793BECF3 /* TaxonomyStore.swift */; };
 		9288B6EA2B9DCAC3A584E6A2 /* DateRangeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4F140F87CC8960B4B65B890 /* DateRangeStore.swift */; };
@@ -232,6 +234,7 @@
 		C59D3FE41A577497DC255958 /* SnapshotHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotHelper.swift; sourceTree = "<group>"; };
 		CA105FDD346A2759183A3BEE /* OnScreenKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnScreenKeyboard.swift; sourceTree = "<group>"; };
 		CAF79995B3B7FC149037EC4C /* ModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelsTests.swift; sourceTree = "<group>"; };
+		CB1762F3F0912449C759255A /* cloud-config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "cloud-config.json"; sourceTree = "<group>"; };
 		CB17ACCB13A6473DE579EA31 /* BottomAnchoredScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomAnchoredScrollView.swift; sourceTree = "<group>"; };
 		CB3030520814169F80817797 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		CC412F9A02FEF839809F38AC /* checklist.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = checklist.json; sourceTree = "<group>"; };
@@ -258,6 +261,7 @@
 		F6A0C5EC7F393B0C8A4C4510 /* SyncSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncSheet.swift; sourceTree = "<group>"; };
 		F73A0EC9E9DB138EA0784C2F /* SpeciesRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeciesRow.swift; sourceTree = "<group>"; };
 		FBCE0B9078509DFFC117339F /* ObservationRecordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationRecordView.swift; sourceTree = "<group>"; };
+		FD5CA0E3C376B95BE1EA2C72 /* CloudConfigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudConfigTests.swift; sourceTree = "<group>"; };
 		FE337F05758535174D947692 /* ObservationExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationExportService.swift; sourceTree = "<group>"; };
 		FE3EC2F235F0B25723256BE9 /* SpeciesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeciesListView.swift; sourceTree = "<group>"; };
 		FFA8094EBAC869E648D7F854 /* CountAdjustSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountAdjustSheet.swift; sourceTree = "<group>"; };
@@ -479,6 +483,7 @@
 			isa = PBXGroup;
 			children = (
 				1C2576ACDD95729987584994 /* Assets.xcassets */,
+				CB1762F3F0912449C759255A /* cloud-config.json */,
 				A9DD5F1234EFBE186A162092 /* ios_taxonomy_min.json */,
 				C84A9CF6F77E146E1E05C76A /* Localizations */,
 			);
@@ -553,6 +558,7 @@
 			children = (
 				905A41A6B9EC879EAD96F7CA /* BirdCountTests.swift */,
 				B7AF2C338E50AA952F632CB0 /* BottomScrollTests.swift */,
+				FD5CA0E3C376B95BE1EA2C72 /* CloudConfigTests.swift */,
 				06C226BAA24DFFC3791FF932 /* LocationManagerTests.swift */,
 				5831C01C2F3DB6F6D15AB48A /* ObservationRecordLocationTests.swift */,
 				0FAB184DAE5C28F995C062DD /* ObservationSyncTests.swift */,
@@ -763,6 +769,7 @@
 				43633DA051B6ACEE6D0811D9 /* checklist-US-CA-041.json in Resources */,
 				68D2F644EA81B5C2380F5DB2 /* checklist-US-ME.json in Resources */,
 				BAE59DC44E9938705B0A6BCF /* checklist.json in Resources */,
+				8AECC4A83ED77A4A5505C932 /* cloud-config.json in Resources */,
 				4217D9AF2D23AF11355EF353 /* generate_ios_taxonomy.mjs in Resources */,
 				C0B46E941915D7EEBD03E60D /* ios_taxonomy_min.json in Resources */,
 			);
@@ -887,6 +894,7 @@
 			files = (
 				6219220B199141F94E4AF58A /* BirdCountTests.swift in Sources */,
 				A03B00ADC899C2D68E2E3F85 /* BottomScrollTests.swift in Sources */,
+				217681FB3F7E0BA82C7A9EB1 /* CloudConfigTests.swift in Sources */,
 				0C802E48E252CE8681EC3C28 /* LocationManagerTests.swift in Sources */,
 				B7A68117A165B96D49F12BCE /* ObservationRecordLocationTests.swift in Sources */,
 				D0E822208F5FD0C78C08D446 /* ObservationSyncTests.swift in Sources */,

@@ -55,7 +55,7 @@ struct CloudAPIClient {
 
     private func send<Response: Decodable>(path: String, method: String, body: Data?) async throws -> Response {
         let token = try await auth.validAccessToken()
-        var request = URLRequest(url: CloudConfig.apiBaseURL.appending(path: path.split(separator: "?")[0])
+        var request = URLRequest(url: CloudConfig.current.apiBaseURL.appending(path: path.split(separator: "?")[0])
             .appending(queryItems: Self.queryItems(of: path)))
         request.httpMethod = method
         request.httpBody = body

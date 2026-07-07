@@ -49,12 +49,12 @@ public final class CloudAuthService: NSObject {
         let verifier = Self.randomURLSafeString(bytes: 64)
         let challenge = Self.codeChallenge(for: verifier)
 
-        var components = URLComponents(url: CloudConfig.authorizeURL, resolvingAgainstBaseURL: false)!
+        var components = URLComponents(url: CloudConfig.current.authorizeURL, resolvingAgainstBaseURL: false)!
         components.queryItems = [
             URLQueryItem(name: "response_type", value: "code"),
-            URLQueryItem(name: "client_id", value: CloudConfig.clientId),
-            URLQueryItem(name: "redirect_uri", value: CloudConfig.redirectURI),
-            URLQueryItem(name: "scope", value: CloudConfig.scopes),
+            URLQueryItem(name: "client_id", value: CloudConfig.current.clientId),
+            URLQueryItem(name: "redirect_uri", value: CloudConfig.current.redirectURI),
+            URLQueryItem(name: "scope", value: CloudConfig.current.scopes),
             URLQueryItem(name: "identity_provider", value: "SignInWithApple"),
             URLQueryItem(name: "code_challenge_method", value: "S256"),
             URLQueryItem(name: "code_challenge", value: challenge),
@@ -68,9 +68,9 @@ public final class CloudAuthService: NSObject {
 
         let tokens = try await requestTokens(form: [
             "grant_type": "authorization_code",
-            "client_id": CloudConfig.clientId,
+            "client_id": CloudConfig.current.clientId,
             "code": code,
-            "redirect_uri": CloudConfig.redirectURI,
+            "redirect_uri": CloudConfig.current.redirectURI,
             "code_verifier": verifier,
         ])
         store(tokens)
@@ -94,7 +94,7 @@ public final class CloudAuthService: NSObject {
         }
         let tokens = try await requestTokens(form: [
             "grant_type": "refresh_token",
-            "client_id": CloudConfig.clientId,
+            "client_id": CloudConfig.current.clientId,
             "refresh_token": refreshToken,
         ])
         store(tokens)
@@ -112,7 +112,7 @@ public final class CloudAuthService: NSObject {
     }
 
     private func requestTokens(form: [String: String]) async throws -> TokenResponse {
-        var request = URLRequest(url: CloudConfig.tokenURL)
+        var request = URLRequest(url: CloudConfig.current.tokenURL)
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.httpBody = form
@@ -148,7 +148,7 @@ public final class CloudAuthService: NSObject {
         try await withCheckedThrowingContinuation { continuation in
             let session = ASWebAuthenticationSession(
                 url: url,
-                callbackURLScheme: CloudConfig.callbackScheme
+                callbackURLScheme: CloudConfig.current.callbackScheme
             ) { callbackURL, error in
                 if let callbackURL {
                     continuation.resume(returning: callbackURL)

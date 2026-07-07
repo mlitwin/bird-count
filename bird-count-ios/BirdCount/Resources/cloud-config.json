@@ -1,0 +1,18 @@
+{
+  "dev": {
+    "apiBaseURL": "https://mpet543s3g.execute-api.us-east-1.amazonaws.com",
+    "hostedUIDomain": "birdcount-dev.auth.us-east-1.amazoncognito.com",
+    "clientId": "2td6vh9ru533alouqibidn8sij",
+    "redirectURI": "birdcount://auth/callback",
+    "callbackScheme": "birdcount",
+    "scopes": "openid email"
+  },
+  "prod": {
+    "apiBaseURL": "https://c94t0py5je.execute-api.us-east-1.amazonaws.com",
+    "hostedUIDomain": "birdcount-prod.auth.us-east-1.amazoncognito.com",
+    "clientId": "50d6e1102t402kpt0qn9ofmpcm",
+    "redirectURI": "birdcount://auth/callback",
+    "callbackScheme": "birdcount",
+    "scopes": "openid email"
+  }
+}
