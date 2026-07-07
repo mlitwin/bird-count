@@ -56,7 +56,6 @@ logs
 *.tfstate
 *.tfstate.*
 .terraform/
-.terraform.lock.hcl
 *.tfvars
 !terraform.tfvars.example
 
