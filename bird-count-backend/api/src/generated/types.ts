@@ -45,8 +45,32 @@ export interface ObservationLocation {
 /**
  * POST /v1/sync request/response shapes
  */
-export interface SyncAPI {
-  [k: string]: unknown;
+export type SyncAPI = SyncRequest | SyncResponse;
+
+export interface SyncRequest {
+  schemaVersion: number;
+  clientId: string;
+  /**
+   * Max serverUpdatedAt seen by this client, as decimal string; "0" or absent for first sync
+   */
+  cursor?: string;
+  /**
+   * @maxItems 100
+   */
+  changes: ObservationRecordDTO[];
+}
+/**
+ * Wire shape of one observation ledger entry (mirrors ObservationRecordDTO.swift). Records are immutable after creation except the location/status backfill on the originating device. Adjustment children carry a (possibly negative) count and a parentId; the ledger total is the recursive sum.
+ */
+export interface SyncResponse {
+  serverTime: number;
+  cursor: string;
+  applied: {
+    id: string;
+    result: 'applied' | 'stale' | 'invalid';
+  }[];
+  changes: ObservationRecordDTO[];
+  hasMore: boolean;
 }
 
 /**

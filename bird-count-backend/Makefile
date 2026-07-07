@@ -1,4 +1,4 @@
-.PHONY: help whoami aws tf init plan apply output
+.PHONY: help whoami aws tf init plan apply output api-test api-build
 
 # AWS credentials come from 1Password via `op run` (see aws.env).
 ENV ?= dev
@@ -40,3 +40,11 @@ apply:
 
 output:
 	cd $(TF_DIR) && $(OP_RUN_TF) terraform output
+
+api-test:
+	cd api && npm test
+
+api-build:
+	cd api && npm run generate && npm run build
+
+apply: api-build

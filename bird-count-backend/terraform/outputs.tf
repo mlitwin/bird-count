@@ -28,3 +28,11 @@ output "hosted_ui_domain" {
 output "issuer_url" {
   value = module.auth.issuer_url
 }
+
+output "api_url" {
+  value = module.api.api_url
+}
+
+output "table_name" {
+  value = module.db.table_name
+}

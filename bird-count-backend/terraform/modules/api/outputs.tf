@@ -1,1 +1,7 @@
-# Populated in Phase 2: api_url, lambda_function_name.
+output "api_url" {
+  value = aws_apigatewayv2_stage.default.invoke_url
+}
+
+output "lambda_function_name" {
+  value = aws_lambda_function.api.function_name
+}

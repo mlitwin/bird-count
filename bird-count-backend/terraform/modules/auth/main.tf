@@ -40,6 +40,13 @@ resource "aws_cognito_identity_provider" "apple" {
     email    = "email"
     username = "sub"
   }
+
+  # AWS backfills read-only keys into provider_details and never returns the
+  # private key, so plans perpetually want to rewrite it. To rotate the Apple
+  # key: taint this resource (terraform apply -replace=module.auth.aws_cognito_identity_provider.apple).
+  lifecycle {
+    ignore_changes = [provider_details]
+  }
 }
 
 resource "aws_cognito_user_pool_client" "ios" {

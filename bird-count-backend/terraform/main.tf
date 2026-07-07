@@ -61,3 +61,29 @@ module "auth" {
 
   tags = local.common_tags
 }
+
+# DynamoDB observation ledger
+module "db" {
+  source = "./modules/db"
+
+  project_name = local.project_name
+  environment  = var.environment
+
+  tags = local.common_tags
+}
+
+# Sync API: Lambda + HTTP API + JWT authorizer
+module "api" {
+  source = "./modules/api"
+
+  project_name = local.project_name
+  environment  = var.environment
+
+  lambda_dist_dir   = "${path.module}/../api/dist"
+  table_name        = module.db.table_name
+  table_policy_json = module.db.readwrite_policy_json
+  issuer_url        = module.auth.issuer_url
+  client_id         = module.auth.client_id
+
+  tags = local.common_tags
+}

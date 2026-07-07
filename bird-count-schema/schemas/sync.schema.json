@@ -3,6 +3,10 @@
   "$id": "https://birdcount.dev/schemas/sync.schema.json",
   "title": "SyncAPI",
   "description": "POST /v1/sync request/response shapes",
+  "oneOf": [
+    { "$ref": "#/$defs/SyncRequest" },
+    { "$ref": "#/$defs/SyncResponse" }
+  ],
   "$defs": {
     "SyncRequest": {
       "type": "object",
