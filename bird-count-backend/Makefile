@@ -5,6 +5,8 @@ ENV ?= dev
 TF_DIR = terraform
 TFVARS = environments/$(ENV).tfvars
 OP_RUN = op run --env-file aws.env --
+# terraform needs the Sign in with Apple secrets too (TF_VAR_apple_*)
+OP_RUN_TF = op run --env-file ../aws.env --env-file ../siwa.env --
 
 .DEFAULT_GOAL := help
 
@@ -25,16 +27,16 @@ aws:
 	$(OP_RUN) aws $(CMD)
 
 tf:
-	cd $(TF_DIR) && op run --env-file ../aws.env -- terraform $(CMD)
+	cd $(TF_DIR) && $(OP_RUN_TF) terraform $(CMD)
 
 init:
-	cd $(TF_DIR) && op run --env-file ../aws.env -- terraform init -backend-config=environments/$(ENV).backend.hcl
+	cd $(TF_DIR) && $(OP_RUN_TF) terraform init -backend-config=environments/$(ENV).backend.hcl
 
 plan:
-	cd $(TF_DIR) && op run --env-file ../aws.env -- terraform plan -var-file=$(TFVARS)
+	cd $(TF_DIR) && $(OP_RUN_TF) terraform plan -var-file=$(TFVARS)
 
 apply:
-	cd $(TF_DIR) && op run --env-file ../aws.env -- terraform apply -var-file=$(TFVARS)
+	cd $(TF_DIR) && $(OP_RUN_TF) terraform apply -var-file=$(TFVARS)
 
 output:
-	cd $(TF_DIR) && op run --env-file ../aws.env -- terraform output
+	cd $(TF_DIR) && $(OP_RUN_TF) terraform output

@@ -41,6 +41,23 @@ module "storage" {
 
   project_name = local.project_name
   environment  = var.environment
-  
+
+  tags = local.common_tags
+}
+
+# Cognito user pool + Sign in with Apple
+module "auth" {
+  source = "./modules/auth"
+
+  project_name = local.project_name
+  environment  = var.environment
+  aws_region   = var.aws_region
+
+  apple_team_id     = var.apple_team_id
+  apple_services_id = var.apple_services_id
+  apple_key_id      = var.apple_key_id
+  apple_private_key = var.apple_private_key
+  callback_urls     = var.callback_urls
+
   tags = local.common_tags
 }

@@ -12,3 +12,28 @@ variable "environment" {
     error_message = "Environment must be dev, staging, or prod."
   }
 }
+
+# Sign in with Apple — values come from 1Password via `op run --env-file siwa.env`
+# (TF_VAR_apple_*); see docs/apple-siwa-setup.md.
+variable "apple_team_id" {
+  type = string
+}
+
+variable "apple_services_id" {
+  type = string
+}
+
+variable "apple_key_id" {
+  type = string
+}
+
+variable "apple_private_key" {
+  type      = string
+  sensitive = true
+}
+
+variable "callback_urls" {
+  description = "OAuth callback/logout URLs for the app client"
+  type        = list(string)
+  default     = ["birdcount://auth/callback", "http://localhost:8400/callback"]
+}

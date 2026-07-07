@@ -12,3 +12,19 @@ output "cloudfront_distribution_id" {
   description = "CloudFront distribution ID"
   value       = module.storage.cloudfront_distribution_id
 }
+
+output "user_pool_id" {
+  value = module.auth.user_pool_id
+}
+
+output "client_id" {
+  value = module.auth.client_id
+}
+
+output "hosted_ui_domain" {
+  value = module.auth.hosted_ui_domain
+}
+
+output "issuer_url" {
+  value = module.auth.issuer_url
+}
