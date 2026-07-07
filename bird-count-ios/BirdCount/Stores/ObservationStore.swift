@@ -18,9 +18,28 @@ import Observation
     private(set) var recent: [Recent] = [] // most-recent first
 
     private let persistenceKey = "ObservationRecords"
+    private let dirtyIdsKey = "CloudDirtyIds"
+    private let cursorKey = "CloudSyncCursor"
+    private let orphansKey = "CloudOrphanDTOs"
+
+    // MARK: Cloud sync state
+    /// Ids of records created or mutated locally (or received via P2P) that
+    /// have not yet been pushed to the cloud. Persisted so offline changes
+    /// survive relaunch.
+    public private(set) var dirtyIds: Set<UUID> = []
+
+    /// Max serverUpdatedAt this device has seen, as a decimal string.
+    /// nil means never synced: the first sync uploads everything.
+    public var cloudSyncCursor: String? {
+        didSet { UserDefaults.standard.set(cloudSyncCursor, forKey: cursorKey) }
+    }
+
+    /// Cloud-delivered children whose parent has not arrived yet (pagination
+    /// can deliver a child before its parent); reattached on later merges.
+    private var pendingOrphanDTOs: [ObservationRecordDTO] = []
 
     public init() { load(); rebuildDerived() }
-    
+
     /// Test initializer that starts with empty data (doesn't load from UserDefaults)
     public init(testing: Bool) {
         if !testing {
@@ -46,7 +65,9 @@ import Observation
     // MARK: Mutations
     public func addObservation(_ taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1, location: ObservationLocation? = nil) {
         let observer = settingsStore?.loginEmail ?? ""
-        observations.append(ObservationRecord(id: UUID(), taxonId: taxonId, begin: begin, end: end, count: max(0, count), location: location, observer: observer))
+        let record = ObservationRecord(id: UUID(), taxonId: taxonId, begin: begin, end: end, count: max(0, count), location: location, observer: observer)
+        observations.append(record)
+        markDirty(record.id)
         touchRecent(taxonId)
     }
     
@@ -78,7 +99,17 @@ import Observation
     addObservation(id, begin: Date(), end: nil, count: delta)
     }
 
-    func clearAll() { observations.removeAll(); recent.removeAll() }
+    /// Local device reset. NOT a ledger operation and never propagated to
+    /// sync peers; also clears cloud sync state so the device re-pulls
+    /// everything on its next sync.
+    func clearAll() {
+        observations.removeAll()
+        recent.removeAll()
+        dirtyIds.removeAll()
+        pendingOrphanDTOs.removeAll()
+        cloudSyncCursor = nil
+        persistCloudState()
+    }
 
     var totalIndividuals: Int { cache.totalIndividuals }
     var totalSpeciesObserved: Int { cache.totalSpeciesObserved }
@@ -145,6 +176,7 @@ import Observation
         for idx in observations.indices {
             if observations[idx].id == id {
                 updater(&observations[idx])
+                markDirty(id)
                 persist()
                 rebuildDerived()
                 return true
@@ -173,6 +205,7 @@ import Observation
         for idx in observations.indices {
             if observations[idx].id == parentId {
                 if updateInChildren(of: &observations[idx]) {
+                    markDirty(childId)
                     persist()
                     rebuildDerived()
                     return true
@@ -202,6 +235,7 @@ import Observation
         }
         attach(into: &observations)
         if didAttach {
+            markDirty(newChild.id)
             touchRecent(taxonId)
             // Mutating nested children does not trigger observations.didSet
             persist()
@@ -326,6 +360,157 @@ import Observation
     }
     #endif
 
+    // MARK: Cloud sync support
+
+    public struct MergeStatistics: Equatable {
+        public var imported = 0
+        public var updated = 0
+        public var duplicatesSkipped = 0
+        public var orphansHeld = 0
+    }
+
+    public func markDirty(_ id: UUID) {
+        dirtyIds.insert(id)
+        persistCloudState()
+    }
+
+    public func clearDirty(_ ids: some Sequence<UUID>) {
+        dirtyIds.subtract(ids)
+        persistCloudState()
+    }
+
+    /// All record ids, top-level and children, flattened.
+    public var allRecordIds: [UUID] { flatDTOs().map { $0.id } }
+
+    /// All records as wire DTOs, parents before their children.
+    public func flatDTOs() -> [ObservationRecordDTO] {
+        var result: [ObservationRecordDTO] = []
+        func collect(_ records: [ObservationRecord]) {
+            for record in records {
+                result.append(record.data)
+                collect(record.children)
+            }
+        }
+        collect(observations)
+        return result
+    }
+
+    /// Merge incoming DTOs (from cloud or P2P sync): put-if-absent by UUID,
+    /// whole-record last-writer-wins on updatedAt for existing records.
+    /// Children whose parent is absent are held and reattached when the
+    /// parent arrives (cloud pagination can deliver a child first).
+    /// - Parameter markDirty: true for P2P imports (received records still
+    ///   need to flow up to the cloud); false when applying cloud pulls.
+    @discardableResult
+    public func mergeDTOs(_ dtos: [ObservationRecordDTO], markDirty: Bool) -> MergeStatistics {
+        var stats = MergeStatistics()
+        // Include previously-held orphans, but let fresher incoming copies win.
+        var pending = dtos
+        let incomingIds = Set(dtos.map { $0.id })
+        pending.append(contentsOf: pendingOrphanDTOs.filter { !incomingIds.contains($0.id) })
+        pendingOrphanDTOs.removeAll()
+
+        var madeProgress = true
+        while madeProgress && !pending.isEmpty {
+            madeProgress = false
+            var held: [ObservationRecordDTO] = []
+            for dto in pending {
+                if findRecord(by: dto.id) != nil {
+                    if updateExisting(with: dto) {
+                        stats.updated += 1
+                        if markDirty { dirtyIds.insert(dto.id) }
+                    } else {
+                        stats.duplicatesSkipped += 1
+                    }
+                    madeProgress = true
+                } else if dto.parentId == nil {
+                    observations.append(ObservationRecord(data: dto))
+                    stats.imported += 1
+                    if markDirty { dirtyIds.insert(dto.id) }
+                    touchRecent(dto.taxonId)
+                    madeProgress = true
+                } else if attachChild(dto) {
+                    stats.imported += 1
+                    if markDirty { dirtyIds.insert(dto.id) }
+                    touchRecent(dto.taxonId)
+                    madeProgress = true
+                } else {
+                    held.append(dto)
+                }
+            }
+            pending = held
+        }
+
+        pendingOrphanDTOs = pending
+        stats.orphansHeld = pending.count
+        persistCloudState()
+        persist()
+        rebuildDerived()
+        return stats
+    }
+
+    /// Whole-record LWW: replace stored data when the incoming copy is newer.
+    /// Children are untouched (they are separate ledger entries).
+    private func updateExisting(with dto: ObservationRecordDTO) -> Bool {
+        var didUpdate = false
+        func update(in array: inout [ObservationRecord]) {
+            for idx in array.indices {
+                if array[idx].id == dto.id {
+                    if dto.updatedAt > array[idx].data.updatedAt {
+                        array[idx].data = dto
+                        didUpdate = true
+                    }
+                    return
+                }
+                update(in: &array[idx].children)
+                if didUpdate { return }
+            }
+        }
+        update(in: &observations)
+        return didUpdate
+    }
+
+    /// Attach a DTO as a child of its (already present) parent, preserving
+    /// its identity. Returns false when the parent is not in the store.
+    private func attachChild(_ dto: ObservationRecordDTO) -> Bool {
+        guard let parentId = dto.parentId else { return false }
+        var didAttach = false
+        func attach(into array: inout [ObservationRecord]) {
+            for idx in array.indices {
+                if array[idx].id == parentId {
+                    array[idx].children.append(ObservationRecord(data: dto))
+                    didAttach = true
+                    return
+                }
+                attach(into: &array[idx].children)
+                if didAttach { return }
+            }
+        }
+        attach(into: &observations)
+        return didAttach
+    }
+
+    private func persistCloudState() {
+        let defaults = UserDefaults.standard
+        defaults.set(dirtyIds.map { $0.uuidString }, forKey: dirtyIdsKey)
+        do {
+            let encoder = JSONEncoder(); encoder.dateEncodingStrategy = .iso8601
+            defaults.set(try encoder.encode(pendingOrphanDTOs), forKey: orphansKey)
+        } catch { /* ignore */ }
+    }
+
+    private func loadCloudState() {
+        let defaults = UserDefaults.standard
+        if let strings = defaults.stringArray(forKey: dirtyIdsKey) {
+            dirtyIds = Set(strings.compactMap(UUID.init(uuidString:)))
+        }
+        cloudSyncCursor = defaults.string(forKey: cursorKey)
+        if let data = defaults.data(forKey: orphansKey) {
+            let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601
+            pendingOrphanDTOs = (try? decoder.decode([ObservationRecordDTO].self, from: data)) ?? []
+        }
+    }
+
     // MARK: Recent handling
     private func touchRecent(_ id: String) {
         let now = Date()
@@ -346,6 +531,7 @@ import Observation
         if let data = UserDefaults.standard.data(forKey: persistenceKey) {
             do { let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601; observations = try decoder.decode([ObservationRecord].self, from: data) } catch { observations = [] }
         }
+        loadCloudState()
     }
 }
 

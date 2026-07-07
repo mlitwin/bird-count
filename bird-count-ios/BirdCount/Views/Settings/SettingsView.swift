@@ -4,8 +4,11 @@ struct SettingsView: View {
     @Environment(SettingsStore.self) private var settings
     @Environment(ObservationStore.self) private var observations
     @Environment(TaxonomyStore.self) private var taxonomy
+    @Environment(CloudAuthService.self) private var cloudAuth
+    @Environment(CloudSyncService.self) private var cloudSync
     @Binding var show: Bool
     @State private var confirmClear: Bool = false
+    @State private var signInError: String?
 
     // Example list of bundled checklist ids; keep in sync with added resource files
     private let availableChecklists: [String] = ["checklist-US-CA-041", "checklist-US-ME"]
@@ -45,6 +48,52 @@ struct SettingsView: View {
                         )
                     }
                 }
+                Section("Cloud Sync") {
+                    if cloudAuth.isSignedIn {
+                        HStack {
+                            Text("Account")
+                            Spacer()
+                            Text(cloudAuth.accountEmail ?? "Signed in")
+                                .foregroundStyle(.secondary)
+                        }
+                        Button {
+                            Task { await cloudSync.syncNow(store: observations) }
+                        } label: {
+                            HStack {
+                                Text("Sync now")
+                                Spacer()
+                                if cloudSync.isSyncing { ProgressView() }
+                            }
+                        }
+                        .disabled(cloudSync.isSyncing)
+                        if case .syncing(let message) = cloudSync.state {
+                            Text(message).font(.footnote).foregroundStyle(.secondary)
+                        }
+                        if case .failure(let message) = cloudSync.state {
+                            Text(message).font(.footnote).foregroundStyle(.red)
+                        }
+                        if let last = cloudSync.lastSyncDate {
+                            HStack {
+                                Text("Last sync")
+                                Spacer()
+                                Text(last.formatted(date: .abbreviated, time: .shortened))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        Button("Sign out", role: .destructive) { cloudAuth.signOut() }
+                    } else {
+                        Button("Sign in with Apple") {
+                            signInError = nil
+                            Task {
+                                do { try await cloudAuth.signIn() }
+                                catch { signInError = error.localizedDescription }
+                            }
+                        }
+                        if let signInError {
+                            Text(signInError).font(.footnote).foregroundStyle(.red)
+                        }
+                    }
+                }
                 Section("Data") {
                     Button(role: .destructive) { confirmClear = true } label: { Text("Clear all counts") }
                 }
@@ -79,5 +128,13 @@ struct SettingsView: View {
 // moved to CommonnessRangeView.swift
 
 #if DEBUG
-#Preview { SettingsView(show: .constant(true)).environment(SettingsStore()).environment(ObservationStore()).environment(TaxonomyStore()) }
+#Preview {
+    let auth = CloudAuthService()
+    return SettingsView(show: .constant(true))
+        .environment(SettingsStore())
+        .environment(ObservationStore())
+        .environment(TaxonomyStore())
+        .environment(auth)
+        .environment(CloudSyncService(auth: auth))
+}
 #endif

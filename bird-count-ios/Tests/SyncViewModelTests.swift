@@ -243,14 +243,16 @@ struct SyncExecutionTests {
     @Test func completionStats_duplicatesSkipped() async throws {
         let store = makeStore()
         let duplicateID = UUID()
+        // identical timestamps -> equal updatedAt -> deduplicated (not LWW-applied)
+        let created = Date()
         store.importObservations([ObservationRecord(id: duplicateID, taxonId: "amecro",
-                                                    begin: Date(), end: nil, count: 1, observer: "")])
+                                                    begin: created, end: nil, count: 1, observer: "")])
         let payload = PayloadV1(
             schemaVersion: 1, appVersion: "1.0", senderDisplayName: "Peer",
             rangeStart: Date().addingTimeInterval(-3600), rangeEnd: Date(),
             observations: [
                 ObservationRecordDTO(id: duplicateID, taxonId: "amecro",
-                                     begin: Date(), end: Date(), count: 1, observer: "p@e.com"),
+                                     begin: created, end: created, count: 1, observer: ""),
                 ObservationRecordDTO(id: UUID(), taxonId: "norbla",
                                      begin: Date(), end: Date(), count: 1, observer: "p@e.com")
             ]

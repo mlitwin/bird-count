@@ -27,7 +27,7 @@ public class ObservationExportService {
         let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Unknown"
 
         return PayloadV1(
-            schemaVersion: 1,
+            schemaVersion: 2,
             appVersion: appVersion,
             senderDisplayName: displayName,
             rangeStart: range.begin,
@@ -35,16 +35,16 @@ public class ObservationExportService {
             observations: flattenedDTOs
         )
     }
-    
+
     /// Filter observation records that overlap with the given date range.
     /// Uses the rule: record.end >= range.begin && record.begin <= range.end
+    /// An in-range parent brings ALL its descendants regardless of their
+    /// dates: adjustment children are ledger entries, and splitting a parent
+    /// from a later zero-out child would corrupt totals on the receiver.
     private static func filterRecords(from records: [ObservationRecord], in range: DateRange) -> [ObservationRecord] {
         return records.compactMap { record in
             if record.end >= range.begin && record.begin <= range.end {
-                // Include this record, and filter its children recursively
-                var filteredRecord = record
-                filteredRecord.children = filterRecords(from: record.children, in: range)
-                return filteredRecord
+                return record
             }
             return nil
         }

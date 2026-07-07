@@ -51,6 +51,10 @@ targets:
         CFBundleDevelopmentRegion: "en"
         CFBundleLocalizations:
           - "en"
+        CFBundleURLTypes:
+          - CFBundleURLName: "org.antoninus.birdcount.auth"
+            CFBundleURLSchemes:
+              - "birdcount"
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: org.antoninus.birdcount.app
       PRODUCT_NAME: BirdCount
@@ -108,6 +112,10 @@ targets:
     deploymentTarget: "14.0"
     sources:
       - path: TestsCore
+      # Shared wire-format golden fixtures (drift gate vs the backend)
+      - path: ../bird-count-schema/fixtures
+        buildPhase: resources
+        group: SchemaFixtures
     dependencies:
       - target: BirdCountCore
     settings:

@@ -35,8 +35,16 @@ public struct ObservationRecord: Identifiable, Codable, Equatable {
         get { data.status }
         set { data.status = newValue }
     }
+    public var updatedAt: Date { data.updatedAt }
 
     // MARK: Initializers
+    /// Wrap an incoming DTO, preserving its identity and timestamps exactly
+    /// (sync/merge must never mint new UUIDs for transferred records).
+    public init(data: ObservationRecordDTO) {
+        self.data = data
+        self.children = []
+    }
+
     public init(id: UUID = UUID(), taxonId: String, begin: Date = Date(), end: Date? = nil, count: Int = 1, location: ObservationLocation? = nil, observer: String = "", status: ObservationStatus = .completed) {
         let beginTime = begin
         self.data = ObservationRecordDTO(id: id, parentId: nil, taxonId: taxonId, begin: beginTime, end: end ?? beginTime, count: count, location: location, observer: observer, status: status)
@@ -57,10 +65,13 @@ public struct ObservationRecord: Identifiable, Codable, Equatable {
         children.append(adjusted)
     }
     
-    /// Update the observation with location and mark as completed
+    /// Update the observation with location and mark as completed.
+    /// This is the one post-creation mutation; it bumps updatedAt so the new
+    /// location wins last-writer-wins merges on other devices.
     public mutating func updateWithLocation(_ location: ObservationLocation?) {
         data.location = location
         data.status = .completed
+        data.updatedAt = Date()
     }
 }
 

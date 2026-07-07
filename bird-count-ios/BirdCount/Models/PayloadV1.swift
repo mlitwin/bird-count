@@ -1,7 +1,8 @@
 import Foundation
 
 /// Data structure for syncing observations between devices via Network Framework.
-/// Version 1 of the sync payload format.
+/// schemaVersion 2 = observation DTOs carry updatedAt (wire: ms epoch int);
+/// v1 payloads are still accepted (decoder backfills updatedAt = end).
 public struct PayloadV1: Codable {
     public let schemaVersion: Int
     public let appVersion: String
@@ -9,9 +10,9 @@ public struct PayloadV1: Codable {
     public let rangeStart: Date
     public let rangeEnd: Date
     public let observations: [ObservationRecordDTO]
-    
+
     public init(
-        schemaVersion: Int = 1,
+        schemaVersion: Int = 2,
         appVersion: String,
         senderDisplayName: String,
         rangeStart: Date,

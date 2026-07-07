@@ -3,7 +3,19 @@ import UIKit
 
 @main
 struct BirdCountApp: App {
+    @State private var taxonomyStore = TaxonomyStore()
+    @State private var observationStore = ObservationStore()
+    @State private var settingsStore = SettingsStore()
+    @State private var dateRangeStore = DateRangeStore()
+    @State private var locationManager = LocationManager.shared
+    @State private var cloudAuth = CloudAuthService()
+    @State private var cloudSync: CloudSyncService
+
     init() {
+        let auth = CloudAuthService()
+        _cloudAuth = State(initialValue: auth)
+        _cloudSync = State(initialValue: CloudSyncService(auth: auth))
+
         // Enlarge segmented control text globally
         let seg = UISegmentedControl.appearance()
         let attrs: [NSAttributedString.Key: Any] = [
@@ -12,11 +24,6 @@ struct BirdCountApp: App {
         seg.setTitleTextAttributes(attrs, for: .normal)
         seg.setTitleTextAttributes(attrs, for: .selected)
     }
-    @State private var taxonomyStore = TaxonomyStore()
-    @State private var observationStore = ObservationStore()
-    @State private var settingsStore = SettingsStore()
-    @State private var dateRangeStore = DateRangeStore()
-    @State private var locationManager = LocationManager.shared
 
     var body: some Scene {
         WindowGroup {
@@ -26,6 +33,8 @@ struct BirdCountApp: App {
                 .environment(settingsStore)
                 .environment(dateRangeStore)
                 .environment(locationManager)
+                .environment(cloudAuth)
+                .environment(cloudSync)
                 .onAppear {
                     // Set up store dependencies
                     observationStore.setSettingsStore(settingsStore)
