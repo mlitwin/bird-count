@@ -1,0 +1,14 @@
+.Observations {
+    overflow-y: scroll;
+    flex-grow: 1;
+}
+
+.ObservationListItem {
+    width: 100%;
+}
+
+.ObservationListDayHeader {
+    padding: 20px;
+    display: flex;
+    border-top: 1px solid;
+}

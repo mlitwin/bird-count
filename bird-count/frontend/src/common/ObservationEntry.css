@@ -1,0 +1,104 @@
+.ObservatioSwiper {
+    display: flex;
+    width: 100%;
+    overflow: hidden;
+}
+
+.ObservatioSwiper .last {
+    display: flex;
+    overflow: hidden;
+    width: 0px;
+    max-width: max-content;
+    white-space: nowrap;
+}
+
+.ObservatioSwiper .DeleteObservatiobButton {
+    background-color: red;
+    color: white;
+}
+
+/*
+.ObservatioSwiper.last .last {
+    transition: width 0.5s;
+}
+*/
+.Observation.edit {
+    min-height: 1em;
+    margin-bottom: 1em;
+    width: 100%;
+    border-top: 2px solid black;
+    padding-top: 5px;
+}
+
+.Observation .Button {
+    padding: 5px;
+}
+
+.Observation .Button.PrimaryButton {
+    border: 1px solid;
+}
+
+.Observation.activeEdit .Button.PrimaryButton {
+    color: green;
+    border: 2px solid;
+}
+
+.Observation.display {
+    width: 100%;
+}
+
+.ObservationDisplay {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.ObservationDate {
+    padding-right: 15px;
+    font-family: ui-monospace;
+}
+
+.ObservationSummary {
+    flex-grow: 1;
+    display: flex;
+}
+
+.ObservationCount {
+    display: flex;
+    align-items: center;
+    margin-right: 0.5em;
+}
+
+.ObservationHeader {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 5px;
+}
+
+.Observation.edit .ObservationHeader {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+    margin-bottom: 25px;
+}
+
+.Observation.header {
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+}
+
+.Observation.edit .ObservationHeader .SpeciesEntry {
+    font-size: 125%;
+    color: green;
+    justify-content: center;
+}
+
+.ObservationEditIcons {
+    display: flex;
+    justify-content: space-between;
+}
+
+.CountEntry {
+    display: flex;
+}

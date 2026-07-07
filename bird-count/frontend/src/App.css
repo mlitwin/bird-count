@@ -1,0 +1,53 @@
+.AppTabs {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: white;
+}
+
+#root {
+    height: 100%;
+    font-size: 150%;
+}
+
+.App {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.AppHeader {
+    flex-shrink: 0;
+}
+
+.AppNav {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.AppContent {
+    flex-grow: 1;
+    overflow-y: scroll;
+}
+
+.AppContent > * {
+    height: 100%;
+}
+
+.oneColumn {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.oneColumn > * {
+    flex-shrink: 0;
+}
+
+.oneColumn > .oneColumnExpand {
+    flex-shrink: unset;
+    flex-grow: 1;
+    display: flex;
+    overflow-y: hidden;
+}

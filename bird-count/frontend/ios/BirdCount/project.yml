@@ -1,0 +1,45 @@
+name: BirdCount
+options:
+  bundleIdPrefix: com.birdcount
+configs:
+  Debug: debug
+  Release: release
+settings:
+  SWIFT_VERSION: 5.10
+  IPHONEOS_DEPLOYMENT_TARGET: 18.5  # raised from 16.0
+
+targets:
+  BirdCount:
+    type: application
+    platform: iOS
+    deploymentTarget: "18.5"  # raised from 16.0
+    # NOTE: XcodeGen detects resources (JSON, assets, etc.) from entries in 'sources'.
+    # The previous 'resources:' key is not a valid target property, so the checklist JSON files
+    # were not being copied. We list both the Swift sources root and the shared data directory here.
+    sources:
+      - path: BirdCount               # Swift sources & bundled Resources/ (ios_taxonomy_min.json, etc.)
+      - path: ../../src/data          # Shared JSON data from the web frontend
+        includes:                     # Limit to the checklist variants you want packaged
+          - checklist-*.json
+          - checklist.json            # Added base file (was previously commented out)
+        # If you also need the base checklist.json file, uncomment the next line:
+        # - checklist.json
+        buildPhase: resources         # Explicitly ensure treated as resources (optional; JSON defaults to resources)
+    info:
+      path: BirdCount/BirdCount/Info.plist
+      properties:
+        CFBundleShortVersionString: "1.0.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.birdcount.app
+      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    scripts:
+      - name: Generate Taxonomy
+        script: |
+          if [ -f BirdCount/Scripts/generate_ios_taxonomy.mjs ]; then
+            node BirdCount/Scripts/generate_ios_taxonomy.mjs || exit 1
+          else
+            echo "No taxonomy generation script found";
+          fi
+        basedOnDependencyAnalysis: false
