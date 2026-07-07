@@ -1,0 +1,202 @@
+/*
+  Localizable.strings
+  BirdCount
+
+  Created on September 20, 2025.
+*/
+
+// MARK: - General
+"general.ok" = "OK";
+"general.cancel" = "Cancel";
+"general.done" = "Done";
+"general.close" = "Close";
+"general.clear" = "Clear";
+"general.loading" = "Loading...";
+"general.error" = "Error";
+"general.menu" = "Menu";
+"general.user" = "User settings";
+
+// MARK: - User
+"user.email" = "Email";
+"user.email.placeholder" = "Enter your email address";
+
+// MARK: - Tabs
+"tab.home" = "Home";
+"tab.summary" = "Summary";
+"tab.log" = "Log";
+
+// MARK: - Home Screen
+"home.title" = "Bird Count";
+"home.filter.placeholder" = "Filter species";
+"home.filter.clear" = "Clear filter text";
+"home.loading" = "Loading taxonomy…";
+
+// MARK: - Species List
+"species" = "species";
+"species.list.empty" = "No Species";
+"species.list.empty.description" = "Taxonomy file empty";
+"species.observed" = "Species observed";
+"species.individuals" = "Total individuals";
+"species.in.range" = "Species in Range";
+
+// MARK: - Observation
+"observation.count" = "Count";
+"observation.add" = "Add Observation";
+"observation.edit" = "Edit Observation";
+"observation.none" = "No observations yet.";
+"observation.none.range" = "No observations in selected date range";
+"observation.unknown" = "Unknown";
+"observation.delete" = "Delete";
+"observation.adjust" = "Adjust";
+"observation.details" = "Observation Details";
+"observation.observer" = "Observer";
+"observation.status" = "Status";
+"observation.status.pending" = "Pending location";
+"observation.status.completed" = "Completed";
+
+// MARK: - Date Range
+"date.range.all.time" = "All time";
+"date.range.today" = "Today";
+"date.range.custom" = "Custom Range";
+"date.range.from" = "From";
+"date.range.to" = "To";
+"date.range.previous" = "Previous day";
+"date.range.next" = "Next day";
+"date.range.all" = "All";
+
+// MARK: - Settings
+"settings.title" = "Settings";
+"settings.checklist" = "Checklist";
+"settings.commonness" = "Commonness";
+
+// MARK: - Summary
+"summary.title" = "Summary";
+"summary.observations" = "Observations";
+"summary.export.title" = "Bird Count Observations";
+
+// MARK: - Share & Export
+"share.title" = "Share Options";
+"share.export" = "Export";
+"share.send.nearby" = "Send to Nearby iPhone";
+"share.receive.nearby" = "Receive from Nearby iPhone";
+"share.include.counts" = "Include counts";
+"share.accessibility.label" = "Share";
+"share.accessibility.settings" = "Settings";
+"share.accessibility.edit.range" = "Edit range";
+
+// MARK: - Export Formats
+"export.format" = "Export Format";
+"export.format.summary" = "Summary Report";
+"export.format.json" = "JSON Data";
+"export.subject" = "Birds %@";
+
+// MARK: - Import
+"import.import" = "Import";
+"import.select.file" = "Select File to Import";
+"import.instructions" = "Select a JSON file to import observations. Only JSON format is supported for import.";
+"import.error" = "Import Error";
+"import.success" = "Import Successful";
+"import.success.message" = "Observations have been successfully imported.";
+"import.unknown.error" = "An unknown error occurred during import.";
+
+// MARK: - Sync
+"sync.title" = "Sync Observations";
+"sync.processing" = "Processing...";
+"sync.looking" = "Looking for devices...";
+"sync.found.devices" = "Found Devices:";
+"sync.waiting.connection" = "Waiting for connection...";
+"sync.connecting" = "Connecting...";
+"sync.connected" = "Connected!";
+"sync.send.observations" = "Send Observations";
+"sync.sending" = "Sending observations...";
+"sync.receiving" = "Receiving observations...";
+"sync.complete" = "Sync Complete!";
+"sync.failed" = "Sync Failed";
+"sync.find.devices" = "Find Devices";
+"sync.wait.connection" = "Wait for Connection";
+"sync.send.description" = "Send your bird observations to another iPhone nearby";
+"sync.receive.description" = "Receive bird observations from another iPhone nearby";
+"sync.make.sure" = "Make sure the sending device is looking for your device";
+"sync.wait.receive" = "Waiting to receive observations...";
+"sync.success.sent" = "Observations have been successfully sent";
+"sync.success.received" = "Observations have been successfully received";
+"sync.record.sent.single" = "1 record sent";
+"sync.record.sent.multiple" = "%d records sent";
+"sync.record.received.single" = "1 record received";
+"sync.record.received.multiple" = "%d records received";
+
+// MARK: - Sync Approval
+"sync.request" = "Sync Request";
+"sync.from" = "From: %@";
+"sync.import.summary" = "Import Summary";
+"sync.observations.label" = "Observations:";
+"sync.species.label" = "Species:";
+"sync.date.range.label" = "Date Range:";
+"sync.to" = "to %@";
+"sync.disclaimer" = "New observations will be added to your records. Existing observations won't be modified.";
+"sync.accept" = "Accept and Import";
+"sync.decline" = "Decline";
+"sync.incoming" = "Incoming Sync";
+
+// MARK: - Accessibility
+"accessibility.species.observed" = "%d species observed";
+"accessibility.count.label" = "%@ count %d";
+
+// MARK: - Errors
+"error.taxonomy.loading" = "Error loading taxonomy";
+"error.taxonomy.empty" = "Taxonomy file empty";
+"error.network" = "Network error";
+"error.unknown" = "An unknown error occurred";
+"error.sync.no.device" = "No device connected for sync";
+"error.sync.transfer.failed" = "Sync transfer failed";
+"error.sync.cancelled" = "Sync was cancelled";
+"error.sync.network.unavailable" = "Network unavailable for sync";
+"error.sync.security" = "Security error during sync";
+"error.sync.timeout" = "Sync connection timed out";
+"error.sync.unsupported.version" = "Unsupported sync format version: %@";
+"error.sync.invalid.data" = "Invalid sync data received";
+"error.sync.declined" = "Sync declined";
+"error.sync.network.policy" = "Network discovery blocked by system policy. Try on a physical device or check network permissions.";
+"error.sync.advertising.policy" = "Network advertising blocked by system policy. Try on a physical device or check network permissions.";
+"error.sync.browser.failed" = "Browser failed: %@";
+"error.sync.listener.failed" = "Listener failed: %@";
+"error.sync.send.failed" = "Send failed: %@";
+"error.sync.connection.failed" = "Connection failed: %@";
+"error.sync.advertising.failed" = "Failed to start advertising: %@";
+"error.sync.endpoint.not.found" = "Could not find endpoint for peer";
+"error.sync.unknown.device" = "Unknown Device";
+
+// MARK: - Location
+"location.capture" = "Capture Location";
+"location.current" = "Current Location";
+"location.unknown" = "Unknown Location";
+"location.accuracy.excellent" = "Excellent";
+"location.accuracy.good" = "Good";
+"location.accuracy.fair" = "Fair";
+"location.accuracy.poor" = "Poor";
+"location.accuracy.invalid" = "Invalid";
+"location.permission.request" = "Enable Location";
+"location.permission.title" = "Location Access";
+"location.permission.message" = "Allow BirdCount to access your location to record where observations were made?";
+"location.settings.prompt" = "Enable location access in Settings to capture observation locations.";
+"location.settings.button" = "Open Settings";
+
+// MARK: - Location Errors
+"location.error.services.disabled" = "Location services are disabled";
+"location.error.permission.denied" = "Location permission denied";
+"location.error.unknown.status" = "Unknown location authorization status";
+"location.error.unavailable" = "Location unavailable";
+
+// MARK: - Location Error Recovery
+"location.error.recovery.enable.services" = "Enable Location Services in Settings";
+"location.error.recovery.grant.permission" = "Grant location permission in Settings";
+"location.error.recovery.try.again" = "Try again later";
+
+// MARK: - Location Edit
+"location.edit.search.placeholder" = "Search for a location";
+"location.edit.recent" = "Recent Locations";
+"location.edit.clear.field" = "Clear search field";
+"location.edit.searching" = "Searching...";
+"location.edit.cancel" = "Cancel";
+"location.edit.no.results" = "No results found";
+"location.edit.accept" = "Use this location";

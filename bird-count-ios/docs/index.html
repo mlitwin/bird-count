@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BirdCount - Ad Hoc Builds</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="header">
+        <img src="AppIcon.png" alt="BirdCount" class="app-icon">
+        <h1>BirdCount</h1>
+        <p>Ad Hoc Build Distribution</p>
+    </div>
+    
+    <div id="platform-notice" class="platform-notice" style="display: none;">
+        <h3>⚠️ iOS Device Required</h3>
+        <p>You're viewing this on a non-iOS device. To install these builds:</p>
+        <ul>
+            <li>Open this page on your iPhone or iPad</li>
+            <li>Use Safari browser (required for app installation)</li>
+            <li>Make sure your device is registered in the provisioning profile</li>
+        </ul>
+    </div>
+    
+    <div class="instructions">
+        <h3>📱 Installation Instructions</h3>
+        <p>1. Open this page in Safari on your iOS device<br>
+        2. Tap "Install" next to the build you want<br>
+        3. Follow the iOS prompts to install the app<br>
+        <strong>Note:</strong> Your device must be registered in the provisioning profile.</p>
+    </div>
+    
+    <div class="builds-container">
+        <div class="builds-header">
+            Available Builds
+        </div>
+        <div id="builds-list" class="loading">
+            Loading builds...
+        </div>
+    </div>
+    
+    <script src="js/main.js"></script>
+</body>
+</html>

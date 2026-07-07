@@ -1,0 +1,14 @@
+# Fastlane Appfile: App Store Connect metadata
+# Prefer using API Key auth via environment variables in Fastfile.
+
+app_identifier "org.antoninus.birdcount.app"
+
+# Developer Portal (Certificates/Profiles) Team ID (10-char)
+team_id "352K435X8J"
+
+# App Store Connect Team ID (numeric). Set to avoid interactive selection.
+itc_team_id "210523"
+# itc_team_name "Matthew Litwin"
+
+# If using Apple ID auth (fallback), set your Apple ID here or via FASTLANE_USER
+apple_id "matthewlitwin@mac.com"

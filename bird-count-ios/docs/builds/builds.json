@@ -1,0 +1,20 @@
+[
+  {
+    "filename": "BirdCount-1.0.3-36",
+    "version": "1.0.3",
+    "build": "36",
+    "timestamp": "20250928-140725",
+    "date": "2025-09-28 14:07:39",
+    "ipa_url": "https://antoninus.org/bird-count-ios/builds/BirdCount-1.0.3-36.ipa",
+    "plist_url": "https://antoninus.org/bird-count-ios/builds/BirdCount-1.0.3-36.plist"
+  },
+  {
+    "filename": "BirdCount-1.0.0-33",
+    "version": "1.0.0",
+    "build": "33",
+    "timestamp": "20250928-135433",
+    "date": "2025-09-28 13:54:43",
+    "ipa_url": "https://antoninus.org/bird-count-ios/builds/BirdCount-1.0.0-33.ipa",
+    "plist_url": "https://antoninus.org/bird-count-ios/builds/BirdCount-1.0.0-33.plist"
+  }
+]

@@ -1,0 +1,30 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Regenerate Xcode project",
+			"type": "shell",
+			"command": "bundle exec fastlane generate",
+			"problemMatcher": [
+				"$swiftc"
+			]
+		},
+		{
+			"label": "Run Swift Tests",
+			"type": "shell",
+			"command": "xcodebuild",
+			"args": [
+				"-scheme",
+				"BirdCount",
+				"-project",
+				"/Users/mlitwin/Dev/github.com/mlitwin/bird-count-ios/BirdCount.xcodeproj",
+				"-destination",
+				"platform=iOS Simulator,name=iPhone 16",
+				"test"
+			],
+			"problemMatcher": [
+				"$swiftc"
+			]
+		}
+	]
+}

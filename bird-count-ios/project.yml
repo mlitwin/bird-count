@@ -1,0 +1,152 @@
+name: BirdCount
+options:
+  bundleIdPrefix: org.antoninus.birdcount
+configs:
+  Debug: debug
+  Release: release
+  AdHoc: ad-hoc
+settings:
+  SWIFT_VERSION: 5.10
+  IPHONEOS_DEPLOYMENT_TARGET: 18.5
+  DEAD_CODE_STRIPPING: YES
+  ALWAYS_SEARCH_USER_PATHS: NO
+  # Enable agvtool for fastlane's increment_version_number and increment_build_number
+  VERSIONING_SYSTEM: Apple Generic
+
+targets:
+  BirdCount:
+    type: application
+    platform: iOS
+    deploymentTarget: "18.5"  # raised from 16.0
+    # NOTE: XcodeGen detects resources (JSON, assets, etc.) from entries in 'sources'.
+    # The previous 'resources:' key is not a valid target property, so the checklist JSON files
+    # were not being copied. We list both the Swift sources root and the shared data directory here.
+    sources:
+      - path: BirdCount               # Swift sources & bundled Resources/ (ios_taxonomy_min.json, etc.)
+      - path: ./data                  # Shared JSON data from the web frontend
+        includes:                     # Limit to the checklist variants you want packaged
+          - checklist-*.json
+          - checklist.json            # Added base file (was previously commented out)
+        # If you also need the base checklist.json file, uncomment the next line:
+        # - checklist.json
+        buildPhase: resources         # Explicitly ensure treated as resources (optional; JSON defaults to resources)
+    info:
+      path: BirdCount/BirdCount/Info.plist
+      properties:
+        CFBundleShortVersionString: "1.0.25"
+        CFBundleVersion: "58"
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        NSLocalNetworkUsageDescription: "This app uses the local network to sync bird observations between devices."
+        NSLocationWhenInUseUsageDescription: "This app uses your location to record where bird observations were made. Location data helps you track birding locations and is only stored locally on your device."
+        NSBonjourServices:
+          - "_birdcount._tcp"
+          - "_birdcount._tcp.local."
+        CFBundleDevelopmentRegion: "en"
+        CFBundleLocalizations:
+          - "en"
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: org.antoninus.birdcount.app
+      PRODUCT_NAME: BirdCount
+      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+      DEVELOPMENT_TEAM: 352K435X8J
+      CODE_SIGN_STYLE: Automatic
+      # AdHoc configuration uses manual signing with BirdCountAdHoc profile
+      PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*][configuration=ad-hoc]: "BirdCountAdHoc"
+      CODE_SIGN_IDENTITY[sdk=iphoneos*][configuration=ad-hoc]: "iPhone Distribution"
+      CODE_SIGN_STYLE[sdk=iphoneos*][configuration=ad-hoc]: Manual
+      DEAD_CODE_STRIPPING: YES
+    scripts:
+      - name: Generate Taxonomy
+        script: |
+          if [ -f BirdCount/Scripts/generate_ios_taxonomy.mjs ]; then
+            node BirdCount/Scripts/generate_ios_taxonomy.mjs || exit 1
+          else
+            echo "No taxonomy generation script found";
+          fi
+        basedOnDependencyAnalysis: false
+
+  BirdCountTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "18.5"
+    sources:
+      - path: Tests
+    dependencies:
+      - target: BirdCount
+    hostApplication:
+      target: BirdCount
+    settings:
+      GENERATE_INFOPLIST_FILE: YES
+      PRODUCT_BUNDLE_IDENTIFIER: org.antoninus.birdcount.app
+      DEVELOPMENT_TEAM: 352K435X8J
+      CODE_SIGNING_ALLOWED: NO
+      DEAD_CODE_STRIPPING: YES
+
+  BirdCountCore:
+    type: framework
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: BirdCount/Models
+      - path: BirdCount/Stores
+        excludes:
+          - LocationManager.swift  # iOS-specific, not cross-platform
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: org.antoninus.birdcount.core
+      DEAD_CODE_STRIPPING: YES
+
+  BirdCountCoreTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: TestsCore
+    dependencies:
+      - target: BirdCountCore
+    settings:
+      GENERATE_INFOPLIST_FILE: YES
+      PRODUCT_BUNDLE_IDENTIFIER: org.antoninus.birdcount.core.tests
+      CODE_SIGNING_ALLOWED: NO
+      DEAD_CODE_STRIPPING: YES
+
+  BirdCountUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "18.5"
+    sources:
+      - path: UITests
+    dependencies:
+      - target: BirdCount
+    settings:
+      GENERATE_INFOPLIST_FILE: YES
+      PRODUCT_BUNDLE_IDENTIFIER: org.antoninus.birdcount.app.uitests
+      DEVELOPMENT_TEAM: 352K435X8J
+      CODE_SIGNING_ALLOWED: NO
+      DEAD_CODE_STRIPPING: YES
+
+schemes:
+  BirdCount:
+    build:
+      targets:
+        BirdCount: all
+    test:
+      targets:
+        - name: BirdCountTests
+          parallelizable: true
+        - name: BirdCountUITests
+          parallelizable: false
+  BirdCountCore:
+    build:
+      targets:
+        BirdCountCore: all
+    test:
+      targets:
+        - name: BirdCountCoreTests
+          parallelizable: true

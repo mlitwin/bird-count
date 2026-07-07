@@ -1,0 +1,56 @@
+local/
+## macOS
+.DS_Store
+
+## Xcode / iOS
+DerivedData/
+build/
+*.moved-aside
+*.xccheckout
+*.xcscmblueprint
+*.xcuserstate
+xcuserdata/
+
+# Archives and symbols
+*.ipa
+*.dSYM
+*.dSYM.zip
+*.xcarchive
+
+## Swift Package Manager
+.build/
+.swiftpm/xcode/
+# Xcode 13+ caches
+SourcePackages/
+
+# Do not ignore Package.resolved (recommended to commit for apps)
+# Package.resolved
+
+## Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+## Fastlane (optional)
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+vendor/bundle/
+.bundle/
+
+## CocoaPods (optional; uncomment if used)
+# Pods/
+# "*.xcworkspace" is generally committed when using CocoaPods; keep it tracked unless you intentionally ignore it.
+
+## Carthage (optional; uncomment if used)
+# Carthage/Build/
+# Carthage/Checkouts/
+
+## SwiftLint/SwiftFormat caches
+.swiftlint.cache
+# .swiftformat is config; usually commit it
+
+## XcodeGen (optional)
+# If you generate the project from project.yml and do not want to track the output, uncomment:
+# *.xcodeproj/
+# *.xcworkspace/
