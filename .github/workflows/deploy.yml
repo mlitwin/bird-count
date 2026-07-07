@@ -67,6 +67,10 @@ jobs:
         with:
           terraform_version: "1.15.7"
 
+      - name: Install schema deps (generate-ts runs from bird-count-schema)
+        working-directory: bird-count-schema
+        run: npm ci
+
       - name: Build Lambda bundle
         working-directory: bird-count-backend/api
         run: |
