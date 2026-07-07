@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://birdcount.dev/schemas/sync.schema.json",
+  "title": "SyncAPI",
+  "description": "POST /v1/sync request/response shapes",
+  "$defs": {
+    "SyncRequest": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": { "type": "integer", "minimum": 2 },
+        "clientId": { "type": "string", "format": "uuid" },
+        "cursor": {
+          "type": "string",
+          "description": "Max serverUpdatedAt seen by this client, as decimal string; \"0\" or absent for first sync"
+        },
+        "changes": {
+          "type": "array",
+          "maxItems": 100,
+          "items": { "$ref": "observation.schema.json" }
+        }
+      },
+      "required": ["schemaVersion", "clientId", "changes"],
+      "additionalProperties": false
+    },
+    "SyncResponse": {
+      "type": "object",
+      "properties": {
+        "serverTime": { "type": "integer" },
+        "cursor": { "type": "string" },
+        "applied": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "result": { "enum": ["applied", "stale", "invalid"] }
+            },
+            "required": ["id", "result"],
+            "additionalProperties": false
+          }
+        },
+        "changes": {
+          "type": "array",
+          "items": { "$ref": "observation.schema.json" }
+        },
+        "hasMore": { "type": "boolean" }
+      },
+      "required": ["serverTime", "cursor", "applied", "changes", "hasMore"],
+      "additionalProperties": false
+    }
+  }
+}

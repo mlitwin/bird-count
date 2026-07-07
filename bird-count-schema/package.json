@@ -1,0 +1,16 @@
+{
+  "name": "bird-count-schema",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Shared wire-format schemas and golden fixtures for the bird-count backend and iOS app",
+  "type": "module",
+  "scripts": {
+    "validate": "node scripts/validate.mjs",
+    "generate": "node scripts/generate-ts.mjs"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "json-schema-to-typescript": "^15.0.4"
+  }
+}

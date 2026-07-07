@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://birdcount.dev/schemas/location.schema.json",
+  "title": "ObservationLocation",
+  "description": "Location where an observation was recorded (mirrors ObservationLocation.swift)",
+  "type": "object",
+  "properties": {
+    "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
+    "longitude": { "type": "number", "minimum": -180, "maximum": 180 },
+    "horizontalAccuracy": {
+      "type": "number",
+      "description": "Meters; negative means invalid (matches CoreLocation semantics)"
+    },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "altitude": { "type": "number" },
+    "verticalAccuracy": { "type": "number" },
+    "name": { "type": "string" },
+    "notes": { "type": "string" }
+  },
+  "required": ["latitude", "longitude", "horizontalAccuracy", "timestamp"],
+  "additionalProperties": false
+}

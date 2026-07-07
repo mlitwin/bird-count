@@ -15,14 +15,12 @@ resource "aws_s3_bucket_versioning" "web_bucket_versioning" {
   }
 }
 
-resource "aws_s3_bucket_encryption" "web_bucket_encryption" {
+resource "aws_s3_bucket_server_side_encryption_configuration" "web_bucket_encryption" {
   bucket = aws_s3_bucket.web_bucket.id
 
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
     }
   }
 }

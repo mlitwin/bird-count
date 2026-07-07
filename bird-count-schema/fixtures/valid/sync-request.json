@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 2,
+  "clientId": "D7E8F9A0-B1C2-4D3E-9F4A-5B6C7D8E9F0A",
+  "cursor": "1782914000000",
+  "changes": [
+    {
+      "id": "A1B2C3D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D",
+      "parentId": "7B1E9F2A-3C4D-4E5F-8A9B-0C1D2E3F4A5B",
+      "taxonId": "norcar",
+      "begin": "2026-07-01T14:05:00Z",
+      "end": "2026-07-01T14:06:30Z",
+      "count": 3,
+      "observer": "Matt",
+      "status": "completed",
+      "updatedAt": 1782914790000
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 2,
+  "appVersion": "1.4.0",
+  "senderDisplayName": "Matt's iPhone",
+  "rangeStart": "2026-07-01T00:00:00Z",
+  "rangeEnd": "2026-07-02T00:00:00Z",
+  "observations": [
+    {
+      "id": "7B1E9F2A-3C4D-4E5F-8A9B-0C1D2E3F4A5B",
+      "taxonId": "amecro",
+      "begin": "2026-07-01T14:00:00Z",
+      "end": "2026-07-01T14:00:00Z",
+      "count": 1,
+      "observer": "Matt",
+      "status": "completed",
+      "updatedAt": 1782914400000
+    }
+  ]
+}

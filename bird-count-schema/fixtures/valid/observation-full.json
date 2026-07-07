@@ -1,0 +1,21 @@
+{
+  "id": "A1B2C3D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D",
+  "parentId": "7B1E9F2A-3C4D-4E5F-8A9B-0C1D2E3F4A5B",
+  "taxonId": "norcar",
+  "begin": "2026-07-01T14:05:00Z",
+  "end": "2026-07-01T14:06:30Z",
+  "count": 3,
+  "location": {
+    "latitude": 38.4405,
+    "longitude": -122.7144,
+    "horizontalAccuracy": 5.0,
+    "timestamp": "2026-07-01T14:05:02Z",
+    "altitude": 32.5,
+    "verticalAccuracy": 8.0,
+    "name": "Spring Lake",
+    "notes": "east shore trail"
+  },
+  "observer": "Matt",
+  "status": "completed",
+  "updatedAt": 1782914790000
+}

@@ -1,11 +1,9 @@
-# Remote state configuration
+# Remote state: S3 with native lockfile locking (Terraform >= 1.10).
+# Bucket/key/region come from environments/<env>.backend.hcl via
+# `make init ENV=<env>` (terraform init -backend-config=...).
 terraform {
   backend "s3" {
-    # Configure these values in terraform init command or backend config file
-    # bucket         = "birdcount-terraform-state"
-    # key            = "terraform.tfstate"
-    # region         = "us-east-1"
-    # dynamodb_table = "birdcount-terraform-locks"
-    # encrypt        = true
+    use_lockfile = true
+    encrypt      = true
   }
 }

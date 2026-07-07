@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://birdcount.dev/schemas/observation.schema.json",
+  "title": "ObservationRecordDTO",
+  "description": "Wire shape of one observation ledger entry (mirrors ObservationRecordDTO.swift). Records are immutable after creation except the location/status backfill on the originating device. Adjustment children carry a (possibly negative) count and a parentId; the ledger total is the recursive sum.",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "parentId": { "type": "string", "format": "uuid" },
+    "taxonId": { "type": "string", "minLength": 1 },
+    "begin": { "type": "string", "format": "date-time" },
+    "end": { "type": "string", "format": "date-time" },
+    "count": {
+      "type": "integer",
+      "description": "May be negative: adjustment children zero out or reduce a parent's recursive total"
+    },
+    "location": { "$ref": "location.schema.json" },
+    "observer": { "type": "string" },
+    "status": { "enum": ["pending", "completed"] },
+    "updatedAt": {
+      "type": "integer",
+      "description": "Client-set ms epoch; whole-record LWW for the location backfill. Absent on legacy v1 records — consumers backfill with epoch-ms of `end` (same rule as the iOS decoder, convergent across devices)."
+    }
+  },
+  "required": ["id", "taxonId", "begin", "end", "count"],
+  "additionalProperties": false
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://birdcount.dev/schemas/payload.schema.json",
+  "title": "PayloadV2",
+  "description": "P2P sync payload (Bonjour/TCP transport). v2 = observation items may carry updatedAt; receivers accept v1 items and backfill updatedAt from end.",
+  "type": "object",
+  "properties": {
+    "schemaVersion": { "type": "integer", "minimum": 1 },
+    "appVersion": { "type": "string" },
+    "senderDisplayName": { "type": "string" },
+    "rangeStart": { "type": "string", "format": "date-time" },
+    "rangeEnd": { "type": "string", "format": "date-time" },
+    "observations": {
+      "type": "array",
+      "items": { "$ref": "observation.schema.json" }
+    }
+  },
+  "required": ["schemaVersion", "appVersion", "senderDisplayName", "rangeStart", "rangeEnd", "observations"],
+  "additionalProperties": false
+}

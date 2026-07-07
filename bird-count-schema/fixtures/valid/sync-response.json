@@ -1,0 +1,21 @@
+{
+  "serverTime": 1782914800456,
+  "cursor": "1782914800456",
+  "applied": [
+    { "id": "A1B2C3D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D", "result": "applied" }
+  ],
+  "changes": [
+    {
+      "id": "C0FFEE00-1111-4222-8333-444455556666",
+      "parentId": "A1B2C3D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D",
+      "taxonId": "norcar",
+      "begin": "2026-07-01T14:10:00Z",
+      "end": "2026-07-01T14:10:00Z",
+      "count": -3,
+      "observer": "Matt",
+      "status": "completed",
+      "updatedAt": 1782915000000
+    }
+  ],
+  "hasMore": false
+}
