@@ -116,6 +116,27 @@ struct CloudMergeTests {
     }
 
     @Test
+    func dirtyIdsAndCursorSurviveRelaunch() throws {
+        // Offline queueing: dirty state written by one store instance must be
+        // visible to a freshly-initialized one (simulating an app relaunch).
+        // Isolated suite: tests run concurrently and .standard is shared.
+        let suiteName = "CloudMergeTests-relaunch-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let first = ObservationStore(testing: true, defaults: defaults)
+        first.addObservation("amecro")
+        first.cloudSyncCursor = "1782914800456"
+        let dirty = first.dirtyIds
+        #expect(dirty.count == 1)
+
+        let relaunched = ObservationStore(testing: false, defaults: defaults)
+        #expect(relaunched.dirtyIds == dirty)
+        #expect(relaunched.cloudSyncCursor == "1782914800456")
+        #expect(relaunched.observations.count == 1)
+    }
+
+    @Test
     func dtoWireFormatUsesMillisecondUpdatedAt() throws {
         let record = dto(updatedAt: Date(timeIntervalSince1970: 1_782_914_790))
         let encoder = JSONEncoder(); encoder.dateEncodingStrategy = .iso8601

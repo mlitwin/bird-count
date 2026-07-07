@@ -31,17 +31,26 @@ import Observation
     /// Max serverUpdatedAt this device has seen, as a decimal string.
     /// nil means never synced: the first sync uploads everything.
     public var cloudSyncCursor: String? {
-        didSet { UserDefaults.standard.set(cloudSyncCursor, forKey: cursorKey) }
+        didSet { defaults.set(cloudSyncCursor, forKey: cursorKey) }
     }
 
     /// Cloud-delivered children whose parent has not arrived yet (pagination
     /// can deliver a child before its parent); reattached on later merges.
     private var pendingOrphanDTOs: [ObservationRecordDTO] = []
 
-    public init() { load(); rebuildDerived() }
+    /// Injectable so tests can isolate persistence (suites run concurrently
+    /// in one process; sharing .standard makes them clobber each other).
+    private let defaults: UserDefaults
+
+    public init() {
+        defaults = .standard
+        load()
+        rebuildDerived()
+    }
 
     /// Test initializer that starts with empty data (doesn't load from UserDefaults)
-    public init(testing: Bool) {
+    public init(testing: Bool, defaults: UserDefaults = .standard) {
+        self.defaults = defaults
         if !testing {
             load()
         }
@@ -369,8 +378,19 @@ import Observation
         public var orphansHeld = 0
     }
 
+    /// Posted after local mutations add dirty ids; the cloud sync service
+    /// listens and schedules a debounced auto-sync.
+    public static let didMarkDirtyNotification = Notification.Name("ObservationStoreDidMarkDirty")
+
     public func markDirty(_ id: UUID) {
         dirtyIds.insert(id)
+        persistCloudState()
+        NotificationCenter.default.post(name: Self.didMarkDirtyNotification, object: self)
+    }
+
+    /// First-sync bootstrap: everything this device has needs to upload.
+    public func markAllDirty() {
+        dirtyIds.formUnion(allRecordIds)
         persistCloudState()
     }
 
@@ -446,6 +466,9 @@ import Observation
         persistCloudState()
         persist()
         rebuildDerived()
+        if markDirty && (stats.imported > 0 || stats.updated > 0) {
+            NotificationCenter.default.post(name: Self.didMarkDirtyNotification, object: self)
+        }
         return stats
     }
 
@@ -491,7 +514,6 @@ import Observation
     }
 
     private func persistCloudState() {
-        let defaults = UserDefaults.standard
         defaults.set(dirtyIds.map { $0.uuidString }, forKey: dirtyIdsKey)
         do {
             let encoder = JSONEncoder(); encoder.dateEncodingStrategy = .iso8601
@@ -500,7 +522,6 @@ import Observation
     }
 
     private func loadCloudState() {
-        let defaults = UserDefaults.standard
         if let strings = defaults.stringArray(forKey: dirtyIdsKey) {
             dirtyIds = Set(strings.compactMap(UUID.init(uuidString:)))
         }
@@ -523,12 +544,12 @@ import Observation
         do {
             let encoder = JSONEncoder(); encoder.dateEncodingStrategy = .iso8601
             let data = try encoder.encode(observations)
-            UserDefaults.standard.set(data, forKey: persistenceKey)
+            defaults.set(data, forKey: persistenceKey)
         } catch { /* ignore */ }
     }
 
     private func load() {
-        if let data = UserDefaults.standard.data(forKey: persistenceKey) {
+        if let data = defaults.data(forKey: persistenceKey) {
             do { let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601; observations = try decoder.decode([ObservationRecord].self, from: data) } catch { observations = [] }
         }
         loadCloudState()

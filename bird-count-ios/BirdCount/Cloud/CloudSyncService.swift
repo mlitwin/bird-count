@@ -1,4 +1,5 @@
 import Foundation
+import Network
 
 /// Manual cloud sync: gather dirty records -> chunked POST /v1/sync ->
 /// LWW-apply pulled changes -> advance cursor -> clear pushed dirty ids.
@@ -19,6 +20,16 @@ public final class CloudSyncService {
     public private(set) var state: SyncState = .idle
     public private(set) var lastSyncDate: Date?
     public private(set) var lastStats: ObservationStore.MergeStatistics?
+    /// Path is satisfied and not expensive (wifi, not cellular/hotspot).
+    public private(set) var isOnWifi = false
+
+    /// User preference: sync automatically (on wifi, when signed in).
+    public var autoSyncEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(autoSyncEnabled, forKey: Self.autoSyncKey)
+            if autoSyncEnabled { requestSync(after: Self.triggerDebounce) }
+        }
+    }
 
     public let auth: CloudAuthService
 
@@ -26,9 +37,20 @@ public final class CloudSyncService {
     private static let cursorRewindMs: Int64 = 5000
     private static let lastSyncKey = "CloudLastSyncDate"
     private static let clientIdKey = "CloudClientId"
+    private static let autoSyncKey = "CloudAutoSyncEnabled"
+    /// Wifi-restored / foregrounded: sync soon.
+    static let triggerDebounce: TimeInterval = 3
+    /// After a local mutation: let a counting session settle first.
+    static let mutationDebounce: TimeInterval = 30
+
+    private var pathMonitor: NWPathMonitor?
+    private var pendingSyncTask: Task<Void, Never>?
+    private weak var autoSyncStore: ObservationStore?
+    private var dirtyObserver: NSObjectProtocol?
 
     public init(auth: CloudAuthService) {
         self.auth = auth
+        autoSyncEnabled = UserDefaults.standard.object(forKey: Self.autoSyncKey) as? Bool ?? true
         lastSyncDate = UserDefaults.standard.object(forKey: Self.lastSyncKey) as? Date
     }
 
@@ -45,6 +67,52 @@ public final class CloudSyncService {
         return false
     }
 
+    // MARK: Auto sync
+
+    /// Start the auto-sync triggers: wifi restoration (NWPathMonitor) and
+    /// local mutations (store notification, long debounce). The foreground
+    /// trigger calls requestSync from the scenePhase observer in the app.
+    public func activateAutoSync(store: ObservationStore) {
+        autoSyncStore = store
+
+        let monitor = NWPathMonitor()
+        monitor.pathUpdateHandler = { [weak self] path in
+            let onWifi = path.status == .satisfied && !path.isExpensive
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                let cameOnline = onWifi && !self.isOnWifi
+                self.isOnWifi = onWifi
+                if cameOnline { self.requestSync(after: Self.triggerDebounce) }
+            }
+        }
+        monitor.start(queue: DispatchQueue(label: "org.antoninus.birdcount.pathmonitor"))
+        pathMonitor = monitor
+
+        dirtyObserver = NotificationCenter.default.addObserver(
+            forName: ObservationStore.didMarkDirtyNotification,
+            object: store,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.requestSync(after: Self.mutationDebounce)
+            }
+        }
+    }
+
+    /// Debounced sync: coalesces bursts of triggers; a shorter-delay request
+    /// supersedes a pending longer one. No-op unless signed in, auto-sync is
+    /// on, and we are on wifi at fire time.
+    public func requestSync(after delay: TimeInterval = 3) {
+        guard autoSyncEnabled, auth.isSignedIn else { return }
+        pendingSyncTask?.cancel()
+        pendingSyncTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(delay))
+            guard !Task.isCancelled, let self, let store = self.autoSyncStore else { return }
+            guard self.autoSyncEnabled, self.auth.isSignedIn, self.isOnWifi, !self.isSyncing else { return }
+            await self.syncNow(store: store)
+        }
+    }
+
     public func syncNow(store: ObservationStore) async {
         guard auth.isSignedIn else {
             state = .failure("Sign in to sync")
@@ -58,7 +126,7 @@ public final class CloudSyncService {
 
             // Never synced: everything this device has needs to upload.
             if store.cloudSyncCursor == nil {
-                for id in store.allRecordIds { store.markDirty(id) }
+                store.markAllDirty()
             }
 
             // flatDTOs is parents-before-children; keep that order so the

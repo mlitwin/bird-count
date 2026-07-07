@@ -10,6 +10,7 @@ struct BirdCountApp: App {
     @State private var locationManager = LocationManager.shared
     @State private var cloudAuth = CloudAuthService()
     @State private var cloudSync: CloudSyncService
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         let auth = CloudAuthService()
@@ -38,6 +39,10 @@ struct BirdCountApp: App {
                 .onAppear {
                     // Set up store dependencies
                     observationStore.setSettingsStore(settingsStore)
+                    cloudSync.activateAutoSync(store: observationStore)
+                }
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .active { cloudSync.requestSync() }
                 }
         }
     }

@@ -80,6 +80,10 @@ struct SettingsView: View {
                                     .foregroundStyle(.secondary)
                             }
                         }
+                        Toggle("Auto sync on Wi-Fi", isOn: Binding(
+                            get: { cloudSync.autoSyncEnabled },
+                            set: { cloudSync.autoSyncEnabled = $0 }
+                        ))
                         Button("Sign out", role: .destructive) { cloudAuth.signOut() }
                     } else {
                         Button("Sign in with Apple") {
