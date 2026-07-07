@@ -1,0 +1,81 @@
+name: backend
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Schema fixtures validate
+        working-directory: bird-count-schema
+        run: |
+          npm ci
+          npm run validate
+
+      - name: Generated types drift gate
+        working-directory: bird-count-backend/api
+        run: |
+          npm ci
+          npm run generate
+          git diff --exit-code src/generated/types.ts
+
+      - name: API tests (DynamoDB Local)
+        working-directory: bird-count-backend/api
+        run: npm test
+
+  deploy:
+    # main push -> dev; vX.Y.Z tag -> prod
+    if: github.event_name == 'push'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      DEPLOY_ENV: ${{ startsWith(github.ref, 'refs/tags/v') && 'prod' || 'dev' }}
+      TF_VAR_apple_team_id: ${{ secrets.APPLE_TEAM_ID }}
+      TF_VAR_apple_services_id: ${{ secrets.APPLE_SERVICES_ID }}
+      TF_VAR_apple_key_id: ${{ secrets.APPLE_KEY_ID }}
+      TF_VAR_apple_private_key: ${{ secrets.APPLE_PRIVATE_KEY }}
+    concurrency:
+      group: deploy-${{ startsWith(github.ref, 'refs/tags/v') && 'prod' || 'dev' }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::477808199271:role/birdcount-github-deploy
+          aws-region: us-east-1
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.7"
+
+      - name: Build Lambda bundle
+        working-directory: bird-count-backend/api
+        run: |
+          npm ci
+          npm run generate
+          npm run build
+
+      - name: Terraform apply (${{ env.DEPLOY_ENV }})
+        working-directory: bird-count-backend/terraform
+        run: |
+          terraform init -backend-config=environments/${DEPLOY_ENV}.backend.hcl
+          terraform apply -auto-approve -var-file=environments/${DEPLOY_ENV}.tfvars

@@ -47,4 +47,8 @@ api-test:
 api-build:
 	cd api && npm run generate && npm run build
 
+# One-time, account-global: GitHub OIDC provider + deploy role for CI
+bootstrap:
+	cd $(TF_DIR)/bootstrap && op run --env-file ../../aws.env -- terraform init && op run --env-file ../../aws.env -- terraform apply
+
 apply: api-build

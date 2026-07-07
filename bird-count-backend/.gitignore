@@ -82,3 +82,5 @@ deployment.zip
 
 # AWS
 .aws-sam/
+# CI needs the per-env tfvars (they hold only env name/region — never secrets)
+!terraform/environments/*.tfvars

@@ -84,6 +84,7 @@ module "api" {
   table_policy_json = module.db.readwrite_policy_json
   issuer_url        = module.auth.issuer_url
   client_id         = module.auth.client_id
+  alarm_email       = var.alarm_email
 
   tags = local.common_tags
 }

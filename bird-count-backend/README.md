@@ -1,74 +1,74 @@
 # Bird Count Backend
 
-Backend for the bird count ios app.
+Cloud sync backend for the bird-count iOS app: observations sync across
+devices and users via an authenticated API. The data model is an append-only
+ledger — deletes are negative-count adjustment children, never tombstones.
 
-## Tech
+## Architecture
 
-AWS Infrastructure deployed via terraform
+- **Auth** — Cognito user pool federated with Sign in with Apple; the app
+  uses the hosted UI (`ASWebAuthenticationSession` + PKCE, no Amplify).
+  One-time Apple portal setup: [docs/apple-siwa-setup.md](docs/apple-siwa-setup.md).
+- **API** — API Gateway HTTP API with a Cognito JWT authorizer in front of a
+  TypeScript Lambda (`api/`): `POST /v1/sync` (push + pull in one round
+  trip), `GET /v1/observations` (delta read), `GET /v1/health`.
+  Requests are ajv-validated against the shared schemas in
+  [`../bird-count-schema/`](../bird-count-schema/).
+- **DB** — one DynamoDB table `birdcount-data-<env>` (PK = scope, SK =
+  `obs#<uuid>`), GSI `changes` on `serverUpdatedAt` for cursor deltas.
+  Nothing is ever deleted.
+- **Storage** — S3 + CloudFront static hosting for a future web front-end.
+- **Alarms** — CloudWatch on Lambda errors and API 5xx (email via
+  `alarm_email` tfvar, prod only by default).
 
-## Infrastructure
+Cursor contract: server pulls are strictly-after-cursor (pagination always
+advances); clients rewind their stored cursor ~5s at sync-session start and
+apply idempotently (put-if-absent + last-writer-wins on `updatedAt`).
 
-### Web Application
+## Local development
 
-HTML files are stored in a private S3 bucket, which is the origin for a cloudfront distribution.
+AWS credentials come from 1Password via `op run` — nothing is configured in
+`~/.aws`. See the `Makefile`:
 
-## Deployment
-
-### Prerequisites
-
-- AWS CLI configured with appropriate credentials
-- Terraform >= 1.5 installed
-
-### Deploy Infrastructure
-
-1. **Initialize Terraform:**
-   ```bash
-   cd terraform
-   terraform init
-   ```
-
-2. **Plan deployment for development:**
-   ```bash
-   terraform plan -var-file=environments/dev.tfvars
-   ```
-
-3. **Deploy to development:**
-   ```bash
-   terraform apply -var-file=environments/dev.tfvars
-   ```
-
-4. **Deploy to production:**
-   ```bash
-   terraform apply -var-file=environments/prod.tfvars
-   ```
-
-### Upload Web Content
-
-After deployment, upload your HTML files to the S3 bucket:
-
-```bash
-# Get the bucket name and website URL
-BUCKET_NAME=$(terraform output -raw s3_bucket_name)
-WEBSITE_URL=$(terraform output -raw website_url)
-
-# Upload files
-aws s3 sync ./web-content s3://$BUCKET_NAME/
-
-# Invalidate CloudFront cache
-DISTRIBUTION_ID=$(terraform output -raw cloudfront_distribution_id)
-aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
-
-echo "Website available at: $WEBSITE_URL"
+```sh
+make whoami            # verify credentials
+make api-test          # vitest incl. DynamoDB Local (docker)
+make api-build         # regen types from schema + esbuild bundle
+make plan ENV=dev      # terraform plan
+make apply ENV=dev     # build + terraform apply
 ```
 
-### Outputs
+Sign in with Apple secrets flow through `siwa.env` (1Password references)
+as `TF_VAR_apple_*`; the `.p8` never touches the repo.
 
-- `website_url`: The CloudFront URL for your web application
-- `s3_bucket_name`: The S3 bucket name for uploading content
-- `cloudfront_distribution_id`: CloudFront distribution ID for cache invalidation
+## CI/CD
 
+`.github/workflows/deploy.yml`:
 
+- every push/PR: schema fixtures validate, generated-types drift gate,
+  API tests
+- push to `main` → deploy **dev**; tag `vX.Y.Z` → deploy **prod**
 
+GitHub authenticates to AWS via OIDC federation (no stored keys, per the
+[AWS pattern](https://aws.amazon.com/blogs/security/use-iam-roles-to-connect-github-actions-to-actions-in-aws/)):
+the `birdcount-github-deploy` role trusts only `main` and `v*` tag refs of
+`mlitwin/bird-count`. SIWA values are GitHub Actions secrets
+(`APPLE_TEAM_ID`, `APPLE_SERVICES_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`),
+seeded from 1Password with `op read ... | gh secret set ...`. The OIDC
+provider + role live in `terraform/bootstrap/` (account-global, applied once
+locally via `make bootstrap`).
 
-#
-https://aws.amazon.com/blogs/security/use-iam-roles-to-connect-github-actions-to-actions-in-aws/
+Before the first prod tag: add the prod Cognito domain
+(`birdcount-prod.auth.us-east-1.amazoncognito.com`) and its
+`/oauth2/idpresponse` return URL to the Apple Services ID.
+
+## Terraform layout
+
+```
+terraform/
+  main.tf                    # wires modules: storage, auth, db, api
+  backend.tf                 # S3 remote state (use_lockfile)
+  environments/              # <env>.tfvars + <env>.backend.hcl
+  bootstrap/                 # GitHub OIDC provider + deploy role (separate state)
+  modules/{storage,auth,db,api}/
+```

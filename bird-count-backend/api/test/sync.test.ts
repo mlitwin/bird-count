@@ -169,6 +169,35 @@ describe("sync push + pull", () => {
     expect(Number(res.cursor)).toBeGreaterThanOrEqual(Number(before.cursor));
   });
 
+  it("stress: 500+ records push in chunks and paginate to completion", async () => {
+    const batches = Array.from({ length: 5 }, (_, batch) =>
+      Array.from({ length: 100 }, (_, i) =>
+        obs(`99999999-0000-4000-8000-${String(batch * 100 + i).padStart(12, "0")}`),
+      ),
+    );
+    for (const batch of batches) {
+      const res = await sync(doc, req(batch), "sub-stress");
+      expect(res.applied).toHaveLength(100);
+      expect(res.applied.every((a) => a.result === "applied")).toBe(true);
+    }
+
+    // Walk the full delta from cursor 0 in pages of 200.
+    let cursor = "0";
+    const seen = new Set<string>();
+    let pages = 0;
+    for (;;) {
+      const page = await pull(doc, cursor, 200);
+      pages++;
+      page.changes.forEach((c) => seen.add(c.id));
+      if (!page.hasMore) break;
+      expect(page.cursor).not.toBe(cursor); // cursor must always advance
+      cursor = page.cursor;
+      expect(pages).toBeLessThan(20); // no pathological re-delivery loops
+    }
+    const stressSeen = [...seen].filter((id) => id.startsWith("99999999")).length;
+    expect(stressSeen).toBe(500);
+  }, 60_000);
+
   it("paginates with hasMore", async () => {
     const many = Array.from({ length: 12 }, (_, i) =>
       obs(`66666666-0000-4000-8000-${String(i).padStart(12, "0")}`),

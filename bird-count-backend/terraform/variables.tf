@@ -37,3 +37,9 @@ variable "callback_urls" {
   type        = list(string)
   default     = ["birdcount://auth/callback", "http://localhost:8400/callback"]
 }
+
+variable "alarm_email" {
+  description = "Email for CloudWatch alarm notifications; empty disables notifications"
+  type        = string
+  default     = ""
+}

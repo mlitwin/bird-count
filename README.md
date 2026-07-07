@@ -1,12 +1,13 @@
-# Bird Count Workspace
+# Bird Count
 
-This directory contains multiple Bird Count projects at different lifecycle stages.
+Monorepo for the Bird Count app and its cloud backend.
 
 | Directory | Status | Summary |
 |---|---|---|
-| `bird-count-ios` | **Active / live app** | Current iOS app (SwiftUI, offline-first). This is the main product codebase. |
-| `bird-count-backend` | **Inactive experiment** | Backend infrastructure experiment (AWS/Terraform). Not currently active. |
-| `bird-count` | **Legacy / exploratory** | Older React-era project with additional backend/frontend experiments and taxonomy tooling/data. May still be useful as a source for taxonomy scripts and artifacts used by the iOS app workflow. |
+| `bird-count-ios` | **Active / live app** | Current iOS app (SwiftUI, offline-first, P2P + cloud sync). The main product codebase. |
+| `bird-count-backend` | **Active** | Cloud sync backend: Cognito + Sign in with Apple, API Gateway + Lambda, DynamoDB ledger; Terraform, deployed via GitHub Actions (main → dev, vX.Y.Z tag → prod). |
+| `bird-count-schema` | **Active** | Shared wire-format JSON Schemas + golden fixtures; single source of truth consumed by both the backend (codegen + ajv) and iOS (conformance tests). |
+| `bird-count` | **Legacy / exploratory** | Older React-era project with additional backend/frontend experiments and taxonomy tooling/data. Reference only; prune once no longer needed. |
 
 ## Taxonomy note
 

@@ -128,3 +128,50 @@ resource "aws_lambda_permission" "apigw" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
 }
+
+# Alerting: email is optional; without it the alarms are still visible in
+# the CloudWatch console.
+resource "aws_sns_topic" "alarms" {
+  count = var.alarm_email != "" ? 1 : 0
+  name  = "${var.project_name}-${var.environment}-api-alarms"
+  tags  = var.tags
+}
+
+resource "aws_sns_topic_subscription" "alarm_email" {
+  count     = var.alarm_email != "" ? 1 : 0
+  topic_arn = aws_sns_topic.alarms[0].arn
+  protocol  = "email"
+  endpoint  = var.alarm_email
+}
+
+resource "aws_cloudwatch_metric_alarm" "lambda_errors" {
+  alarm_name          = "${var.project_name}-${var.environment}-api-lambda-errors"
+  alarm_description   = "Sync Lambda reported errors"
+  namespace           = "AWS/Lambda"
+  metric_name         = "Errors"
+  dimensions          = { FunctionName = aws_lambda_function.api.function_name }
+  statistic           = "Sum"
+  period              = 300
+  evaluation_periods  = 1
+  threshold           = 1
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = var.alarm_email != "" ? [aws_sns_topic.alarms[0].arn] : []
+  tags                = var.tags
+}
+
+resource "aws_cloudwatch_metric_alarm" "api_5xx" {
+  alarm_name          = "${var.project_name}-${var.environment}-api-5xx"
+  alarm_description   = "HTTP API returning 5xx"
+  namespace           = "AWS/ApiGateway"
+  metric_name         = "5xx"
+  dimensions          = { ApiId = aws_apigatewayv2_api.http.id }
+  statistic           = "Sum"
+  period              = 300
+  evaluation_periods  = 1
+  threshold           = 1
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = var.alarm_email != "" ? [aws_sns_topic.alarms[0].arn] : []
+  tags                = var.tags
+}

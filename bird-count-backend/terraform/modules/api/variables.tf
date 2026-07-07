@@ -30,6 +30,12 @@ variable "client_id" {
   type        = string
 }
 
+variable "alarm_email" {
+  description = "Email for CloudWatch alarm notifications; empty disables the SNS topic"
+  type        = string
+  default     = ""
+}
+
 variable "tags" {
   type    = map(string)
   default = {}

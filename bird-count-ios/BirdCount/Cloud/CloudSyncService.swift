@@ -172,7 +172,13 @@ public final class CloudSyncService {
             UserDefaults.standard.set(lastSyncDate, forKey: Self.lastSyncKey)
             state = .idle
         } catch {
-            state = .failure(error.localizedDescription)
+            // A failed token refresh signs the user out (see CloudAuthService);
+            // surface that as a re-auth prompt rather than a raw error.
+            if !auth.isSignedIn {
+                state = .failure("Session expired — sign in again to sync")
+            } else {
+                state = .failure(error.localizedDescription)
+            }
         }
     }
 
