@@ -1,8 +1,0 @@
-.SpeciesEntry {
-    display: flex;
-    flex-wrap: wrap;
-    column-gap: 20px;
-    .SciName {
-        font-style: italic;
-    }
-}
