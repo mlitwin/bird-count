@@ -1,0 +1,84 @@
+82 Species
+
+Canada Goose
+Surf Scoter
+Red-breasted Merganser
+California Quail
+Wild Turkey
+Western Grebe
+Rock Pigeon
+Band-tailed Pigeon
+Eurasian Collared-Dove
+Mourning Dove
+Anna's Hummingbird
+Allen's Hummingbird
+Killdeer
+Long-billed Curlew
+Marbled Godwit
+Bonaparte's Gull
+Heermann's Gull
+Ring-billed Gull
+Western Gull
+California Gull
+Herring Gull
+Caspian Tern
+Common Loon
+Double-crested Cormorant
+Brown Pelican
+Great Blue Heron
+Great Egret
+Snowy Egret
+Black-crowned Night-Heron
+Turkey Vulture
+Osprey
+Northern Harrier
+Cooper's Hawk
+Bald Eagle
+Red-shouldered Hawk
+Red-tailed Hawk
+Great Horned Owl
+Belted Kingfisher
+Acorn Woodpecker
+Downy Woodpecker
+Hairy Woodpecker
+Northern Flicker
+Peregrine Falcon
+Willow Flycatcher
+Pacific-slope Flycatcher
+Black Phoebe
+Steller's Jay
+California Scrub-Jay
+American Crow
+Common Raven
+Chestnut-backed Chickadee
+Purple Martin
+Tree Swallow
+Barn Swallow
+Cliff Swallow
+Bushtit
+Wrentit
+Red-breasted Nuthatch
+White-breasted Nuthatch
+Pygmy Nuthatch
+Brown Creeper
+Pacific Wren
+Bewick's Wren
+European Starling
+Western Bluebird
+Swainson's Thrush
+Hermit Thrush
+American Robin
+House Sparrow
+House Finch
+Purple Finch
+American Goldfinch
+Dark-eyed Junco
+White-crowned Sparrow
+Song Sparrow
+California Towhee
+Spotted Towhee
+Red-winged Blackbird
+Brewer's Blackbird
+Common Yellowthroat
+Chestnut-sided Warbler
+Wilson's Warbler
