@@ -23,7 +23,7 @@ The legacy React-era project (`bird-count/`) was pruned after the new backend sh
 | Env | Web viewer | API base URL |
 |-----|-----------|--------------|
 | **dev** | https://d3g0g1v3it0tuf.cloudfront.net | https://mpet543s3g.execute-api.us-east-1.amazonaws.com |
-| **prod** | *(run `make output ENV=prod` in `bird-count-backend` to get `website_url`)* | https://c94t0py5je.execute-api.us-east-1.amazonaws.com |
+| **prod** | https://d1rranrymie4r6.cloudfront.net | https://c94t0py5je.execute-api.us-east-1.amazonaws.com |
 
 > The CloudFront domains are assigned by AWS and stored only in Terraform state.
 > Retrieve them at any time: `cd bird-count-backend && make output ENV=<env>`.
