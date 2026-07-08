@@ -1,5 +1,6 @@
 import Foundation
 import Network
+import UIKit
 
 /// Manual cloud sync: gather dirty records -> chunked POST /v1/sync ->
 /// LWW-apply pulled changes -> advance cursor -> clear pushed dirty ids.
@@ -121,6 +122,12 @@ public final class CloudSyncService {
         guard !isSyncing else { return }
         state = .syncing("Preparing…")
 
+        // Keep the process alive if the user backgrounds the app mid-sync
+        // (~30s grace). An interrupted sync is safe regardless — dirty ids
+        // clear only on server ack — this just lets sessions finish cleanly.
+        beginBackgroundAssertion()
+        defer { endBackgroundAssertion() }
+
         do {
             let api = CloudAPIClient(auth: auth)
 
@@ -180,6 +187,24 @@ public final class CloudSyncService {
                 state = .failure(error.localizedDescription)
             }
         }
+    }
+
+    // MARK: Background task assertion
+
+    private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
+
+    private func beginBackgroundAssertion() {
+        backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "CloudSync") { [weak self] in
+            // Expiration handler: the system requires endBackgroundTask
+            // before it force-ends the assertion.
+            Task { @MainActor [weak self] in self?.endBackgroundAssertion() }
+        }
+    }
+
+    private func endBackgroundAssertion() {
+        guard backgroundTask != .invalid else { return }
+        UIApplication.shared.endBackgroundTask(backgroundTask)
+        backgroundTask = .invalid
     }
 
     private func accumulate(_ total: inout ObservationStore.MergeStatistics, _ new: ObservationStore.MergeStatistics) {
