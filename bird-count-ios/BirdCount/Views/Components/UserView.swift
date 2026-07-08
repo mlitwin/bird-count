@@ -1,33 +1,33 @@
 import SwiftUI
 
-/// User view containing user settings and account information
+/// User view containing user settings, account information, and cloud sync.
 struct UserView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(SettingsStore.self) private var settingsStore
+    @Environment(ObservationStore.self) private var observations
+    @Environment(CloudAuthService.self) private var cloudAuth
+    @Environment(CloudSyncService.self) private var cloudSync
     @State private var emailText: String = ""
-    
+    @State private var signInError: String?
+
     var body: some View {
         NavigationStack {
-            VStack(spacing: 24) {
-                // Header section
-                VStack(spacing: 16) {
-                    Image(systemName: "person.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundStyle(.tint)
-                    
-                    Text("User Settings")
-                        .font(.title2.weight(.semibold))
+            Form {
+                Section {
+                    VStack(spacing: 16) {
+                        Image(systemName: "person.circle.fill")
+                            .font(.system(size: 60))
+                            .foregroundStyle(.tint)
+
+                        Text("User Settings")
+                            .font(.title2.weight(.semibold))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .listRowBackground(Color.clear)
                 }
-                .padding(.top, 40)
-                
-                // Email section
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(Strings.User.email.string)
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-                    
+
+                Section(Strings.User.email.string) {
                     TextField(Strings.User.emailPlaceholder.string, text: $emailText)
-                        .textFieldStyle(.roundedBorder)
                         .textContentType(.emailAddress)
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
@@ -39,9 +39,57 @@ struct UserView: View {
                             settingsStore.loginEmail = newValue
                         }
                 }
-                .padding(.horizontal)
-                
-                Spacer()
+
+                Section("Cloud Sync") {
+                    if cloudAuth.isSignedIn {
+                        HStack {
+                            Text("Account")
+                            Spacer()
+                            Text(cloudAuth.accountEmail ?? "Signed in")
+                                .foregroundStyle(.secondary)
+                        }
+                        Button {
+                            Task { await cloudSync.syncNow(store: observations) }
+                        } label: {
+                            HStack {
+                                Text("Sync now")
+                                Spacer()
+                                if cloudSync.isSyncing { ProgressView() }
+                            }
+                        }
+                        .disabled(cloudSync.isSyncing)
+                        if case .syncing(let message) = cloudSync.state {
+                            Text(message).font(.footnote).foregroundStyle(.secondary)
+                        }
+                        if case .failure(let message) = cloudSync.state {
+                            Text(message).font(.footnote).foregroundStyle(.red)
+                        }
+                        if let last = cloudSync.lastSyncDate {
+                            HStack {
+                                Text("Last sync")
+                                Spacer()
+                                Text(last.formatted(date: .abbreviated, time: .shortened))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        Toggle("Auto sync on Wi-Fi", isOn: Binding(
+                            get: { cloudSync.autoSyncEnabled },
+                            set: { cloudSync.autoSyncEnabled = $0 }
+                        ))
+                        Button("Sign out", role: .destructive) { cloudAuth.signOut() }
+                    } else {
+                        Button("Sign in with Apple") {
+                            signInError = nil
+                            Task {
+                                do { try await cloudAuth.signIn() }
+                                catch { signInError = error.localizedDescription }
+                            }
+                        }
+                        if let signInError {
+                            Text(signInError).font(.footnote).foregroundStyle(.red)
+                        }
+                    }
+                }
             }
             .onAppear {
                 emailText = settingsStore.loginEmail
@@ -60,6 +108,10 @@ struct UserView: View {
 }
 
 #Preview {
-    UserView()
+    let auth = CloudAuthService()
+    return UserView()
         .environment(SettingsStore())
+        .environment(ObservationStore())
+        .environment(auth)
+        .environment(CloudSyncService(auth: auth))
 }
