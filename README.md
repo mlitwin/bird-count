@@ -18,10 +18,20 @@ The legacy React-era project (`bird-count/`) was pruned after the new backend sh
 - [bird-count-schema/README.md](bird-count-schema/README.md) — shared wire-format schemas and fixtures
 - Agent guidance: [bird-count-ios/AGENTS.md](bird-count-ios/AGENTS.md), [bird-count-backend/agents.md](bird-count-backend/agents.md)
 
+## Deployed URLs
+
+| Env | Web viewer | API base URL |
+|-----|-----------|--------------|
+| **dev** | https://d3g0g1v3it0tuf.cloudfront.net | https://mpet543s3g.execute-api.us-east-1.amazonaws.com |
+| **prod** | *(run `make output ENV=prod` in `bird-count-backend` to get `website_url`)* | https://c94t0py5je.execute-api.us-east-1.amazonaws.com |
+
+> The CloudFront domains are assigned by AWS and stored only in Terraform state.
+> Retrieve them at any time: `cd bird-count-backend && make output ENV=<env>`.
+
 ## Release flow
 
 - Merge to `main` → CI deploys backend **dev**
-- Tag `vX.Y.Z` → CI deploys backend **prod**
+- Tag `vX.Y.Z` → CI deploys backend **prod** (`make deploy` from repo root)
 - iOS ships via fastlane (`bird-count-ios/FASTLANE.md`); Debug builds sync
   against dev, Release/AdHoc against prod (`cloud-config.json`)
 
