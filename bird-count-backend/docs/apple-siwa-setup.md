@@ -51,6 +51,10 @@ list — return URLs are editable anytime, no re-registration.
 Register → **download the .p8 file — this is the only chance**; Apple never
 re-serves it. Note the **Key ID** (10 characters) shown on the download page.
 
+Name:Bird Count SIWA
+Key ID:7T2VGWQ6AR
+Services:Sign in with Apple
+
 ## 4. Store everything in 1Password
 
 Create an item (e.g. `BirdCount SIWA`) with fields:

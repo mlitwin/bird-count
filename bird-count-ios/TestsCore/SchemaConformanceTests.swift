@@ -21,10 +21,29 @@ struct SchemaConformanceTests {
     ]
 
     private func fixtureData(_ name: String) throws -> Data {
-        let bundle = Bundle(for: FixtureLocator.self)
-        let url = try #require(bundle.url(forResource: name, withExtension: "json"),
-                               "fixture \(name).json not bundled")
-        return try Data(contentsOf: url)
+        // Xcode run: fixtures are bundled test resources (see project.yml).
+        if let url = Bundle(for: FixtureLocator.self).url(forResource: name, withExtension: "json") {
+            return try Data(contentsOf: url)
+        }
+        // `swift test` run: SPM can't bundle resources from outside the
+        // package root, so resolve them relative to this source file.
+        let fixturesDir = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()            // TestsCore/
+            .deletingLastPathComponent()            // bird-count-ios/
+            .deletingLastPathComponent()            // repo root
+            .appendingPathComponent("bird-count-schema/fixtures")
+        for subdir in ["valid", "invalid"] {
+            let url = fixturesDir.appendingPathComponent("\(subdir)/\(name).json")
+            if FileManager.default.fileExists(atPath: url.path) {
+                return try Data(contentsOf: url)
+            }
+        }
+        throw TestError("fixture \(name).json not found in bundle or \(fixturesDir.path)")
+    }
+
+    private struct TestError: Error, CustomStringConvertible {
+        let description: String
+        init(_ description: String) { self.description = description }
     }
 
     private var decoder: JSONDecoder {

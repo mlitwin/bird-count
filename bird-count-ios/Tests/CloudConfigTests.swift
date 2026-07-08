@@ -2,7 +2,8 @@ import Foundation
 import Testing
 @testable import BirdCount
 
-@Suite("CloudConfig")
+// .serialized: two tests mutate the shared CloudEnvOverride UserDefaults key.
+@Suite("CloudConfig", .serialized)
 struct CloudConfigTests {
     @Test func bothEnvironmentsLoadFromBundledJSON() {
         for env in ["dev", "prod"] {

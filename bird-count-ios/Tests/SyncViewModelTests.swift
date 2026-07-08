@@ -64,6 +64,45 @@ private func requireCompleted(
     return stats
 }
 
+/// Poll until `condition` holds (true) or the timeout elapses (records an
+/// issue, returns false). Replaces fixed sleeps, which flake when parallel
+/// suites contend for the main actor.
+@discardableResult
+private func waitFor(
+    _ description: String,
+    // Generous: polling exits the moment the condition holds, and other
+    // suites (scroll-view tests) can starve the main actor for seconds.
+    timeout: Duration = .seconds(20),
+    sourceLocation: SourceLocation = #_sourceLocation,
+    condition: @escaping @MainActor () -> Bool
+) async -> Bool {
+    let clock = ContinuousClock()
+    let deadline = clock.now.advanced(by: timeout)
+    while clock.now < deadline {
+        // Evaluate on the main actor: the VM/mock mutate state there, and
+        // cross-thread reads of @Observable state are racy.
+        if await MainActor.run(body: condition) { return true }
+        try? await Task.sleep(for: .milliseconds(20))
+    }
+    Issue.record("Timed out waiting for \(description)", sourceLocation: sourceLocation)
+    return false
+}
+
+private func isReady(_ vm: SyncViewModel) -> Bool {
+    if case .readyToSync = vm.state { return true }
+    return false
+}
+
+private func isCompleted(_ vm: SyncViewModel) -> Bool {
+    if case .completed = vm.state { return true }
+    return false
+}
+
+private func isIncompatible(_ vm: SyncViewModel) -> Bool {
+    if case .incompatible = vm.state { return true }
+    return false
+}
+
 // MARK: - Display Name
 
 struct SyncDisplayNameTests {
@@ -103,22 +142,16 @@ struct SyncStateTransitionTests {
         let mock = MockSyncTransport()
         mock.discoveryDelay = .seconds(9999)
         let vm = makeVM(transport: mock)
-        vm.start()
-        // 200ms gives the observation-tracking Task { @MainActor in } time to run
-        // even under main actor load from parallel test suites.
-        try await Task.sleep(for: .milliseconds(200))
-        #expect(vm.state == .discovering)
+        await MainActor.run { vm.start() }
+        await waitFor("state == .discovering") { vm.state == .discovering }
     }
 
     @Test func transitionsToReadyAfterHandshake() async throws {
         let mock = MockSyncTransport()
         mock.discoveryDelay = .milliseconds(50)
         let vm = makeVM(transport: mock)
-        vm.start()
-        try await Task.sleep(for: .milliseconds(300))
-        if case .readyToSync = vm.state { } else {
-            Issue.record("Expected .readyToSync, got \(vm.state)")
-        }
+        await MainActor.run { vm.start() }
+        await waitFor("readyToSync") { isReady(vm) }
     }
 
     @Test func incompatibleRoles_bothSendOnly() async throws {
@@ -128,12 +161,9 @@ struct SyncStateTransitionTests {
             displayName: "Peer", peerID: UUID(), rolePreference: .sendOnly, sendSummary: nil
         )
         let vm = makeVM(transport: mock)
-        vm.rolePreference = .sendOnly
-        vm.start()
-        try await Task.sleep(for: .milliseconds(300))
-        if case .incompatible = vm.state { } else {
-            Issue.record("Expected .incompatible, got \(vm.state)")
-        }
+        await MainActor.run { vm.rolePreference = .sendOnly }
+        await MainActor.run { vm.start() }
+        await waitFor("incompatible") { isIncompatible(vm) }
     }
 
     @Test func incompatibleRoles_bothReceiveOnly() async throws {
@@ -143,21 +173,18 @@ struct SyncStateTransitionTests {
             displayName: "Peer", peerID: UUID(), rolePreference: .receiveOnly, sendSummary: nil
         )
         let vm = makeVM(transport: mock)
-        vm.rolePreference = .receiveOnly
-        vm.start()
-        try await Task.sleep(for: .milliseconds(300))
-        if case .incompatible = vm.state { } else {
-            Issue.record("Expected .incompatible, got \(vm.state)")
-        }
+        await MainActor.run { vm.rolePreference = .receiveOnly }
+        await MainActor.run { vm.start() }
+        await waitFor("incompatible") { isIncompatible(vm) }
     }
 
     @Test func cancelResetsToIdle() async throws {
         let mock = MockSyncTransport()
         mock.discoveryDelay = .milliseconds(50)
         let vm = makeVM(transport: mock)
-        vm.start()
-        try await Task.sleep(for: .milliseconds(300))
-        vm.cancel()
+        await MainActor.run { vm.start() }
+        await waitFor("readyToSync") { isReady(vm) }
+        await MainActor.run { vm.cancel() }
         #expect(vm.state == .idle)
     }
 
@@ -165,15 +192,11 @@ struct SyncStateTransitionTests {
         let mock = MockSyncTransport()
         mock.discoveryDelay = .seconds(9999)
         let vm = makeVM(transport: mock)
-        vm.start()
-        try await Task.sleep(for: .milliseconds(200))
-        #expect(vm.state == .discovering)
-        #expect(mock.startDiscoveryCallCount == 1)
+        await MainActor.run { vm.start() }
+        await waitFor("first discovery") { vm.state == .discovering && mock.startDiscoveryCallCount == 1 }
 
-        vm.rolePreference = .sendOnly
-        try await Task.sleep(for: .milliseconds(200))
-        #expect(vm.state == .discovering)
-        #expect(mock.startDiscoveryCallCount == 2)
+        await MainActor.run { vm.rolePreference = .sendOnly }
+        await waitFor("restarted discovery") { vm.state == .discovering && mock.startDiscoveryCallCount == 2 }
     }
 }
 
@@ -186,10 +209,10 @@ struct SyncExecutionTests {
         mock.simulatedIncomingPayload = makeIncomingPayload(taxonIds: ["redwin"])
 
         let vm = makeVM(transport: mock, observations: [("amecro", 1)])
-        vm.start()
-        try await Task.sleep(for: .milliseconds(300))
-        vm.initiateSync()
-        try await Task.sleep(for: .milliseconds(500))
+        await MainActor.run { vm.start() }
+        await waitFor("readyToSync") { isReady(vm) }
+        await MainActor.run { vm.initiateSync() }
+        await waitFor("completed") { isCompleted(vm) }
 
         guard let stats = requireCompleted(vm.state) else { return }
         #expect(stats.sentCount == 1)
@@ -205,11 +228,11 @@ struct SyncExecutionTests {
         )
 
         let vm = makeVM(transport: mock, observations: [("amecro", 1)])
-        vm.rolePreference = .sendOnly
-        vm.start()
-        try await Task.sleep(for: .milliseconds(300))
-        vm.initiateSync()
-        try await Task.sleep(for: .milliseconds(500))
+        await MainActor.run { vm.rolePreference = .sendOnly }
+        await MainActor.run { vm.start() }
+        await waitFor("readyToSync") { isReady(vm) }
+        await MainActor.run { vm.initiateSync() }
+        await waitFor("completed") { isCompleted(vm) }
 
         guard let stats = requireCompleted(vm.state) else { return }
         #expect(stats.sentCount == 1)
@@ -228,11 +251,11 @@ struct SyncExecutionTests {
         mock.simulatedIncomingPayload = makeIncomingPayload(taxonIds: ["blujay"])
 
         let vm = makeVM(transport: mock, observations: [("amecro", 1)])
-        vm.rolePreference = .receiveOnly
-        vm.start()
-        try await Task.sleep(for: .milliseconds(300))
-        vm.initiateSync()
-        try await Task.sleep(for: .milliseconds(500))
+        await MainActor.run { vm.rolePreference = .receiveOnly }
+        await MainActor.run { vm.start() }
+        await waitFor("readyToSync") { isReady(vm) }
+        await MainActor.run { vm.initiateSync() }
+        await waitFor("completed") { isCompleted(vm) }
 
         guard let stats = requireCompleted(vm.state) else { return }
         #expect(stats.sentCount == 0)
@@ -265,10 +288,10 @@ struct SyncExecutionTests {
         let vm = SyncViewModel(transport: mock, observationStore: store,
                                settingsStore: makeSettings(email: "local@example.com"),
                                initialFilter: makeFilter())
-        vm.start()
-        try await Task.sleep(for: .milliseconds(300))
-        vm.initiateSync()
-        try await Task.sleep(for: .milliseconds(500))
+        await MainActor.run { vm.start() }
+        await waitFor("readyToSync") { isReady(vm) }
+        await MainActor.run { vm.initiateSync() }
+        await waitFor("completed") { isCompleted(vm) }
 
         guard let stats = requireCompleted(vm.state) else { return }
         #expect(stats.receivedCount == 1)
@@ -280,8 +303,6 @@ struct SyncExecutionTests {
 
 /// These tests verify the non-initiator side: the VM auto-calls initiateSync() when the peer
 /// signals .syncStart, without requiring a user tap on the second device.
-/// .serialized prevents within-suite parallelism; these tests use Task.sleep for timing and
-/// compete for the main actor with other async test suites.
 @Suite("SyncNonInitiator", .serialized)
 struct SyncNonInitiatorTests {
 
@@ -289,18 +310,11 @@ struct SyncNonInitiatorTests {
         let mock = MockSyncTransport()
         mock.discoveryDelay = .milliseconds(50)
         let vm = makeVM(transport: mock)
-        vm.start()
-        try await Task.sleep(for: .milliseconds(300))
-        if case .readyToSync = vm.state { } else {
-            Issue.record("Precondition: expected .readyToSync, got \(vm.state)"); return
-        }
+        await MainActor.run { vm.start() }
+        guard await waitFor("readyToSync", condition: { isReady(vm) }) else { return }
 
-        mock.triggerPeerInitiatedSync()
-        try await Task.sleep(for: .milliseconds(500))
-
-        if case .completed = vm.state { } else {
-            Issue.record("Expected .completed after peer-initiated sync, got \(vm.state)")
-        }
+        await MainActor.run { mock.triggerPeerInitiatedSync() }
+        await waitFor("completed after peer-initiated sync") { isCompleted(vm) }
     }
 
     @Test func autoInitiates_whenPeerSignals_beforeHandshake() async throws {
@@ -309,18 +323,15 @@ struct SyncNonInitiatorTests {
         let mock = MockSyncTransport()
         mock.discoveryDelay = .milliseconds(200)
         let vm = makeVM(transport: mock)
-        vm.start()
+        await MainActor.run { vm.start() }
 
-        try await Task.sleep(for: .milliseconds(50))
+        guard await waitFor("discovering", condition: { vm.state == .discovering }) else { return }
         #expect(vm.state == .discovering, "Precondition: must still be discovering")
 
-        mock.triggerPeerInitiatedSync()  // arrives before handshake
+        await MainActor.run { mock.triggerPeerInitiatedSync() }  // arrives before handshake
 
-        // Let the handshake complete and auto-initiation fire
-        try await Task.sleep(for: .milliseconds(800))
-        if case .completed = vm.state { } else {
-            Issue.record("Expected .completed; peerInitiatedSync before handshake should defer until readyToSync, got \(vm.state)")
-        }
+        // The handshake completes and deferred auto-initiation fires
+        await waitFor("completed (deferred until readyToSync)") { isCompleted(vm) }
     }
 
     @Test func nonInitiator_receivesIncomingPayload() async throws {
@@ -329,11 +340,11 @@ struct SyncNonInitiatorTests {
         mock.simulatedIncomingPayload = makeIncomingPayload(taxonIds: ["norbla", "blujay"])
 
         let vm = makeVM(transport: mock)
-        vm.rolePreference = .receiveOnly
-        vm.start()
-        try await Task.sleep(for: .milliseconds(300))
-        mock.triggerPeerInitiatedSync()
-        try await Task.sleep(for: .milliseconds(500))
+        await MainActor.run { vm.rolePreference = .receiveOnly }
+        await MainActor.run { vm.start() }
+        await waitFor("readyToSync") { isReady(vm) }
+        await MainActor.run { mock.triggerPeerInitiatedSync() }
+        await waitFor("completed") { isCompleted(vm) }
 
         guard let stats = requireCompleted(vm.state) else { return }
         #expect(stats.sentCount == 0)
@@ -344,12 +355,12 @@ struct SyncNonInitiatorTests {
         let mock = MockSyncTransport()
         mock.discoveryDelay = .seconds(9999)
         let vm = makeVM(transport: mock)
-        vm.start()
-        try await Task.sleep(for: .milliseconds(50))
-        mock.triggerPeerInitiatedSync()
+        await MainActor.run { vm.start() }
+        await waitFor("discovering") { vm.state == .discovering }
+        await MainActor.run { mock.triggerPeerInitiatedSync() }
         #expect(mock.peerInitiatedSync == true)
 
-        vm.cancel()
+        await MainActor.run { vm.cancel() }
         #expect(mock.peerInitiatedSync == false)
     }
 }
@@ -358,8 +369,7 @@ struct SyncNonInitiatorTests {
 
 /// Exercises both sides of a bidirectional sync independently using separate VM + mock pairs.
 /// In production both sides communicate over the network; here we simulate each side in isolation.
-// .serialized prevents parallel execution; each test runs two full sync flows back-to-back
-// and competes with scroll view tests for the main actor when run concurrently.
+// .serialized prevents within-suite parallelism; each test runs two full sync flows back-to-back.
 @Suite("SyncBidirectional", .serialized)
 struct SyncBidirectionalTests {
 
@@ -369,10 +379,10 @@ struct SyncBidirectionalTests {
         initiatorMock.discoveryDelay = .milliseconds(50)
         initiatorMock.simulatedIncomingPayload = makeIncomingPayload(taxonIds: ["norbla"])
         let initiatorVM = makeVM(transport: initiatorMock, observations: [("amecro", 1)])
-        initiatorVM.start()
-        try await Task.sleep(for: .milliseconds(300))
-        initiatorVM.initiateSync()
-        try await Task.sleep(for: .milliseconds(500))
+        await MainActor.run { initiatorVM.start() }
+        await waitFor("initiator readyToSync") { isReady(initiatorVM) }
+        await MainActor.run { initiatorVM.initiateSync() }
+        await waitFor("initiator completed") { isCompleted(initiatorVM) }
 
         guard let initiatorStats = requireCompleted(initiatorVM.state) else { return }
         #expect(initiatorStats.sentCount == 1)
@@ -383,10 +393,10 @@ struct SyncBidirectionalTests {
         nonInitiatorMock.discoveryDelay = .milliseconds(50)
         nonInitiatorMock.simulatedIncomingPayload = makeIncomingPayload(taxonIds: ["amecro"])
         let nonInitiatorVM = makeVM(transport: nonInitiatorMock, observations: [("norbla", 1)])
-        nonInitiatorVM.start()
-        try await Task.sleep(for: .milliseconds(300))
-        nonInitiatorMock.triggerPeerInitiatedSync()
-        try await Task.sleep(for: .milliseconds(500))
+        await MainActor.run { nonInitiatorVM.start() }
+        await waitFor("non-initiator readyToSync") { isReady(nonInitiatorVM) }
+        await MainActor.run { nonInitiatorMock.triggerPeerInitiatedSync() }
+        await waitFor("non-initiator completed") { isCompleted(nonInitiatorVM) }
 
         guard let nonInitiatorStats = requireCompleted(nonInitiatorVM.state) else { return }
         #expect(nonInitiatorStats.sentCount == 1)
@@ -403,11 +413,11 @@ struct SyncBidirectionalTests {
         )
         // Each tuple is one ObservationRecord; sentCount == number of records exported.
         let senderVM = makeVM(transport: senderMock, observations: [("amecro", 1), ("norbla", 1)])
-        senderVM.rolePreference = .sendOnly
-        senderVM.start()
-        try await Task.sleep(for: .milliseconds(300))
-        senderVM.initiateSync()
-        try await Task.sleep(for: .milliseconds(500))
+        await MainActor.run { senderVM.rolePreference = .sendOnly }
+        await MainActor.run { senderVM.start() }
+        await waitFor("sender readyToSync") { isReady(senderVM) }
+        await MainActor.run { senderVM.initiateSync() }
+        await waitFor("sender completed") { isCompleted(senderVM) }
 
         guard let senderStats = requireCompleted(senderVM.state) else { return }
         #expect(senderStats.sentCount == 2)
@@ -423,11 +433,11 @@ struct SyncBidirectionalTests {
         )
         receiverMock.simulatedIncomingPayload = makeIncomingPayload(taxonIds: ["amecro", "norbla"])
         let receiverVM = makeVM(transport: receiverMock)
-        receiverVM.rolePreference = .receiveOnly
-        receiverVM.start()
-        try await Task.sleep(for: .milliseconds(300))
-        receiverMock.triggerPeerInitiatedSync()
-        try await Task.sleep(for: .milliseconds(500))
+        await MainActor.run { receiverVM.rolePreference = .receiveOnly }
+        await MainActor.run { receiverVM.start() }
+        await waitFor("receiver readyToSync") { isReady(receiverVM) }
+        await MainActor.run { receiverMock.triggerPeerInitiatedSync() }
+        await waitFor("receiver completed") { isCompleted(receiverVM) }
 
         guard let receiverStats = requireCompleted(receiverVM.state) else { return }
         #expect(receiverStats.sentCount == 0)
@@ -443,20 +453,17 @@ struct SyncRestartTests {
         let mock = MockSyncTransport()
         mock.discoveryDelay = .milliseconds(50)
         let vm = makeVM(transport: mock)
-        vm.start()
-        try await Task.sleep(for: .milliseconds(300))
-        vm.initiateSync()
-        try await Task.sleep(for: .milliseconds(500))
+        await MainActor.run { vm.start() }
+        await waitFor("readyToSync") { isReady(vm) }
+        await MainActor.run { vm.initiateSync() }
+        await waitFor("completed") { isCompleted(vm) }
         guard case .completed = vm.state else {
             Issue.record("Precondition: expected .completed, got \(vm.state)"); return
         }
 
         mock.discoveryDelay = .seconds(9999)
-        vm.restart()
-        try await Task.sleep(for: .milliseconds(100))
-
-        #expect(vm.state == .discovering)
-        #expect(mock.startDiscoveryCallCount == 2)
+        await MainActor.run { vm.restart() }
+        await waitFor("rediscovering") { vm.state == .discovering && mock.startDiscoveryCallCount == 2 }
         #expect(mock.peerInitiatedSync == false)
     }
 
@@ -464,17 +471,14 @@ struct SyncRestartTests {
         let mock = MockSyncTransport()
         mock.discoveryDelay = .milliseconds(50)
         let vm = makeVM(transport: mock)
-        vm.start()
-        try await Task.sleep(for: .milliseconds(300))
-        mock.triggerPeerInitiatedSync()
-        try await Task.sleep(for: .milliseconds(700))
-        guard case .completed = vm.state else {
-            Issue.record("Precondition: expected .completed, got \(vm.state)"); return
-        }
+        await MainActor.run { vm.start() }
+        await waitFor("readyToSync") { isReady(vm) }
+        await MainActor.run { mock.triggerPeerInitiatedSync() }
+        guard await waitFor("completed", condition: { isCompleted(vm) }) else { return }
 
         mock.discoveryDelay = .seconds(9999)
-        vm.restart()
-        try await Task.sleep(for: .milliseconds(100))
+        await MainActor.run { vm.restart() }
+        await waitFor("rediscovering") { vm.state == .discovering }
         #expect(mock.peerInitiatedSync == false, "peerInitiatedSync must be cleared on restart")
     }
 }

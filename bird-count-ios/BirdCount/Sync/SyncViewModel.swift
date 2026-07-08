@@ -66,6 +66,7 @@ import UIKit
 
     func cancel() {
         transport.cancel()
+        hasAutoInitiated = false
         state = .idle
     }
 
@@ -93,6 +94,10 @@ import UIKit
         transport.startDiscovery(localHello: buildHello())
     }
 
+    /// True once the non-initiator path has auto-called initiateSync for the
+    /// current session; reset by cancel()/restart().
+    private var hasAutoInitiated = false
+
     /// Keeps self.state in sync with transport.state using recursive observation tracking.
     /// Also auto-initiates sync when the peer signals it started (non-initiator path).
     private func trackTransportState() {
@@ -102,13 +107,16 @@ import UIKit
         } onChange: {
             Task { @MainActor [weak self] in
                 guard let self else { return }
-                let newState = self.transport.state
-                let peerInitiated = self.transport.peerInitiatedSync
-                self.state = newState
-                if peerInitiated, case .readyToSync = newState {
+                // Re-register FIRST (the tracking block also refreshes
+                // self.state): a transport change landing between reading and
+                // re-registering would otherwise go unnoticed until the next
+                // change — which may never come.
+                self.trackTransportState()
+                if self.transport.peerInitiatedSync, !self.hasAutoInitiated,
+                   case .readyToSync = self.state {
+                    self.hasAutoInitiated = true
                     self.initiateSync()
                 }
-                self.trackTransportState()
             }
         }
     }
