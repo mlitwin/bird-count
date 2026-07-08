@@ -65,9 +65,9 @@ resource "aws_cognito_user_pool_client" "ios" {
 
   explicit_auth_flows = ["ALLOW_REFRESH_TOKEN_AUTH"]
 
-  access_token_validity  = 1  # hours
-  id_token_validity      = 1  # hours
-  refresh_token_validity = 90 # days
+  access_token_validity  = 1   # hours
+  id_token_validity      = 1   # hours
+  refresh_token_validity = 365 # days — re-login is annual (fixed expiry, not sliding)
 
   prevent_user_existence_errors = "ENABLED"
 }
