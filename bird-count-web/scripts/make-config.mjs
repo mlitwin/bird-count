@@ -19,7 +19,7 @@ for await (const chunk of process.stdin) raw += chunk;
 const tf = JSON.parse(raw);
 const get = key => tf[key]?.value ?? tf[key];
 
-const apiBaseURL    = get('api_url');
+const apiBaseURL    = (get('api_url') ?? '').replace(/\/$/, '');
 const hostedUIDomain = get('hosted_ui_domain');
 const webClientId   = get('web_client_id');
 const websiteURL    = (get('website_url') ?? '').replace(/\/$/, '');

@@ -7,11 +7,12 @@
  * @returns {Promise<Object[]>} flat array of ObservationRecordDTOs
  */
 export async function fetchAllObservations(token, apiBaseURL) {
+  const base = apiBaseURL.replace(/\/$/, '');
   const dtos = [];
   let cursor = '0';
 
   while (true) {
-    const url = new URL(`${apiBaseURL}/observations`);
+    const url = new URL(`${base}/observations`);
     url.searchParams.set('since', cursor);
     url.searchParams.set('limit', '200');
 
