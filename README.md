@@ -10,6 +10,21 @@ Monorepo for the Bird Count app and its cloud backend.
 
 The legacy React-era project (`bird-count/`) was pruned after the new backend shipped; its full history remains in this repo's git history (imported via subtree) and at the archived [`bird-count-legacy`](https://github.com/mlitwin/bird-count-legacy) repo.
 
+## Documentation
+
+- [docs/sync-architecture.md](docs/sync-architecture.md) — the sync design: ledger data model, client-side sync (what is synced and when), server-side protocol, P2P/cloud coexistence
+- [bird-count-backend/README.md](bird-count-backend/README.md) — backend architecture, local development, CI/CD
+- [bird-count-ios/Architecture.md](bird-count-ios/Architecture.md) — iOS app architecture
+- [bird-count-schema/README.md](bird-count-schema/README.md) — shared wire-format schemas and fixtures
+- Agent guidance: [bird-count-ios/AGENTS.md](bird-count-ios/AGENTS.md), [bird-count-backend/agents.md](bird-count-backend/agents.md)
+
+## Release flow
+
+- Merge to `main` → CI deploys backend **dev**
+- Tag `vX.Y.Z` → CI deploys backend **prod**
+- iOS ships via fastlane (`bird-count-ios/FASTLANE.md`); Debug builds sync
+  against dev, Release/AdHoc against prod (`cloud-config.json`)
+
 ## Taxonomy note
 
 `bird-count-ios` includes the app-consumed taxonomy resource at `BirdCount/Resources/ios_taxonomy_min.json` and a generation script at `BirdCount/Scripts/generate_ios_taxonomy.mjs`.

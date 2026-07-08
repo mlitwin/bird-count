@@ -25,6 +25,9 @@ Cursor contract: server pulls are strictly-after-cursor (pagination always
 advances); clients rewind their stored cursor ~5s at sync-session start and
 apply idempotently (put-if-absent + last-writer-wins on `updatedAt`).
 
+Full protocol details — client and server halves, conflict resolution,
+failure modes: [../docs/sync-architecture.md](../docs/sync-architecture.md).
+
 ## Local development
 
 AWS credentials come from 1Password via `op run` — nothing is configured in

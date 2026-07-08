@@ -29,14 +29,32 @@ make clean         # Clean build artifacts
 SwiftUI app using **MVVM with Observable Stores**. See `Architecture.md` for full details.
 
 **Key Stores:**
-- `ObservationStore`: Bird sighting records, counts, persistence (UserDefaults + JSON with ISO8601 dates)
+- `ObservationStore`: Bird sighting records, counts, persistence (UserDefaults + JSON with ISO8601 dates); also cloud-sync state (dirty ids, cursor, LWW merge)
 - `TaxonomyStore`: Species taxonomy from bundled JSON, search with abbreviation mode
 - `SettingsStore`: User preferences (UserDefaults with "Settings_" prefix)
 - `DateRangeStore`: Active date range (presets or custom)
 
+**Cloud services** (`Cloud/`, app target only — NOT in BirdCountCore):
+- `CloudAuthService`: Sign in with Apple via Cognito hosted UI (PKCE); tokens in Keychain
+- `CloudSyncService`: manual + debounced auto sync against the backend
+- `CloudConfig`: loaded from `Resources/cloud-config.json` (Debug→dev, Release→prod)
+
 **Data Flow:** User action → store mutation → persistence → cache rebuild → SwiftUI re-render
 
 **Range Filtering:** A record is "in range" iff `record.end >= start && record.begin <= end`
+
+**Ledger invariants (do not break):**
+- Records are immutable ledger entries; count changes are appended *adjustment
+  children* (negative counts allowed). Never mutate counts in place; never
+  add delete/tombstone concepts. The one allowed mutation is the location
+  backfill (`updateWithLocation`), which bumps `updatedAt`.
+- Every create/mutation must mark the record dirty (existing store APIs do
+  this); imports merge via `store.mergeDTOs` (put-if-absent + LWW on
+  `updatedAt`) — never mint new UUIDs for transferred records.
+- Wire format is owned by `../bird-count-schema/`; `SchemaConformanceTests`
+  (TestsCore) is the drift gate. If you change `ObservationRecordDTO`
+  coding, the schema + fixtures + backend must change in the same commit.
+- Full protocol details: `../docs/sync-architecture.md`
 
 ## Localization
 
@@ -89,13 +107,19 @@ Do not add external dependencies without:
 
 ```
 BirdCount/
-├── Models/          # Data models (ObservationRecord, Taxon, DateRange)
-├── Stores/          # Observable state containers
+├── Models/          # Data models (ObservationRecord, DTO, Taxon, DateRange, import/export)
+├── Stores/          # Observable state containers (+ cloud sync state in ObservationStore)
 ├── Views/           # SwiftUI views by feature (Home/, Summary/, Log/, Settings/)
-├── Sync/            # Network sync (Bonjour-based device sync)
+├── Sync/            # P2P sync (Bonjour/TCP peer sessions)
+├── Cloud/           # Cloud sync (Cognito/SIWA auth, API client, sync service, config)
 ├── Localization/    # Strings.swift constants
-└── Resources/       # Bundled JSON (taxonomy, checklists), assets
+└── Resources/       # Bundled JSON (taxonomy, checklists, cloud-config), assets
 
-Tests/               # iOS unit tests
-TestsCore/           # Cross-platform core tests (fast, no simulator)
+Tests/               # iOS unit tests (simulator, app-hosted)
+TestsCore/           # Cross-platform core tests (fast, no simulator);
+                     #   includes SchemaConformanceTests against ../bird-count-schema fixtures
 ```
+
+Note: `BirdCountCore` (macOS framework) compiles only `Models/` + `Stores/` —
+anything placed there must stay platform-neutral (no UIKit/AuthenticationServices).
+The store↔cloud decoupling is via `ObservationStore.didMarkDirtyNotification`.

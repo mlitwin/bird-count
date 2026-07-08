@@ -17,17 +17,31 @@ Key entry points:
 
 ## Data model
 
-ObservationRecord (Models/ObservationRecord.swift)
-- id: UUID
+ObservationRecord (Models/ObservationRecord.swift) wraps ObservationRecordDTO
+(Models/ObservationDTO.swift — the wire/persistence shape) plus a `children`
+array:
+- id: UUID; parentId: UUID? (children reference their parent)
 - taxonId: String
-- begin: Date
-- end: Date (defaults to begin)
-- count: Int (>= 0)
+- begin: Date; end: Date (defaults to begin)
+- count: Int — may be NEGATIVE on adjustment children (see ledger notes)
+- location: ObservationLocation?; status: pending | completed
+- observer: String
+- updatedAt: Date — conflict-resolution timestamp; ms-epoch integer on the
+  wire (all other dates are ISO8601). Absent in legacy data; the decoder
+  backfills `updatedAt = end`.
 
-Notes
-- Each record is an immutable event capturing a species (taxonId), a time interval [begin, end], and a count payload.
+Ledger notes
+- Records form an **append-only ledger**. A record is immutable after
+  creation; count changes are appended *adjustment children* whose count is
+  the delta (negative allowed). `totalCount` sums recursively; the UI hides
+  records whose total is ≤ 0. There is no delete.
+- The one mutation is the location backfill (`updateWithLocation`): a record
+  created as `pending` gets its location/`completed` status once
+  CoreLocation resolves, bumping `updatedAt` (this drives last-writer-wins
+  during sync).
 - begin == end represents an instantaneous sighting.
-- All totals are derived by summing record.count.
+- The wire shape is owned by `../bird-count-schema/` (JSON Schema + golden
+  fixtures); `TestsCore/SchemaConformanceTests` is the drift gate.
 
 Taxon (Models/Taxon.swift)
 - id, commonName, scientificName, order, rank
@@ -40,13 +54,18 @@ ObservationStore (Stores/ObservationStore.swift)
 - observations: [ObservationRecord] (didSet persists and rebuilds derived state)
 - counts: [taxonId: Int] rebuilt from observations
 - recent: [Recent] with lastUpdated timestamps (MRU list)
-- Mutations:
-	- addObservation(taxonId, begin, end, count)
-	- increment(id, by)
-	- set(id, to) adjusts toward a target by removing/adjusting newest records first
-	- reset(id), clearAll()
-- Totals: totalIndividuals, totalSpeciesObserved
-- Persistence: UserDefaults with JSONEncoder/Decoder using ISO8601 date strategy
+- Mutations (ledger style — appends only):
+	- addObservation / addObservationWithLocation(taxonId, begin, end, count)
+	- addChildObservation / addChildObservationWithLocation(parentId, …) —
+	  how CountAdjustSheet applies deltas (child count = desiredTotal − currentTotal)
+	- updateRecord / updateChildRecord(by:) — location backfill only
+	- clearAll() — local reset; also clears cloud sync state (never propagates)
+- Totals: totalIndividuals, totalSpeciesObserved (recursive over children)
+- Persistence: UserDefaults with JSONEncoder/Decoder using ISO8601 date
+  strategy (injectable UserDefaults for test isolation)
+- Cloud sync state: dirtyIds (persisted set of unpushed record ids),
+  cloudSyncCursor, mergeDTOs(_:markDirty:) — put-if-absent + LWW merge with
+  orphan-child holding; posts didMarkDirtyNotification on local mutations
 
 TaxonomyStore (Stores/TaxonomyStore.swift)
 - Loads bundled species file ios_taxonomy_min.json once; memory-mapped for performance.
@@ -109,6 +128,25 @@ Components
 	- CommonnessRangeView: extracted commonness range control used by SettingsView
 	- SettingsView: preferences UI (abbreviation search, checklist selection + commonness bounds, haptics, theme, data reset).
 
+## Sync
+
+Two transports share one merge path (`ObservationStore.mergeDTOs`: dedup by
+UUID, last-writer-wins on `updatedAt`, orphaned children held until their
+parent arrives). Full protocol details: `../docs/sync-architecture.md`.
+
+- **P2P** (`Sync/`): Bonjour/TCP peer sessions, date-windowed payloads
+  (in-range parents bring all descendants so ledger totals stay
+  consistent). Received records are marked dirty so they flow up to the
+  cloud from whichever device syncs next.
+- **Cloud** (`Cloud/`): Cognito + Sign in with Apple (hosted UI via
+  ASWebAuthenticationSession + PKCE; tokens in Keychain), then
+  `POST /v1/sync` — chunked push of dirty records + cursor-based delta
+  pull. Runs manually (Settings → Sync now) and automatically via debounced
+  triggers: wifi restored (3 s), app foregrounded (3 s), local mutation
+  (30 s), gated on signed-in + wifi + the Auto-sync toggle.
+- **Endpoints** come from `Resources/cloud-config.json`: Debug builds → dev,
+  Release/AdHoc → prod, `CloudEnvOverride` UserDefaults key wins.
+
 ## Persistence and resources
 
 - ObservationStore persists observations as JSON in UserDefaults under key "ObservationRecords" with ISO8601 dates.
@@ -129,16 +167,21 @@ Components
 
 ## Edge cases and invariants
 
-- count is clamped to ≥ 0 when encoding/decoding and when adding records.
-- set(_:to:) decreases from most recent records first; may trim or adjust a trailing record’s count.
+- Top-level records are created with count ≥ 0; adjustment children may be
+  negative. Displayed totals are recursive sums, floored at 0 in the UI.
+- Count adjustments never rewrite history: CountAdjustSheet appends a child
+  with delta = desiredTotal − currentRecursiveTotal.
 - Range overlap logic includes boundary equality; begin may equal end.
 - "All" range ends at now (not infinity) so relative totals update over time.
 - Settings commonness bounds are normalized and ordered (0…3).
+- Transferred records keep their UUIDs forever (dedup depends on it).
 
 ## Testing and previews
 
 - Stores include lightweight preview helpers; key views provide #Preview configurations.
-- Unit tests scaffold exists under Tests/BirdCountTests.swift.
+- `TestsCore/` — fast macOS tests (models, stores, merge/LWW logic, and
+  `SchemaConformanceTests` against the shared wire-format fixtures).
+- `Tests/` — simulator tests (sync view models, P2P flows, cloud config).
 
 ## Build and run
 

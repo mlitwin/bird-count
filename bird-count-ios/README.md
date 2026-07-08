@@ -5,30 +5,32 @@ BirdCount is a simple, fast, offline-first bird counting app. It lets you:
 - Quickly add counts per species with a compact bottom sheet
 - Filter by a global date range (Today, Last hour, Last 7 days, All, Custom)
 - View a summary and a detailed observation log
+- Sync observations device-to-device (Bonjour P2P) and to the cloud
+  (Sign in with Apple; manual or automatic on Wi-Fi)
 
 ## Requirements
-- macOS with Xcode 15 or newer (iOS 17 SDK recommended)
-- iOS 17+ device or Simulator target
-- Swift 5.9+
-
-## Project layout
-- `BirdCount/` — Xcode project and SwiftUI source
-	- `Models/ObservationRecord.swift` — Observation model (begin/end, count)
-	- `Stores/ObservationStore.swift` — In-memory store, persistence, derived counts
-	- `Views/Components/` — Reusable UI (DateRangeSelectorView, CountAdjustSheet, ObservationRecordView)
-	- `Views/Home`, `Views/Summary` — Main tabs
-	- `Resources/ios_taxonomy_min.json` — Bundled minimal taxonomy
-    - `Scripts/generate_ios_taxonomy.mjs` — Helper to generate taxonomy JSON (optional)
+- macOS with Xcode 15 or newer
+- iOS 18.5+ Simulator or device target
+- Swift 5.10+, XcodeGen (`brew install xcodegen`)
 
 ## Getting started
-1) Open `ios/BirdCount/BirdCount/BirdCount.xcodeproj` in Xcode.
-2) Select the BirdCount scheme and an iOS 17+ Simulator (or a device).
-3) Build and Run.
+1) `make generate` — regenerate `BirdCount.xcodeproj` from `project.yml`
+2) Open `BirdCount.xcodeproj`, select the BirdCount scheme and a simulator
+3) Build and Run
 
-# Roadmap notes
+Or from the command line: `make build-test`, `make test` (see `make help`).
 
-* Move range selection to an always visible part of the upper toolbar
-* Add User section to settings, with for now username
-* Add to observation model
-  * username
-  * geolocation
+## Project layout
+- `BirdCount/Models/` — observation ledger model (`ObservationRecord`/DTO), taxonomy, import/export
+- `BirdCount/Stores/` — `@Observable` state containers (observations, taxonomy, settings, date range)
+- `BirdCount/Sync/` — P2P sync (Bonjour/TCP)
+- `BirdCount/Cloud/` — cloud sync (Cognito + Sign in with Apple, sync service, `cloud-config.json` endpoints)
+- `BirdCount/Views/` — SwiftUI views by feature (Home, Summary, Log, Settings)
+- `BirdCount/Resources/` — bundled taxonomy, region checklists, cloud config
+- `Tests/`, `TestsCore/` — simulator and fast-macOS test suites
+
+## Documentation
+- `Architecture.md` — app architecture and data flow
+- `../docs/sync-architecture.md` — sync design (ledger model, cloud protocol, P2P coexistence)
+- `AGENTS.md` — build commands and rules for AI agents
+- `FASTLANE.md` — release automation

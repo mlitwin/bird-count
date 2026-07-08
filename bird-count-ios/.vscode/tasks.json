@@ -17,7 +17,7 @@
 				"-scheme",
 				"BirdCount",
 				"-project",
-				"/Users/mlitwin/Dev/github.com/mlitwin/bird-count-ios/BirdCount.xcodeproj",
+				"${workspaceFolder}/BirdCount.xcodeproj",
 				"-destination",
 				"platform=iOS Simulator,name=iPhone 16",
 				"test"
