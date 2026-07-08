@@ -25,9 +25,14 @@ variable "issuer_url" {
   type        = string
 }
 
-variable "client_id" {
-  description = "Cognito app client id (JWT audience)"
-  type        = string
+variable "jwt_audience" {
+  description = "Cognito app client ids accepted by the JWT authorizer"
+  type        = list(string)
+}
+
+variable "cors_allow_origins" {
+  description = "Origins allowed to call the API from a browser"
+  type        = list(string)
 }
 
 variable "alarm_email" {

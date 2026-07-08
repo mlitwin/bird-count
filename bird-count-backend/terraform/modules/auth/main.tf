@@ -76,3 +76,26 @@ resource "aws_cognito_user_pool_domain" "hosted_ui" {
   domain       = "${var.project_name}-${var.environment}"
   user_pool_id = aws_cognito_user_pool.users.id
 }
+
+# Web viewer client: same pool/IdP, browser PKCE (redirects to CloudFront).
+resource "aws_cognito_user_pool_client" "web" {
+  name         = "${var.project_name}-${var.environment}-web"
+  user_pool_id = aws_cognito_user_pool.users.id
+
+  generate_secret                      = false
+  allowed_oauth_flows                  = ["code"]
+  allowed_oauth_flows_user_pool_client = true
+  allowed_oauth_scopes                 = ["openid", "email"]
+  supported_identity_providers         = [aws_cognito_identity_provider.apple.provider_name]
+
+  callback_urls = var.web_callback_urls
+  logout_urls   = var.web_callback_urls
+
+  explicit_auth_flows = ["ALLOW_REFRESH_TOKEN_AUTH"]
+
+  access_token_validity  = 1   # hours
+  id_token_validity      = 1   # hours
+  refresh_token_validity = 365 # days
+
+  prevent_user_existence_errors = "ENABLED"
+}

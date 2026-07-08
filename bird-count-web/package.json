@@ -1,0 +1,9 @@
+{
+  "name": "bird-count-web",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test test/ledger.test.mjs"
+  }
+}

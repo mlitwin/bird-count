@@ -32,7 +32,12 @@ variable "apple_private_key" {
 }
 
 variable "callback_urls" {
-  description = "OAuth callback/logout URLs for the app client"
+  description = "OAuth callback/logout URLs for the iOS app client"
+  type        = list(string)
+}
+
+variable "web_callback_urls" {
+  description = "OAuth callback/logout URLs for the web viewer client"
   type        = list(string)
 }
 

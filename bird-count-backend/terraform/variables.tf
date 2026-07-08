@@ -43,3 +43,15 @@ variable "alarm_email" {
   type        = string
   default     = ""
 }
+
+variable "enable_waf" {
+  description = "Attach a WAF (per-IP rate limit + AWS common rules) to the CloudFront distribution (~$6-8/mo)"
+  type        = bool
+  default     = false
+}
+
+variable "budget_amount" {
+  description = "Monthly cost budget threshold in USD; alerts fire at 80% and 100%"
+  type        = number
+  default     = 20
+}

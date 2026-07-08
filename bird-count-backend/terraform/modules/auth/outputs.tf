@@ -6,6 +6,10 @@ output "client_id" {
   value = aws_cognito_user_pool_client.ios.id
 }
 
+output "web_client_id" {
+  value = aws_cognito_user_pool_client.web.id
+}
+
 output "hosted_ui_domain" {
   value = "${aws_cognito_user_pool_domain.hosted_ui.domain}.auth.${var.aws_region}.amazoncognito.com"
 }

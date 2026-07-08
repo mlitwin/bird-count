@@ -21,6 +21,10 @@ output "client_id" {
   value = module.auth.client_id
 }
 
+output "web_client_id" {
+  value = module.auth.web_client_id
+}
+
 output "hosted_ui_domain" {
   value = module.auth.hosted_ui_domain
 }

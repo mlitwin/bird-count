@@ -35,6 +35,10 @@ jobs:
         working-directory: bird-count-backend/api
         run: npm test
 
+      - name: Web viewer tests
+        working-directory: bird-count-web
+        run: npm test
+
   deploy:
     # main push -> dev; vX.Y.Z tag -> prod
     if: github.event_name == 'push'
@@ -83,3 +87,15 @@ jobs:
         run: |
           terraform init -backend-config=environments/${DEPLOY_ENV}.backend.hcl
           terraform apply -auto-approve -var-file=environments/${DEPLOY_ENV}.tfvars
+
+      - name: Deploy web viewer (${{ env.DEPLOY_ENV }})
+        run: |
+          node bird-count-web/scripts/make-taxonomy.mjs
+          cd bird-count-backend/terraform && terraform output -json | \
+            node ../../bird-count-web/scripts/make-config.mjs
+          BUCKET=$(cd bird-count-backend/terraform && terraform output -raw s3_bucket_name)
+          CF_ID=$(cd bird-count-backend/terraform && terraform output -raw cloudfront_distribution_id)
+          aws s3 sync bird-count-web/ s3://${BUCKET}/ \
+            --exclude "scripts/*" --exclude "test/*" --exclude "package.json" \
+            --exclude ".gitignore" --delete
+          aws cloudfront create-invalidation --distribution-id ${CF_ID} --paths "/*"

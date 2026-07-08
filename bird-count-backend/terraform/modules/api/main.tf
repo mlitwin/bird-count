@@ -64,7 +64,16 @@ resource "aws_lambda_function" "api" {
 resource "aws_apigatewayv2_api" "http" {
   name          = "${var.project_name}-${var.environment}-api"
   protocol_type = "HTTP"
-  tags          = var.tags
+
+  # Browser access from the web viewer
+  cors_configuration {
+    allow_origins = var.cors_allow_origins
+    allow_headers = ["authorization", "content-type"]
+    allow_methods = ["GET", "POST", "OPTIONS"]
+    max_age       = 3600
+  }
+
+  tags = var.tags
 }
 
 resource "aws_apigatewayv2_authorizer" "jwt" {
@@ -74,7 +83,7 @@ resource "aws_apigatewayv2_authorizer" "jwt" {
   name             = "cognito"
 
   jwt_configuration {
-    audience = [var.client_id]
+    audience = var.jwt_audience
     issuer   = var.issuer_url
   }
 }

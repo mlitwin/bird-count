@@ -121,3 +121,30 @@ resource "aws_iam_role_policy_attachment" "poweruser" {
 output "deploy_role_arn" {
   value = aws_iam_role.github_deploy.arn
 }
+
+# Cost backstop for the whole account: email alerts as spend approaches
+# a modest monthly ceiling (throttling limits per-service abuse; this
+# catches everything else).
+resource "aws_budgets_budget" "monthly" {
+  name         = "birdcount-monthly"
+  budget_type  = "COST"
+  limit_amount = "20"
+  limit_unit   = "USD"
+  time_unit    = "MONTHLY"
+
+  notification {
+    comparison_operator        = "GREATER_THAN"
+    threshold                  = 80
+    threshold_type             = "PERCENTAGE"
+    notification_type          = "ACTUAL"
+    subscriber_email_addresses = ["mlitwin@sonic.net"]
+  }
+
+  notification {
+    comparison_operator        = "GREATER_THAN"
+    threshold                  = 100
+    threshold_type             = "PERCENTAGE"
+    notification_type          = "ACTUAL"
+    subscriber_email_addresses = ["mlitwin@sonic.net"]
+  }
+}

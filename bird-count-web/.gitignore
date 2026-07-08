@@ -1,0 +1,4 @@
+# Generated per-env — regenerate with: cd bird-count-backend && make web-config ENV=<env>
+js/config.js
+# Generated from bird-count-ios — regenerate with: node scripts/make-taxonomy.mjs
+taxonomy.json

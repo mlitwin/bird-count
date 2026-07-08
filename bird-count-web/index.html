@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bird Count</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <h1>🐦 Bird Count</h1>
+    <button id="sign-out-btn" class="btn-ghost" hidden>Sign out</button>
+  </header>
+
+  <!-- Sign-in section (shown when unauthenticated) -->
+  <main data-section="signin" hidden>
+    <div class="card center">
+      <p>Sign in to view your bird count summary.</p>
+      <button id="sign-in-btn" class="btn-primary">Sign in with Apple</button>
+    </div>
+  </main>
+
+  <!-- App section (shown when authenticated) -->
+  <main data-section="app" hidden>
+
+    <!-- Range picker -->
+    <section class="range-picker card">
+      <div class="preset-row">
+        <button class="preset-btn" data-preset="today"    id="preset-today">Today</button>
+        <button class="preset-btn" data-preset="lastHour" id="preset-last-hour">Last Hour</button>
+        <button class="preset-btn" data-preset="last7"    id="preset-last-7">7 Days</button>
+        <button class="preset-btn" data-preset="all"      id="preset-all">All Time</button>
+        <button class="preset-btn" data-preset="custom"   id="preset-custom">Custom…</button>
+      </div>
+      <div id="custom-range" class="custom-range" hidden>
+        <label>From <input type="date" id="custom-begin" /></label>
+        <label>To   <input type="date" id="custom-end"   /></label>
+        <button id="apply-custom" class="btn-primary">Apply</button>
+      </div>
+    </section>
+
+    <!-- Loading / error -->
+    <p id="loading" class="status-msg" hidden>Loading observations…</p>
+    <p id="error-msg" class="status-msg error" hidden></p>
+
+    <!-- Summary stats -->
+    <section class="stats card">
+      <div class="stat">
+        <span class="stat-value" id="total-individuals">—</span>
+        <span class="stat-label">Individuals</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value" id="total-species">—</span>
+        <span class="stat-label">Species</span>
+      </div>
+    </section>
+
+    <!-- Per-species table -->
+    <section class="card">
+      <p id="empty-msg" class="status-msg" hidden>No observations in this range.</p>
+      <table id="species-table">
+        <thead>
+          <tr>
+            <th>Common Name</th>
+            <th>Scientific Name</th>
+            <th class="count">Count</th>
+          </tr>
+        </thead>
+        <tbody id="species-tbody"></tbody>
+      </table>
+    </section>
+
+    <!-- Export -->
+    <section class="export card">
+      <button id="export-csv"  class="btn-ghost">Export CSV</button>
+      <button id="export-text" class="btn-ghost">Export Text</button>
+    </section>
+
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
