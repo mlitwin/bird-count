@@ -16,7 +16,10 @@ export interface StoredObservation extends ObservationRecordDTO {
   schemaVersion: number;
 }
 
-const TABLE = process.env.TABLE_NAME ?? "birdcount-data-dev";
+if (!process.env.TABLE_NAME) {
+  throw new Error("TABLE_NAME environment variable is not set");
+}
+const TABLE = process.env.TABLE_NAME;
 const CHANGES_INDEX = "changes";
 
 export function docClient(endpoint?: string): DynamoDBDocumentClient {
