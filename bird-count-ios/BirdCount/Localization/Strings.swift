@@ -162,6 +162,12 @@ enum Strings {
     // MARK: - Sync
     enum Sync {
         static let title = LocalizedString("sync.title")
+        static let pairDevice = LocalizedString("sync.pair.device")
+        static let pairedAutoSyncs = LocalizedString("sync.paired.auto.syncs")
+        static let unpair = LocalizedString("sync.unpair")
+        static let pairedDevices = LocalizedString("sync.paired.devices")
+        static let pairExplanation = LocalizedString("sync.pair.explanation")
+        static let noPairedDevices = LocalizedString("sync.no.paired.devices")
         static let processing = LocalizedString("sync.processing")
         static let looking = LocalizedString("sync.looking")
         static let foundDevices = LocalizedString("sync.found.devices")

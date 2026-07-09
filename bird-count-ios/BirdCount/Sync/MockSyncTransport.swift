@@ -16,6 +16,10 @@ import Observation
     /// Payload the simulated peer will send if role negotiation says we should receive.
     var simulatedIncomingPayload: PayloadV1?
 
+    /// Simulate a passed identity handshake (the peer hello must also carry a
+    /// publicKey for it to propagate into SyncReadyInfo, as in the real flow).
+    var simulatePeerVerified = false
+
     // MARK: - Observation capture (inspectable in tests)
 
     /// The payload passed to initiateSync, captured for assertions.
@@ -101,7 +105,7 @@ import Observation
 
         state = .handshaking(peerName: peerHello.displayName)
 
-        if let info = SyncReadyInfo.negotiate(local: localHello, peer: peerHello) {
+        if let info = SyncReadyInfo.negotiate(local: localHello, peer: peerHello, verified: simulatePeerVerified) {
             state = .readyToSync(info: info)
         } else {
             state = .incompatible(reason: "Both devices have the same directional role")

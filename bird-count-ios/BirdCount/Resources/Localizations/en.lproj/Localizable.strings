@@ -200,3 +200,11 @@
 "location.edit.cancel" = "Cancel";
 "location.edit.no.results" = "No results found";
 "location.edit.accept" = "Use this location";
+
+/* Paired device sync */
+"sync.pair.device" = "Pair for automatic sync";
+"sync.paired.auto.syncs" = "Paired — syncs automatically";
+"sync.unpair" = "Unpair";
+"sync.paired.devices" = "Paired Devices";
+"sync.pair.explanation" = "Paired devices sync new observations automatically whenever both have Bird Count open nearby — no internet needed.";
+"sync.no.paired.devices" = "No paired devices";

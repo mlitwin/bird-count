@@ -382,10 +382,30 @@ import Observation
     /// listens and schedules a debounced auto-sync.
     public static let didMarkDirtyNotification = Notification.Name("ObservationStoreDidMarkDirty")
 
+    /// Posted whenever records are created or updated, from ANY source (local
+    /// edit, cloud pull, P2P import), with the affected ids in userInfo under
+    /// `changedIdsUserInfoKey`. PairedPeersStore listens to queue records for
+    /// paired devices. Distinct from didMarkDirty, which is cloud-upload
+    /// specific and intentionally not posted for cloud pulls.
+    public static let didChangeRecordsNotification = Notification.Name("ObservationStoreDidChangeRecords")
+    public static let changedIdsUserInfoKey = "changedIds"
+
     public func markDirty(_ id: UUID) {
         dirtyIds.insert(id)
         persistCloudState()
         NotificationCenter.default.post(name: Self.didMarkDirtyNotification, object: self)
+        NotificationCenter.default.post(
+            name: Self.didChangeRecordsNotification,
+            object: self,
+            userInfo: [Self.changedIdsUserInfoKey: [id]]
+        )
+    }
+
+    /// Current updatedAt for a record (top-level or child), or nil if absent.
+    /// Used to detect "edited while a sync was in flight": a record whose
+    /// updatedAt no longer matches the pushed copy must stay queued.
+    public func updatedAt(for id: UUID) -> Date? {
+        findRecord(by: id)?.updatedAt
     }
 
     /// First-sync bootstrap: everything this device has needs to upload.
@@ -424,6 +444,7 @@ import Observation
     @discardableResult
     public func mergeDTOs(_ dtos: [ObservationRecordDTO], markDirty: Bool) -> MergeStatistics {
         var stats = MergeStatistics()
+        var changedIds: [UUID] = []
         // Include previously-held orphans, but let fresher incoming copies win.
         var pending = dtos
         let incomingIds = Set(dtos.map { $0.id })
@@ -438,6 +459,7 @@ import Observation
                 if findRecord(by: dto.id) != nil {
                     if updateExisting(with: dto) {
                         stats.updated += 1
+                        changedIds.append(dto.id)
                         if markDirty { dirtyIds.insert(dto.id) }
                     } else {
                         stats.duplicatesSkipped += 1
@@ -446,11 +468,13 @@ import Observation
                 } else if dto.parentId == nil {
                     observations.append(ObservationRecord(data: dto))
                     stats.imported += 1
+                    changedIds.append(dto.id)
                     if markDirty { dirtyIds.insert(dto.id) }
                     touchRecent(dto.taxonId)
                     madeProgress = true
                 } else if attachChild(dto) {
                     stats.imported += 1
+                    changedIds.append(dto.id)
                     if markDirty { dirtyIds.insert(dto.id) }
                     touchRecent(dto.taxonId)
                     madeProgress = true
@@ -468,6 +492,13 @@ import Observation
         rebuildDerived()
         if markDirty && (stats.imported > 0 || stats.updated > 0) {
             NotificationCenter.default.post(name: Self.didMarkDirtyNotification, object: self)
+        }
+        if !changedIds.isEmpty {
+            NotificationCenter.default.post(
+                name: Self.didChangeRecordsNotification,
+                object: self,
+                userInfo: [Self.changedIdsUserInfoKey: changedIds]
+            )
         }
         return stats
     }

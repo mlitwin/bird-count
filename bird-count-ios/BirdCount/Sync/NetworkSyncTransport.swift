@@ -13,8 +13,15 @@ import UIKit
     // MARK: - Private
 
     private let serviceType = "_birdcount._tcp"
-    private let peerID = UUID()
+    /// Stable identity: peerID is derived from the identity public key, so
+    /// paired devices recognize each other across sessions.
+    private let identity: PeerIdentity
+    private var peerID: UUID { identity.peerID }
     private let queue = DispatchQueue(label: "network-sync", qos: .userInitiated)
+
+    init(identity: PeerIdentity = PeerIdentity.loadOrCreate()) {
+        self.identity = identity
+    }
 
     private var listener: NWListener?
     private var browser: NWBrowser?
@@ -29,6 +36,12 @@ import UIKit
     private var localHello: SyncHelloMessage?
     private var peerHello: SyncHelloMessage?
 
+    // Session auth state: fresh nonce per discovery session; the peer is
+    // "verified" once its signature over both nonces checks out against the
+    // public key (and claimed peerID) in its hello.
+    private var localNonce = PeerIdentity.makeNonce()
+    private var peerAuthVerified = false
+
     // Continuation for initiateSync to wait on incoming payload
     private var receiveContinuation: CheckedContinuation<PayloadV1?, Never>?
     // Payload buffered when it arrives before initiateSync sets up the continuation
@@ -38,9 +51,16 @@ import UIKit
 
     func startDiscovery(localHello: SyncHelloMessage) {
         guard state == .idle else { return }
-        self.localHello = localHello
+        // Stamp the hello with this install's identity so the peer can verify
+        // (and pair with) a stable key rather than a per-session UUID.
+        var hello = localHello
+        hello.peerID = identity.peerID
+        hello.publicKey = identity.publicKey
+        localNonce = PeerIdentity.makeNonce()
+        hello.nonce = localNonce
+        self.localHello = hello
         setState(.discovering)
-        startListener(localHello: localHello)
+        startListener(localHello: hello)
         startBrowser()
     }
 
@@ -301,15 +321,53 @@ import UIKit
                 if let payload = msg.payload { self.handleIncomingPayload(payload) }
             case .syncStart:
                 self.handleSyncStart()
+            case .auth:
+                if let auth = msg.auth { self.handlePeerAuth(auth) }
             }
         }
     }
 
     private func handlePeerHello(_ peerHello: SyncHelloMessage) {
-        guard let localHello else { return }
+        guard localHello != nil else { return }
         self.peerHello = peerHello
 
-        if let info = SyncReadyInfo.negotiate(local: localHello, peer: peerHello) {
+        // Identity-capable peer: answer with our session signature and wait
+        // for theirs before becoming ready. Legacy peer (no key): ready now,
+        // unverified — the manual confirm-and-tap flow still applies.
+        if let peerNonce = peerHello.nonce, peerHello.publicKey != nil {
+            if let signature = identity.signSession(localNonce: localNonce, peerNonce: peerNonce),
+               let conn = connection {
+                sendAuth(SyncAuthMessage(signature: signature), over: conn)
+            }
+        } else {
+            becomeReadyIfNegotiable()
+        }
+    }
+
+    private func handlePeerAuth(_ auth: SyncAuthMessage) {
+        guard let peerHello, let peerKey = peerHello.publicKey, let peerNonce = peerHello.nonce else { return }
+        guard !peerAuthVerified else { return }
+
+        // The signature must verify against the hello's key, and the claimed
+        // peerID must actually be that key's fingerprint — otherwise a device
+        // could present its own valid key under a paired peer's id.
+        let signatureOK = PeerIdentity.verifySession(
+            signature: auth.signature,
+            publicKey: peerKey,
+            peerNonce: peerNonce,
+            localNonce: localNonce
+        )
+        guard signatureOK, PeerIdentity.peerID(forPublicKey: peerKey) == peerHello.peerID else {
+            setState(.error(message: SyncError.peerNotVerified.localizedDescription))
+            return
+        }
+        peerAuthVerified = true
+        becomeReadyIfNegotiable()
+    }
+
+    private func becomeReadyIfNegotiable() {
+        guard let localHello, let peerHello else { return }
+        if let info = SyncReadyInfo.negotiate(local: localHello, peer: peerHello, verified: peerAuthVerified) {
             setState(.readyToSync(info: info))
         } else {
             setState(.incompatible(reason: "Both devices have the same directional role"))
@@ -340,6 +398,12 @@ import UIKit
 
     private func sendHello(_ hello: SyncHelloMessage, over conn: NWConnection) {
         let msg = SyncMessage.helloMessage(hello)
+        guard let data = try? makeEncoder().encode(msg) else { return }
+        sendData(data, over: conn)
+    }
+
+    private func sendAuth(_ auth: SyncAuthMessage, over conn: NWConnection) {
+        let msg = SyncMessage.authMessage(auth)
         guard let data = try? makeEncoder().encode(msg) else { return }
         sendData(data, over: conn)
     }
@@ -407,6 +471,7 @@ import UIKit
         receiveContinuation = nil
         bufferedPayload = nil
         peerInitiatedSync = false
+        peerAuthVerified = false
 
         browser?.cancel()
         listener?.cancel()

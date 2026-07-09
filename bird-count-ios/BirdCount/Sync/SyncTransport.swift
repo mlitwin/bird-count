@@ -22,6 +22,7 @@ enum SyncError: Error, LocalizedError {
     case networkUnavailable
     case incompatibleRoles
     case invalidData
+    case peerNotVerified
 
     var errorDescription: String? {
         switch self {
@@ -31,6 +32,7 @@ enum SyncError: Error, LocalizedError {
         case .networkUnavailable: return "Network unavailable for sync"
         case .incompatibleRoles: return "Both devices have incompatible sync roles"
         case .invalidData: return "Invalid sync data received"
+        case .peerNotVerified: return "Could not verify the identity of the other device"
         }
     }
 }
