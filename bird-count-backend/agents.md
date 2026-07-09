@@ -39,8 +39,15 @@ api/            TypeScript Lambda (esbuild bundle; nodejs20.x)
 terraform/
   modules/{storage,auth,db,api}
   environments/ <env>.tfvars (tracked; never secrets) + <env>.backend.hcl
-  bootstrap/    GitHub OIDC provider + deploy role (separate state, make bootstrap)
+  bootstrap/    GitHub OIDC provider + deploy role + account budget
+                (separate state, make bootstrap)
 ```
+
+This Makefile also builds and deploys the static web viewer in
+[`../bird-count-web/`](../bird-count-web/) (S3 + CloudFront from the storage
+module; second Cognito app client `web` with browser PKCE). Its
+`js/config.js` and `taxonomy.json` are generated, gitignored artifacts —
+regenerate with `make web-config`, never edit by hand.
 
 ## Workflow
 
@@ -49,6 +56,9 @@ make api-test          # vitest (docker must be running)
 make api-build         # regen types + esbuild bundle (required before apply)
 make plan ENV=dev
 make apply ENV=dev     # runs api-build first
+make web-test          # web viewer unit tests (node --test)
+make web-config ENV=dev LOCAL=1   # config.js for local dev (localhost:8788)
+make web-deploy ENV=dev           # build + S3 sync + CloudFront invalidation
 ```
 
 - Terraform ≥ 1.10 (S3 `use_lockfile`); provider lock file is committed.

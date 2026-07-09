@@ -6,7 +6,8 @@ Monorepo for the Bird Count app and its cloud backend.
 |---|---|---|
 | `bird-count-ios` | **Active / live app** | Current iOS app (SwiftUI, offline-first, P2P + cloud sync). The main product codebase. |
 | `bird-count-backend` | **Active** | Cloud sync backend: Cognito + Sign in with Apple, API Gateway + Lambda, DynamoDB ledger; Terraform, deployed via GitHub Actions (main → dev, vX.Y.Z tag → prod). |
-| `bird-count-schema` | **Active** | Shared wire-format JSON Schemas + golden fixtures; single source of truth consumed by both the backend (codegen + ajv) and iOS (conformance tests). |
+| `bird-count-schema` | **Active** | Shared wire-format JSON Schemas + golden fixtures; single source of truth consumed by the backend (codegen + ajv), iOS (conformance tests), and the web viewer (ledger tests). |
+| `bird-count-web` | **Active** | Static web summary viewer (vanilla ES modules, no build step): Sign in with Apple via Cognito PKCE, reads `/v1/observations`, mirrors the iOS Summary screen. Served from S3 + CloudFront. |
 
 The legacy React-era project (`bird-count/`) was pruned after the new backend shipped; its full history remains in this repo's git history (imported via subtree) and at the archived [`bird-count-legacy`](https://github.com/mlitwin/bird-count-legacy) repo.
 
@@ -22,10 +23,11 @@ The legacy React-era project (`bird-count/`) was pruned after the new backend sh
 
 | Env | Web viewer | API base URL |
 |-----|-----------|--------------|
-| **prod** | https://d3g0g1v3it0tuf.cloudfront.net | https://c94t0py5je.execute-api.us-east-1.amazonaws.com/v1/observations?since=1783480084441&limit=200 |
+| **dev** | https://d1rranrymie4r6.cloudfront.net | https://mpet543s3g.execute-api.us-east-1.amazonaws.com/v1 |
+| **prod** | https://d3g0g1v3it0tuf.cloudfront.net | https://c94t0py5je.execute-api.us-east-1.amazonaws.com/v1 |
 
-> The CloudFront domains are assigned by AWS and stored only in Terraform state.
-> Retrieve them at any time: `cd bird-count-backend && make output ENV=<env>`.
+> These AWS-assigned domains live in Terraform state; the table is a convenience
+> copy. Confirm current values: `cd bird-count-backend && make output ENV=<env>`.
 
 ## Release flow
 

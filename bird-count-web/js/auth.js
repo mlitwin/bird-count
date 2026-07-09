@@ -45,6 +45,14 @@ export async function login() {
 /** Exchange the ?code= callback param for tokens. Returns true if a code was present. */
 export async function handleCallback() {
   const params = new URLSearchParams(window.location.search);
+
+  // e.g. the user cancelled the Apple sign-in sheet
+  const error = params.get('error');
+  if (error) {
+    window.history.replaceState({}, '', window.location.pathname + window.location.hash);
+    throw new Error(`Sign-in failed: ${error}`);
+  }
+
   const code = params.get('code');
   if (!code) return false;
 

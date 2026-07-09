@@ -1,4 +1,4 @@
-.PHONY: help whoami aws tf init plan apply output api-test api-build web-config web-test web-deploy
+.PHONY: help whoami aws tf init plan apply output api-test api-build web-config web-test web-deploy bootstrap
 
 # AWS credentials come from 1Password via `op run` (see aws.env).
 ENV ?= dev
@@ -31,6 +31,7 @@ help:
 	@echo "  web-test    Run bird-count-web unit tests"
 	@echo "  web-deploy  Build + sync web viewer to S3 + invalidate CloudFront"
 	@echo "              Set LOCAL=1 for redirectURI=localhost:8788"
+	@echo "  bootstrap   One-time: GitHub OIDC provider + deploy role + account budget"
 
 whoami:
 	$(OP_RUN) aws sts get-caller-identity
@@ -47,7 +48,7 @@ init:
 plan:
 	cd $(TF_DIR) && $(TF_INIT) && $(OP_RUN_TF) terraform plan -var-file=$(TFVARS)
 
-apply:
+apply: api-build
 	cd $(TF_DIR) && $(TF_INIT) && $(OP_RUN_TF) terraform apply -var-file=$(TFVARS)
 
 output:
@@ -70,24 +71,13 @@ web-config:
 web-test:
 	cd ../bird-count-web && npm test
 
-WEB_DIR = ../bird-count-web
-
-# Deploy web viewer: generate assets, sync to S3, invalidate CloudFront.
+# Deploy web viewer: generate assets, sync to S3, invalidate CloudFront
+# (shared script: ../scripts/web-deploy.sh, also used by CI).
 # LOCAL=1: set redirectURI to localhost:8788 (omit for deployed CloudFront URL).
 web-deploy: web-test
-	node $(WEB_DIR)/scripts/make-taxonomy.mjs
 	cd $(TF_DIR) && $(TF_INIT) && $(OP_RUN_TF) terraform output -json | \
-	  node ../../bird-count-web/scripts/make-config.mjs $(if $(LOCAL),--local,)
-	$(eval _BUCKET := $(shell cd $(TF_DIR) && $(TF_INIT) && $(OP_RUN_TF) terraform output -raw s3_bucket_name))
-	$(eval _CF_ID  := $(shell cd $(TF_DIR) && $(TF_INIT) && $(OP_RUN_TF) terraform output -raw cloudfront_distribution_id))
-	$(OP_RUN) aws s3 sync $(WEB_DIR)/ s3://$(_BUCKET)/ \
-	  --exclude "scripts/*" --exclude "test/*" --exclude "package.json" \
-	  --exclude ".gitignore" --delete
-	$(OP_RUN) aws cloudfront create-invalidation \
-	  --distribution-id $(_CF_ID) --paths "/*"
+	  op run --env-file ../aws.env -- ../../scripts/web-deploy.sh $(if $(LOCAL),--local,)
 
 # One-time, account-global: GitHub OIDC provider + deploy role for CI
 bootstrap:
 	cd $(TF_DIR)/bootstrap && op run --env-file ../../aws.env -- terraform init && op run --env-file ../../aws.env -- terraform apply
-
-apply: api-build

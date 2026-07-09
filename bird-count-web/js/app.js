@@ -111,11 +111,13 @@ async function main() {
 
   if (!isLoggedIn()) {
     showSection('signin');
+    $('sign-out-btn').hidden = true;
     $('sign-in-btn').addEventListener('click', () => login());
     return;
   }
 
   showSection('app');
+  $('sign-out-btn').hidden = false;
   $('sign-out-btn').addEventListener('click', () => logout());
 
   // Range preset buttons
@@ -146,8 +148,9 @@ async function main() {
     const begin = $('custom-begin').value;
     const end = $('custom-end').value;
     if (!begin || !end) return;
+    // Parse both ends as local time (a bare YYYY-MM-DD would parse as UTC)
     currentRange = {
-      begin: new Date(begin).toISOString(),
+      begin: new Date(begin + 'T00:00:00').toISOString(),
       end: new Date(end + 'T23:59:59').toISOString(),
       preset: 'custom',
     };
@@ -169,6 +172,8 @@ async function main() {
     const token = await accessToken();
     if (!token) { logout(); return; }
     allDTOs = await fetchAllObservations(token, config.apiBaseURL);
+    highlightPreset('today');
+    renderSummary(currentRange);
   } catch (e) {
     console.error('Fetch error', e);
     $('error-msg').textContent = 'Failed to load observations. Please refresh.';
@@ -176,9 +181,6 @@ async function main() {
   } finally {
     $('loading').hidden = true;
   }
-
-  highlightPreset('today');
-  renderSummary(currentRange);
 }
 
 main();

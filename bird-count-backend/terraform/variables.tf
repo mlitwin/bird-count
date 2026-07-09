@@ -49,9 +49,3 @@ variable "enable_waf" {
   type        = bool
   default     = false
 }
-
-variable "budget_amount" {
-  description = "Monthly cost budget threshold in USD; alerts fire at 80% and 100%"
-  type        = number
-  default     = 20
-}

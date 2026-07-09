@@ -6,9 +6,10 @@ ledger — deletes are negative-count adjustment children, never tombstones.
 
 ## Architecture
 
-- **Auth** — Cognito user pool federated with Sign in with Apple; the app
-  uses the hosted UI (`ASWebAuthenticationSession` + PKCE, no Amplify).
-  One-time Apple portal setup: [docs/apple-siwa-setup.md](docs/apple-siwa-setup.md).
+- **Auth** — Cognito user pool federated with Sign in with Apple; two app
+  clients: `ios` (hosted UI via `ASWebAuthenticationSession` + PKCE, no
+  Amplify) and `web` (browser PKCE for the web viewer). One-time Apple
+  portal setup: [docs/apple-siwa-setup.md](docs/apple-siwa-setup.md).
 - **API** — API Gateway HTTP API with a Cognito JWT authorizer in front of a
   TypeScript Lambda (`api/`): `POST /v1/sync` (push + pull in one round
   trip), `GET /v1/observations` (delta read), `GET /v1/health`.
@@ -17,9 +18,13 @@ ledger — deletes are negative-count adjustment children, never tombstones.
 - **DB** — one DynamoDB table `birdcount-data-<env>` (PK = scope, SK =
   `obs#<uuid>`), GSI `changes` on `serverUpdatedAt` for cursor deltas.
   Nothing is ever deleted.
-- **Storage** — S3 + CloudFront static hosting for a future web front-end.
+- **Storage** — S3 + CloudFront static hosting serving the web summary
+  viewer ([`../bird-count-web/`](../bird-count-web/)); an optional WAF
+  (rate limit + AWS common rules) is available behind the `enable_waf`
+  tfvar (off by default, ~$6–8/mo).
 - **Alarms** — CloudWatch on Lambda errors and API 5xx (email via
-  `alarm_email` tfvar, prod only by default).
+  `alarm_email` tfvar, prod only by default); an account-wide monthly cost
+  budget lives in `terraform/bootstrap/`.
 
 Cursor contract: server pulls are strictly-after-cursor (pagination always
 advances); clients rewind their stored cursor ~5s at sync-session start and
@@ -39,6 +44,9 @@ make api-test          # vitest incl. DynamoDB Local (docker)
 make api-build         # regen types from schema + esbuild bundle
 make plan ENV=dev      # terraform plan
 make apply ENV=dev     # build + terraform apply
+make web-test          # web viewer unit tests
+make web-config ENV=dev LOCAL=1   # generate web config for localhost:8788
+make web-deploy ENV=dev           # deploy web viewer (S3 sync + invalidation)
 ```
 
 Sign in with Apple secrets flow through `siwa.env` (1Password references)
@@ -49,8 +57,10 @@ as `TF_VAR_apple_*`; the `.p8` never touches the repo.
 `.github/workflows/deploy.yml`:
 
 - every push/PR: schema fixtures validate, generated-types drift gate,
-  API tests
+  API tests, web viewer tests
 - push to `main` → deploy **dev**; tag `vX.Y.Z` → deploy **prod**
+  (backend terraform, then the web viewer via `scripts/web-deploy.sh` —
+  the same script `make web-deploy` uses)
 
 GitHub authenticates to AWS via OIDC federation (no stored keys, per the
 [AWS pattern](https://aws.amazon.com/blogs/security/use-iam-roles-to-connect-github-actions-to-actions-in-aws/)):
@@ -72,6 +82,6 @@ terraform/
   main.tf                    # wires modules: storage, auth, db, api
   backend.tf                 # S3 remote state (use_lockfile)
   environments/              # <env>.tfvars + <env>.backend.hcl
-  bootstrap/                 # GitHub OIDC provider + deploy role (separate state)
+  bootstrap/                 # GitHub OIDC provider + deploy role + account budget (separate state)
   modules/{storage,auth,db,api}/
 ```

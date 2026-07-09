@@ -88,21 +88,6 @@ jobs:
           terraform init -backend-config=environments/${DEPLOY_ENV}.backend.hcl
           terraform apply -auto-approve -var-file=environments/${DEPLOY_ENV}.tfvars
 
-      - name: Generate web config from Terraform outputs
-        working-directory: bird-count-backend/terraform
-        run: terraform output -json | node ../../bird-count-web/scripts/make-config.mjs
-
-      - name: Read web deploy outputs
-        id: tf_outputs
-        working-directory: bird-count-backend/terraform
-        run: |
-          echo "bucket=$(terraform output -raw s3_bucket_name)" >> "$GITHUB_OUTPUT"
-          echo "cf_id=$(terraform output -raw cloudfront_distribution_id)" >> "$GITHUB_OUTPUT"
-
       - name: Deploy web viewer (${{ env.DEPLOY_ENV }})
-        run: |
-          node bird-count-web/scripts/make-taxonomy.mjs
-          aws s3 sync bird-count-web/ s3://${{ steps.tf_outputs.outputs.bucket }}/ \
-            --exclude "scripts/*" --exclude "test/*" --exclude "package.json" \
-            --exclude ".gitignore" --delete
-          aws cloudfront create-invalidation --distribution-id ${{ steps.tf_outputs.outputs.cf_id }} --paths "/*"
+        working-directory: bird-count-backend/terraform
+        run: terraform output -json | ../../scripts/web-deploy.sh
