@@ -505,6 +505,7 @@ platform :ios do
     # Replace the version strings in project.yml
     project_yml.gsub!(/CFBundleShortVersionString: "[^"]*"/, "CFBundleShortVersionString: \"#{new_version}\"")
     project_yml.gsub!(/CFBundleVersion: "[^"]*"/, "CFBundleVersion: \"#{new_build}\"")
+    project_yml.gsub!(/CURRENT_PROJECT_VERSION: "[^"]*"/, "CURRENT_PROJECT_VERSION: \"#{new_build}\"")
     
     # Write back the updated project.yml
     File.write(project_yml_path, project_yml)
@@ -524,8 +525,12 @@ platform :ios do
       next { version: new_version, build: new_build, tag: tag }
     end
     
-    git_add(path: ["project.yml", "BirdCount.xcodeproj"])
-    git_commit(path: ["project.yml", "BirdCount.xcodeproj"], message: "Bump version to #{new_version} (#{new_build})")
+    # Info.plist must be part of the bump commit: agvtool and the regenerate
+    # both rewrite it, and leaving it dirty made the NEXT bump fail
+    # ensure_git_status_clean — the source of the ad-hoc mop-up commits.
+    bump_paths = ["project.yml", "BirdCount.xcodeproj", "BirdCount/BirdCount/Info.plist"]
+    git_add(path: bump_paths)
+    git_commit(path: bump_paths, message: "Bump version to #{new_version} (#{new_build})")
     add_git_tag(tag: tag, message: "Release #{new_version} (#{new_build})")
     
     UI.success("✅ Version bumped to #{new_version} (#{new_build})")
