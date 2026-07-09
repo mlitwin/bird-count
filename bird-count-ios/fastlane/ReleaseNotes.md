@@ -1,4 +1,4 @@
-Changes since v1.0.26-59:
+Changes since v1.0.27-60:
 
-• bcd6b5e grot
-• dd3676d Move device pairing under User Settings, next to cloud sync
+• 13ebb54 Fix main-thread freeze on first paired sync: quadratic merge, lost payloads
+• 32093e2 build
