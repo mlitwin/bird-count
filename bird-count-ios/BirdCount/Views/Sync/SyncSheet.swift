@@ -2,8 +2,6 @@ import SwiftUI
 
 struct SyncSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(ObservationStore.self) private var observations
-    @Environment(PairedPeersStore.self) private var pairedPeers
     @Environment(PeerAutoSyncService.self) private var autoSync
     @State private var vm: SyncViewModel
     @State private var showRangePicker = false
@@ -28,10 +26,6 @@ struct SyncSheet: View {
                     Divider()
                     discoverySection
                     actionSection
-                    if !pairedPeers.peers.isEmpty {
-                        Divider()
-                        pairedDevicesSection
-                    }
                 }
                 .padding()
             }
@@ -176,74 +170,10 @@ struct SyncSheet: View {
                         .foregroundStyle(.secondary)
                 }
             }
-
-            pairingControls(info: info)
         }
         .padding()
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-
-    /// Pair/unpair for the connected peer. Only identity-verified peers can
-    /// be paired: pairing trusts a key, not a name on the local network.
-    @ViewBuilder
-    private func pairingControls(info: SyncReadyInfo) -> some View {
-        if pairedPeers.isPaired(info.peerID) {
-            HStack {
-                Label(Strings.Sync.pairedAutoSyncs.string, systemImage: "link")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                Spacer()
-                Button(Strings.Sync.unpair.string, role: .destructive) {
-                    pairedPeers.unpair(info.peerID)
-                }
-                .font(.subheadline)
-            }
-        } else if info.peerVerified, let key = info.peerPublicKey {
-            VStack(alignment: .leading, spacing: 6) {
-                Button {
-                    pairedPeers.pair(
-                        id: info.peerID,
-                        displayName: info.peerName,
-                        publicKey: key,
-                        store: observations
-                    )
-                } label: {
-                    Label(Strings.Sync.pairDevice.string, systemImage: "link.badge.plus")
-                        .font(.subheadline)
-                }
-                Text(Strings.Sync.pairExplanation.string)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
-    }
-
-    // MARK: - Paired Devices
-
-    private var pairedDevicesSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(Strings.Sync.pairedDevices.string)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            ForEach(pairedPeers.peers) { peer in
-                HStack {
-                    Image(systemName: "iphone")
-                        .foregroundStyle(.tint)
-                    Text(peer.displayName)
-                        .font(.subheadline)
-                    Spacer()
-                    Button(Strings.Sync.unpair.string, role: .destructive) {
-                        pairedPeers.unpair(peer.id)
-                    }
-                    .font(.subheadline)
-                }
-                .padding(.vertical, 4)
-            }
-            Text(Strings.Sync.pairExplanation.string)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
     }
 
     private func completionSummary(stats: SyncCompletionStats) -> some View {

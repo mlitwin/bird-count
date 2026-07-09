@@ -17,6 +17,7 @@
 		0D650D9CE3DA27FBAD146D27 /* CloudAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 379C44D880E1109DBA5F5DFA /* CloudAPIClient.swift */; };
 		12CC786CC03A1D8F35C148A8 /* bad-status.json in Resources */ = {isa = PBXBuildFile; fileRef = C3968DA5FACF75ADF08B8AD8 /* bad-status.json */; };
 		17AAAB3F06F7444453AA17D5 /* ObservationDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 683F06540EC61740371DE480 /* ObservationDTO.swift */; };
+		189E9B926E2C37E487D56AB3 /* PairDeviceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73FF95E93207D746EB0FED90 /* PairDeviceSheet.swift */; };
 		19A3EE2B208684965577212C /* CloudMergeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04788B68CBB7435D8E113E4E /* CloudMergeTests.swift */; };
 		1A332FEB8AF6AFE2E8E39F6A /* BirdCountCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 490E29F6D3D7AA78458944AC /* BirdCountCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1FC3EA44A81F6C94E57C3757 /* CountAdjustSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFA8094EBAC869E648D7F854 /* CountAdjustSheet.swift */; };
@@ -213,6 +214,7 @@
 		6E9843D7277B138B6C1DBECF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		717853D943BB556FBFB3885D /* sync-response.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "sync-response.json"; sourceTree = "<group>"; };
 		73E8B49A3AB94DDFB8629CFB /* sync-request-missing-clientid.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "sync-request-missing-clientid.json"; sourceTree = "<group>"; };
+		73FF95E93207D746EB0FED90 /* PairDeviceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairDeviceSheet.swift; sourceTree = "<group>"; };
 		74ADC22819086097B12402BC /* Taxon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Taxon.swift; sourceTree = "<group>"; };
 		7516073B623E343E4440B200 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		759E1BDA195DE29EB09EB52A /* PeerAutoSyncServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerAutoSyncServiceTests.swift; sourceTree = "<group>"; };
@@ -440,6 +442,7 @@
 		8964B9C2DEB49CBE84EFE302 /* Sync */ = {
 			isa = PBXGroup;
 			children = (
+				73FF95E93207D746EB0FED90 /* PairDeviceSheet.swift */,
 				F6A0C5EC7F393B0C8A4C4510 /* SyncSheet.swift */,
 			);
 			path = Sync;
@@ -886,6 +889,7 @@
 				75089FF45C05EBC6944800A2 /* ObservationStoreCache.swift in Sources */,
 				42EE39979BF5B402A2C26C35 /* ObservationsSelectorView.swift in Sources */,
 				A3C57170B910A837385A6158 /* OnScreenKeyboard.swift in Sources */,
+				189E9B926E2C37E487D56AB3 /* PairDeviceSheet.swift in Sources */,
 				6CFAA7292249B04FC6AD0413 /* PairedPeersStore.swift in Sources */,
 				3129079F2309F20DB90CB40F /* PayloadV1.swift in Sources */,
 				F026EAD2AF09A9B04BCF3896 /* PeerAutoSyncService.swift in Sources */,

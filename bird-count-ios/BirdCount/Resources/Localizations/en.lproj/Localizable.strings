@@ -209,3 +209,7 @@
 "sync.pair.explanation" = "Paired devices sync new observations automatically whenever both have Bird Count open nearby — no internet needed.";
 "sync.no.paired.devices" = "No paired devices";
 "sync.includes.synced" = "Includes observations from synced users";
+"sync.pair.title" = "Pair Device";
+"sync.pair.new.device" = "Pair New Device…";
+"sync.pair.instructions" = "On the other phone, open User Settings and tap Pair New Device. Each person taps Pair on their own phone.";
+"sync.pair.unsupported" = "The other device needs a newer version of Bird Count to pair.";

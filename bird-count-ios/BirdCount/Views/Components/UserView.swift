@@ -7,8 +7,10 @@ struct UserView: View {
     @Environment(ObservationStore.self) private var observations
     @Environment(CloudAuthService.self) private var cloudAuth
     @Environment(CloudSyncService.self) private var cloudSync
+    @Environment(PairedPeersStore.self) private var pairedPeers
     @State private var emailText: String = ""
     @State private var signInError: String?
+    @State private var showPairSheet = false
 
     var body: some View {
         NavigationStack {
@@ -90,6 +92,32 @@ struct UserView: View {
                         }
                     }
                 }
+
+                Section {
+                    ForEach(pairedPeers.peers) { peer in
+                        HStack {
+                            Image(systemName: "iphone")
+                                .foregroundStyle(.tint)
+                            Text(peer.displayName)
+                            Spacer()
+                            Button(Strings.Sync.unpair.string, role: .destructive) {
+                                pairedPeers.unpair(peer.id)
+                            }
+                        }
+                    }
+                    Button {
+                        showPairSheet = true
+                    } label: {
+                        Label(Strings.Sync.pairNewDevice.string, systemImage: "link.badge.plus")
+                    }
+                } header: {
+                    Text(Strings.Sync.pairedDevices.string)
+                } footer: {
+                    Text(Strings.Sync.pairExplanation.string)
+                }
+            }
+            .sheet(isPresented: $showPairSheet) {
+                PairDeviceSheet()
             }
             .onAppear {
                 emailText = settingsStore.loginEmail
@@ -114,4 +142,5 @@ struct UserView: View {
         .environment(ObservationStore())
         .environment(auth)
         .environment(CloudSyncService(auth: auth))
+        .environment(PairedPeersStore())
 }
