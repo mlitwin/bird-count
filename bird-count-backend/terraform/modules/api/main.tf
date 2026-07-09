@@ -117,6 +117,22 @@ resource "aws_apigatewayv2_route" "observations" {
   authorizer_id      = aws_apigatewayv2_authorizer.jwt.id
 }
 
+resource "aws_apigatewayv2_route" "summary" {
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "GET /v1/summary"
+  target             = "integrations/${aws_apigatewayv2_integration.lambda.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.jwt.id
+}
+
+resource "aws_apigatewayv2_route" "observations_query" {
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "GET /v1/observations/query"
+  target             = "integrations/${aws_apigatewayv2_integration.lambda.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.jwt.id
+}
+
 resource "aws_apigatewayv2_stage" "default" {
   api_id      = aws_apigatewayv2_api.http.id
   name        = "$default"

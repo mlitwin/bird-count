@@ -6,7 +6,7 @@ import type {
 } from "./generated/types.js";
 import { putObservation, queryChanges, type StoredObservation } from "./dynamo.js";
 
-const SCOPE = "shared"; // v1: one shared pool; later "trip#<uuid>" / "user#<sub>"
+export const SCOPE = "shared"; // v1: one shared pool; later "trip#<uuid>" / "user#<sub>"
 const PULL_LIMIT = 200;
 
 /** Missing on legacy v1 records; the backfill rule matches the iOS decoder. */
@@ -34,7 +34,7 @@ function toStored(
   };
 }
 
-function toWire(item: StoredObservation): ObservationRecordDTO {
+export function toWire(item: StoredObservation): ObservationRecordDTO {
   const { pk, sk, observerSub, serverUpdatedAt, createdAt, schemaVersion, ...wire } = item;
   return wire;
 }

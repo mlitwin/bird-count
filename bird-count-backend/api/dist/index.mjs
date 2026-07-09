@@ -7958,6 +7958,122 @@ async function sync(doc2, request, observerSub) {
   };
 }
 
+// src/ledger.ts
+var PAGE_LIMIT = 200;
+var caches = /* @__PURE__ */ new Map();
+async function refreshLedger(doc2, scope) {
+  let cache = caches.get(scope);
+  if (!cache) {
+    cache = { records: /* @__PURE__ */ new Map(), cursor: 0 };
+    caches.set(scope, cache);
+  }
+  for (; ; ) {
+    const page = await queryChanges(doc2, scope, cache.cursor, PAGE_LIMIT);
+    for (const item of page.items) {
+      cache.records.set(item.id, item);
+      if (item.serverUpdatedAt > cache.cursor) cache.cursor = item.serverUpdatedAt;
+    }
+    if (!page.hasMore) break;
+  }
+  return cache;
+}
+function buildTree(records) {
+  const all = [...records];
+  const ids = new Set(all.map((r) => r.id));
+  const roots = [];
+  const childrenByParent = /* @__PURE__ */ new Map();
+  for (const r of all) {
+    if (!r.parentId) {
+      roots.push(r);
+    } else if (ids.has(r.parentId)) {
+      let siblings = childrenByParent.get(r.parentId);
+      if (!siblings) {
+        siblings = [];
+        childrenByParent.set(r.parentId, siblings);
+      }
+      siblings.push(r);
+    }
+  }
+  return { roots, childrenByParent };
+}
+function inRangeRoots(roots, beginMs, endMs) {
+  return roots.filter(
+    (r) => Date.parse(r.end) >= beginMs && Date.parse(r.begin) <= endMs
+  );
+}
+function computeSummary(records, begin, end) {
+  const { roots, childrenByParent } = buildTree(records);
+  const perTaxon = /* @__PURE__ */ new Map();
+  function process2(r) {
+    let entry = perTaxon.get(r.taxonId);
+    if (!entry) {
+      entry = { count: 0, lastMs: -Infinity, lastIso: r.end };
+      perTaxon.set(r.taxonId, entry);
+    }
+    entry.count += r.count;
+    const endMs = Date.parse(r.end);
+    if (endMs > entry.lastMs) {
+      entry.lastMs = endMs;
+      entry.lastIso = r.end;
+    }
+    for (const child of childrenByParent.get(r.id) ?? []) process2(child);
+  }
+  for (const root of inRangeRoots(roots, Date.parse(begin), Date.parse(end))) {
+    process2(root);
+  }
+  const species = [...perTaxon.entries()].filter(([, e]) => e.count > 0).map(([taxonId, e]) => ({ taxonId, count: e.count, lastObservedAt: e.lastIso })).sort((a, b) => b.count - a.count || (a.taxonId < b.taxonId ? -1 : 1));
+  return {
+    begin,
+    end,
+    totalIndividuals: species.reduce((sum, s) => sum + s.count, 0),
+    totalSpecies: species.length,
+    species
+  };
+}
+function encodeCursor(pos) {
+  return Buffer.from(JSON.stringify(pos)).toString("base64url");
+}
+function decodeCursor(cursor) {
+  try {
+    const pos = JSON.parse(Buffer.from(cursor, "base64url").toString("utf8"));
+    if (typeof pos.b === "number" && typeof pos.i === "string") return pos;
+  } catch {
+  }
+  return void 0;
+}
+function queryObservations(records, params) {
+  const { roots, childrenByParent } = buildTree([...records]);
+  function netCount(r) {
+    let total = r.count;
+    for (const child of childrenByParent.get(r.id) ?? []) total += netCount(child);
+    return total;
+  }
+  let matches = inRangeRoots(roots, Date.parse(params.begin), Date.parse(params.end)).filter((r) => !params.taxonId || r.taxonId === params.taxonId).sort((a, b) => Date.parse(b.begin) - Date.parse(a.begin) || (a.id < b.id ? -1 : 1));
+  const pos = params.cursor ? decodeCursor(params.cursor) : void 0;
+  if (pos) {
+    matches = matches.filter(
+      (r) => Date.parse(r.begin) < pos.b || Date.parse(r.begin) === pos.b && r.id > pos.i
+    );
+  }
+  const page = matches.slice(0, params.limit);
+  const hasMore = matches.length > page.length;
+  const last = page[page.length - 1];
+  return {
+    items: page.map((r) => ({ record: toWire(r), netCount: netCount(r) })),
+    cursor: hasMore && last ? encodeCursor({ b: Date.parse(last.begin), i: last.id }) : "",
+    hasMore
+  };
+}
+function validateRange(begin, end) {
+  if (!begin || !end) return "begin and end query parameters are required (ISO 8601)";
+  const beginMs = Date.parse(begin);
+  const endMs = Date.parse(end);
+  if (Number.isNaN(beginMs)) return `begin is not a valid ISO 8601 date: ${begin}`;
+  if (Number.isNaN(endMs)) return `end is not a valid ISO 8601 date: ${end}`;
+  if (beginMs > endMs) return "begin must be <= end";
+  return void 0;
+}
+
 // src/index.ts
 var SUPPORTED_SCHEMA_VERSION = 2;
 var doc = docClient();
@@ -7991,6 +8107,27 @@ async function handler(event) {
     const since = event.queryStringParameters?.since;
     const limit = Math.min(Number(event.queryStringParameters?.limit ?? "200") || 200, 200);
     return json(200, await pull(doc, since, limit));
+  }
+  if (route === "GET /v1/summary") {
+    const q = event.queryStringParameters ?? {};
+    const rangeError = validateRange(q.begin, q.end);
+    if (rangeError) return json(400, { error: rangeError });
+    const ledger = await refreshLedger(doc, SCOPE);
+    return json(200, computeSummary(ledger.records.values(), q.begin, q.end));
+  }
+  if (route === "GET /v1/observations/query") {
+    const q = event.queryStringParameters ?? {};
+    const rangeError = validateRange(q.begin, q.end);
+    if (rangeError) return json(400, { error: rangeError });
+    const limit = Math.min(Math.max(Number(q.limit ?? "50") || 50, 1), 200);
+    const ledger = await refreshLedger(doc, SCOPE);
+    return json(200, queryObservations(ledger.records.values(), {
+      begin: q.begin,
+      end: q.end,
+      taxonId: q.taxonId,
+      limit,
+      cursor: q.cursor
+    }));
   }
   return json(404, { error: `no route for ${route}` });
 }
