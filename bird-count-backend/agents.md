@@ -30,7 +30,7 @@ overview: [README.md](README.md). Sync protocol details:
 ## Layout
 
 ```
-api/            TypeScript Lambda (esbuild bundle; nodejs20.x)
+api/            TypeScript Lambda (esbuild bundle; nodejs24.x)
   src/handler   route dispatch + auth sub extraction
   src/validate  ajv against ../../bird-count-schema/schemas (bundled)
   src/sync      push (conditional puts) + pull (GSI delta)

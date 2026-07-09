@@ -1,4 +1,4 @@
-# Sync API: Lambda (TypeScript, nodejs20.x) behind an API Gateway HTTP API
+# Sync API: Lambda (TypeScript, nodejs24.x) behind an API Gateway HTTP API
 # with a Cognito JWT authorizer. Build the bundle first: `make api-build`.
 
 data "archive_file" "lambda_zip" {
@@ -44,7 +44,7 @@ resource "aws_iam_role_policy_attachment" "logs" {
 resource "aws_lambda_function" "api" {
   function_name    = "${var.project_name}-${var.environment}-api"
   role             = aws_iam_role.lambda.arn
-  runtime          = "nodejs20.x"
+  runtime          = "nodejs24.x"
   handler          = "index.handler"
   filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256

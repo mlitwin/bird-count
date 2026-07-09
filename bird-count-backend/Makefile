@@ -1,4 +1,4 @@
-.PHONY: help whoami aws tf init plan apply output api-test api-build web-config web-test web-deploy bootstrap
+.PHONY: help whoami aws tf init plan apply output validate api-test api-build web-config web-test web-deploy bootstrap
 
 # AWS credentials come from 1Password via `op run` (see aws.env).
 ENV ?= dev
@@ -26,6 +26,7 @@ help:
 	@echo "  plan        terraform plan for ENV"
 	@echo "  apply       terraform apply for ENV"
 	@echo "  output      terraform output for ENV"
+	@echo "  validate    terraform validate (offline, no creds needed)"
 	@echo "  web-config  Generate bird-count-web/js/config.js from terraform output"
 	@echo "              Set LOCAL=1 for redirectURI=localhost:8788 (local dev)"
 	@echo "  web-test    Run bird-count-web unit tests"
@@ -53,6 +54,11 @@ apply: api-build
 
 output:
 	cd $(TF_DIR) && $(TF_INIT) && $(OP_RUN_TF) terraform output
+
+# validate is offline: no AWS creds, no backend/state — no op run needed.
+# Requires an existing .terraform (any ENV's init will do).
+validate:
+	cd $(TF_DIR) && terraform validate
 
 api-test:
 	cd api && npm test
