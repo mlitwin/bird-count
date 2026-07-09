@@ -32,6 +32,7 @@
 		3129079F2309F20DB90CB40F /* PayloadV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65AC4B6E1A3FAEA5DB80436 /* PayloadV1.swift */; };
 		368ABDC28BEE74FCF03AB008 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1C2576ACDD95729987584994 /* Assets.xcassets */; };
 		377DB66A35FF3BE2021A6BF6 /* ObservationLocationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48123A84923C3A9D21804AB8 /* ObservationLocationTests.swift */; };
+		3A13AF2C9AF10B92FCF9FB2A /* query-response-missing-netcount.json in Resources */ = {isa = PBXBuildFile; fileRef = C39DF371A04996DCAAEBD109 /* query-response-missing-netcount.json */; };
 		3A8932982E5DF641FC5952F7 /* BottomAnchoredScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB17ACCB13A6473DE579EA31 /* BottomAnchoredScrollView.swift */; };
 		3C661CC0F44CD129B8242012 /* DateRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = DADA4B0CCFCE53D3C7F061C8 /* DateRange.swift */; };
 		3C66D2A1DE3E30832AB3D037 /* SuccessView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A086F3ABB41BDD07BB6A715 /* SuccessView.swift */; };
@@ -53,6 +54,7 @@
 		53EA81BC7187990974647CFA /* LocationDetailsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D13E17FBFFCB94E03FB1A7C0 /* LocationDetailsSection.swift */; };
 		53F58B3E96FF062E75BC2628 /* ObservationJSONImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB12E82781CB9796FB9325C9 /* ObservationJSONImportService.swift */; };
 		567634B647010BC4305F2F0F /* SyncMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDE72F123FBC088A5E9B517C /* SyncMessage.swift */; };
+		58181398D12B40A60E020D6F /* summary-response-nonpositive-count.json in Resources */ = {isa = PBXBuildFile; fileRef = FB43FA5A755AAC8A71FA0FAA /* summary-response-nonpositive-count.json */; };
 		58A234872A1C264AF986F97A /* observation-minimal.json in Resources */ = {isa = PBXBuildFile; fileRef = 3B5DA3FA2521AC164E0B9584 /* observation-minimal.json */; };
 		5B1AA8C7255E0927571DA061 /* DateRangeStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130ECD8284C28523033750CE /* DateRangeStoreTests.swift */; };
 		5B4143CF290C1B88ED929590 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3DA21F8B7A04FA9A2B01542 /* HomeView.swift */; };
@@ -85,6 +87,7 @@
 		96073CB1F7877A63206DE6D6 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 423444717CB358DADDC73CC9 /* LocationManager.swift */; };
 		9656961E98F5C03DCB987A3E /* payload-v2.json in Resources */ = {isa = PBXBuildFile; fileRef = F032D3C2D4E2397441075589 /* payload-v2.json */; };
 		9874D743B0DE7388BE4F74FC /* DateRangePreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0381ACBC1A7AFAE798219350 /* DateRangePreset.swift */; };
+		9D56D42D2B853DE83FD009FC /* query-response.json in Resources */ = {isa = PBXBuildFile; fileRef = D03D7D4C5177B7606CC628D6 /* query-response.json */; };
 		9E9F43D0989B3E27DE9B9A52 /* CloudSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB033B63B8BA21E798393B5 /* CloudSyncService.swift */; };
 		A03B00ADC899C2D68E2E3F85 /* BottomScrollTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7AF2C338E50AA952F632CB0 /* BottomScrollTests.swift */; };
 		A3C57170B910A837385A6158 /* OnScreenKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA105FDD346A2759183A3BEE /* OnScreenKeyboard.swift */; };
@@ -102,6 +105,7 @@
 		C0B46E941915D7EEBD03E60D /* ios_taxonomy_min.json in Resources */ = {isa = PBXBuildFile; fileRef = A9DD5F1234EFBE186A162092 /* ios_taxonomy_min.json */; };
 		C365B63760F17794D9B0605A /* BirdCountApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F3E57E196D1687022B624BA /* BirdCountApp.swift */; };
 		CE7394F1A98A37743A2D7BCC /* ScreenshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 105913EBE16FCCF176C74C83 /* ScreenshotTests.swift */; };
+		CF5C3962170A38B6B978CD42 /* summary-response.json in Resources */ = {isa = PBXBuildFile; fileRef = 98BAA75690AC3A811AE5348A /* summary-response.json */; };
 		D0E822208F5FD0C78C08D446 /* ObservationSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FAB184DAE5C28F995C062DD /* ObservationSyncTests.swift */; };
 		D2B12B9EB0D566EC7A54CB54 /* ObservationDetailsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DCA7C78C606696E72C940D9 /* ObservationDetailsSheet.swift */; };
 		D2DB77FE53F027BF086405D6 /* UserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D213DF575E83BEF3056068E /* UserView.swift */; };
@@ -113,6 +117,7 @@
 		E310FDDAB749F0B03381009D /* SpeciesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3EC2F235F0B25723256BE9 /* SpeciesListView.swift */; };
 		E3EBCC21F641D4BB140C618B /* ObservationStoreCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D9C8368572CC7976F0E8145 /* ObservationStoreCache.swift */; };
 		E7B00C8061B90FDD9F9041A3 /* CoreLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6177409CCCEA104A666AA11D /* CoreLogicTests.swift */; };
+		E9711F56AB62234A699E61EA /* summary-cases.json in Resources */ = {isa = PBXBuildFile; fileRef = BD5A6738564B6A2C3B8CC0FC /* summary-cases.json */; };
 		EA346BFABBA8BAE1E3688F4D /* DateRangePreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0381ACBC1A7AFAE798219350 /* DateRangePreset.swift */; };
 		EB662B69958E824A194DFA4E /* SyncViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24BA4296CFA48996B37D8ED6 /* SyncViewModel.swift */; };
 		F2293A0EF63557B9669C80BF /* observation-legacy-v1.json in Resources */ = {isa = PBXBuildFile; fileRef = E26A0D071F7ECDAC07D93236 /* observation-legacy-v1.json */; };
@@ -209,6 +214,7 @@
 		8BF2F46315BDAC6BEDF1AA1C /* ObservationLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationLocation.swift; sourceTree = "<group>"; };
 		905A41A6B9EC879EAD96F7CA /* BirdCountTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirdCountTests.swift; sourceTree = "<group>"; };
 		965E0236AD7C27566CDA7512 /* ObservationsSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationsSelectorView.swift; sourceTree = "<group>"; };
+		98BAA75690AC3A811AE5348A /* summary-response.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "summary-response.json"; sourceTree = "<group>"; };
 		9F3E57E196D1687022B624BA /* BirdCountApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirdCountApp.swift; sourceTree = "<group>"; };
 		A17B59B4533BFF5B8EDB3E0D /* SyncTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncTransport.swift; sourceTree = "<group>"; };
 		A4898AB1996CB6BF814F7A12 /* ExportFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportFormat.swift; sourceTree = "<group>"; };
@@ -228,7 +234,9 @@
 		BAE4346483A7FCF5504F471D /* ObservationStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationStoreTests.swift; sourceTree = "<group>"; };
 		BB13F58DAFB4B97D611643BD /* ObservationRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationRecord.swift; sourceTree = "<group>"; };
 		BD2899E7F1D67DBCAA82DA25 /* ExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSheet.swift; sourceTree = "<group>"; };
+		BD5A6738564B6A2C3B8CC0FC /* summary-cases.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "summary-cases.json"; sourceTree = "<group>"; };
 		C3968DA5FACF75ADF08B8AD8 /* bad-status.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "bad-status.json"; sourceTree = "<group>"; };
+		C39DF371A04996DCAAEBD109 /* query-response-missing-netcount.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "query-response-missing-netcount.json"; sourceTree = "<group>"; };
 		C3DA21F8B7A04FA9A2B01542 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		C578A45541EF125457E6EADC /* SyncViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncViewModelTests.swift; sourceTree = "<group>"; };
 		C59D3FE41A577497DC255958 /* SnapshotHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotHelper.swift; sourceTree = "<group>"; };
@@ -243,6 +251,7 @@
 		CDE72F123FBC088A5E9B517C /* SyncMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncMessage.swift; sourceTree = "<group>"; };
 		CEA5730A98F05F30514E60A1 /* CommonnessRangeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonnessRangeView.swift; sourceTree = "<group>"; };
 		CED96AA768B26BFF2333C6D5 /* LeftDrawerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftDrawerView.swift; sourceTree = "<group>"; };
+		D03D7D4C5177B7606CC628D6 /* query-response.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "query-response.json"; sourceTree = "<group>"; };
 		D126F22854D45BBBEFC25C7F /* Strings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Strings.swift; sourceTree = "<group>"; };
 		D13E17FBFFCB94E03FB1A7C0 /* LocationDetailsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationDetailsSection.swift; sourceTree = "<group>"; };
 		D33D33A059C7E1BBC989BE48 /* ImportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportSheet.swift; sourceTree = "<group>"; };
@@ -260,6 +269,7 @@
 		F11C0F2EB5F5DDCE1C6106B1 /* ObservationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationStore.swift; sourceTree = "<group>"; };
 		F6A0C5EC7F393B0C8A4C4510 /* SyncSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncSheet.swift; sourceTree = "<group>"; };
 		F73A0EC9E9DB138EA0784C2F /* SpeciesRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeciesRow.swift; sourceTree = "<group>"; };
+		FB43FA5A755AAC8A71FA0FAA /* summary-response-nonpositive-count.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "summary-response-nonpositive-count.json"; sourceTree = "<group>"; };
 		FBCE0B9078509DFFC117339F /* ObservationRecordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationRecordView.swift; sourceTree = "<group>"; };
 		FD5CA0E3C376B95BE1EA2C72 /* CloudConfigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudConfigTests.swift; sourceTree = "<group>"; };
 		FE337F05758535174D947692 /* ObservationExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationExportService.swift; sourceTree = "<group>"; };
@@ -325,6 +335,14 @@
 			);
 			sourceTree = "<group>";
 		};
+		359D7F4373B150F8519A2E4B /* derived */ = {
+			isa = PBXGroup;
+			children = (
+				BD5A6738564B6A2C3B8CC0FC /* summary-cases.json */,
+			);
+			path = derived;
+			sourceTree = "<group>";
+		};
 		506504D8E4EB265F3C61EE8F /* Components */ = {
 			isa = PBXGroup;
 			children = (
@@ -372,6 +390,8 @@
 				42E49A2611A3EB2D3989306D /* bad-uuid.json */,
 				1E3497550FCE424B2FB02242 /* extra-field.json */,
 				ADC77B18841A15AD55E15881 /* missing-id.json */,
+				C39DF371A04996DCAAEBD109 /* query-response-missing-netcount.json */,
+				FB43FA5A755AAC8A71FA0FAA /* summary-response-nonpositive-count.json */,
 				73E8B49A3AB94DDFB8629CFB /* sync-request-missing-clientid.json */,
 			);
 			path = invalid;
@@ -414,6 +434,7 @@
 		8EEAAF4B833F683990365D11 /* fixtures */ = {
 			isa = PBXGroup;
 			children = (
+				359D7F4373B150F8519A2E4B /* derived */,
 				6815DCFD9F8C165C7C597AC2 /* invalid */,
 				B4AAF3853C2BD8BD7EBCFC36 /* valid */,
 			);
@@ -473,6 +494,8 @@
 				E26A0D071F7ECDAC07D93236 /* observation-legacy-v1.json */,
 				3B5DA3FA2521AC164E0B9584 /* observation-minimal.json */,
 				F032D3C2D4E2397441075589 /* payload-v2.json */,
+				D03D7D4C5177B7606CC628D6 /* query-response.json */,
+				98BAA75690AC3A811AE5348A /* summary-response.json */,
 				E3F1B6AAB1C30F8EBD94700D /* sync-request.json */,
 				717853D943BB556FBFB3885D /* sync-response.json */,
 			);
@@ -753,6 +776,11 @@
 				F2293A0EF63557B9669C80BF /* observation-legacy-v1.json in Resources */,
 				58A234872A1C264AF986F97A /* observation-minimal.json in Resources */,
 				9656961E98F5C03DCB987A3E /* payload-v2.json in Resources */,
+				3A13AF2C9AF10B92FCF9FB2A /* query-response-missing-netcount.json in Resources */,
+				9D56D42D2B853DE83FD009FC /* query-response.json in Resources */,
+				E9711F56AB62234A699E61EA /* summary-cases.json in Resources */,
+				58181398D12B40A60E020D6F /* summary-response-nonpositive-count.json in Resources */,
+				CF5C3962170A38B6B978CD42 /* summary-response.json in Resources */,
 				D7F87AE22D1A334C924430C5 /* sync-request-missing-clientid.json in Resources */,
 				01AC7F32970E3D8A9AA07947 /* sync-request.json in Resources */,
 				266C5C735539D12FBDCA74B1 /* sync-response.json in Resources */,
@@ -1257,11 +1285,11 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 58;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 58;
+				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1281,11 +1309,11 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 58;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 58;
+				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1350,11 +1378,11 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 58;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 58;
+				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (

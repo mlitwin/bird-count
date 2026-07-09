@@ -1,0 +1,9 @@
+{
+  "begin": "2026-07-01T00:00:00Z",
+  "end": "2026-07-01T23:59:59Z",
+  "totalIndividuals": 0,
+  "totalSpecies": 1,
+  "species": [
+    { "taxonId": "norcar", "count": 0, "lastObservedAt": "2026-07-01T14:10:00Z" }
+  ]
+}

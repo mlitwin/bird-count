@@ -21,6 +21,8 @@ function schemaFor(name) {
   if (name.startsWith("observation")) return BASE + "observation.schema.json";
   if (name.startsWith("sync-request")) return BASE + "sync.schema.json#/$defs/SyncRequest";
   if (name.startsWith("sync-response")) return BASE + "sync.schema.json#/$defs/SyncResponse";
+  if (name.startsWith("summary-response")) return BASE + "query.schema.json#/$defs/SummaryResponse";
+  if (name.startsWith("query-response")) return BASE + "query.schema.json#/$defs/ObservationsQueryResponse";
   if (name.startsWith("payload")) return BASE + "payload.schema.json";
   if (name.startsWith("location")) return BASE + "location.schema.json";
   // unprefixed invalid fixtures (missing-id, bad-status, …) are observation shapes
@@ -39,6 +41,19 @@ for (const [dir, expectValid] of [["valid", true], ["invalid", false]]) {
       console.error(`FAIL  ${dir}/${name} — expected ${expectValid ? "valid" : "invalid"}, got ${ok ? "valid" : "invalid"}`);
       if (!ok) console.error(ajv.errorsText(validate.errors, { separator: "\n        " }));
     }
+  }
+}
+
+// Golden derived cases (expected aggregation outputs, consumed by the
+// backend and iOS semantics tests) must themselves be schema-valid.
+const summaryValidate = ajv.getSchema(BASE + "query.schema.json#/$defs/SummaryResponse");
+for (const c of load("fixtures/derived/summary-cases.json")) {
+  if (summaryValidate(c.response)) {
+    console.log(`  ok  derived/summary-cases.json#${c.name}`);
+  } else {
+    failures++;
+    console.error(`FAIL  derived/summary-cases.json#${c.name}`);
+    console.error(ajv.errorsText(summaryValidate.errors, { separator: "\n        " }));
   }
 }
 

@@ -1,0 +1,40 @@
+[
+  {
+    "name": "july-day",
+    "comment": "ROOT (observation-minimal) is in range and carries its subtree: norcar cancels (+3-3), amecro survives. LEGACY (2025) is out of range.",
+    "response": {
+      "begin": "2026-07-01T00:00:00Z",
+      "end": "2026-07-01T23:59:59Z",
+      "totalIndividuals": 1,
+      "totalSpecies": 1,
+      "species": [
+        { "taxonId": "amecro", "count": 1, "lastObservedAt": "2026-07-01T14:00:00Z" }
+      ]
+    }
+  },
+  {
+    "name": "all-time",
+    "comment": "Both roots in range. norcar still cancels; sorted count desc then taxonId asc.",
+    "response": {
+      "begin": "1970-01-01T00:00:00Z",
+      "end": "2026-12-31T23:59:59Z",
+      "totalIndividuals": 3,
+      "totalSpecies": 2,
+      "species": [
+        { "taxonId": "sonspa", "count": 2, "lastObservedAt": "2025-11-12T09:31:00Z" },
+        { "taxonId": "amecro", "count": 1, "lastObservedAt": "2026-07-01T14:00:00Z" }
+      ]
+    }
+  },
+  {
+    "name": "subtree-only-window",
+    "comment": "Window covers only the child/adjustment intervals (14:05-14:30), not ROOT's (14:00). The range filter applies to TOP-LEVEL records only, so nothing qualifies — an implementation that filters all records would wrongly return norcar here.",
+    "response": {
+      "begin": "2026-07-01T14:05:00Z",
+      "end": "2026-07-01T14:30:00Z",
+      "totalIndividuals": 0,
+      "totalSpecies": 0,
+      "species": []
+    }
+  }
+]

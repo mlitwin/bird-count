@@ -26,7 +26,7 @@ const opts = {
 };
 
 const parts = [];
-for (const file of ["observation.schema.json", "sync.schema.json", "payload.schema.json"]) {
+for (const file of ["observation.schema.json", "sync.schema.json", "query.schema.json", "payload.schema.json"]) {
   parts.push(await compileFromFile(join(root, "schemas", file), opts));
 }
 

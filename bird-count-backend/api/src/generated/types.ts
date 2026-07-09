@@ -74,7 +74,45 @@ export interface SyncResponse {
 }
 
 /**
- * P2P sync payload (Bonjour/TCP transport). v2 = observation items may carry updatedAt; receivers accept v1 items and backfill updatedAt from end.
+ * GET /v1/summary and GET /v1/observations/query response shapes (server-side query layer for the web viewer)
+ */
+export type QueryAPI = SummaryResponse | ObservationsQueryResponse;
+
+/**
+ * Ledger aggregation over [begin, end]. The range filter applies to top-level records only (interval overlap: record.end >= begin && record.begin <= end); an in-range root contributes its entire recursive subtree regardless of child dates; orphans (parentId present, parent absent) are excluded; species with non-positive totals are dropped. species is sorted by count desc, then taxonId asc.
+ */
+export interface SummaryResponse {
+  begin: string;
+  end: string;
+  totalIndividuals: number;
+  totalSpecies: number;
+  species: SummarySpeciesRow[];
+}
+export interface SummarySpeciesRow {
+  taxonId: string;
+  count: number;
+  /**
+   * Max record `end` among this taxon's contributing records
+   */
+  lastObservedAt: string;
+}
+/**
+ * Paged top-level records overlapping [begin, end], newest `begin` first. netCount is the record's recursive subtree total (adjustments applied).
+ */
+export interface ObservationsQueryResponse {
+  items: QueriedObservation[];
+  /**
+   * Opaque continuation token; empty when hasMore is false
+   */
+  cursor: string;
+  hasMore: boolean;
+}
+export interface QueriedObservation {
+  record: ObservationRecordDTO;
+  netCount: number;
+}
+/**
+ * Wire shape of one observation ledger entry (mirrors ObservationRecordDTO.swift). Records are immutable after creation except the location/status backfill on the originating device. Adjustment children carry a (possibly negative) count and a parentId; the ledger total is the recursive sum.
  */
 export interface PayloadV2 {
   schemaVersion: number;

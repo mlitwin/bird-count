@@ -32,7 +32,7 @@ struct SchemaConformanceTests {
             .deletingLastPathComponent()            // bird-count-ios/
             .deletingLastPathComponent()            // repo root
             .appendingPathComponent("bird-count-schema/fixtures")
-        for subdir in ["valid", "invalid"] {
+        for subdir in ["valid", "invalid", "derived"] {
             let url = fixturesDir.appendingPathComponent("\(subdir)/\(name).json")
             if FileManager.default.fileExists(atPath: url.path) {
                 return try Data(contentsOf: url)
@@ -120,6 +120,56 @@ struct SchemaConformanceTests {
         }
         let response = try decoder.decode(Response.self, from: data)
         #expect(response.changes.contains { $0.count < 0 })
+    }
+
+    // MARK: - Golden summary semantics (fixtures/derived/summary-cases.json)
+
+    private struct SummaryCase: Decodable {
+        struct Response: Decodable {
+            struct Row: Decodable { let taxonId: String; let count: Int }
+            let begin: Date
+            let end: Date
+            let totalIndividuals: Int
+            let totalSpecies: Int
+            let species: [Row]
+        }
+        let name: String
+        let response: Response
+    }
+
+    /// The server's /v1/summary implements the same ledger aggregation as
+    /// ObservationStoreCache.countsInRange. Both sides check the golden cases,
+    /// so iOS <-> server semantics can't drift silently.
+    @Test
+    func goldenSummaryCasesMatchLocalAggregation() throws {
+        // Rebuild the fixture tree from the flat DTOs. Fixtures are ordered
+        // parents-before-children, so a reversed pass builds bottom-up.
+        let dtos = try Self.validObservationFixtures.map {
+            try decoder.decode(ObservationRecordDTO.self, from: try fixtureData($0))
+        }
+        var built: [UUID: ObservationRecord] = [:]
+        var childrenOf: [UUID: [ObservationRecord]] = [:]
+        for dto in dtos.reversed() {
+            var record = ObservationRecord(data: dto)
+            record.children = childrenOf[dto.id] ?? []
+            built[dto.id] = record
+            if let parentId = dto.parentId {
+                childrenOf[parentId, default: []].append(record)
+            }
+        }
+        let roots = dtos.filter { $0.parentId == nil }.compactMap { built[$0.id] }
+
+        let cases = try decoder.decode([SummaryCase].self, from: try fixtureData("summary-cases"))
+        #expect(!cases.isEmpty)
+        for c in cases {
+            let range = DateRange(begin: c.response.begin, end: c.response.end)
+            let counts = ObservationStoreCache.countsInRange(range, from: roots)
+                .filter { $0.value > 0 } // summary drops non-positive totals
+            let expected = Dictionary(uniqueKeysWithValues: c.response.species.map { ($0.taxonId, $0.count) })
+            #expect(counts == expected, "case \(c.name): species counts")
+            #expect(counts.values.reduce(0, +) == c.response.totalIndividuals, "case \(c.name): totalIndividuals")
+            #expect(counts.count == c.response.totalSpecies, "case \(c.name): totalSpecies")
+        }
     }
 
     private static func jsonEqual(_ a: Any, _ b: Any) -> Bool {

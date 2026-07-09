@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://birdcount.dev/schemas/query.schema.json",
+  "title": "QueryAPI",
+  "description": "GET /v1/summary and GET /v1/observations/query response shapes (server-side query layer for the web viewer)",
+  "oneOf": [
+    { "$ref": "#/$defs/SummaryResponse" },
+    { "$ref": "#/$defs/ObservationsQueryResponse" }
+  ],
+  "$defs": {
+    "SummaryResponse": {
+      "type": "object",
+      "description": "Ledger aggregation over [begin, end]. The range filter applies to top-level records only (interval overlap: record.end >= begin && record.begin <= end); an in-range root contributes its entire recursive subtree regardless of child dates; orphans (parentId present, parent absent) are excluded; species with non-positive totals are dropped. species is sorted by count desc, then taxonId asc.",
+      "properties": {
+        "begin": { "type": "string", "format": "date-time" },
+        "end": { "type": "string", "format": "date-time" },
+        "totalIndividuals": { "type": "integer", "minimum": 0 },
+        "totalSpecies": { "type": "integer", "minimum": 0 },
+        "species": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/SummarySpeciesRow" }
+        }
+      },
+      "required": ["begin", "end", "totalIndividuals", "totalSpecies", "species"],
+      "additionalProperties": false
+    },
+    "SummarySpeciesRow": {
+      "type": "object",
+      "properties": {
+        "taxonId": { "type": "string", "minLength": 1 },
+        "count": { "type": "integer", "minimum": 1 },
+        "lastObservedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Max record `end` among this taxon's contributing records"
+        }
+      },
+      "required": ["taxonId", "count", "lastObservedAt"],
+      "additionalProperties": false
+    },
+    "ObservationsQueryResponse": {
+      "type": "object",
+      "description": "Paged top-level records overlapping [begin, end], newest `begin` first. netCount is the record's recursive subtree total (adjustments applied).",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/QueriedObservation" }
+        },
+        "cursor": {
+          "type": "string",
+          "description": "Opaque continuation token; empty when hasMore is false"
+        },
+        "hasMore": { "type": "boolean" }
+      },
+      "required": ["items", "cursor", "hasMore"],
+      "additionalProperties": false
+    },
+    "QueriedObservation": {
+      "type": "object",
+      "properties": {
+        "record": { "$ref": "observation.schema.json" },
+        "netCount": { "type": "integer" }
+      },
+      "required": ["record", "netCount"],
+      "additionalProperties": false
+    }
+  }
+}
