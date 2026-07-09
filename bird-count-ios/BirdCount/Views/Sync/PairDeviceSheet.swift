@@ -39,7 +39,7 @@ struct PairDeviceSheet: View {
         }
         .onAppear {
             autoSync.setManualSyncActive(true)  // one advertising transport per device
-            vm.start(settingsStore: settingsStore)
+            vm.start(settingsStore: settingsStore, receiveInto: observations)
         }
         .onDisappear {
             vm.stop()
@@ -118,14 +118,17 @@ final class PairingViewModel {
     private var retryTask: Task<Void, Never>?
     private var generation = 0
     private var running = false
+    private var store: ObservationStore?
+    private var respondedThisSession = false
 
     init(transport: SyncTransport = NetworkSyncTransport()) {
         self.transport = transport
     }
 
-    func start(settingsStore: SettingsStore) {
+    func start(settingsStore: SettingsStore, receiveInto store: ObservationStore) {
         guard !running else { return }
         running = true
+        self.store = store
         phase = .searching
         beginSession(hello: SyncHelloMessage(
             displayName: SyncViewModel.resolveDisplayName(from: settingsStore),
@@ -145,12 +148,14 @@ final class PairingViewModel {
 
     private func beginSession(hello: SyncHelloMessage) {
         generation += 1
+        respondedThisSession = false
         track(generation: generation)
         transport.startDiscovery(localHello: hello)
 
         func track(generation: Int) {
             withObservationTracking {
                 _ = transport.state
+                _ = transport.peerInitiatedSync
             } onChange: {
                 Task { @MainActor [weak self] in
                     guard let self, self.running, generation == self.generation else { return }
@@ -165,6 +170,17 @@ final class PairingViewModel {
         switch transport.state {
         case .readyToSync(let info):
             phase = info.peerVerified ? .found(info) : .unsupported
+            // The other phone's auto-sync may start an exchange with this
+            // sheet (it is paired with us and sees our advertisement). Act as
+            // a receiver so its payload is merged — otherwise it would clear
+            // its outbound queue on completion while we dropped the data.
+            if transport.peerInitiatedSync, info.peerVerified, !respondedThisSession, let store {
+                respondedThisSession = true
+                Task { [weak self] in
+                    guard let self else { return }
+                    await self.transport.initiateSync(payload: nil, receiveInto: store)
+                }
+            }
 
         case .error, .incompatible, .completed:
             // Likely the peer's auto-sync service dropping an unpaired

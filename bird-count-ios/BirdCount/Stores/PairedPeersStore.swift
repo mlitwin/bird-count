@@ -122,9 +122,13 @@ public final class PairedPeersStore {
     /// edited while the transfer was in flight keeps its queue slot so the
     /// newer version goes out next time.
     public func clearPending(for peerId: UUID, sent: [UUID: Date], store: ObservationStore) {
-        guard let index = peers.firstIndex(where: { $0.id == peerId }) else { return }
+        guard let index = peers.firstIndex(where: { $0.id == peerId }), !sent.isEmpty else { return }
+        // One snapshot pass instead of a per-id tree walk: after a first
+        // pairing sync `sent` is the whole ledger, and per-id lookups made
+        // this quadratic on the main thread.
+        let current = store.updatedAtById()
         let deliverable = sent.filter { id, sentVersion in
-            store.updatedAt(for: id) == sentVersion
+            current[id] == sentVersion
         }
         peers[index].pendingIds.subtract(deliverable.keys)
         persist()

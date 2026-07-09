@@ -41,8 +41,9 @@ final class PeerAutoSyncService {
     private var sessionGeneration = 0
     private var restartTask: Task<Void, Never>?
     private var refreshTask: Task<Void, Never>?
-    // nonisolated(unsafe): only written once in init and read in deinit.
-    nonisolated(unsafe) private var changeObserver: NSObjectProtocol?
+    // Untracked and nonisolated(unsafe): written once in init, read in
+    // deinit; not UI state.
+    @ObservationIgnored nonisolated(unsafe) private var changeObserver: NSObjectProtocol?
     /// Send snapshot of the in-flight session: peer + exact versions sent,
     /// so completion clears only what was actually delivered unchanged.
     private var activeSession: (peerID: UUID, sentVersions: [UUID: Date])?

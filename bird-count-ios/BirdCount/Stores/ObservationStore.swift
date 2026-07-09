@@ -404,8 +404,22 @@ import Observation
     /// Current updatedAt for a record (top-level or child), or nil if absent.
     /// Used to detect "edited while a sync was in flight": a record whose
     /// updatedAt no longer matches the pushed copy must stay queued.
+    /// For bulk checks use updatedAtById() — this walks the tree per call.
     public func updatedAt(for id: UUID) -> Date? {
         findRecord(by: id)?.updatedAt
+    }
+
+    /// One-pass updatedAt snapshot of every record (top-level and children).
+    public func updatedAtById() -> [UUID: Date] {
+        var result: [UUID: Date] = [:]
+        func visit(_ records: [ObservationRecord]) {
+            for record in records {
+                result[record.id] = record.updatedAt
+                visit(record.children)
+            }
+        }
+        visit(observations)
+        return result
     }
 
     /// First-sync bootstrap: everything this device has needs to upload.
@@ -451,38 +465,84 @@ import Observation
         pending.append(contentsOf: pendingOrphanDTOs.filter { !incomingIds.contains($0.id) })
         pendingOrphanDTOs.removeAll()
 
+        // Merge into a LOCAL tree and write back once. Both halves matter for
+        // scale — paired-device sync merges entire ledgers at once:
+        // - the id indices make each DTO O(depth) instead of an O(store)
+        //   tree walk;
+        // - the local copy makes mutations truly in-place. Mutating the
+        //   @Observable `observations` property directly goes through its
+        //   get/set accessors, which copy the whole top-level array per
+        //   mutation — quadratic again, and what froze devices on pairing.
+        var working = observations
+        var newDirty: Set<UUID> = []
+        var touchedTaxa: [String] = []
+
+        var pathById: [UUID: [Int]] = [:]
+        var updatedAtById: [UUID: Date] = [:]
+        func indexTree(_ records: [ObservationRecord], prefix: [Int]) {
+            for (i, record) in records.enumerated() {
+                let path = prefix + [i]
+                pathById[record.id] = path
+                updatedAtById[record.id] = record.updatedAt
+                indexTree(record.children, prefix: path)
+            }
+        }
+        indexTree(working, prefix: [])
+
         var madeProgress = true
         while madeProgress && !pending.isEmpty {
             madeProgress = false
             var held: [ObservationRecordDTO] = []
             for dto in pending {
-                if findRecord(by: dto.id) != nil {
-                    if updateExisting(with: dto) {
+                if let existingUpdatedAt = updatedAtById[dto.id] {
+                    // Whole-record LWW: replace stored data when the incoming
+                    // copy is newer. Children are untouched (separate entries).
+                    if dto.updatedAt > existingUpdatedAt, let path = pathById[dto.id] {
+                        mutateRecord(at: path, in: &working) { $0.data = dto }
+                        updatedAtById[dto.id] = dto.updatedAt
                         stats.updated += 1
                         changedIds.append(dto.id)
-                        if markDirty { dirtyIds.insert(dto.id) }
+                        newDirty.insert(dto.id)
                     } else {
                         stats.duplicatesSkipped += 1
                     }
                     madeProgress = true
                 } else if dto.parentId == nil {
-                    observations.append(ObservationRecord(data: dto))
+                    working.append(ObservationRecord(data: dto))
+                    pathById[dto.id] = [working.count - 1]
+                    updatedAtById[dto.id] = dto.updatedAt
                     stats.imported += 1
                     changedIds.append(dto.id)
-                    if markDirty { dirtyIds.insert(dto.id) }
-                    touchRecent(dto.taxonId)
+                    newDirty.insert(dto.id)
+                    touchedTaxa.append(dto.taxonId)
                     madeProgress = true
-                } else if attachChild(dto) {
+                } else if let parentId = dto.parentId, let parentPath = pathById[parentId] {
+                    var childPath = parentPath
+                    mutateRecord(at: parentPath, in: &working) { parent in
+                        parent.children.append(ObservationRecord(data: dto))
+                        childPath = parentPath + [parent.children.count - 1]
+                    }
+                    pathById[dto.id] = childPath
+                    updatedAtById[dto.id] = dto.updatedAt
                     stats.imported += 1
                     changedIds.append(dto.id)
-                    if markDirty { dirtyIds.insert(dto.id) }
-                    touchRecent(dto.taxonId)
+                    newDirty.insert(dto.id)
+                    touchedTaxa.append(dto.taxonId)
                     madeProgress = true
                 } else {
                     held.append(dto)
                 }
             }
             pending = held
+        }
+
+        observations = working
+        if markDirty && !newDirty.isEmpty {
+            dirtyIds.formUnion(newDirty)
+        }
+        // One touch per distinct taxon (touchRecent sorts per call).
+        for taxonId in Set(touchedTaxa) {
+            touchRecent(taxonId)
         }
 
         pendingOrphanDTOs = pending
@@ -503,45 +563,15 @@ import Observation
         return stats
     }
 
-    /// Whole-record LWW: replace stored data when the incoming copy is newer.
-    /// Children are untouched (they are separate ledger entries).
-    private func updateExisting(with dto: ObservationRecordDTO) -> Bool {
-        var didUpdate = false
-        func update(in array: inout [ObservationRecord]) {
-            for idx in array.indices {
-                if array[idx].id == dto.id {
-                    if dto.updatedAt > array[idx].data.updatedAt {
-                        array[idx].data = dto
-                        didUpdate = true
-                    }
-                    return
-                }
-                update(in: &array[idx].children)
-                if didUpdate { return }
-            }
+    /// Apply a mutation to the record at an index path in the tree (as built
+    /// by mergeDTOs' indexTree). No-op when the path is invalid.
+    private func mutateRecord(at path: [Int], in array: inout [ObservationRecord], _ body: (inout ObservationRecord) -> Void) {
+        guard let first = path.first, array.indices.contains(first) else { return }
+        if path.count == 1 {
+            body(&array[first])
+        } else {
+            mutateRecord(at: Array(path.dropFirst()), in: &array[first].children, body)
         }
-        update(in: &observations)
-        return didUpdate
-    }
-
-    /// Attach a DTO as a child of its (already present) parent, preserving
-    /// its identity. Returns false when the parent is not in the store.
-    private func attachChild(_ dto: ObservationRecordDTO) -> Bool {
-        guard let parentId = dto.parentId else { return false }
-        var didAttach = false
-        func attach(into array: inout [ObservationRecord]) {
-            for idx in array.indices {
-                if array[idx].id == parentId {
-                    array[idx].children.append(ObservationRecord(data: dto))
-                    didAttach = true
-                    return
-                }
-                attach(into: &array[idx].children)
-                if didAttach { return }
-            }
-        }
-        attach(into: &observations)
-        return didAttach
     }
 
     private func persistCloudState() {
