@@ -1,32 +1,25 @@
-// api.js — paginated fetch of all observations from /v1/observations.
+// api.js — server-side query calls (aggregation happens in the Lambda).
+
+async function get(token, apiBaseURL, path, params) {
+  const base = apiBaseURL.replace(/\/$/, '');
+  const url = new URL(`${base}${path}`);
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined) url.searchParams.set(k, v);
+  }
+  const res = await fetch(url.toString(), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
 
 /**
- * Fetch every observation DTO from the API using cursor-based pagination.
+ * Fetch the range summary from GET /v1/summary.
  * @param {string} token - Bearer access token
  * @param {string} apiBaseURL - e.g. "https://xxx.execute-api.us-east-1.amazonaws.com/v1"
- * @returns {Promise<Object[]>} flat array of ObservationRecordDTOs
+ * @param {{ begin: string, end: string }} range - ISO 8601
+ * @returns {Promise<Object>} SummaryResponse (see bird-count-schema query.schema.json)
  */
-export async function fetchAllObservations(token, apiBaseURL) {
-  const base = apiBaseURL.replace(/\/$/, '');
-  const dtos = [];
-  let cursor = '0';
-
-  while (true) {
-    const url = new URL(`${base}/observations`);
-    url.searchParams.set('since', cursor);
-    url.searchParams.set('limit', '200');
-
-    const res = await fetch(url.toString(), {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
-
-    const body = await res.json();
-    dtos.push(...(body.changes ?? []));
-
-    if (!body.hasMore) break;
-    cursor = body.cursor;
-  }
-
-  return dtos;
+export function fetchSummary(token, apiBaseURL, range) {
+  return get(token, apiBaseURL, '/summary', { begin: range.begin, end: range.end });
 }

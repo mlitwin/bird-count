@@ -9,9 +9,13 @@ Single source of truth for the observation wire format, shared by the backend
   an append-only ledger: no deletes, no tombstones — an adjustment child with a
   negative count zeroes out its parent.
 - `fixtures/valid/`, `fixtures/invalid/` — golden fixtures. The backend's ajv
-  validation, the iOS `SchemaConformanceTests`, and the web viewer's ledger
-  tests all consume these, so schema drift on any side fails that side's
-  tests in the same commit.
+  validation, the iOS `SchemaConformanceTests`, and the web viewer's
+  response-shape tests all consume these, so schema drift on any side fails
+  that side's tests in the same commit.
+- `fixtures/derived/summary-cases.json` — golden expected `/v1/summary`
+  aggregations over the valid fixture graph. The backend query tests and the
+  iOS conformance tests both check these, locking ledger semantics between
+  the server and the offline-first iOS implementation.
 - `VERSION` — schema version stamp; matches the wire `schemaVersion` field.
 
 ## Usage

@@ -6,8 +6,8 @@ Monorepo for the Bird Count app and its cloud backend.
 |---|---|---|
 | `bird-count-ios` | **Active / live app** | Current iOS app (SwiftUI, offline-first, P2P + cloud sync). The main product codebase. |
 | `bird-count-backend` | **Active** | Cloud sync backend: Cognito + Sign in with Apple, API Gateway + Lambda, DynamoDB ledger; Terraform, deployed via GitHub Actions (main → dev, vX.Y.Z tag → prod). |
-| `bird-count-schema` | **Active** | Shared wire-format JSON Schemas + golden fixtures; single source of truth consumed by the backend (codegen + ajv), iOS (conformance tests), and the web viewer (ledger tests). |
-| `bird-count-web` | **Active** | Static web summary viewer (vanilla ES modules, no build step): Sign in with Apple via Cognito PKCE, reads `/v1/observations`, mirrors the iOS Summary screen. Served from S3 + CloudFront. |
+| `bird-count-schema` | **Active** | Shared wire-format JSON Schemas + golden fixtures (incl. derived summary cases that lock ledger semantics); single source of truth consumed by the backend (codegen + ajv + golden tests), iOS (conformance + golden tests), and the web viewer (response-shape tests). |
+| `bird-count-web` | **Active** | Static web summary viewer (vanilla ES modules, no build step): Sign in with Apple via Cognito PKCE, queries `/v1/summary` per date range (aggregation is server-side), mirrors the iOS Summary screen. Served from S3 + CloudFront. |
 
 The legacy React-era project (`bird-count/`) was pruned after the new backend shipped; its full history remains in this repo's git history (imported via subtree) and at the archived [`bird-count-legacy`](https://github.com/mlitwin/bird-count-legacy) repo.
 

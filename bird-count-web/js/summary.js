@@ -1,20 +1,19 @@
-// summary.js — aggregate ledger counts into a display summary + CSV/text export
-
-import { countsInRange } from './ledger.js';
+// summary.js — decorate the server summary with taxonomy names + CSV/text export.
+// Aggregation itself happens server-side (GET /v1/summary); the semantics are
+// locked by bird-count-schema/fixtures/derived/summary-cases.json.
 
 /**
- * Compute a display summary for the given DTOs and date range.
+ * Attach display names to a SummaryResponse.
  *
- * @param {Object[]} dtos - flat observation DTOs
- * @param {{ begin: string, end: string }} range
+ * @param {{ totalIndividuals: number, totalSpecies: number, species: Object[] }} response
  * @param {Map<string, { commonName: string, scientificName: string }>} taxonomy
  * @returns {{ totalIndividuals: number, totalSpecies: number, species: Object[] }}
  */
-export function computeSummary(dtos, range, taxonomy) {
-  const counts = countsInRange(dtos, range);
-
-  const species = [...counts.entries()]
-    .map(([taxonId, count]) => {
+export function decorateSummary(response, taxonomy) {
+  return {
+    totalIndividuals: response.totalIndividuals,
+    totalSpecies: response.totalSpecies,
+    species: response.species.map(({ taxonId, count }) => {
       const taxon = taxonomy.get(taxonId);
       return {
         taxonId,
@@ -22,19 +21,13 @@ export function computeSummary(dtos, range, taxonomy) {
         scientificName: taxon?.scientificName ?? '',
         count,
       };
-    })
-    .sort((a, b) => b.count - a.count || a.commonName.localeCompare(b.commonName));
-
-  return {
-    totalIndividuals: species.reduce((s, r) => s + r.count, 0),
-    totalSpecies: species.length,
-    species,
+    }),
   };
 }
 
 /**
  * Export summary as CSV (Common Name, Scientific Name, Count).
- * @param {ReturnType<computeSummary>} summary
+ * @param {ReturnType<decorateSummary>} summary
  * @returns {string}
  */
 export function exportCSV(summary) {
@@ -49,7 +42,7 @@ export function exportCSV(summary) {
 
 /**
  * Export summary as plain text.
- * @param {ReturnType<computeSummary>} summary
+ * @param {ReturnType<decorateSummary>} summary
  * @returns {string}
  */
 export function exportText(summary) {

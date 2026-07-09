@@ -34,6 +34,8 @@ api/            TypeScript Lambda (esbuild bundle; nodejs24.x)
   src/handler   route dispatch + auth sub extraction
   src/validate  ajv against ../../bird-count-schema/schemas (bundled)
   src/sync      push (conditional puts) + pull (GSI delta)
+  src/ledger    materialized in-memory ledger + /v1/summary + /v1/observations/query
+                (semantics locked by bird-count-schema fixtures/derived/summary-cases.json)
   src/dynamo    DocumentClient wrappers
   test/         vitest; sync tests run DynamoDB Local in docker
 terraform/

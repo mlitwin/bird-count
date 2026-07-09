@@ -1,13 +1,13 @@
-// app.js — wiring: auth, data fetch, range presets, render loop
+// app.js — wiring: auth, per-range summary fetch, render loop
 
 import { config } from './config.js';
 import { login, logout, isLoggedIn, handleCallback, accessToken } from './auth.js';
-import { fetchAllObservations } from './api.js';
-import { computeSummary, exportCSV, exportText } from './summary.js';
+import { fetchSummary } from './api.js';
+import { decorateSummary, exportCSV, exportText } from './summary.js';
 
-let allDTOs = [];
 let taxonomy = new Map();
 let lastSummary = null;
+let requestSeq = 0; // drop out-of-order responses on rapid range changes
 
 // -- Range presets --
 
@@ -53,10 +53,7 @@ function escapeHtml(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function renderSummary(range) {
-  const summary = computeSummary(allDTOs, range, taxonomy);
-  lastSummary = summary;
-
+function renderSummary(summary) {
   $('total-individuals').textContent = summary.totalIndividuals;
   $('total-species').textContent = summary.totalSpecies;
 
@@ -72,6 +69,29 @@ function renderSummary(range) {
   }
 
   $('empty-msg').hidden = summary.species.length > 0;
+}
+
+// -- Data --
+
+async function loadSummary(range) {
+  const seq = ++requestSeq;
+  $('loading').hidden = false;
+  $('error-msg').hidden = true;
+  try {
+    const token = await accessToken();
+    if (!token) { logout(); return; }
+    const response = await fetchSummary(token, config.apiBaseURL, range);
+    if (seq !== requestSeq) return; // a newer range fetch superseded this one
+    lastSummary = decorateSummary(response, taxonomy);
+    renderSummary(lastSummary);
+  } catch (e) {
+    if (seq !== requestSeq) return;
+    console.error('Summary fetch error', e);
+    $('error-msg').textContent = 'Failed to load summary. Please try again.';
+    $('error-msg').hidden = false;
+  } finally {
+    if (seq === requestSeq) $('loading').hidden = true;
+  }
 }
 
 // -- Export --
@@ -128,15 +148,11 @@ async function main() {
     'preset-all': allTimeRange,
   };
 
-  let currentRange = todayRange();
-
   for (const [id, fn] of Object.entries(presetFns)) {
-    const btn = $(id);
-    if (!btn) continue;
-    btn.addEventListener('click', () => {
-      currentRange = fn();
-      highlightPreset(currentRange.preset);
-      if (allDTOs.length > 0) renderSummary(currentRange);
+    $(id)?.addEventListener('click', () => {
+      const range = fn();
+      highlightPreset(range.preset);
+      loadSummary(range);
     });
   }
 
@@ -149,12 +165,11 @@ async function main() {
     const end = $('custom-end').value;
     if (!begin || !end) return;
     // Parse both ends as local time (a bare YYYY-MM-DD would parse as UTC)
-    currentRange = {
+    loadSummary({
       begin: new Date(begin + 'T00:00:00').toISOString(),
       end: new Date(end + 'T23:59:59').toISOString(),
       preset: 'custom',
-    };
-    if (allDTOs.length > 0) renderSummary(currentRange);
+    });
   });
 
   $('export-csv')?.addEventListener('click', () => {
@@ -165,22 +180,8 @@ async function main() {
     if (lastSummary) download(`bird-count-${dateTag()}.txt`, exportText(lastSummary), 'text/plain');
   });
 
-  // Fetch all observations
-  $('loading').hidden = false;
-  $('error-msg').hidden = true;
-  try {
-    const token = await accessToken();
-    if (!token) { logout(); return; }
-    allDTOs = await fetchAllObservations(token, config.apiBaseURL);
-    highlightPreset('today');
-    renderSummary(currentRange);
-  } catch (e) {
-    console.error('Fetch error', e);
-    $('error-msg').textContent = 'Failed to load observations. Please refresh.';
-    $('error-msg').hidden = false;
-  } finally {
-    $('loading').hidden = true;
-  }
+  highlightPreset('today');
+  loadSummary(todayRange());
 }
 
 main();

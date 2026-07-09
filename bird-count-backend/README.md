@@ -12,9 +12,11 @@ ledger — deletes are negative-count adjustment children, never tombstones.
   portal setup: [docs/apple-siwa-setup.md](docs/apple-siwa-setup.md).
 - **API** — API Gateway HTTP API with a Cognito JWT authorizer in front of a
   TypeScript Lambda (`api/`): `POST /v1/sync` (push + pull in one round
-  trip), `GET /v1/observations` (delta read), `GET /v1/health`.
-  Requests are ajv-validated against the shared schemas in
-  [`../bird-count-schema/`](../bird-count-schema/).
+  trip), `GET /v1/observations` (delta read), `GET /v1/summary` and
+  `GET /v1/observations/query` (server-side query layer for the web viewer,
+  served from an in-memory materialized ledger with delta refresh — no
+  extra indexes), `GET /v1/health`. Requests are ajv-validated against the
+  shared schemas in [`../bird-count-schema/`](../bird-count-schema/).
 - **DB** — one DynamoDB table `birdcount-data-<env>` (PK = scope, SK =
   `obs#<uuid>`), GSI `changes` on `serverUpdatedAt` for cursor deltas.
   Nothing is ever deleted.
