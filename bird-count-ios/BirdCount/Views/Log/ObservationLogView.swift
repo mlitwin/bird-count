@@ -107,11 +107,13 @@ struct ObservationLogView: View {
         .environment(ObservationStore())
         .environment(TaxonomyStore())
         .environment(DateRangeStore())
+        .environment(SettingsStore())
 }
 #Preview("Tab style") {
     ObservationLogView()
         .environment(ObservationStore())
         .environment(TaxonomyStore())
         .environment(DateRangeStore())
+        .environment(SettingsStore())
 }
 #endif

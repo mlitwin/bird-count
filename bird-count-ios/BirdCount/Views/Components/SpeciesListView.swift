@@ -3,6 +3,7 @@ import SwiftUI
 private struct SpeciesListContent: View {
     let taxa: [Taxon]
     let counts: [String: Int]
+    let syncedTaxa: Set<String>
     let onSelect: (Taxon) -> Void
     let onQuickAdd: (Taxon) -> Void
 
@@ -12,6 +13,7 @@ private struct SpeciesListContent: View {
                 SpeciesRow(
                     taxon: taxon,
                     count: counts[taxon.id] ?? 0,
+                    hasSyncedObservations: syncedTaxa.contains(taxon.id),
                     onSelect: onSelect,
                     onQuickAdd: onQuickAdd
                 )
@@ -24,6 +26,7 @@ private struct SpeciesListContent: View {
 struct SpeciesListView: View {
     let taxa: [Taxon]
     let counts: [String: Int]
+    let syncedTaxa: Set<String>
     let onSelect: (Taxon) -> Void
     let onQuickAdd: (Taxon) -> Void
     // Increment to programmatically scroll to the bottom (e.g. after adding an observation)
@@ -32,12 +35,14 @@ struct SpeciesListView: View {
     init(
         taxa: [Taxon],
         counts: [String: Int] = [:],
+        syncedTaxa: Set<String> = [],
         scrollToBottomSignal: Int = 0,
         onSelect: @escaping (Taxon) -> Void,
         onQuickAdd: @escaping (Taxon) -> Void = { _ in }
     ) {
         self.taxa = taxa
         self.counts = counts
+        self.syncedTaxa = syncedTaxa
         self.scrollToBottomSignal = scrollToBottomSignal
         self.onSelect = onSelect
         self.onQuickAdd = onQuickAdd
@@ -55,6 +60,7 @@ struct SpeciesListView: View {
             SpeciesListContent(
                 taxa: taxa,
                 counts: counts,
+                syncedTaxa: syncedTaxa,
                 onSelect: onSelect,
                 onQuickAdd: onQuickAdd
             )

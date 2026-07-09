@@ -25,6 +25,8 @@ import Observation
 struct SpeciesRow: View {
     let taxon: Taxon
     let count: Int
+    /// Count includes observations received from synced users.
+    var hasSyncedObservations: Bool = false
     let onSelect: (Taxon) -> Void
     let onQuickAdd: (Taxon) -> Void
 
@@ -58,6 +60,14 @@ struct SpeciesRow: View {
                     SpeciesRowBasic(taxon: taxon)
                     Spacer()
                     if count > 0 {
+                        // Sits in space the Spacer already absorbs, so its
+                        // presence never shifts the name or the count badge.
+                        if hasSyncedObservations {
+                            Image(systemName: "person.2.fill")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .accessibilityLabel(Strings.Sync.includesSynced.string)
+                        }
                         Text("\(count)")
                             .font(.headline.monospacedDigit())
                             .padding(.horizontal, 8)

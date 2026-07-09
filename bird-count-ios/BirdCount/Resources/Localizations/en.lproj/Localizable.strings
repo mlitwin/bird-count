@@ -208,3 +208,4 @@
 "sync.paired.devices" = "Paired Devices";
 "sync.pair.explanation" = "Paired devices sync new observations automatically whenever both have Bird Count open nearby — no internet needed.";
 "sync.no.paired.devices" = "No paired devices";
+"sync.includes.synced" = "Includes observations from synced users";

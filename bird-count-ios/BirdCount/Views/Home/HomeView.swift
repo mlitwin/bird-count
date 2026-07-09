@@ -21,6 +21,15 @@ struct HomeView: View {
         ObservationStoreCache.countsInRange(dateRangeStore.dateRange, from: observations.observations)
     }
 
+    /// Species whose in-range counts include observations from synced users.
+    private var syncedTaxa: Set<String> {
+        ObservationStoreCache.taxaWithOtherObservers(
+            than: settings.loginEmail,
+            in: dateRangeStore.dateRange,
+            from: observations.observations
+        )
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -160,6 +169,7 @@ struct HomeView: View {
             SpeciesListView(
                 taxa: filtered,
                 counts: filteredCounts,
+                syncedTaxa: syncedTaxa,
                 scrollToBottomSignal: scrollToBottomSignal,
                 onSelect: { taxon in
                     selectedTaxon = taxon

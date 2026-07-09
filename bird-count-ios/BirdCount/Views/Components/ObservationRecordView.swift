@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ObservationRecordView: View {
     @Environment(TaxonomyStore.self) private var taxonomy
+    @Environment(SettingsStore.self) private var settings
     let record: ObservationRecord
     @State private var showDetails: Bool = false
 
@@ -9,9 +10,19 @@ struct ObservationRecordView: View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(taxon?.commonName ?? taxon?.id ?? "Unknown")
-                Text(dateRangeString)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 4) {
+                    Text(dateRangeString)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    // Trails into free space on the caption line: showing or
+                    // hiding it never shifts the rest of the row.
+                    if isFromSyncedUser {
+                        Image(systemName: "person.2.fill")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .accessibilityLabel(Strings.Sync.includesSynced.string)
+                    }
+                }
                 if let location = record.location, location.isValid {
                     Text(location.displayName)
                         .font(.caption2)
@@ -39,6 +50,11 @@ struct ObservationRecordView: View {
     }
 
     private var taxon: Taxon? { taxonomy.species.first { $0.id == record.taxonId } }
+
+    /// This record (or an adjustment under it) came from another observer.
+    private var isFromSyncedUser: Bool {
+        record.hasObserver(otherThan: settings.loginEmail)
+    }
 
     private var dateRangeString: String {
         if record.begin == record.end {

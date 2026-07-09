@@ -31,6 +31,15 @@ public struct ObservationRecord: Identifiable, Codable, Equatable {
         set { data.location = newValue }
     }
     public var observer: String { data.observer }
+
+    /// True when this record or any descendant was recorded by a different
+    /// observer — i.e. it arrived via sync rather than local entry. Best
+    /// effort: observers are compared as the plain strings stamped at
+    /// creation time (login email, possibly empty).
+    public func hasObserver(otherThan observer: String) -> Bool {
+        if data.observer != observer { return true }
+        return children.contains { $0.hasObserver(otherThan: observer) }
+    }
     public var status: ObservationStatus {
         get { data.status }
         set { data.status = newValue }
