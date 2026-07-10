@@ -1,4 +1,4 @@
-Changes since v1.0.28-61:
+Changes since v1.0.29-62:
 
-• bff2b8a Fix prep-alpha version bumping: commit Info.plist, pin build number
-• f7e6afc Update release notes for alpha release
+• 1d986ec Fix three intermittent-hang edge cases in the P2P transport
+• 62fef1f Header sync badge: count of observations not yet delivered
