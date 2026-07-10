@@ -8,6 +8,7 @@ struct UserView: View {
     @Environment(CloudAuthService.self) private var cloudAuth
     @Environment(CloudSyncService.self) private var cloudSync
     @Environment(PairedPeersStore.self) private var pairedPeers
+    @Environment(PeerAutoSyncService.self) private var autoSync
     @State private var emailText: String = ""
     @State private var signInError: String?
     @State private var showPairSheet = false
@@ -66,6 +67,21 @@ struct UserView: View {
                         if case .failure(let message) = cloudSync.state {
                             Text(message).font(.footnote).foregroundStyle(.red)
                         }
+                        HStack {
+                            Text(Strings.User.queuedForUpload.string)
+                            Spacer()
+                            Image(systemName: cloudSync.isOnWifi ? "wifi" : "wifi.slash")
+                                .font(.subheadline)
+                                .foregroundStyle(cloudSync.isOnWifi ? AnyShapeStyle(.green) : AnyShapeStyle(.secondary))
+                                .accessibilityLabel(
+                                    cloudSync.isOnWifi
+                                        ? Strings.User.connectionAvailable.string
+                                        : Strings.User.connectionUnavailable.string
+                                )
+                            Text("\(observations.dirtyIds.count)")
+                                .monospacedDigit()
+                                .foregroundStyle(.secondary)
+                        }
                         if let last = cloudSync.lastSyncDate {
                             HStack {
                                 Text("Last sync")
@@ -95,10 +111,29 @@ struct UserView: View {
 
                 Section {
                     ForEach(pairedPeers.peers) { peer in
+                        let present = autoSync.presentPeerIDs.contains(peer.id)
                         HStack {
                             Image(systemName: "iphone")
                                 .foregroundStyle(.tint)
-                            Text(peer.displayName)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(peer.displayName)
+                                HStack(spacing: 4) {
+                                    Image(systemName: present
+                                        ? "antenna.radiowaves.left.and.right"
+                                        : "antenna.radiowaves.left.and.right.slash")
+                                        .font(.caption2)
+                                        .foregroundStyle(present ? AnyShapeStyle(.green) : AnyShapeStyle(.secondary))
+                                        .accessibilityLabel(
+                                            present
+                                                ? Strings.User.connectionAvailable.string
+                                                : Strings.User.connectionUnavailable.string
+                                        )
+                                    Text(String(format: Strings.User.peerQueued.string, peer.pendingIds.count))
+                                        .font(.caption)
+                                        .monospacedDigit()
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
                             Spacer()
                             Button(Strings.Sync.unpair.string, role: .destructive) {
                                 pairedPeers.unpair(peer.id)
@@ -137,10 +172,18 @@ struct UserView: View {
 
 #Preview {
     let auth = CloudAuthService()
+    let store = ObservationStore()
+    let settings = SettingsStore()
+    let peers = PairedPeersStore()
     return UserView()
-        .environment(SettingsStore())
-        .environment(ObservationStore())
+        .environment(settings)
+        .environment(store)
         .environment(auth)
         .environment(CloudSyncService(auth: auth))
-        .environment(PairedPeersStore())
+        .environment(peers)
+        .environment(PeerAutoSyncService(
+            observationStore: store,
+            settingsStore: settings,
+            pairedPeers: peers
+        ))
 }

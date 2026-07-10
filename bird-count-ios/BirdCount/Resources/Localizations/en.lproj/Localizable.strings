@@ -216,3 +216,9 @@
 "sync.badge.queued" = "%d observations waiting to sync";
 "sync.badge.syncing" = "Syncing, %d observations remaining";
 "sync.from.synced.users" = "Entirely from synced users";
+
+/* User sync status rows */
+"user.queued.for.upload" = "Queued for upload";
+"user.peer.queued" = "%d queued";
+"user.connection.available" = "Connected";
+"user.connection.unavailable" = "Not connected";

@@ -46,6 +46,10 @@ enum Strings {
     enum User {
         static let email = LocalizedString("user.email")
         static let emailPlaceholder = LocalizedString("user.email.placeholder")
+        static let queuedForUpload = LocalizedString("user.queued.for.upload")
+        static let peerQueued = LocalizedString("user.peer.queued")
+        static let connectionAvailable = LocalizedString("user.connection.available")
+        static let connectionUnavailable = LocalizedString("user.connection.unavailable")
     }
     
     // MARK: - Tabs
