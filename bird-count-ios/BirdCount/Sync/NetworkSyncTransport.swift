@@ -64,11 +64,17 @@ import UIKit
         startBrowser()
     }
 
+    /// State, store, and continuation bookkeeping all happen on the main
+    /// actor: this nonisolated async function itself runs on the cooperative
+    /// pool, and mutating the @Observable store or transport state from there
+    /// raced with main-thread reads (an intermittent-freeze class of bug).
     func initiateSync(payload: PayloadV1?, receiveInto store: ObservationStore) async {
-        guard case .readyToSync(let info) = state,
-              let conn = connection else { return }
-
-        setState(.transferring)
+        let start: (SyncReadyInfo, NWConnection)? = await MainActor.run {
+            guard case .readyToSync(let info) = state, let conn = connection else { return nil }
+            setState(.transferring)
+            return (info, conn)
+        }
+        guard let (info, conn) = start else { return }
 
         // Signal the peer so the non-initiator auto-starts its side of the sync.
         sendSyncStart(over: conn)
@@ -77,7 +83,9 @@ import UIKit
             do {
                 try await sendPayload(payload, over: conn)
             } catch {
-                setState(.error(message: "Send failed: \(error.localizedDescription)"))
+                await MainActor.run {
+                    setState(.error(message: "Send failed: \(error.localizedDescription)"))
+                }
                 return
             }
         }
@@ -86,34 +94,45 @@ import UIKit
         var duplicatesSkipped = 0
 
         if info.peerWillSend != nil {
-            // The peer's payload may have arrived before we set up the continuation (race on
-            // the non-initiator path). Use the buffer if present; otherwise wait normally.
-            let incoming: PayloadV1?
-            if let buffered = bufferedPayload {
-                bufferedPayload = nil
-                incoming = buffered
-            } else {
-                incoming = await withCheckedContinuation { continuation in
-                    self.receiveContinuation = continuation
+            // Register on main, where handleIncomingPayload and the connection
+            // handlers also run. The peer's payload may have arrived already
+            // (non-initiator race) — consume the buffer. If the connection
+            // died while we were sending, the state is no longer .transferring
+            // and nothing will ever resume us — bail with nil instead of
+            // hanging in .transferring forever.
+            let incoming: PayloadV1? = await withCheckedContinuation { continuation in
+                DispatchQueue.main.async {
+                    if let buffered = self.bufferedPayload {
+                        self.bufferedPayload = nil
+                        continuation.resume(returning: buffered)
+                    } else if case .transferring = self.state {
+                        self.receiveContinuation = continuation
+                    } else {
+                        continuation.resume(returning: nil)
+                    }
                 }
             }
             if let incoming {
-                let stats = try? ObservationImportService.importFromSync(incoming, into: store)
+                let stats = await MainActor.run {
+                    try? ObservationImportService.importFromSync(incoming, into: store)
+                }
                 receivedCount = stats?.newRecordsImported ?? 0
                 duplicatesSkipped = stats?.duplicatesSkipped ?? 0
             }
         }
 
-        // Connection failure resumes the continuation with nil and sets .error state.
-        // Don't overwrite that with .completed.
-        guard case .transferring = state else { return }
+        await MainActor.run {
+            // Connection failure resumes the continuation with nil and sets
+            // .error state. Don't overwrite that with .completed.
+            guard case .transferring = state else { return }
 
-        let stats = SyncCompletionStats(
-            sentCount: payload?.observations.count ?? 0,
-            receivedCount: receivedCount,
-            duplicatesSkipped: duplicatesSkipped
-        )
-        setState(.completed(stats: stats))
+            let stats = SyncCompletionStats(
+                sentCount: payload?.observations.count ?? 0,
+                receivedCount: receivedCount,
+                duplicatesSkipped: duplicatesSkipped
+            )
+            setState(.completed(stats: stats))
+        }
     }
 
     func cancel() {
@@ -260,10 +279,19 @@ import UIKit
                     self.receiveContinuation = nil
                     cont.resume(returning: nil)
                     self.setState(.error(message: self.friendlyNetworkError(err)))
-                } else if case .transferring = self.state {
-                    // Payload already received (or send-only path). The connection
-                    // dropped after the data transferred — let initiateSync finish.
+                } else if case .transferring = self.state, self.bufferedPayload != nil {
+                    // Payload already arrived; initiateSync will consume the
+                    // buffer — let it finish.
                 } else {
+                    // Includes: failure landing before the receiver registered
+                    // its continuation and before any payload arrived. Leaving
+                    // .transferring there wedged the transport forever (the
+                    // late registration waited on a dead connection, and with
+                    // no state change the auto service never restarted).
+                    // Setting .error makes the late registration bail with
+                    // nil. Trade-off: a drop just after a consumed payload
+                    // also reports an error though the data merged — harmless
+                    // (idempotent), and strictly better than a wedge.
                     self.setState(.error(message: self.friendlyNetworkError(err)))
                 }
 
@@ -292,13 +320,23 @@ import UIKit
     // MARK: - Receive loop
 
     private func startReceiving(on conn: NWConnection) {
-        conn.receiveMessage { [weak self] data, _, _, error in
+        conn.receiveMessage { [weak self] data, _, isComplete, error in
             guard let self else { return }
-            if let data {
+            if let data, !data.isEmpty {
                 self.handleReceivedData(data)
-            }
-            if error == nil {
+                if error == nil { self.startReceiving(on: conn) }
+            } else if error == nil && !isComplete {
+                // No message yet; keep listening.
                 self.startReceiving(on: conn)
+            } else {
+                // nil data + isComplete is a graceful close, error is a dead
+                // connection. Re-arming on close spun this loop at 100% CPU
+                // (receiveMessage completes again immediately) — stop, and
+                // unblock any pending receive so initiateSync never hangs.
+                DispatchQueue.main.async {
+                    self.receiveContinuation?.resume(returning: nil)
+                    self.receiveContinuation = nil
+                }
             }
         }
     }

@@ -53,8 +53,10 @@ import Observation
     func initiateSync(payload: PayloadV1?, receiveInto store: ObservationStore) async {
         guard case .readyToSync(let info) = state else { return }
 
-        capturedSentPayload = payload
-        await MainActor.run { state = .transferring }
+        await MainActor.run {
+            capturedSentPayload = payload
+            state = .transferring
+        }
 
         try? await Task.sleep(for: .milliseconds(100))
 
@@ -67,7 +69,11 @@ import Observation
         }
 
         if info.peerWillSend != nil, let incoming = simulatedIncomingPayload {
-            let stats = (try? ObservationImportService.importFromSync(incoming, into: store))
+            // Merge on main, mirroring the real transport: the store is
+            // main-thread state.
+            let stats = await MainActor.run {
+                try? ObservationImportService.importFromSync(incoming, into: store)
+            }
             receivedCount = stats?.newRecordsImported ?? 0
             duplicatesSkipped = stats?.duplicatesSkipped ?? 0
         }
