@@ -25,24 +25,23 @@ struct ObservationStoreCache {
         return tempCache.counts
     }
 
-    /// Taxa within the range that include observations by someone other than
-    /// `observer` — used to badge species whose counts contain synced data.
-    /// Same range rule as countsInRange; children are visited under their own
-    /// taxonId, mirroring how counts aggregate.
-    static func taxaWithOtherObservers(
-        than observer: String,
+    /// Distinct observers per taxon within the range — feeds the person badge
+    /// on species rows (ObserverAttribution decides the icon). Same range
+    /// rule as countsInRange; children are visited under their own taxonId,
+    /// mirroring how counts aggregate.
+    static func observersByTaxon(
         in range: DateRange,
         from allObservations: [ObservationRecord]
-    ) -> Set<String> {
-        var taxa: Set<String> = []
+    ) -> [String: Set<String>] {
+        var result: [String: Set<String>] = [:]
         func visit(_ record: ObservationRecord) {
-            if record.observer != observer { taxa.insert(record.taxonId) }
+            result[record.taxonId, default: []].insert(record.observer)
             for child in record.children { visit(child) }
         }
         for record in allObservations where record.end >= range.begin && record.begin <= range.end {
             visit(record)
         }
-        return taxa
+        return result
     }
 
     mutating func rebuild(from observations: [ObservationRecord]) {

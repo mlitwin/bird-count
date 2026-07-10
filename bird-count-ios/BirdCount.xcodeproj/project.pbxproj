@@ -31,6 +31,7 @@
 		2A88C0C67223A4C44B9A31F9 /* ObservationJSONImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB12E82781CB9796FB9325C9 /* ObservationJSONImportService.swift */; };
 		2F254EB92FDCE66308F3191B /* ObservationRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB13F58DAFB4B97D611643BD /* ObservationRecord.swift */; };
 		3129079F2309F20DB90CB40F /* PayloadV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65AC4B6E1A3FAEA5DB80436 /* PayloadV1.swift */; };
+		34B99CC261BFEB041014BE8C /* ObserverAttribution.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF950B624CB607CBE3D9EEE /* ObserverAttribution.swift */; };
 		368ABDC28BEE74FCF03AB008 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1C2576ACDD95729987584994 /* Assets.xcassets */; };
 		377DB66A35FF3BE2021A6BF6 /* ObservationLocationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48123A84923C3A9D21804AB8 /* ObservationLocationTests.swift */; };
 		3A13AF2C9AF10B92FCF9FB2A /* query-response-missing-netcount.json in Resources */ = {isa = PBXBuildFile; fileRef = C39DF371A04996DCAAEBD109 /* query-response-missing-netcount.json */; };
@@ -139,6 +140,7 @@
 		F2F79D81B2BCF80CA15A9C4C /* ObservationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11C0F2EB5F5DDCE1C6106B1 /* ObservationStore.swift */; };
 		F4833B08B4AA095C967A2CFD /* bad-uuid.json in Resources */ = {isa = PBXBuildFile; fileRef = 42E49A2611A3EB2D3989306D /* bad-uuid.json */; };
 		F50783CF7870BE1FA0621CCD /* ObservationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11C0F2EB5F5DDCE1C6106B1 /* ObservationStore.swift */; };
+		F58B66E2B39D1448ED079179 /* ObserverAttribution.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF950B624CB607CBE3D9EEE /* ObserverAttribution.swift */; };
 		FC15DFE8743ECDCD5DF7994B /* ObservationLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF2F46315BDAC6BEDF1AA1C /* ObservationLocation.swift */; };
 /* End PBXBuildFile section */
 
@@ -244,6 +246,7 @@
 		A9DD5F1234EFBE186A162092 /* ios_taxonomy_min.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ios_taxonomy_min.json; sourceTree = "<group>"; };
 		AA31B2792ECE1DF0FEA9ABDB /* observation-full.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "observation-full.json"; sourceTree = "<group>"; };
 		AAB033B63B8BA21E798393B5 /* CloudSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSyncService.swift; sourceTree = "<group>"; };
+		AAF950B624CB607CBE3D9EEE /* ObserverAttribution.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObserverAttribution.swift; sourceTree = "<group>"; };
 		AB12E82781CB9796FB9325C9 /* ObservationJSONImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationJSONImportService.swift; sourceTree = "<group>"; };
 		ACE54AAF3F1AD141A1500384 /* SchemaConformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaConformanceTests.swift; sourceTree = "<group>"; };
 		AD12BB59D440BC995C372E0D /* checklist-US-CA-041.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "checklist-US-CA-041.json"; sourceTree = "<group>"; };
@@ -437,6 +440,7 @@
 				AB12E82781CB9796FB9325C9 /* ObservationJSONImportService.swift */,
 				8BF2F46315BDAC6BEDF1AA1C /* ObservationLocation.swift */,
 				BB13F58DAFB4B97D611643BD /* ObservationRecord.swift */,
+				AAF950B624CB607CBE3D9EEE /* ObserverAttribution.swift */,
 				B65AC4B6E1A3FAEA5DB80436 /* PayloadV1.swift */,
 				74ADC22819086097B12402BC /* Taxon.swift */,
 			);
@@ -906,6 +910,7 @@
 				F50783CF7870BE1FA0621CCD /* ObservationStore.swift in Sources */,
 				75089FF45C05EBC6944800A2 /* ObservationStoreCache.swift in Sources */,
 				42EE39979BF5B402A2C26C35 /* ObservationsSelectorView.swift in Sources */,
+				F58B66E2B39D1448ED079179 /* ObserverAttribution.swift in Sources */,
 				A3C57170B910A837385A6158 /* OnScreenKeyboard.swift in Sources */,
 				189E9B926E2C37E487D56AB3 /* PairDeviceSheet.swift in Sources */,
 				6CFAA7292249B04FC6AD0413 /* PairedPeersStore.swift in Sources */,
@@ -957,6 +962,7 @@
 				034D179F87D0FA03A1C9FABA /* ObservationRecord.swift in Sources */,
 				F2F79D81B2BCF80CA15A9C4C /* ObservationStore.swift in Sources */,
 				E3EBCC21F641D4BB140C618B /* ObservationStoreCache.swift in Sources */,
+				34B99CC261BFEB041014BE8C /* ObserverAttribution.swift in Sources */,
 				8C89FD0D2B4426DD0EC54A1F /* PairedPeersStore.swift in Sources */,
 				523C39EC6322BD2B9D47FA9C /* PayloadV1.swift in Sources */,
 				77AF3DEC1F3CE827F22D458E /* SettingsStore.swift in Sources */,

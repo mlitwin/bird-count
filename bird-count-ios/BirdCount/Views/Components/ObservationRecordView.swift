@@ -15,12 +15,18 @@ struct ObservationRecordView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     // Trails into free space on the caption line: showing or
-                    // hiding it never shifts the rest of the row.
-                    if isFromSyncedUser {
-                        Image(systemName: "person.2.fill")
+                    // hiding it never shifts the rest of the row. Filled =
+                    // includes the current user's observations; outline =
+                    // entirely from synced users.
+                    if let symbol = attribution.symbolName {
+                        Image(systemName: symbol)
                             .font(.caption2)
                             .foregroundStyle(.secondary)
-                            .accessibilityLabel(Strings.Sync.includesSynced.string)
+                            .accessibilityLabel(
+                                attribution.includesCurrentUser
+                                    ? Strings.Sync.includesSynced.string
+                                    : Strings.Sync.fromSyncedUsers.string
+                            )
                     }
                 }
                 if let location = record.location, location.isValid {
@@ -51,9 +57,9 @@ struct ObservationRecordView: View {
 
     private var taxon: Taxon? { taxonomy.species.first { $0.id == record.taxonId } }
 
-    /// This record (or an adjustment under it) came from another observer.
-    private var isFromSyncedUser: Bool {
-        record.hasObserver(otherThan: settings.loginEmail)
+    /// Who contributed to this record (including adjustment children).
+    private var attribution: ObserverAttribution {
+        ObserverAttribution(observers: record.observers(), currentObserver: settings.loginEmail)
     }
 
     private var dateRangeString: String {

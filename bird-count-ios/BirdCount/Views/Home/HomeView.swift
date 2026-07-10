@@ -21,13 +21,16 @@ struct HomeView: View {
         ObservationStoreCache.countsInRange(dateRangeStore.dateRange, from: observations.observations)
     }
 
-    /// Species whose in-range counts include observations from synced users.
-    private var syncedTaxa: Set<String> {
-        ObservationStoreCache.taxaWithOtherObservers(
-            than: settings.loginEmail,
+    /// Person-badge attribution per species whose in-range counts include
+    /// observations from synced users (mine-only species carry no entry).
+    private var syncAttributions: [String: ObserverAttribution] {
+        ObservationStoreCache.observersByTaxon(
             in: dateRangeStore.dateRange,
             from: observations.observations
-        )
+        ).compactMapValues { observers in
+            let attribution = ObserverAttribution(observers: observers, currentObserver: settings.loginEmail)
+            return attribution == .mine ? nil : attribution
+        }
     }
 
     var body: some View {
@@ -169,7 +172,7 @@ struct HomeView: View {
             SpeciesListView(
                 taxa: filtered,
                 counts: filteredCounts,
-                syncedTaxa: syncedTaxa,
+                syncAttributions: syncAttributions,
                 scrollToBottomSignal: scrollToBottomSignal,
                 onSelect: { taxon in
                     selectedTaxon = taxon

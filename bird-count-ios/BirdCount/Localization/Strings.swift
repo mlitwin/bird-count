@@ -169,6 +169,7 @@ enum Strings {
         static let pairExplanation = LocalizedString("sync.pair.explanation")
         static let noPairedDevices = LocalizedString("sync.no.paired.devices")
         static let includesSynced = LocalizedString("sync.includes.synced")
+        static let fromSyncedUsers = LocalizedString("sync.from.synced.users")
         static let pairTitle = LocalizedString("sync.pair.title")
         static let pairNewDevice = LocalizedString("sync.pair.new.device")
         static let pairInstructions = LocalizedString("sync.pair.instructions")

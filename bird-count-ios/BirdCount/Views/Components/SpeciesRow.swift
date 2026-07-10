@@ -25,8 +25,9 @@ import Observation
 struct SpeciesRow: View {
     let taxon: Taxon
     let count: Int
-    /// Count includes observations received from synced users.
-    var hasSyncedObservations: Bool = false
+    /// Who contributed to this count, when synced users are involved
+    /// (nil = only the current user's observations — no badge).
+    var attribution: ObserverAttribution? = nil
     let onSelect: (Taxon) -> Void
     let onQuickAdd: (Taxon) -> Void
 
@@ -62,11 +63,17 @@ struct SpeciesRow: View {
                     if count > 0 {
                         // Sits in space the Spacer already absorbs, so its
                         // presence never shifts the name or the count badge.
-                        if hasSyncedObservations {
-                            Image(systemName: "person.2.fill")
+                        // Filled = includes the current user's observations;
+                        // outline = entirely from synced users.
+                        if let symbol = attribution?.symbolName {
+                            Image(systemName: symbol)
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
-                                .accessibilityLabel(Strings.Sync.includesSynced.string)
+                                .accessibilityLabel(
+                                    attribution?.includesCurrentUser == true
+                                        ? Strings.Sync.includesSynced.string
+                                        : Strings.Sync.fromSyncedUsers.string
+                                )
                         }
                         Text("\(count)")
                             .font(.headline.monospacedDigit())
