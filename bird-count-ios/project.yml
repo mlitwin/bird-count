@@ -15,7 +15,7 @@ settings:
   # Must match CFBundleVersion below; the bump_version lane updates both.
   # Pinning it here keeps a bare `xcodegen generate` (make generate /
   # make build-test) from resetting the agvtool build number to 1.
-  CURRENT_PROJECT_VERSION: "63"
+  CURRENT_PROJECT_VERSION: "64"
 
 targets:
   BirdCount:
@@ -37,8 +37,8 @@ targets:
     info:
       path: BirdCount/BirdCount/Info.plist
       properties:
-        CFBundleShortVersionString: "1.0.30"
-        CFBundleVersion: "63"
+        CFBundleShortVersionString: "1.0.31"
+        CFBundleVersion: "64"
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
@@ -65,7 +65,7 @@ targets:
       # Target-level pin: XcodeGen's application preset injects
       # CURRENT_PROJECT_VERSION = 1 at target level, which overrides the
       # project-level value. Kept in sync by the bump_version lane.
-      CURRENT_PROJECT_VERSION: "63"
+      CURRENT_PROJECT_VERSION: "64"
       ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
       DEVELOPMENT_TEAM: 352K435X8J
       CODE_SIGN_STYLE: Automatic
@@ -99,7 +99,7 @@ targets:
       PRODUCT_BUNDLE_IDENTIFIER: org.antoninus.birdcount.app
       DEVELOPMENT_TEAM: 352K435X8J
       CODE_SIGNING_ALLOWED: NO
-      CURRENT_PROJECT_VERSION: "63"
+      CURRENT_PROJECT_VERSION: "64"
       DEAD_CODE_STRIPPING: YES
 
   BirdCountCore:
@@ -113,7 +113,7 @@ targets:
           - LocationManager.swift  # iOS-specific, not cross-platform
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: org.antoninus.birdcount.core
-      CURRENT_PROJECT_VERSION: "63"
+      CURRENT_PROJECT_VERSION: "64"
       DEAD_CODE_STRIPPING: YES
 
   BirdCountCoreTests:
@@ -131,7 +131,7 @@ targets:
     settings:
       GENERATE_INFOPLIST_FILE: YES
       PRODUCT_BUNDLE_IDENTIFIER: org.antoninus.birdcount.core.tests
-      CURRENT_PROJECT_VERSION: "63"
+      CURRENT_PROJECT_VERSION: "64"
       CODE_SIGNING_ALLOWED: NO
       DEAD_CODE_STRIPPING: YES
 
@@ -146,7 +146,7 @@ targets:
     settings:
       GENERATE_INFOPLIST_FILE: YES
       PRODUCT_BUNDLE_IDENTIFIER: org.antoninus.birdcount.app.uitests
-      CURRENT_PROJECT_VERSION: "63"
+      CURRENT_PROJECT_VERSION: "64"
       DEVELOPMENT_TEAM: 352K435X8J
       CODE_SIGNING_ALLOWED: NO
       DEAD_CODE_STRIPPING: YES
