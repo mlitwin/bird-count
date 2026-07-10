@@ -85,6 +85,7 @@ struct PeerAutoSyncServiceTests {
             if case .transferring = world.transport.state { return true }
             return false
         }
+        #expect(world.service.isExchanging)  // header badge spinner signal
 
         // App goes to background while the transfer is in flight.
         world.service.setScenePhaseActive(false)

@@ -56,6 +56,7 @@
 		53F58B3E96FF062E75BC2628 /* ObservationJSONImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB12E82781CB9796FB9325C9 /* ObservationJSONImportService.swift */; };
 		567634B647010BC4305F2F0F /* SyncMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDE72F123FBC088A5E9B517C /* SyncMessage.swift */; };
 		58181398D12B40A60E020D6F /* summary-response-nonpositive-count.json in Resources */ = {isa = PBXBuildFile; fileRef = FB43FA5A755AAC8A71FA0FAA /* summary-response-nonpositive-count.json */; };
+		586FC453116019443E9685CC /* SyncQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF18EC3BE3C2E49B7E24C09E /* SyncQueue.swift */; };
 		58A234872A1C264AF986F97A /* observation-minimal.json in Resources */ = {isa = PBXBuildFile; fileRef = 3B5DA3FA2521AC164E0B9584 /* observation-minimal.json */; };
 		5B1AA8C7255E0927571DA061 /* DateRangeStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130ECD8284C28523033750CE /* DateRangeStoreTests.swift */; };
 		5B4143CF290C1B88ED929590 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3DA21F8B7A04FA9A2B01542 /* HomeView.swift */; };
@@ -81,6 +82,7 @@
 		7A22FED02A00AB933F55FDDD /* observation-full.json in Resources */ = {isa = PBXBuildFile; fileRef = AA31B2792ECE1DF0FEA9ABDB /* observation-full.json */; };
 		7B9EF4651A3440EFD2A21A36 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 7516073B623E343E4440B200 /* README.md */; };
 		7EEFDB7446CA306481FEA245 /* DateRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = DADA4B0CCFCE53D3C7F061C8 /* DateRange.swift */; };
+		80AE55677E7B295FC0A4D0D6 /* SyncQueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A72CF0E11519C98456543479 /* SyncQueueTests.swift */; };
 		84F3149A7B109FB43BB628BD /* ViewConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D7F2012E653F5E1BF69E0D /* ViewConstants.swift */; };
 		87C235802D01F7FC1E551882 /* SyncTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17B59B4533BFF5B8EDB3E0D /* SyncTransport.swift */; };
 		88723733D4405DC1AA55DB13 /* NumericPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCBE3E988878FA83F955105 /* NumericPad.swift */; };
@@ -123,12 +125,14 @@
 		DD452196F163874F5DE69BCA /* ShareActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1AE8BBD3313453070C1CF58 /* ShareActivityView.swift */; };
 		DD7C4B78A6F107299E688AD6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1AA4EB3102747E239D81B301 /* Localizable.strings */; };
 		DE743994D1FB72BED2BBA87D /* ObservationLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5F763F03DD6201966D2395 /* ObservationLogView.swift */; };
+		E2B46659FAD8D6621FB7E8A6 /* SyncStatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D698644BF570EE842019784 /* SyncStatusBadge.swift */; };
 		E310FDDAB749F0B03381009D /* SpeciesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3EC2F235F0B25723256BE9 /* SpeciesListView.swift */; };
 		E3EBCC21F641D4BB140C618B /* ObservationStoreCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D9C8368572CC7976F0E8145 /* ObservationStoreCache.swift */; };
 		E7B00C8061B90FDD9F9041A3 /* CoreLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6177409CCCEA104A666AA11D /* CoreLogicTests.swift */; };
 		E9711F56AB62234A699E61EA /* summary-cases.json in Resources */ = {isa = PBXBuildFile; fileRef = BD5A6738564B6A2C3B8CC0FC /* summary-cases.json */; };
 		EA346BFABBA8BAE1E3688F4D /* DateRangePreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0381ACBC1A7AFAE798219350 /* DateRangePreset.swift */; };
 		EB662B69958E824A194DFA4E /* SyncViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24BA4296CFA48996B37D8ED6 /* SyncViewModel.swift */; };
+		ED79AE0988A933B892EBDCA1 /* SyncQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF18EC3BE3C2E49B7E24C09E /* SyncQueue.swift */; };
 		F026EAD2AF09A9B04BCF3896 /* PeerAutoSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA0F591A1AE1E46E69AD132C /* PeerAutoSyncService.swift */; };
 		F2293A0EF63557B9669C80BF /* observation-legacy-v1.json in Resources */ = {isa = PBXBuildFile; fileRef = E26A0D071F7ECDAC07D93236 /* observation-legacy-v1.json */; };
 		F2C31476F4EAEA0FCA29CD01 /* ModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF79995B3B7FC149037EC4C /* ModelsTests.swift */; };
@@ -231,10 +235,12 @@
 		905A41A6B9EC879EAD96F7CA /* BirdCountTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirdCountTests.swift; sourceTree = "<group>"; };
 		965E0236AD7C27566CDA7512 /* ObservationsSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationsSelectorView.swift; sourceTree = "<group>"; };
 		98BAA75690AC3A811AE5348A /* summary-response.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "summary-response.json"; sourceTree = "<group>"; };
+		9D698644BF570EE842019784 /* SyncStatusBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStatusBadge.swift; sourceTree = "<group>"; };
 		9F3E57E196D1687022B624BA /* BirdCountApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirdCountApp.swift; sourceTree = "<group>"; };
 		A17B59B4533BFF5B8EDB3E0D /* SyncTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncTransport.swift; sourceTree = "<group>"; };
 		A4898AB1996CB6BF814F7A12 /* ExportFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportFormat.swift; sourceTree = "<group>"; };
 		A4F140F87CC8960B4B65B890 /* DateRangeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateRangeStore.swift; sourceTree = "<group>"; };
+		A72CF0E11519C98456543479 /* SyncQueueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncQueueTests.swift; sourceTree = "<group>"; };
 		A9DD5F1234EFBE186A162092 /* ios_taxonomy_min.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ios_taxonomy_min.json; sourceTree = "<group>"; };
 		AA31B2792ECE1DF0FEA9ABDB /* observation-full.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "observation-full.json"; sourceTree = "<group>"; };
 		AAB033B63B8BA21E798393B5 /* CloudSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSyncService.swift; sourceTree = "<group>"; };
@@ -269,6 +275,7 @@
 		CDE72F123FBC088A5E9B517C /* SyncMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncMessage.swift; sourceTree = "<group>"; };
 		CEA5730A98F05F30514E60A1 /* CommonnessRangeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonnessRangeView.swift; sourceTree = "<group>"; };
 		CED96AA768B26BFF2333C6D5 /* LeftDrawerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftDrawerView.swift; sourceTree = "<group>"; };
+		CF18EC3BE3C2E49B7E24C09E /* SyncQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncQueue.swift; sourceTree = "<group>"; };
 		D03D7D4C5177B7606CC628D6 /* query-response.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "query-response.json"; sourceTree = "<group>"; };
 		D126F22854D45BBBEFC25C7F /* Strings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Strings.swift; sourceTree = "<group>"; };
 		D13E17FBFFCB94E03FB1A7C0 /* LocationDetailsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationDetailsSection.swift; sourceTree = "<group>"; };
@@ -317,6 +324,7 @@
 				4D9C8368572CC7976F0E8145 /* ObservationStoreCache.swift */,
 				F92BC5FD3F5836297FAD7F2D /* PairedPeersStore.swift */,
 				4E83557E0B3151DB0A65A1E5 /* SettingsStore.swift */,
+				CF18EC3BE3C2E49B7E24C09E /* SyncQueue.swift */,
 				102D036CF7E1F208793BECF3 /* TaxonomyStore.swift */,
 			);
 			path = Stores;
@@ -383,6 +391,7 @@
 				FE3EC2F235F0B25723256BE9 /* SpeciesListView.swift */,
 				F73A0EC9E9DB138EA0784C2F /* SpeciesRow.swift */,
 				7A086F3ABB41BDD07BB6A715 /* SuccessView.swift */,
+				9D698644BF570EE842019784 /* SyncStatusBadge.swift */,
 				4D213DF575E83BEF3056068E /* UserView.swift */,
 				87D7F2012E653F5E1BF69E0D /* ViewConstants.swift */,
 			);
@@ -495,6 +504,7 @@
 				0CFD626AE3CA15B5FD43256D /* PairedPeersStoreTests.swift */,
 				ACE54AAF3F1AD141A1500384 /* SchemaConformanceTests.swift */,
 				0C97A95A81DFD3B2F4742515 /* SyncedObserverIndicatorTests.swift */,
+				A72CF0E11519C98456543479 /* SyncQueueTests.swift */,
 				1F5C38ADF32B9D45D6ED7AAF /* TaxonomyStoreTests.swift */,
 			);
 			path = TestsCore;
@@ -849,6 +859,7 @@
 				5E033E45710125708E279708 /* ObservationStoreTests.swift in Sources */,
 				698B041E4D4F307C97B2AF55 /* PairedPeersStoreTests.swift in Sources */,
 				B1505FEEE31D0CDBA938F7E8 /* SchemaConformanceTests.swift in Sources */,
+				80AE55677E7B295FC0A4D0D6 /* SyncQueueTests.swift in Sources */,
 				A83990190FCE776D56D16903 /* SyncedObserverIndicatorTests.swift in Sources */,
 				657490E66225F83841436699 /* TaxonomyStoreTests.swift in Sources */,
 			);
@@ -910,7 +921,9 @@
 				3C66D2A1DE3E30832AB3D037 /* SuccessView.swift in Sources */,
 				6C9CBAEA8E77832D8787CD76 /* SummaryView.swift in Sources */,
 				567634B647010BC4305F2F0F /* SyncMessage.swift in Sources */,
+				ED79AE0988A933B892EBDCA1 /* SyncQueue.swift in Sources */,
 				73E849EBBAC6EFCB61213E7E /* SyncSheet.swift in Sources */,
+				E2B46659FAD8D6621FB7E8A6 /* SyncStatusBadge.swift in Sources */,
 				87C235802D01F7FC1E551882 /* SyncTransport.swift in Sources */,
 				EB662B69958E824A194DFA4E /* SyncViewModel.swift in Sources */,
 				208E0E02373AB724A6117666 /* Taxon.swift in Sources */,
@@ -947,6 +960,7 @@
 				8C89FD0D2B4426DD0EC54A1F /* PairedPeersStore.swift in Sources */,
 				523C39EC6322BD2B9D47FA9C /* PayloadV1.swift in Sources */,
 				77AF3DEC1F3CE827F22D458E /* SettingsStore.swift in Sources */,
+				586FC453116019443E9685CC /* SyncQueue.swift in Sources */,
 				50EE06DA5183920B0950A212 /* Taxon.swift in Sources */,
 				61DE8AC29A84ACE7792B4251 /* TaxonomyStore.swift in Sources */,
 			);

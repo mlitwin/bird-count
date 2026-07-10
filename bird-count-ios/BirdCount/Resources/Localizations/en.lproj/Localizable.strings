@@ -213,3 +213,5 @@
 "sync.pair.new.device" = "Pair New Device…";
 "sync.pair.instructions" = "On the other phone, open User Settings and tap Pair New Device. Each person taps Pair on their own phone.";
 "sync.pair.unsupported" = "The other device needs a newer version of Bird Count to pair.";
+"sync.badge.queued" = "%d observations waiting to sync";
+"sync.badge.syncing" = "Syncing, %d observations remaining";

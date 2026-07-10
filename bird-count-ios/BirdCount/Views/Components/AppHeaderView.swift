@@ -28,15 +28,20 @@ struct AppHeaderView: View {
                 .accessibilityLabel(Strings.General.menu.string)
             }
             .overlay(alignment: .trailing) {
-                Button(action: { 
-                    showUserView = true
-                }) {
-                    Image(systemName: "person.circle")
-                        .font(.headline)
-                        .padding(8)
-                        .background(Circle().fill(Color(.secondarySystemBackground)))
+                // The badge grows leftward into the empty space beside the
+                // centered title; the person button never moves.
+                HStack(spacing: 8) {
+                    SyncStatusBadge(action: { showUserView = true })
+                    Button(action: {
+                        showUserView = true
+                    }) {
+                        Image(systemName: "person.circle")
+                            .font(.headline)
+                            .padding(8)
+                            .background(Circle().fill(Color(.secondarySystemBackground)))
+                    }
+                    .accessibilityLabel(Strings.General.user.string)
                 }
-                .accessibilityLabel(Strings.General.user.string)
             }
             .padding(.horizontal)
             .padding(.top, 8)

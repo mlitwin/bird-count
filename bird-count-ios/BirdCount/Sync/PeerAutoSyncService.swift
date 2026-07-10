@@ -23,6 +23,13 @@ final class PeerAutoSyncService {
     private(set) var lastAutoSyncDate: Date?
     private(set) var isRunning = false
 
+    /// A paired-device exchange is transferring right now (drives the header
+    /// sync badge's spinner). Reads through to the observable transport.
+    var isExchanging: Bool {
+        if case .transferring = transport.state { return true }
+        return false
+    }
+
     // MARK: - Dependencies
 
     private let observationStore: ObservationStore
