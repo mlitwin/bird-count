@@ -1,5 +1,3 @@
-Changes since v1.0.31-64:
+Changes since v1.0.32-65:
 
-• 758d6a3 missing file
-• 970459c Update release notes for alpha release
-• 6c8b22c more icons for sync obs
+• 436efe2 sync global status ui
