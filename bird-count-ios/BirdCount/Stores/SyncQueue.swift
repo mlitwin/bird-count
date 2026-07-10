@@ -1,23 +1,23 @@
 import Foundation
 
 /// Semantics for the header sync badge: which observations count as
-/// "not sent yet".
+/// "about to be sent".
 public enum SyncQueue {
-    /// Distinct observations not yet delivered to every live destination:
-    /// the union of the cloud dirty set and each paired peer's pending queue.
-    /// The number stays visible while ANY destination is missing something —
-    /// that is the warning the badge exists to give.
-    ///
-    /// The cloud set only counts when the cloud is a real destination
-    /// (signed in); otherwise dirty ids would keep the badge lit forever for
-    /// users who never use cloud sync.
-    public static func undeliveredIds(
+    /// Distinct observations queued for destinations that are REACHABLE right
+    /// now: the cloud dirty set when the cloud can actually deliver (signed
+    /// in, on Wi-Fi, auto-sync on), plus each pending queue whose paired peer
+    /// is currently present. The badge shows what leaving the app would
+    /// interrupt — not the full latent backlog (a partner's phone that has
+    /// been out of range all day doesn't light the header; UserView carries
+    /// the complete queue story).
+    public static func imminentUndeliveredIds(
         cloudDirty: Set<UUID>,
-        cloudIsDestination: Bool,
-        peerPending: some Collection<Set<UUID>>
+        cloudReachable: Bool,
+        peerPending: [UUID: Set<UUID>],
+        presentPeers: Set<UUID>
     ) -> Set<UUID> {
-        var result: Set<UUID> = cloudIsDestination ? cloudDirty : []
-        for pending in peerPending {
+        var result: Set<UUID> = cloudReachable ? cloudDirty : []
+        for (peerID, pending) in peerPending where presentPeers.contains(peerID) {
             result.formUnion(pending)
         }
         return result

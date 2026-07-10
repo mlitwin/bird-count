@@ -86,10 +86,12 @@ struct PeerAutoSyncServiceTests {
             return false
         }
         #expect(world.service.isExchanging)  // header badge spinner signal
+        #expect(world.service.presentPeerIDs == [world.peerID])  // badge presence
 
         // App goes to background while the transfer is in flight.
         world.service.setScenePhaseActive(false)
         #expect(!world.service.isRunning)
+        #expect(world.service.presentPeerIDs.isEmpty)  // presence cleared on stop
 
         // Give the mock's transfer task time to finish; the completion must
         // NOT clear the queue — the session was torn down before completion

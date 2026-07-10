@@ -1,9 +1,11 @@
 import SwiftUI
 
-/// Compact header badge showing how many observations are still queued for
-/// delivery (cloud and/or paired devices), with a spinner while a sync is
-/// running so the count visibly ticks down. Renders nothing when everything
-/// is delivered or when the user has no sync destinations at all.
+/// Compact header badge showing what a sync is doing or about to do RIGHT
+/// NOW: a spinner while an exchange runs, and a count of observations queued
+/// for destinations that are currently reachable (a paired phone in range, or
+/// the cloud when signed in + Wi-Fi + auto-sync). Latent backlog for
+/// unreachable destinations does not light the header — the full queue story
+/// lives in UserView, one tap away.
 struct SyncStatusBadge: View {
     /// Tap action — the header opens UserView, where the number is explained
     /// (cloud status + paired device queues).
@@ -26,8 +28,10 @@ struct SyncStatusBadge: View {
                         Image(systemName: hasCloudError ? "exclamationmark.arrow.circlepath" : "arrow.up")
                             .font(.caption2.weight(.semibold))
                     }
-                    Text(countText)
-                        .font(.caption.weight(.semibold).monospacedDigit())
+                    if queuedCount > 0 {
+                        Text(countText)
+                            .font(.caption.weight(.semibold).monospacedDigit())
+                    }
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 5)
@@ -40,11 +44,18 @@ struct SyncStatusBadge: View {
 
     // MARK: - Derived state
 
+    /// Cloud will deliver on its own shortly: signed in, on Wi-Fi, and
+    /// auto-sync enabled. Otherwise cloud dirt is latent, not imminent.
+    private var cloudReachable: Bool {
+        cloudAuth.isSignedIn && cloudSync.isOnWifi && cloudSync.autoSyncEnabled
+    }
+
     private var queuedCount: Int {
-        SyncQueue.undeliveredIds(
+        SyncQueue.imminentUndeliveredIds(
             cloudDirty: observations.dirtyIds,
-            cloudIsDestination: cloudAuth.isSignedIn,
-            peerPending: pairedPeers.peers.map { $0.pendingIds }
+            cloudReachable: cloudReachable,
+            peerPending: Dictionary(uniqueKeysWithValues: pairedPeers.peers.map { ($0.id, $0.pendingIds) }),
+            presentPeers: autoSync.presentPeerIDs
         ).count
     }
 
@@ -57,11 +68,10 @@ struct SyncStatusBadge: View {
         return true
     }
 
-    /// No destinations -> nothing to promise, so no badge. Otherwise show
-    /// while anything is queued or a sync is running.
+    /// Visible only when something is happening or about to: an exchange in
+    /// flight, or records queued for a destination that can take them now.
     private var isVisible: Bool {
-        let hasDestinations = cloudAuth.isSignedIn || !pairedPeers.peers.isEmpty
-        return hasDestinations && (queuedCount > 0 || isActive)
+        isActive || queuedCount > 0
     }
 
     private var countText: String {

@@ -30,6 +30,13 @@ final class PeerAutoSyncService {
         return false
     }
 
+    /// Paired peers currently within reach: marked present when a verified
+    /// session connects, kept through the brief post-exchange reconnect gap,
+    /// cleared when a connection errors out or the service stops. Event-
+    /// driven on purpose — a time window would need a pruning timer to make
+    /// the badge update on expiry.
+    private(set) var presentPeerIDs: Set<UUID> = []
+
     // MARK: - Dependencies
 
     private let observationStore: ObservationStore
@@ -146,6 +153,7 @@ final class PeerAutoSyncService {
         refreshTask?.cancel()
         refreshTask = nil
         activeSession = nil
+        presentPeerIDs = []
         transport.cancel()
     }
 
@@ -242,6 +250,9 @@ final class PeerAutoSyncService {
 
         case .error, .incompatible:
             activeSession = nil
+            // The connection died — the peer may have left range. Presence
+            // returns on the next verified handshake.
+            presentPeerIDs = []
             scheduleRestart(after: Self.restartAfterError)
 
         case .idle, .discovering, .handshaking, .transferring:
@@ -262,6 +273,7 @@ final class PeerAutoSyncService {
             return
         }
         pairedPeers.updateDisplayName(info.peerName, for: info.peerID)
+        presentPeerIDs.insert(info.peerID)
 
         guard !hasInitiatedThisSession else { return }
 
