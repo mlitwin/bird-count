@@ -1,3 +1,3 @@
-Changes since v1.0.30-63:
+Changes since v1.0.31-64:
 
-• 9b3e819 refing count of outgoing to active
+• 6c8b22c more icons for sync obs
