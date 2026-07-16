@@ -78,7 +78,6 @@ export async function sync(
   const serverTime = Date.now();
 
   const applied: SyncResponse["applied"] = [];
-  let maxPushed = 0;
   // Unique, increasing serverUpdatedAt within the batch so a page boundary
   // can never split records sharing a millisecond.
   let stamp = Date.now();
@@ -89,15 +88,19 @@ export async function sync(
       toStored(change, observerSub, stamp, request.schemaVersion),
     );
     applied.push({ id: change.id, result: ok ? "applied" : "stale" });
-    if (ok && stamp > maxPushed) maxPushed = stamp;
   }
 
+  // Return the pull page's cursor untouched. The pull runs after the push,
+  // so this device's own rows are part of the delta and the cursor advances
+  // past them once pagination drains them (echoes are absorbed by the
+  // client's idempotent merge). Maxing with the pushed stamps here would
+  // leapfrog any not-yet-delivered page when hasMore is true, permanently
+  // skipping other devices' records.
   const pulled = await pull(doc, request.cursor);
-  const cursor = String(Math.max(Number(pulled.cursor), maxPushed));
 
   return {
     serverTime,
-    cursor,
+    cursor: pulled.cursor,
     applied,
     changes: pulled.changes,
     hasMore: pulled.hasMore,

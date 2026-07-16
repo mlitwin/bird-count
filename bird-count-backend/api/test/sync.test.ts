@@ -198,6 +198,45 @@ describe("sync push + pull", () => {
     expect(stressSeen).toBe(500);
   }, 60_000);
 
+  it("sync cursor does not leapfrog undelivered pages (two-device field bug)", async () => {
+    // Device A is fully caught up.
+    let cursorA = "0";
+    for (;;) {
+      const p = await pull(doc, cursorA);
+      cursorA = p.cursor;
+      if (!p.hasMore) break;
+    }
+
+    // Device B pushes 250 records — more than one PULL_LIMIT page.
+    const bIds = Array.from({ length: 250 }, (_, i) =>
+      `77777777-0000-4000-8000-${String(i).padStart(12, "0")}`,
+    );
+    for (let i = 0; i < bIds.length; i += 100) {
+      await sync(doc, req(bIds.slice(i, i + 100).map((id) => obs(id))), "sub-b");
+    }
+
+    // Device A syncs one new record, then drains hasMore pages the way
+    // CloudSyncService does: from the sync response's cursor.
+    const res = await sync(
+      doc,
+      req([obs("88888888-8888-4888-8888-888888888888")], cursorA),
+      "sub-a",
+    );
+    const seen = new Set(res.changes.map((c) => c.id));
+    let cursor = res.cursor;
+    let hasMore = res.hasMore;
+    while (hasMore) {
+      const page = await pull(doc, cursor);
+      page.changes.forEach((c) => seen.add(c.id));
+      expect(page.cursor).not.toBe(cursor);
+      cursor = page.cursor;
+      hasMore = page.hasMore;
+    }
+
+    // Every one of device B's records must reach device A.
+    expect(bIds.filter((id) => seen.has(id))).toHaveLength(250);
+  }, 60_000);
+
   it("paginates with hasMore", async () => {
     const many = Array.from({ length: 12 }, (_, i) =>
       obs(`66666666-0000-4000-8000-${String(i).padStart(12, "0")}`),
