@@ -1,5 +1,4 @@
 import SwiftUI
-import MapKit
 
 struct ObservationDetailsSheet: View {
     @Environment(TaxonomyStore.self) private var taxonomy
@@ -12,37 +11,41 @@ struct ObservationDetailsSheet: View {
     private var currentRecord: ObservationRecord {
         observationStore.findRecord(by: record.id) ?? record
     }
-    
-    private var taxon: Taxon? { 
-        taxonomy.species.first { $0.id == currentRecord.taxonId }
+
+    private var taxon: Taxon? {
+        taxonomy.taxon(id: record.taxonId)
     }
-    
+
     var body: some View {
+        // Resolve once per render: findRecord walks the whole observation tree
+        // and copies the record's subtree, so don't repeat it per section.
+        let current = currentRecord
+        let taxon = self.taxon
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     // Main Species Information
-                    SpeciesHeader(taxon: taxon, record: currentRecord)
-                    
+                    SpeciesHeader(taxon: taxon, record: current)
+
                     Divider()
-                    
+
                     // Observation Details
-                    ObservationDetailsSection(record: currentRecord, onEditCount: { showCountAdjust = true })
-                    
+                    ObservationDetailsSection(record: current, onEditCount: { showCountAdjust = true })
+
                     Divider()
-                    
+
                     // Location Information
-                    LocationDetailsSection(record: currentRecord, onSearchStateChanged: nil)
-                    
+                    LocationDetailsSection(record: current, onSearchStateChanged: nil)
+
                     Divider()
-                    
+
                     // Child Observations
-                    ChildObservationsSection(record: currentRecord, taxonomy: taxonomy)
-                    
+                    ChildObservationsSection(record: current, taxonomy: taxonomy)
+
                     Divider()
-                    
+
                     // Summary Statistics
-                    SummarySection(record: currentRecord)
+                    SummarySection(record: current)
                 }
                 .padding()
             }
@@ -225,7 +228,7 @@ private struct ChildObservationRow: View {
     let taxonomy: TaxonomyStore
     
     private var taxon: Taxon? {
-        taxonomy.species.first { $0.id == child.taxonId }
+        taxonomy.taxon(id: child.taxonId)
     }
     
     var body: some View {
@@ -252,31 +255,36 @@ private struct ChildObservationRow: View {
 
 private struct SummarySection: View {
     let record: ObservationRecord
-    
+
+    // Single pass over children instead of separate filter/reduce passes
+    private var stats: (adjustments: Int, added: Int, removed: Int) {
+        record.children.reduce(into: (adjustments: 0, added: 0, removed: 0)) { acc, child in
+            if child.count != 0 { acc.adjustments += 1 }
+            if child.count > 0 { acc.added += child.count }
+            if child.count < 0 { acc.removed += child.count }
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Summary")
                 .font(.headline)
                 .fontWeight(.semibold)
-            
-            let totalCount = record.totalCount
+
             let childCount = record.children.count
-            let adjustments = record.children.filter { $0.count != 0 }.count
-            
-            DetailRow(label: "Total Count", value: "\(totalCount)")
+            let stats = self.stats
+
+            DetailRow(label: "Total Count", value: "\(record.totalCount)")
             DetailRow(label: "Child Records", value: "\(childCount)")
-            DetailRow(label: "Count Adjustments", value: "\(adjustments)")
-            
+            DetailRow(label: "Count Adjustments", value: "\(stats.adjustments)")
+
             if childCount > 0 {
-                let positiveAdjustments = record.children.filter { $0.count > 0 }.reduce(0) { $0 + $1.count }
-                let negativeAdjustments = record.children.filter { $0.count < 0 }.reduce(0) { $0 + $1.count }
-                
-                if positiveAdjustments > 0 {
-                    DetailRow(label: "Added", value: "+\(positiveAdjustments)", valueColor: .green)
+                if stats.added > 0 {
+                    DetailRow(label: "Added", value: "+\(stats.added)", valueColor: .green)
                 }
-                
-                if negativeAdjustments < 0 {
-                    DetailRow(label: "Removed", value: "\(negativeAdjustments)", valueColor: .red)
+
+                if stats.removed < 0 {
+                    DetailRow(label: "Removed", value: "\(stats.removed)", valueColor: .red)
                 }
             }
         }
@@ -284,85 +292,6 @@ private struct SummarySection: View {
 }
 
 // MARK: - Helper Views
-
-private struct LocationMapView: View {
-    let location: ObservationLocation
-    
-    @State private var cameraPosition: MapCameraPosition
-    
-    init(location: ObservationLocation) {
-        self.location = location
-        
-        // Initialize camera position centered on the location
-        let coordinate = CLLocationCoordinate2D(
-            latitude: location.latitude,
-            longitude: location.longitude
-        )
-        
-        // Set zoom level based on accuracy - less accurate locations get zoomed out more
-        let span: MKCoordinateSpan
-        if location.horizontalAccuracy <= 50 {
-            span = MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01) // Close zoom for accurate locations
-        } else if location.horizontalAccuracy <= 200 {
-            span = MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02) // Medium zoom
-        } else {
-            span = MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05) // Wider zoom for less accurate locations
-        }
-        
-        self._cameraPosition = State(initialValue: .region(MKCoordinateRegion(center: coordinate, span: span)))
-    }
-    
-    var body: some View {
-        Map(position: $cameraPosition) {
-            // Location pin
-            Annotation("Observation Location", coordinate: coordinate) {
-                LocationPin()
-            }
-            
-            // Accuracy circle if accuracy is reasonable to show
-            if location.horizontalAccuracy > 0 && location.horizontalAccuracy <= 1000 {
-                MapCircle(center: coordinate, radius: location.horizontalAccuracy)
-                    .foregroundStyle(.blue.opacity(0.2))
-                    .stroke(.blue.opacity(0.5), lineWidth: 1)
-            }
-        }
-        .mapStyle(.standard)
-        .mapControlVisibility(.hidden) // Hide default controls for cleaner look in details view
-    }
-    
-    private var coordinate: CLLocationCoordinate2D {
-        CLLocationCoordinate2D(
-            latitude: location.latitude,
-            longitude: location.longitude
-        )
-    }
-}
-
-private struct LocationPin: View {
-    var body: some View {
-        ZStack {
-            // Pin shadow
-            Circle()
-                .fill(.black.opacity(0.3))
-                .frame(width: 20, height: 20)
-                .offset(x: 1, y: 1)
-            
-            // Pin background
-            Circle()
-                .fill(.white)
-                .frame(width: 20, height: 20)
-                .overlay(
-                    Circle()
-                        .stroke(.gray.opacity(0.3), lineWidth: 1)
-                )
-            
-            // Pin center (bird icon color)
-            Circle()
-                .fill(.blue)
-                .frame(width: 12, height: 12)
-        }
-    }
-}
 
 private struct DetailRow: View {
     let label: String

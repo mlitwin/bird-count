@@ -184,10 +184,10 @@ import Observation
     public func updateRecord(by id: UUID, updater: (inout ObservationRecord) -> Void) -> Bool {
         for idx in observations.indices {
             if observations[idx].id == id {
+                // Mutating the element through the subscript triggers
+                // observations.didSet, which persists and rebuilds derived data.
                 updater(&observations[idx])
                 markDirty(id)
-                persist()
-                rebuildDerived()
                 return true
             }
         }
@@ -214,9 +214,8 @@ import Observation
         for idx in observations.indices {
             if observations[idx].id == parentId {
                 if updateInChildren(of: &observations[idx]) {
+                    // didSet on observations already persisted and rebuilt.
                     markDirty(childId)
-                    persist()
-                    rebuildDerived()
                     return true
                 }
             }
@@ -244,11 +243,10 @@ import Observation
         }
         attach(into: &observations)
         if didAttach {
+            // The inout writeback in attach(into:) triggers observations.didSet,
+            // which persists and rebuilds derived data.
             markDirty(newChild.id)
             touchRecent(taxonId)
-            // Mutating nested children does not trigger observations.didSet
-            persist()
-            rebuildDerived()
         }
         return didAttach
     }
@@ -601,11 +599,48 @@ import Observation
     }
 
     // MARK: Persistence
+    /// Encoding covers the whole observation tree and a single user action can
+    /// mutate `observations` several times (e.g. create a pending child, then
+    /// attach its location), so persists are coalesced to one per runloop tick
+    /// and the encode runs off the main thread on a value snapshot.
+    private var persistScheduled = false
+    private static let persistQueue = DispatchQueue(label: "ObservationStorePersist", qos: .utility)
+
     private func persist() {
+        guard !persistScheduled else { return }
+        persistScheduled = true
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.persistScheduled else { return }
+            self.persistScheduled = false
+            let snapshot = self.observations
+            let defaults = self.defaults
+            let key = self.persistenceKey
+            Self.persistQueue.async {
+                Self.write(snapshot, to: defaults, key: key)
+            }
+        }
+    }
+
+    /// Synchronously write the current observations, superseding any pending
+    /// coalesced persist. Call when the app is about to be suspended so
+    /// in-flight changes are durable (and from tests that simulate a relaunch
+    /// by creating a second store). The queue-sync also drains any encode
+    /// already in flight on the persist queue.
+    public func flushPendingPersist() {
+        persistScheduled = false
+        let snapshot = observations
+        let defaults = self.defaults
+        let key = persistenceKey
+        Self.persistQueue.sync {
+            Self.write(snapshot, to: defaults, key: key)
+        }
+    }
+
+    private static func write(_ snapshot: [ObservationRecord], to defaults: UserDefaults, key: String) {
         do {
             let encoder = JSONEncoder(); encoder.dateEncodingStrategy = .iso8601
-            let data = try encoder.encode(observations)
-            defaults.set(data, forKey: persistenceKey)
+            let data = try encoder.encode(snapshot)
+            defaults.set(data, forKey: key)
         } catch { /* ignore */ }
     }
 

@@ -127,6 +127,9 @@ struct CloudMergeTests {
         let first = ObservationStore(testing: true, defaults: defaults)
         first.addObservation("amecro")
         first.cloudSyncCursor = "1782914800456"
+        // Record persists are coalesced/async; the app flushes on
+        // backgrounding, which is what a relaunch implies.
+        first.flushPendingPersist()
         let dirty = first.dirtyIds
         #expect(dirty.count == 1)
 

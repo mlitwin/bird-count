@@ -178,9 +178,9 @@ struct LocationDetailsSection: View {
                 // Use the latest record from the observation store so the view reflects recent updates
                 let currentRecord = observationStore.findRecord(by: record.id) ?? record
                 if let location = currentRecord.location, location.isValid {
-                    // Map View
+                    // Map View: updates via onChange(of: location) rather than
+                    // identity-keyed recreation of the MapKit view
                     LocationMapView(location: location)
-                        .id("loc-\(location.latitude)-\(location.longitude)-\(Int(location.timestamp.timeIntervalSince1970))")
                         .frame(height: 200)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3), lineWidth: 1))

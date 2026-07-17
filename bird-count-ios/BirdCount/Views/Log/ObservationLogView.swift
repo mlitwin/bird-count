@@ -10,8 +10,6 @@ struct ObservationLogView: View {
     @State private var adjustRecord: ObservationRecord? = nil
 
     // Flattened list of records (no date filtering here), preserving children so ObservationRecordView can compute recursive totals
-    private var display: [ObservationRecord] { buildDisplay() }
-
     private func buildDisplay() -> [ObservationRecord] {
         let all = observationsStore.observations
         // Oldest first so the most recent entry sits at the bottom (bottom-anchored view)
@@ -20,6 +18,9 @@ struct ObservationLogView: View {
 
 
     var body: some View {
+        // Built once per render; the sorted copy was previously recomputed on
+        // every access (List, toolbar, onAppear, export).
+        let display = buildDisplay()
         NavigationStack {
             VStack(spacing: 0) {
                 // Header spacing to account for floating AppHeaderView
@@ -31,7 +32,7 @@ struct ObservationLogView: View {
                     List(display) { rec in
                         ObservationRecordView(record: rec)
                             .swipeActions(edge: .leading, allowsFullSwipe: false) {
-                                if taxonomy.species.contains(where: { $0.id == rec.taxonId }) {
+                                if taxonomy.taxon(id: rec.taxonId) != nil {
                                     Button {
                                         adjustRecord = rec
                                     } label: {
@@ -72,9 +73,9 @@ struct ObservationLogView: View {
                 }
                 ToolbarItem(placement: .primaryAction) { Button(Strings.Share.export.string) { exportSheet = true }.disabled(display.isEmpty) }
             }
-        .sheet(isPresented: $exportSheet) { ShareActivityView(items: [exportText()]) }
+        .sheet(isPresented: $exportSheet) { ShareActivityView(items: [exportText(display: display)]) }
         .sheet(item: $adjustRecord) { rec in
-            if let taxon = taxonomy.species.first(where: { $0.id == rec.taxonId }) {
+            if let taxon = taxonomy.taxon(id: rec.taxonId) {
                 CountAdjustSheet(taxon: taxon, parentId: rec.id, onDone: { adjustRecord = nil })
             }
         }
@@ -83,13 +84,11 @@ struct ObservationLogView: View {
         }
     }
 
-    private func exportText() -> String {
+    private func exportText(display: [ObservationRecord]) -> String {
         var lines: [String] = [Strings.Summary.exportTitle.string]
         let formatter = ISO8601DateFormatter()
-        // Build a quick lookup for species by id once
-        let speciesById: [String: Taxon] = Dictionary(uniqueKeysWithValues: taxonomy.species.map { ($0.id, $0) })
         for r in display {
-            let taxonName = speciesById[r.taxonId]?.commonName ?? Strings.Observation.unknown.string
+            let taxonName = taxonomy.taxon(id: r.taxonId)?.commonName ?? Strings.Observation.unknown.string
             if r.begin == r.end {
                 lines.append("\(formatter.string(from: r.begin))\t\(taxonName)\t×\(r.totalCount)")
             } else {

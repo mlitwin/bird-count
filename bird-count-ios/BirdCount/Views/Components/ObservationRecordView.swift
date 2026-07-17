@@ -55,7 +55,7 @@ struct ObservationRecordView: View {
         .accessibilityLabel(accessibilityLabel)
     }
 
-    private var taxon: Taxon? { taxonomy.species.first { $0.id == record.taxonId } }
+    private var taxon: Taxon? { taxonomy.taxon(id: record.taxonId) }
 
     /// Who contributed to this record (including adjustment children).
     private var attribution: ObserverAttribution {

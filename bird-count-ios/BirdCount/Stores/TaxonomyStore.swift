@@ -94,6 +94,13 @@ import Observation
         lastChecklistIds = newIds
     }
 
+    /// O(1) taxon lookup by id. Prefer this over scanning `species`,
+    /// which holds the full taxonomy (~11k entries).
+    func taxon(id: String) -> Taxon? {
+        guard let idx = speciesIndexById[id] else { return nil }
+        return species[idx]
+    }
+
     private func rebuildSpeciesIndex() {
         speciesIndexById.removeAll(keepingCapacity: true)
         speciesIndexById.reserveCapacity(species.count)
@@ -239,5 +246,5 @@ private extension TaxonomyStore {
 }
 
 #if DEBUG
-extension TaxonomyStore { func loadPreview(species: [Taxon]) { self.species = species; self.loaded = true; self.error = nil } }
+extension TaxonomyStore { func loadPreview(species: [Taxon]) { self.species = species; rebuildSpeciesIndex(); self.loaded = true; self.error = nil } }
 #endif

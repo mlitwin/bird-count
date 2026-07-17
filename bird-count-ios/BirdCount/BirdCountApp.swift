@@ -61,6 +61,9 @@ struct BirdCountApp: App {
                 }
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active { cloudSync.requestSync() }
+                    // Persists are coalesced/async; make sure any pending one
+                    // lands before the app can be suspended.
+                    if phase == .background { observationStore.flushPendingPersist() }
                     // != .background: brief .inactive (Control Center, Face
                     // ID) must not drop paired-sync connections.
                     peerAutoSync.setScenePhaseActive(phase != .background)
