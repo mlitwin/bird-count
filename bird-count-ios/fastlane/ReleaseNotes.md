@@ -1,4 +1,3 @@
-Changes since v1.0.33-66:
+Changes since v1.0.34-67:
 
-• a707ceb re-sync
-• 952489b sync test
+• f42205e optimizations on log view details
