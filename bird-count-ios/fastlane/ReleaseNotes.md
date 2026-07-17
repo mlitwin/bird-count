@@ -1,3 +1,4 @@
-Changes since v1.0.32-65:
+Changes since v1.0.33-66:
 
-• 436efe2 sync global status ui
+• a707ceb re-sync
+• 952489b sync test
