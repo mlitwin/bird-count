@@ -114,6 +114,16 @@ public final class CloudSyncService {
         }
     }
 
+    /// Recovery sync: forget the cursor so the next sync re-uploads every
+    /// local record and re-pulls the entire cloud pool from zero. Both sides
+    /// merge idempotently, so this is always safe — just chatty. For devices
+    /// whose cursor has advanced past records they never received.
+    public func resyncAll(store: ObservationStore) async {
+        guard !isSyncing else { return }
+        store.cloudSyncCursor = nil
+        await syncNow(store: store)
+    }
+
     public func syncNow(store: ObservationStore) async {
         guard auth.isSignedIn else {
             state = .failure("Sign in to sync")

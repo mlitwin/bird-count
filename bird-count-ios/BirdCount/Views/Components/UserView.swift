@@ -12,6 +12,7 @@ struct UserView: View {
     @State private var emailText: String = ""
     @State private var signInError: String?
     @State private var showPairSheet = false
+    @State private var showResyncConfirmation = false
 
     var body: some View {
         NavigationStack {
@@ -94,6 +95,22 @@ struct UserView: View {
                             get: { cloudSync.autoSyncEnabled },
                             set: { cloudSync.autoSyncEnabled = $0 }
                         ))
+                        Button("Re-sync all data") {
+                            showResyncConfirmation = true
+                        }
+                        .disabled(cloudSync.isSyncing)
+                        .confirmationDialog(
+                            "Re-sync all data?",
+                            isPresented: $showResyncConfirmation,
+                            titleVisibility: .visible
+                        ) {
+                            Button("Re-sync all") {
+                                Task { await cloudSync.resyncAll(store: observations) }
+                            }
+                            Button(Strings.General.cancel.string, role: .cancel) {}
+                        } message: {
+                            Text("Re-uploads every observation on this device and re-downloads everything from the cloud. Nothing is deleted; use this if devices are out of sync.")
+                        }
                         Button("Sign out", role: .destructive) { cloudAuth.signOut() }
                     } else {
                         Button("Sign in with Apple") {
