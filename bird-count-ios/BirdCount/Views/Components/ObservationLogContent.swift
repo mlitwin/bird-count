@@ -3,9 +3,12 @@ import SwiftUI
 /// Reusable list of ObservationRecords with swipe-to-adjust/delete and
 /// NavigationStack push to ObservationDetailsView on tap.
 /// Manages AppNavigationState push/pop for the details level.
-/// Can be scoped to any pre-filtered/sorted record array by the caller.
+/// Pass either `records` (pre-filtered) or `taxonId` (live-filtered from store).
 struct ObservationLogContent: View {
-    let records: [ObservationRecord]
+    var records: [ObservationRecord] = []
+    /// When set, ignores `records` and filters live from ObservationStore instead,
+    /// ensuring the list updates after adjustments without a snapshot-staleness issue.
+    var taxonId: String? = nil
     var bottomAnchored: Bool = false
 
     @Environment(ObservationStore.self) private var observations
@@ -14,10 +17,19 @@ struct ObservationLogContent: View {
     @State private var selectedRecord: ObservationRecord? = nil
     @State private var adjustRecord: ObservationRecord? = nil
 
+    private var effectiveRecords: [ObservationRecord] {
+        if let taxonId {
+            return observations.observations
+                .filter { $0.taxonId == taxonId }
+                .sorted { $0.begin < $1.begin }
+        }
+        return records
+    }
+
     var body: some View {
         ScrollViewReader { reader in
-        List(records) { rec in
-            ObservationRecordView(record: rec, onTap: { selectedRecord = rec })
+        List(effectiveRecords) { rec in
+            ObservationRecordView(record: rec, onTap: { selectedRecord = rec }, onBadgeTap: { adjustRecord = rec })
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
                 .swipeActions(edge: .leading, allowsFullSwipe: false) {
@@ -48,7 +60,7 @@ struct ObservationLogContent: View {
         }
         .defaultScrollAnchor(bottomAnchored ? .bottom : .top)
         .onAppear {
-            if bottomAnchored, let last = records.last {
+            if bottomAnchored, let last = effectiveRecords.last {
                 reader.scrollTo(last.id, anchor: .bottom)
             }
         }

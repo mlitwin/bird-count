@@ -6,7 +6,7 @@ private struct SpeciesListContent: View {
     let syncAttributions: [String: ObserverAttribution]
     let onSelect: (Taxon) -> Void
     let onQuickAdd: (Taxon) -> Void
-    var onLongPress: ((Taxon) -> Void)? = nil
+    var onBadgeTap: ((Taxon) -> Void)? = nil
 
     var body: some View {
         LazyVStack(spacing: 6) {
@@ -17,7 +17,7 @@ private struct SpeciesListContent: View {
                     attribution: syncAttributions[taxon.id],
                     onSelect: onSelect,
                     onQuickAdd: onQuickAdd,
-                    onLongPress: onLongPress.map { cb in { cb(taxon) } }
+                    onBadgeTap: onBadgeTap.map { cb in { cb(taxon) } }
                 )
                 .id(taxon.id)
             }
@@ -31,7 +31,7 @@ struct SpeciesListView: View {
     let syncAttributions: [String: ObserverAttribution]
     let onSelect: (Taxon) -> Void
     let onQuickAdd: (Taxon) -> Void
-    var onLongPress: ((Taxon) -> Void)? = nil
+    var onBadgeTap: ((Taxon) -> Void)? = nil
     // Increment to programmatically scroll to the bottom (e.g. after adding an observation)
     let scrollToBottomSignal: Int
     // false for Taxonomic mode: plain top-anchored ScrollView instead of BottomAnchoredScrollView
@@ -43,7 +43,7 @@ struct SpeciesListView: View {
         syncAttributions: [String: ObserverAttribution] = [:],
         scrollToBottomSignal: Int = 0,
         bottomAnchored: Bool = true,
-        onLongPress: ((Taxon) -> Void)? = nil,
+        onBadgeTap: ((Taxon) -> Void)? = nil,
         onSelect: @escaping (Taxon) -> Void,
         onQuickAdd: @escaping (Taxon) -> Void = { _ in }
     ) {
@@ -52,7 +52,7 @@ struct SpeciesListView: View {
         self.syncAttributions = syncAttributions
         self.scrollToBottomSignal = scrollToBottomSignal
         self.bottomAnchored = bottomAnchored
-        self.onLongPress = onLongPress
+        self.onBadgeTap = onBadgeTap
         self.onSelect = onSelect
         self.onQuickAdd = onQuickAdd
     }
@@ -73,7 +73,7 @@ struct SpeciesListView: View {
                     syncAttributions: syncAttributions,
                     onSelect: onSelect,
                     onQuickAdd: onQuickAdd,
-                    onLongPress: onLongPress
+                    onBadgeTap: onBadgeTap
                 )
             }
             .padding(.bottom, 24)
@@ -85,7 +85,7 @@ struct SpeciesListView: View {
                     syncAttributions: syncAttributions,
                     onSelect: onSelect,
                     onQuickAdd: onQuickAdd,
-                    onLongPress: onLongPress
+                    onBadgeTap: onBadgeTap
                 )
             }
             .padding(.bottom, 24)

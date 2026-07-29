@@ -130,14 +130,13 @@ struct HomeView: View {
                 if let id = settings.selectedChecklistId { taxonomy.loadChecklist(id: id) }
             }
             .environment(pulseState)
-            // Species log: long-press on a species row pushes a scoped log view
+            // Species log: tap on a species row pushes a scoped log view.
+            // Pass taxonId so ObservationLogContent filters live from store
+            // instead of using a snapshot that goes stale after adjustments.
             .navigationDestination(item: $speciesLogTaxon) { taxon in
-                let taxonRecords = observations.observations
-                    .filter { $0.taxonId == taxon.id }
-                    .sorted { $0.begin < $1.begin }
                 VStack(spacing: 0) {
                     HeaderSpacingView()
-                    ObservationLogContent(records: taxonRecords, bottomAnchored: true)
+                    ObservationLogContent(taxonId: taxon.id, bottomAnchored: true)
                 }
             }
             .onChange(of: speciesLogTaxon) { _, newValue in
@@ -234,8 +233,8 @@ struct HomeView: View {
                     syncAttributions: syncAttributions,
                     scrollToBottomSignal: 0,
                     bottomAnchored: true,
-                    onLongPress: { taxon in speciesLogTaxon = taxon },
-                    onSelect: { taxon in selectedTaxon = taxon },
+                    onBadgeTap: { taxon in selectedTaxon = taxon },
+                    onSelect: { taxon in speciesLogTaxon = taxon },
                     onQuickAdd: { taxon in
                         observations.addObservationWithLocation(taxon.id, count: 1)
                         filterText = ""
@@ -251,8 +250,8 @@ struct HomeView: View {
                 syncAttributions: syncAttributions,
                 scrollToBottomSignal: scrollToBottomSignal,
                 bottomAnchored: true,
-                onLongPress: { taxon in speciesLogTaxon = taxon },
-                onSelect: { taxon in selectedTaxon = taxon },
+                onBadgeTap: { taxon in selectedTaxon = taxon },
+                onSelect: { taxon in speciesLogTaxon = taxon },
                 onQuickAdd: { taxon in
                     observations.addObservationWithLocation(taxon.id, count: 1)
                     let hadFilter = !filterText.isEmpty

@@ -6,9 +6,9 @@ struct CountBadge: View {
     var body: some View {
         Text("\(count)")
             .font(.headline.monospacedDigit())
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(RoundedRectangle(cornerRadius: 6).fill(Color.accentColor.opacity(0.15)))
-            .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.accentColor, lineWidth: 1))
+            .padding(.horizontal, 14)
+            .padding(.vertical, 6)
+            .background(RoundedRectangle(cornerRadius: 8).fill(Color.accentColor.opacity(0.15)))
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.accentColor, lineWidth: 1))
     }
 }

@@ -30,7 +30,7 @@ struct SpeciesRow: View {
     var attribution: ObserverAttribution? = nil
     let onSelect: (Taxon) -> Void
     let onQuickAdd: (Taxon) -> Void
-    var onLongPress: (() -> Void)? = nil
+    var onBadgeTap: (() -> Void)? = nil
 
     @Environment(PulseAnimationState.self) private var pulseState
     @State private var isPulsing = false
@@ -62,10 +62,6 @@ struct SpeciesRow: View {
                     SpeciesRowBasic(taxon: taxon)
                     Spacer()
                     if count > 0 {
-                        // Sits in space the Spacer already absorbs, so its
-                        // presence never shifts the name or the count badge.
-                        // Filled = includes the current user's observations;
-                        // outline = entirely from synced users.
                         if let symbol = attribution?.symbolName {
                             Image(systemName: symbol)
                                 .font(.caption2)
@@ -76,12 +72,17 @@ struct SpeciesRow: View {
                                         : Strings.Sync.fromSyncedUsers.string
                                 )
                         }
-                        CountBadge(count: count)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 6)
-                                    .stroke(Color.green.opacity(0.8), lineWidth: isPulsing ? 2 : 0)
-                            )
-                            .accessibilityLabel(String(format: Strings.Accessibility.countLabel.string, taxon.commonName, count))
+                        Button {
+                            onBadgeTap?()
+                        } label: {
+                            CountBadge(count: count)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.green.opacity(0.8), lineWidth: isPulsing ? 2 : 0)
+                                )
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(String(format: Strings.Accessibility.countLabel.string, taxon.commonName, count))
                     }
                 }
                 .padding(.horizontal)
@@ -98,13 +99,6 @@ struct SpeciesRow: View {
             }
             .contentShape(Rectangle())
             .onTapGesture { onSelect(taxon) }
-            .simultaneousGesture(
-                LongPressGesture(minimumDuration: 0.5)
-                    .onEnded { _ in
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        onLongPress?()
-                    }
-            )
             .gesture(
                 DragGesture(minimumDistance: 20, coordinateSpace: .local)
                     .onChanged { value in
@@ -159,7 +153,7 @@ private struct SpeciesRowBasic: View {
 #Preview("Species Row with count") {
     SpeciesRow(
         taxon: Taxon(id: "sample-id", commonName: "American Robin", scientificName: "Turdus migratorius", order: 1, rank: "species", commonness: 3),
-        count: 5, onSelect: { _ in }, onQuickAdd: { _ in }
+        count: 5, onSelect: { _ in }, onQuickAdd: { _ in }, onBadgeTap: {}
     ).padding().environment(PulseAnimationState())
 }
 

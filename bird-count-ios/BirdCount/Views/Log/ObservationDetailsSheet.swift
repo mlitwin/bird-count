@@ -7,7 +7,11 @@ struct ObservationDetailsView: View {
     @State private var showCountAdjust: Bool = false
 
     private var currentRecord: ObservationRecord {
-        observationStore.findRecord(by: record.id) ?? record
+        // Access observations directly so SwiftUI @Observable tracking reliably
+        // re-renders this view when children are added via CountAdjustSheet.
+        observationStore.observations.first(where: { $0.id == record.id })
+            ?? observationStore.findRecord(by: record.id)
+            ?? record
     }
 
     private var taxon: Taxon? {
