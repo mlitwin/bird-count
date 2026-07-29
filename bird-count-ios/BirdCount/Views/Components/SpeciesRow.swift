@@ -30,6 +30,7 @@ struct SpeciesRow: View {
     var attribution: ObserverAttribution? = nil
     let onSelect: (Taxon) -> Void
     let onQuickAdd: (Taxon) -> Void
+    var onLongPress: (() -> Void)? = nil
 
     @Environment(PulseAnimationState.self) private var pulseState
     @State private var isPulsing = false
@@ -75,12 +76,7 @@ struct SpeciesRow: View {
                                         : Strings.Sync.fromSyncedUsers.string
                                 )
                         }
-                        Text("\(count)")
-                            .font(.headline.monospacedDigit())
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(RoundedRectangle(cornerRadius: 6).fill(Color.accentColor.opacity(0.15)))
-                            .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.accentColor, lineWidth: 1))
+                        CountBadge(count: count)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 6)
                                     .stroke(Color.green.opacity(0.8), lineWidth: isPulsing ? 2 : 0)
@@ -102,6 +98,13 @@ struct SpeciesRow: View {
             }
             .contentShape(Rectangle())
             .onTapGesture { onSelect(taxon) }
+            .simultaneousGesture(
+                LongPressGesture(minimumDuration: 0.5)
+                    .onEnded { _ in
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        onLongPress?()
+                    }
+            )
             .gesture(
                 DragGesture(minimumDistance: 20, coordinateSpace: .local)
                     .onChanged { value in

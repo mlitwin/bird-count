@@ -1,6 +1,6 @@
 import Foundation
 
-struct Taxon: Identifiable, Decodable {
+struct Taxon: Identifiable, Decodable, Hashable {
     let id: String
     let commonName: String
     let scientificName: String

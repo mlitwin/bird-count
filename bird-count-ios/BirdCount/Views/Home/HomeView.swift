@@ -1,28 +1,48 @@
 import SwiftUI
 
+private enum ViewMode: String, CaseIterable {
+    case recent, taxonomic, log
+}
+
 struct HomeView: View {
     @Environment(TaxonomyStore.self) private var taxonomy
     @Environment(ObservationStore.self) private var observations
+    @Environment(AppNavigationState.self) private var navState
     @State private var scrollToBottomSignal: Int = 0
     @Environment(SettingsStore.self) private var settings
     @Environment(DateRangeStore.self) private var dateRangeStore
     @State private var filterText: String = ""
     @State private var selectedTaxon: Taxon? = nil
+    @State private var speciesLogTaxon: Taxon? = nil
     @State private var bottomControlsHeight: CGFloat = 0
     @State private var sheetContentHeight: CGFloat = 0
     @State private var filterFocused: Bool = false
     @State private var pulseState = PulseAnimationState()
-    // Keep CountAdjustSheet aligned with SpeciesListView bottom
+    @AppStorage("viewMode") private var viewMode: ViewMode = .recent
     private let speciesListBottomPadding: CGFloat = 48
 
-    private var filtered: [Taxon] { taxonomy.search(filterText, minCommonness: settings.selectedChecklistId != nil ? settings.minCommonness : nil, maxCommonness: settings.selectedChecklistId != nil ? settings.maxCommonness : nil, dateRange: dateRangeStore.dateRange) }
+    // Heuristic sort for Recent mode
+    private var filtered: [Taxon] {
+        taxonomy.search(
+            filterText,
+            minCommonness: settings.selectedChecklistId != nil ? settings.minCommonness : nil,
+            maxCommonness: settings.selectedChecklistId != nil ? settings.maxCommonness : nil,
+            dateRange: dateRangeStore.dateRange
+        )
+    }
+
+    // Taxonomic sort — observed species only (count > 0 in range)
+    private var taxonomicFiltered: [Taxon] {
+        let counts = filteredCounts
+        return filtered
+            .filter { (counts[$0.id] ?? 0) > 0 }
+            .sorted { $0.order < $1.order }
+    }
 
     private var filteredCounts: [String: Int] {
         ObservationStoreCache.countsInRange(dateRangeStore.dateRange, from: observations.observations)
     }
 
-    /// Person-badge attribution per species whose in-range counts include
-    /// observations from synced users (mine-only species carry no entry).
     private var syncAttributions: [String: ObserverAttribution] {
         ObservationStoreCache.observersByTaxon(
             in: dateRangeStore.dateRange,
@@ -30,6 +50,16 @@ struct HomeView: View {
         ).compactMapValues { observers in
             let attribution = ObserverAttribution(observers: observers, currentObserver: settings.loginEmail)
             return attribution == .mine ? nil : attribution
+        }
+    }
+
+    private func buildLogDisplay() -> [ObservationRecord] {
+        let sorted = observations.observations.sorted { $0.begin < $1.begin }
+        guard !filterText.isEmpty else { return sorted }
+        return sorted.filter { record in
+            guard let taxon = taxonomy.taxon(id: record.taxonId) else { return false }
+            return taxon.commonName.localizedCaseInsensitiveContains(filterText) ||
+                   taxon.scientificName.localizedCaseInsensitiveContains(filterText)
         }
     }
 
@@ -45,7 +75,7 @@ struct HomeView: View {
                         .background(Color.red.opacity(0.8))
                 }
                 Group { content }
-                // Bottom controls (FilterBar + Keyboard) measured dynamically for sheet positioning
+                // Bottom chrome: filter + keyboard + view-mode picker (all modes)
                 VStack(spacing: 0) {
                     Divider()
                     FilterBar(
@@ -68,6 +98,15 @@ struct HomeView: View {
                     )
                         .padding(.bottom, 8)
                         .background(.thinMaterial)
+                    Divider()
+                    Picker("View", selection: $viewMode) {
+                        Text(Strings.Tab.recent.string).tag(ViewMode.recent)
+                        Text(Strings.Tab.taxonomic.string).tag(ViewMode.taxonomic)
+                        Text(Strings.Tab.log.string).tag(ViewMode.log)
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
                 }
                 .background(
                     GeometryReader { geo in
@@ -76,13 +115,11 @@ struct HomeView: View {
                     }
                 )
                 .onPreferenceChange(BottomControlsHeightKey.self) { bottomControlsHeight = $0 }
-                // If the filter text becomes empty (via clear or programmatic), deactivate the visual focus state
                 .onChange(of: filterText) { _, newValue in
                     if newValue.isEmpty { filterFocused = false }
                 }
             }
 
-            // Hide the nav bar entirely so it doesn't reserve space at the top
             .toolbar(.hidden, for: .navigationBar)
             .toolbarBackground(.hidden, for: .navigationBar)
             .onAppear { ObservationStoreProxy.shared.register(observations) }
@@ -93,7 +130,24 @@ struct HomeView: View {
                 if let id = settings.selectedChecklistId { taxonomy.loadChecklist(id: id) }
             }
             .environment(pulseState)
-            // Present CountAdjustSheet as a custom bottom overlay, shifted up by the bottom controls height
+            // Species log: long-press on a species row pushes a scoped log view
+            .navigationDestination(item: $speciesLogTaxon) { taxon in
+                let taxonRecords = observations.observations
+                    .filter { $0.taxonId == taxon.id }
+                    .sorted { $0.begin < $1.begin }
+                VStack(spacing: 0) {
+                    HeaderSpacingView()
+                    ObservationLogContent(records: taxonRecords, bottomAnchored: true)
+                }
+            }
+            .onChange(of: speciesLogTaxon) { _, newValue in
+                if let taxon = newValue {
+                    navState.push(title: taxon.commonName, backAction: { speciesLogTaxon = nil })
+                } else {
+                    Task { @MainActor in navState.pop() }
+                }
+            }
+            // CountAdjustSheet overlay
             .overlay(alignment: .bottom) {
                 if let taxon = selectedTaxon {
                     GeometryReader { geo in
@@ -118,13 +172,12 @@ struct HomeView: View {
                                             let hadFilter = !filterText.isEmpty
                                             filterText = ""
                                             pulseState.trigger(speciesId: taxon.id)
-                                            if !hadFilter {
+                                            if !hadFilter && viewMode == .recent {
                                                 scrollToBottomSignal &+= 1
                                             }
                                         }
                                     }
                                 )
-                                // Measure intrinsic height of the sheet's content
                                 .background(
                                     GeometryReader { sheetGeo in
                                         Color.clear
@@ -134,7 +187,6 @@ struct HomeView: View {
                             }
                             .onPreferenceChange(SheetContentHeightKey.self) { sheetContentHeight = $0 }
                             .frame(maxWidth: .infinity)
-                            // Height equals content height
                             .frame(height: max(sheetContentHeight, 1))
                             .background(.ultraThinMaterial)
                             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
@@ -163,20 +215,44 @@ struct HomeView: View {
                 ProgressView(Strings.Home.loading.string)
                     .task { taxonomy.load() }
             }
+        } else if viewMode == .log {
+            VStack(spacing: 0) {
+                HeaderSpacingView()
+                ObservationLogContent(records: buildLogDisplay(), bottomAnchored: true)
+            }
         } else if taxonomy.species.isEmpty {
             VStack(spacing: 0) {
                 HeaderSpacingView()
                 ContentUnavailableView(Strings.Species.List.empty.string, systemImage: "bird", description: Text(Strings.Species.List.emptyDescription.string))
             }
+        } else if viewMode == .taxonomic {
+            VStack(spacing: 0) {
+                HeaderSpacingView()
+                SpeciesListView(
+                    taxa: taxonomicFiltered,
+                    counts: filteredCounts,
+                    syncAttributions: syncAttributions,
+                    scrollToBottomSignal: 0,
+                    bottomAnchored: true,
+                    onLongPress: { taxon in speciesLogTaxon = taxon },
+                    onSelect: { taxon in selectedTaxon = taxon },
+                    onQuickAdd: { taxon in
+                        observations.addObservationWithLocation(taxon.id, count: 1)
+                        filterText = ""
+                        pulseState.trigger(speciesId: taxon.id)
+                    }
+                )
+            }
         } else {
+            // .recent — heuristic sort, bottom-anchored
             SpeciesListView(
                 taxa: filtered,
                 counts: filteredCounts,
                 syncAttributions: syncAttributions,
                 scrollToBottomSignal: scrollToBottomSignal,
-                onSelect: { taxon in
-                    selectedTaxon = taxon
-                },
+                bottomAnchored: true,
+                onLongPress: { taxon in speciesLogTaxon = taxon },
+                onSelect: { taxon in selectedTaxon = taxon },
                 onQuickAdd: { taxon in
                     observations.addObservationWithLocation(taxon.id, count: 1)
                     let hadFilter = !filterText.isEmpty
@@ -189,13 +265,15 @@ struct HomeView: View {
             )
         }
     }
+
+
 }
 
 // PreferenceKey for measuring bottom controls height dynamically
 private struct BottomControlsHeightKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-    value = Swift.max(value, nextValue())
+        value = Swift.max(value, nextValue())
     }
 }
 
@@ -206,7 +284,6 @@ private struct SheetContentHeightKey: PreferenceKey {
         value = nextValue()
     }
 }
-
 
 
 // MARK: - Filter Bar

@@ -1,13 +1,11 @@
 import SwiftUI
 
-struct ObservationDetailsSheet: View {
+struct ObservationDetailsView: View {
     @Environment(TaxonomyStore.self) private var taxonomy
     @Environment(ObservationStore.self) private var observationStore
     let record: ObservationRecord
-    @Environment(\.dismiss) private var dismiss
     @State private var showCountAdjust: Bool = false
-    
-    // Get the current version of the record from the store to reflect updates
+
     private var currentRecord: ObservationRecord {
         observationStore.findRecord(by: record.id) ?? record
     }
@@ -17,51 +15,28 @@ struct ObservationDetailsSheet: View {
     }
 
     var body: some View {
-        // Resolve once per render: findRecord walks the whole observation tree
-        // and copies the record's subtree, so don't repeat it per section.
         let current = currentRecord
-        let taxon = self.taxon
-        NavigationStack {
+        VStack(spacing: 0) {
+            HeaderSpacingView()
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    // Main Species Information
                     SpeciesHeader(taxon: taxon, record: current)
-
                     Divider()
-
-                    // Observation Details
                     ObservationDetailsSection(record: current, onEditCount: { showCountAdjust = true })
-
                     Divider()
-
-                    // Location Information
                     LocationDetailsSection(record: current, onSearchStateChanged: nil)
-
                     Divider()
-
-                    // Child Observations
                     ChildObservationsSection(record: current, taxonomy: taxonomy)
-
                     Divider()
-
-                    // Summary Statistics
                     SummarySection(record: current)
                 }
                 .padding()
             }
-            .navigationTitle(Strings.Observation.details.string)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(Strings.General.close.string) {
-                        dismiss()
-                    }
-                }
-            }
         }
+        .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showCountAdjust) {
-            if let taxon = taxon {
-                CountAdjustSheet(taxon: taxon, parentId: record.id, onDone: { showCountAdjust = false })
+            if let t = taxon {
+                CountAdjustSheet(taxon: t, parentId: record.id, onDone: { showCountAdjust = false })
             }
         }
     }
@@ -404,8 +379,10 @@ private struct CommonnessLabel: View {
         location: mockLocation
     )
     
-    ObservationDetailsSheet(record: mockRecord)
-        .environment(TaxonomyStore())
-        .environment(ObservationStore())
+    NavigationStack {
+        ObservationDetailsView(record: mockRecord)
+    }
+    .environment(TaxonomyStore())
+    .environment(ObservationStore())
 }
 #endif

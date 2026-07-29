@@ -3,7 +3,7 @@ import Foundation
 /// A single bird observation event.
 /// Stored as an immutable record with the species (taxonId) and capture timestamp.
 /// Named ObservationRecord to avoid conflicting with Apple's Observation module.
-public struct ObservationRecord: Identifiable, Codable, Equatable {
+public struct ObservationRecord: Identifiable, Codable, Equatable, Hashable {
     public var data: ObservationRecordDTO
     public var children: [ObservationRecord] = []
 
@@ -86,9 +86,15 @@ public struct ObservationRecord: Identifiable, Codable, Equatable {
     }
 }
 
-// MARK: - Equatable
+// MARK: - Equatable / Hashable
+// Identity semantics: two records are the same iff they share a UUID.
+// hash uses id only; == must match, so value-equality is intentionally dropped.
 extension ObservationRecord {
     public static func == (lhs: ObservationRecord, rhs: ObservationRecord) -> Bool {
-        return lhs.data == rhs.data && lhs.children == rhs.children
+        lhs.id == rhs.id
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }

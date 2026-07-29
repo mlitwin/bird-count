@@ -5,27 +5,38 @@ struct AppHeaderView: View {
     @Binding var showSettings: Bool
     @Binding var showLeftDrawer: Bool
     @State private var showUserView: Bool = false
-    
+    @Environment(AppNavigationState.self) private var navState
+
     var body: some View {
         VStack(spacing: 0) {
-            // Top bar: centered title with leading menu button
+            // Top bar: centered title with leading menu/back button
             ZStack {
-                Text(Strings.Home.title.string)
+                Text(navState.title ?? Strings.Home.title.string)
                     .font(.title2.weight(.semibold))
             }
             .frame(maxWidth: .infinity)
             .overlay(alignment: .leading) {
-                Button(action: { 
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        showLeftDrawer = true
+                if let back = navState.backAction {
+                    Button(action: back) {
+                        Image(systemName: "chevron.left")
+                            .font(.headline)
+                            .padding(8)
+                            .background(Circle().fill(Color(.secondarySystemBackground)))
                     }
-                }) {
-                    Image(systemName: "line.3.horizontal")
-                        .font(.headline)
-                        .padding(8)
-                        .background(Circle().fill(Color(.secondarySystemBackground)))
+                    .accessibilityLabel(Strings.General.back.string)
+                } else {
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            showLeftDrawer = true
+                        }
+                    }) {
+                        Image(systemName: "line.3.horizontal")
+                            .font(.headline)
+                            .padding(8)
+                            .background(Circle().fill(Color(.secondarySystemBackground)))
+                    }
+                    .accessibilityLabel(Strings.General.menu.string)
                 }
-                .accessibilityLabel(Strings.General.menu.string)
             }
             .overlay(alignment: .trailing) {
                 // The badge grows leftward into the empty space beside the

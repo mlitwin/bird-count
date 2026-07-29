@@ -15,6 +15,7 @@
 "general.error" = "Error";
 "general.menu" = "Menu";
 "general.user" = "User settings";
+"general.back" = "Back";
 
 // MARK: - User
 "user.email" = "Email";
@@ -22,7 +23,8 @@
 
 // MARK: - Tabs
 "tab.home" = "Home";
-"tab.summary" = "Summary";
+"tab.recent" = "Recent";
+"tab.taxonomic" = "Taxonomic";
 "tab.log" = "Log";
 
 // MARK: - Home Screen
