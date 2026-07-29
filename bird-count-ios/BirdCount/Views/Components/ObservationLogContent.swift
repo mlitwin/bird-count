@@ -15,6 +15,7 @@ struct ObservationLogContent: View {
     @State private var adjustRecord: ObservationRecord? = nil
 
     var body: some View {
+        ScrollViewReader { reader in
         List(records) { rec in
             ObservationRecordView(record: rec, onTap: { selectedRecord = rec })
                 .listRowInsets(EdgeInsets())
@@ -46,6 +47,12 @@ struct ObservationLogContent: View {
                 }
         }
         .defaultScrollAnchor(bottomAnchored ? .bottom : .top)
+        .onAppear {
+            if bottomAnchored, let last = records.last {
+                reader.scrollTo(last.id, anchor: .bottom)
+            }
+        }
+        } // ScrollViewReader
         .toolbar(.hidden, for: .navigationBar)
         .navigationDestination(item: $selectedRecord) { rec in
             ObservationDetailsView(record: rec)
