@@ -1,13 +1,9 @@
 import SwiftUI
 
-/// Reusable list of ObservationRecords with swipe-to-adjust/delete and
-/// NavigationStack push to ObservationDetailsView on tap.
-/// Manages AppNavigationState push/pop for the details level.
-/// Pass either `records` (pre-filtered) or `taxonId` (live-filtered from store).
+/// Reusable chronological list of ObservationRecords with swipe-to-adjust/delete
+/// and NavigationStack push to ObservationDetailsView on tap.
+/// taxonId: when set, filters live to records for that species only; nil = all records.
 struct ObservationLogContent: View {
-    var records: [ObservationRecord] = []
-    /// When set, ignores `records` and filters live from ObservationStore instead,
-    /// ensuring the list updates after adjustments without a snapshot-staleness issue.
     var taxonId: String? = nil
     var bottomAnchored: Bool = false
 
@@ -18,12 +14,9 @@ struct ObservationLogContent: View {
     @State private var adjustRecord: ObservationRecord? = nil
 
     private var effectiveRecords: [ObservationRecord] {
-        if let taxonId {
-            return observations.observations
-                .filter { $0.taxonId == taxonId }
-                .sorted { $0.begin < $1.begin }
-        }
-        return records
+        let base = taxonId.map { id in observations.observations.filter { $0.taxonId == id } }
+            ?? observations.observations
+        return base.sorted { $0.begin < $1.begin }
     }
 
     var body: some View {

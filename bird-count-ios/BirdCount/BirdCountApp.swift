@@ -31,13 +31,6 @@ struct BirdCountApp: App {
             pairedPeers: paired
         ))
 
-        // Enlarge segmented control text globally
-        let seg = UISegmentedControl.appearance()
-        let attrs: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: 17, weight: .semibold)
-        ]
-        seg.setTitleTextAttributes(attrs, for: .normal)
-        seg.setTitleTextAttributes(attrs, for: .selected)
     }
 
     var body: some Scene {
@@ -72,20 +65,48 @@ struct BirdCountApp: App {
     }
 }
 private struct TopTabsRoot: View {
+    private enum Tab { case home, summary, log }
+    @State private var selection: Tab = .home
     @State private var showSettings: Bool = false
     @State private var showLeftDrawer: Bool = false
-    @State private var navState = AppNavigationState()
+    @State private var homeNavState = AppNavigationState()
+    @State private var summaryNavState = AppNavigationState()
+    @State private var logNavState = AppNavigationState()
+
+    private var activeNavState: AppNavigationState {
+        switch selection {
+        case .home:    return homeNavState
+        case .summary: return summaryNavState
+        case .log:     return logNavState
+        }
+    }
 
     var body: some View {
         ZStack {
-            HomeView()
-                .safeAreaInset(edge: .top, spacing: 8) {
-                    VStack(spacing: 0) {
-                        AppHeaderView(showSettings: $showSettings, showLeftDrawer: $showLeftDrawer)
-                        Divider()
-                    }
+            TabView(selection: $selection) {
+                HomeView()
+                    .environment(homeNavState)
+                    .tabItem { Label(Strings.Tab.home.string, systemImage: "house") }
+                    .tag(Tab.home)
+
+                SummaryView()
+                    .environment(summaryNavState)
+                    .tabItem { Label(Strings.Tab.summary.string, systemImage: "chart.bar") }
+                    .tag(Tab.summary)
+
+                LogView()
+                    .environment(logNavState)
+                    .tabItem { Label(Strings.Tab.log.string, systemImage: "list.bullet") }
+                    .tag(Tab.log)
+            }
+            .safeAreaInset(edge: .top, spacing: 0) {
+                VStack(spacing: 0) {
+                    AppHeaderView(showSettings: $showSettings, showLeftDrawer: $showLeftDrawer)
+                        .environment(activeNavState)
+                    Divider()
                 }
-                .sheet(isPresented: $showSettings) { SettingsView(show: $showSettings) }
+            }
+            .sheet(isPresented: $showSettings) { SettingsView(show: $showSettings) }
 
             LeftDrawerView(
                 isPresented: $showLeftDrawer,
@@ -93,6 +114,5 @@ private struct TopTabsRoot: View {
                 showShareOptions: .constant(false)
             )
         }
-        .environment(navState)
     }
 }

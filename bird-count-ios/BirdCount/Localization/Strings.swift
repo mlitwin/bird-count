@@ -56,9 +56,10 @@ enum Strings {
     // MARK: - Tabs
     enum Tab {
         static let home = LocalizedString("tab.home")
+        static let summary = LocalizedString("tab.summary")
+        static let log = LocalizedString("tab.log")
         static let recent = LocalizedString("tab.recent")
         static let taxonomic = LocalizedString("tab.taxonomic")
-        static let log = LocalizedString("tab.log")
     }
     
     // MARK: - Home Screen

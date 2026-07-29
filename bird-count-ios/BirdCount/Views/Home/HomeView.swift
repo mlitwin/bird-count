@@ -1,16 +1,12 @@
 import SwiftUI
 
-private enum ViewMode: String, CaseIterable {
-    case recent, taxonomic, log
-}
-
 struct HomeView: View {
     @Environment(TaxonomyStore.self) private var taxonomy
     @Environment(ObservationStore.self) private var observations
     @Environment(AppNavigationState.self) private var navState
-    @State private var scrollToBottomSignal: Int = 0
     @Environment(SettingsStore.self) private var settings
     @Environment(DateRangeStore.self) private var dateRangeStore
+    @State private var scrollToBottomSignal: Int = 0
     @State private var filterText: String = ""
     @State private var selectedTaxon: Taxon? = nil
     @State private var speciesLogTaxon: Taxon? = nil
@@ -18,10 +14,8 @@ struct HomeView: View {
     @State private var sheetContentHeight: CGFloat = 0
     @State private var filterFocused: Bool = false
     @State private var pulseState = PulseAnimationState()
-    @AppStorage("viewMode") private var viewMode: ViewMode = .recent
     private let speciesListBottomPadding: CGFloat = 48
 
-    // Heuristic sort for Recent mode
     private var filtered: [Taxon] {
         taxonomy.search(
             filterText,
@@ -29,14 +23,6 @@ struct HomeView: View {
             maxCommonness: settings.selectedChecklistId != nil ? settings.maxCommonness : nil,
             dateRange: dateRangeStore.dateRange
         )
-    }
-
-    // Taxonomic sort — observed species only (count > 0 in range)
-    private var taxonomicFiltered: [Taxon] {
-        let counts = filteredCounts
-        return filtered
-            .filter { (counts[$0.id] ?? 0) > 0 }
-            .sorted { $0.order < $1.order }
     }
 
     private var filteredCounts: [String: Int] {
@@ -53,16 +39,6 @@ struct HomeView: View {
         }
     }
 
-    private func buildLogDisplay() -> [ObservationRecord] {
-        let sorted = observations.observations.sorted { $0.begin < $1.begin }
-        guard !filterText.isEmpty else { return sorted }
-        return sorted.filter { record in
-            guard let taxon = taxonomy.taxon(id: record.taxonId) else { return false }
-            return taxon.commonName.localizedCaseInsensitiveContains(filterText) ||
-                   taxon.scientificName.localizedCaseInsensitiveContains(filterText)
-        }
-    }
-
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -75,7 +51,6 @@ struct HomeView: View {
                         .background(Color.red.opacity(0.8))
                 }
                 Group { content }
-                // Bottom chrome: filter + keyboard + view-mode picker (all modes)
                 VStack(spacing: 0) {
                     Divider()
                     FilterBar(
@@ -83,9 +58,9 @@ struct HomeView: View {
                         onClear: { filterText = ""; filterFocused = false },
                         active: (filterFocused || !filterText.isEmpty)
                     )
-                        .onTapGesture { filterFocused = true }
-                        .padding(.horizontal)
-                        .padding(.vertical, 8)
+                    .onTapGesture { filterFocused = true }
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
                     Divider()
                     OnScreenKeyboard(
                         onKey: { filterText.append($0); filterFocused = true },
@@ -96,17 +71,8 @@ struct HomeView: View {
                         onClear: { filterText = ""; filterFocused = false },
                         active: (filterFocused || !filterText.isEmpty)
                     )
-                        .padding(.bottom, 8)
-                        .background(.thinMaterial)
-                    Divider()
-                    Picker("View", selection: $viewMode) {
-                        Text(Strings.Tab.recent.string).tag(ViewMode.recent)
-                        Text(Strings.Tab.taxonomic.string).tag(ViewMode.taxonomic)
-                        Text(Strings.Tab.log.string).tag(ViewMode.log)
-                    }
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
+                    .padding(.bottom, 8)
+                    .background(.thinMaterial)
                 }
                 .background(
                     GeometryReader { geo in
@@ -119,7 +85,6 @@ struct HomeView: View {
                     if newValue.isEmpty { filterFocused = false }
                 }
             }
-
             .toolbar(.hidden, for: .navigationBar)
             .toolbarBackground(.hidden, for: .navigationBar)
             .onAppear { ObservationStoreProxy.shared.register(observations) }
@@ -130,9 +95,6 @@ struct HomeView: View {
                 if let id = settings.selectedChecklistId { taxonomy.loadChecklist(id: id) }
             }
             .environment(pulseState)
-            // Species log: tap on a species row pushes a scoped log view.
-            // Pass taxonId so ObservationLogContent filters live from store
-            // instead of using a snapshot that goes stale after adjustments.
             .navigationDestination(item: $speciesLogTaxon) { taxon in
                 VStack(spacing: 0) {
                     HeaderSpacingView()
@@ -146,10 +108,9 @@ struct HomeView: View {
                     Task { @MainActor in navState.pop() }
                 }
             }
-            // CountAdjustSheet overlay
             .overlay(alignment: .bottom) {
                 if let taxon = selectedTaxon {
-                    GeometryReader { geo in
+                    GeometryReader { _ in
                         ZStack(alignment: .bottom) {
                             Color.black.opacity(0.25)
                                 .ignoresSafeArea()
@@ -159,7 +120,6 @@ struct HomeView: View {
                                         filterFocused = false
                                     }
                                 }
-
                             VStack(spacing: 0) {
                                 CountAdjustSheet(
                                     taxon: taxon,
@@ -171,7 +131,7 @@ struct HomeView: View {
                                             let hadFilter = !filterText.isEmpty
                                             filterText = ""
                                             pulseState.trigger(speciesId: taxon.id)
-                                            if !hadFilter && viewMode == .recent {
+                                            if !hadFilter {
                                                 scrollToBottomSignal &+= 1
                                             }
                                         }
@@ -214,36 +174,12 @@ struct HomeView: View {
                 ProgressView(Strings.Home.loading.string)
                     .task { taxonomy.load() }
             }
-        } else if viewMode == .log {
-            VStack(spacing: 0) {
-                HeaderSpacingView()
-                ObservationLogContent(records: buildLogDisplay(), bottomAnchored: true)
-            }
         } else if taxonomy.species.isEmpty {
             VStack(spacing: 0) {
                 HeaderSpacingView()
                 ContentUnavailableView(Strings.Species.List.empty.string, systemImage: "bird", description: Text(Strings.Species.List.emptyDescription.string))
             }
-        } else if viewMode == .taxonomic {
-            VStack(spacing: 0) {
-                HeaderSpacingView()
-                SpeciesListView(
-                    taxa: taxonomicFiltered,
-                    counts: filteredCounts,
-                    syncAttributions: syncAttributions,
-                    scrollToBottomSignal: 0,
-                    bottomAnchored: true,
-                    onBadgeTap: { taxon in selectedTaxon = taxon },
-                    onSelect: { taxon in speciesLogTaxon = taxon },
-                    onQuickAdd: { taxon in
-                        observations.addObservationWithLocation(taxon.id, count: 1)
-                        filterText = ""
-                        pulseState.trigger(speciesId: taxon.id)
-                    }
-                )
-            }
         } else {
-            // .recent — heuristic sort, bottom-anchored
             SpeciesListView(
                 taxa: filtered,
                 counts: filteredCounts,
@@ -264,11 +200,8 @@ struct HomeView: View {
             )
         }
     }
-
-
 }
 
-// PreferenceKey for measuring bottom controls height dynamically
 private struct BottomControlsHeightKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
@@ -276,16 +209,12 @@ private struct BottomControlsHeightKey: PreferenceKey {
     }
 }
 
-// PreferenceKey for the sheet content height
 private struct SheetContentHeightKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()
     }
 }
-
-
-// MARK: - Filter Bar
 
 private struct FilterBar: View {
     let text: String
@@ -318,7 +247,6 @@ private struct FilterBar: View {
     }
 }
 
-
 #if DEBUG
 private extension TaxonomyStore {
     static var previewInstance: TaxonomyStore {
@@ -340,5 +268,7 @@ private extension TaxonomyStore {
         .environment(ObservationStore.previewInstance)
         .environment(SettingsStore())
         .environment(DateRangeStore())
+        .environment(AppNavigationState())
+        .environment(PulseAnimationState())
 }
 #endif

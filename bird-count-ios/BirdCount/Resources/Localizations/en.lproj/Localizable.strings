@@ -23,9 +23,10 @@
 
 // MARK: - Tabs
 "tab.home" = "Home";
+"tab.summary" = "Summary";
+"tab.log" = "Log";
 "tab.recent" = "Recent";
 "tab.taxonomic" = "Taxonomic";
-"tab.log" = "Log";
 
 // MARK: - Home Screen
 "home.title" = "Bird Count";
