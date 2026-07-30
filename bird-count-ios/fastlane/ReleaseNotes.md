@@ -1,3 +1,7 @@
-Changes since v1.0.34-67:
+Changes since v1.0.35-68:
 
-• f42205e optimizations on log view details
+• 24fc2e7 tweaks
+• fc23824 bring back nav
+• 0f91e4b fixes and ui uniformity
+• 5a0cd46 tweak
+• 224b022 unify log and details via long press
