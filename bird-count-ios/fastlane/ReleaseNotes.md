@@ -1,7 +1,4 @@
-Changes since v1.0.35-68:
+Changes since v1.0.36-69:
 
-• 24fc2e7 tweaks
-• fc23824 bring back nav
-• 0f91e4b fixes and ui uniformity
-• 5a0cd46 tweak
-• 224b022 unify log and details via long press
+• 613300b range fix for details not from log
+• de0c853 build
