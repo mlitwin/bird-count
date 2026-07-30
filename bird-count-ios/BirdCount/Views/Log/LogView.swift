@@ -18,6 +18,7 @@ struct LogView: View {
         .environment(ObservationStore.previewInstance)
         .environment(TaxonomyStore())
         .environment(SettingsStore())
+        .environment(DateRangeStore())
         .environment(AppNavigationState())
 }
 #endif

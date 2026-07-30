@@ -10,12 +10,17 @@ struct ObservationLogContent: View {
     @Environment(ObservationStore.self) private var observations
     @Environment(TaxonomyStore.self) private var taxonomy
     @Environment(AppNavigationState.self) private var navState
+    @Environment(DateRangeStore.self) private var dateRangeStore
     @State private var selectedRecord: ObservationRecord? = nil
     @State private var adjustRecord: ObservationRecord? = nil
 
     private var effectiveRecords: [ObservationRecord] {
-        let base = taxonId.map { id in observations.observations.filter { $0.taxonId == id } }
-            ?? observations.observations
+        let range = dateRangeStore.dateRange
+        let base = observations.observations.filter { rec in
+            guard taxonId == nil || rec.taxonId == taxonId else { return false }
+            guard taxonId != nil else { return true }
+            return rec.end >= range.begin && rec.begin <= range.end
+        }
         return base.sorted { $0.begin < $1.begin }
     }
 
