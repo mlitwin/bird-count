@@ -33,17 +33,27 @@ export function docClient(endpoint?: string): DynamoDBDocumentClient {
   });
 }
 
-export type PutResult = "written" | "noop" | "stale";
+/** "noop" carries the stored observationNumber (may be absent if a prior setObservationNumber failed). */
+export type PutResult = "written" | "stale" | { kind: "noop"; observationNumber?: number };
+
+function extractNumber(raw: unknown): number | undefined {
+  if (typeof raw === "number") return raw;
+  if (raw !== null && typeof raw === "object" && "N" in (raw as object))
+    return Number((raw as { N: string }).N);
+  return undefined;
+}
 
 /**
  * Conditional upsert. Returns:
- *   "written" — new record or strictly newer updatedAt (caller must assign a sequence number)
- *   "noop"    — equal updatedAt re-upload; stored record is untouched (keep existing observationNumber)
- *   "stale"   — incoming updatedAt is older than stored; rejected
+ *   "written"               — new record or strictly newer updatedAt (caller must assign a sequence number)
+ *   { kind:"noop", ... }   — equal updatedAt re-upload; stored record is untouched.
+ *                            observationNumber is the stored value if already set, or undefined if a
+ *                            prior setObservationNumber failed and needs repair.
+ *   "stale"                 — incoming updatedAt is older than stored; rejected
  *
  * Condition is strict (< not <=) so equal-updatedAt re-puts do not overwrite the stored
  * observationNumber.  ReturnValuesOnConditionCheckFailure surfaces the old item so we can
- * distinguish noop from stale without an extra GetItem round-trip.
+ * distinguish noop from stale and read back the existing number, without a GetItem round-trip.
  */
 export async function putObservation(
   doc: DynamoDBDocumentClient,
@@ -62,17 +72,12 @@ export async function putObservation(
     return "written";
   } catch (err) {
     if (err instanceof Error && err.name === "ConditionalCheckFailedException") {
-      // Extract stored updatedAt from the old item. DynamoDB may return it either
-      // already unmarshalled (DocumentClient middleware) or in AttributeValue format {N:"…"}.
+      // DynamoDB returns the stored item either already unmarshalled (DocumentClient middleware)
+      // or in AttributeValue format {N:"…"}; extractNumber handles both.
       const rawItem = (err as unknown as { Item?: Record<string, unknown> }).Item;
-      const raw = rawItem?.updatedAt;
-      const storedUpdatedAt =
-        typeof raw === "number" ? raw
-        : raw !== null && typeof raw === "object" && "N" in (raw as object)
-          ? Number((raw as { N: string }).N)
-          : undefined;
+      const storedUpdatedAt = extractNumber(rawItem?.updatedAt);
       if (storedUpdatedAt !== undefined && storedUpdatedAt === item.updatedAt) {
-        return "noop";
+        return { kind: "noop", observationNumber: extractNumber(rawItem?.observationNumber) };
       }
       return "stale";
     }
@@ -80,21 +85,31 @@ export async function putObservation(
   }
 }
 
-/** Stamp observationNumber onto a stored item after a successful write + INCR. */
+/**
+ * Stamp observationNumber onto a stored item, but only if it would raise the existing value.
+ * Silently ignores ConditionalCheckFailedException — a concurrent write already set a higher number;
+ * the skipped number is a gap (not corruption), which is explicitly allowed by the design.
+ */
 export async function setObservationNumber(
   doc: DynamoDBDocumentClient,
   pk: string,
   sk: string,
   n: number,
 ): Promise<void> {
-  await doc.send(
-    new UpdateCommand({
-      TableName: TABLE,
-      Key: { pk, sk },
-      UpdateExpression: "SET observationNumber = :n",
-      ExpressionAttributeValues: { ":n": n },
-    }),
-  );
+  try {
+    await doc.send(
+      new UpdateCommand({
+        TableName: TABLE,
+        Key: { pk, sk },
+        UpdateExpression: "SET observationNumber = :n",
+        ConditionExpression: "attribute_not_exists(observationNumber) OR observationNumber < :n",
+        ExpressionAttributeValues: { ":n": n },
+      }),
+    );
+  } catch (err) {
+    if (err instanceof Error && err.name === "ConditionalCheckFailedException") return;
+    throw err;
+  }
 }
 
 export interface ChangesPage {

@@ -137,12 +137,21 @@ export async function sync(
       if (n === -1) throw new SeqUnavailableError("sequence counter not seeded");
       await setObservationNumber(doc, stored.pk, stored.sk, n);
       applied.push({ id: change.id, result: "applied", observationNumber: n });
-    } else if (putResult === "noop") {
-      // Equal-updatedAt re-upload (e.g. recovery sync). The stored record is unchanged;
-      // do not INCR so the ledger is not renumbered on recovery.
-      applied.push({ id: change.id, result: "applied" });
-    } else {
+    } else if (putResult === "stale") {
       applied.push({ id: change.id, result: "stale" });
+    } else {
+      // Equal-updatedAt re-upload (e.g. recovery sync). The stored record is unchanged.
+      if (putResult.observationNumber !== undefined) {
+        // Already numbered: return the known number so the client doesn't need a pull round-trip.
+        applied.push({ id: change.id, result: "applied", observationNumber: putResult.observationNumber });
+      } else {
+        // Prior setObservationNumber failed — repair now by assigning a fresh number.
+        // INCR rather than re-using the originally burned number (which is unrecoverable).
+        const n = await guardedIncr(valkey, seqKey);
+        if (n === -1) throw new SeqUnavailableError("sequence counter not seeded");
+        await setObservationNumber(doc, stored.pk, stored.sk, n);
+        applied.push({ id: change.id, result: "applied", observationNumber: n });
+      }
     }
   }
 

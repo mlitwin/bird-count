@@ -21602,6 +21602,12 @@ function docClient(endpoint) {
     marshallOptions: { removeUndefinedValues: true }
   });
 }
+function extractNumber(raw) {
+  if (typeof raw === "number") return raw;
+  if (raw !== null && typeof raw === "object" && "N" in raw)
+    return Number(raw.N);
+  return void 0;
+}
 async function putObservation(doc2, item) {
   try {
     await doc2.send(
@@ -21617,10 +21623,9 @@ async function putObservation(doc2, item) {
   } catch (err) {
     if (err instanceof Error && err.name === "ConditionalCheckFailedException") {
       const rawItem = err.Item;
-      const raw = rawItem?.updatedAt;
-      const storedUpdatedAt = typeof raw === "number" ? raw : raw !== null && typeof raw === "object" && "N" in raw ? Number(raw.N) : void 0;
+      const storedUpdatedAt = extractNumber(rawItem?.updatedAt);
       if (storedUpdatedAt !== void 0 && storedUpdatedAt === item.updatedAt) {
-        return "noop";
+        return { kind: "noop", observationNumber: extractNumber(rawItem?.observationNumber) };
       }
       return "stale";
     }
@@ -21628,14 +21633,20 @@ async function putObservation(doc2, item) {
   }
 }
 async function setObservationNumber(doc2, pk, sk, n) {
-  await doc2.send(
-    new UpdateCommand({
-      TableName: TABLE,
-      Key: { pk, sk },
-      UpdateExpression: "SET observationNumber = :n",
-      ExpressionAttributeValues: { ":n": n }
-    })
-  );
+  try {
+    await doc2.send(
+      new UpdateCommand({
+        TableName: TABLE,
+        Key: { pk, sk },
+        UpdateExpression: "SET observationNumber = :n",
+        ConditionExpression: "attribute_not_exists(observationNumber) OR observationNumber < :n",
+        ExpressionAttributeValues: { ":n": n }
+      })
+    );
+  } catch (err) {
+    if (err instanceof Error && err.name === "ConditionalCheckFailedException") return;
+    throw err;
+  }
 }
 async function queryChanges(doc2, scope, since, limit) {
   const res = await doc2.send(
@@ -21929,10 +21940,17 @@ async function sync(doc2, request, observerSub) {
       if (n === -1) throw new SeqUnavailableError("sequence counter not seeded");
       await setObservationNumber(doc2, stored.pk, stored.sk, n);
       applied.push({ id: change.id, result: "applied", observationNumber: n });
-    } else if (putResult === "noop") {
-      applied.push({ id: change.id, result: "applied" });
-    } else {
+    } else if (putResult === "stale") {
       applied.push({ id: change.id, result: "stale" });
+    } else {
+      if (putResult.observationNumber !== void 0) {
+        applied.push({ id: change.id, result: "applied", observationNumber: putResult.observationNumber });
+      } else {
+        const n = await guardedIncr(valkey, seqKey);
+        if (n === -1) throw new SeqUnavailableError("sequence counter not seeded");
+        await setObservationNumber(doc2, stored.pk, stored.sk, n);
+        applied.push({ id: change.id, result: "applied", observationNumber: n });
+      }
     }
   }
   const hwm = request.serverSyncedObservationNumberHWM;
