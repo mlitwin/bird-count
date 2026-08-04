@@ -1,7 +1,20 @@
 // Sync push/pull against DynamoDB Local (docker).
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { execSync } from "node:child_process";
 import { CreateTableCommand, DynamoDBClient } from "@aws-sdk/client-dynamodb";
+
+// In-memory Valkey stub so sync tests run without a Redis container.
+let seq = 0;
+const fakeClient = { get: async (_key: string) => String(seq) };
+vi.mock("../src/valkey.js", () => ({
+  valkeyClient: () => fakeClient,
+  tripSeqKey: (trip: string) => `trip:${trip}:seq`,
+  guardedIncr: async (_client: unknown, _key: string) => ++seq,
+  raiseOnlySet: async (_client: unknown, _key: string, value: number) => {
+    if (value > seq) { seq = value; return true; }
+    return false;
+  },
+}));
 
 process.env.TABLE_NAME = "birdcount-data-test";
 const PORT = 8123;
@@ -57,6 +70,7 @@ beforeAll(async () => {
             { AttributeName: "pk", AttributeType: "S" },
             { AttributeName: "sk", AttributeType: "S" },
             { AttributeName: "serverUpdatedAt", AttributeType: "N" },
+            { AttributeName: "observationNumber", AttributeType: "N" },
           ],
           KeySchema: [
             { AttributeName: "pk", KeyType: "HASH" },
@@ -68,6 +82,14 @@ beforeAll(async () => {
               KeySchema: [
                 { AttributeName: "pk", KeyType: "HASH" },
                 { AttributeName: "serverUpdatedAt", KeyType: "RANGE" },
+              ],
+              Projection: { ProjectionType: "ALL" },
+            },
+            {
+              IndexName: "gsi_observationNumber",
+              KeySchema: [
+                { AttributeName: "pk", KeyType: "HASH" },
+                { AttributeName: "observationNumber", KeyType: "RANGE" },
               ],
               Projection: { ProjectionType: "ALL" },
             },
@@ -90,8 +112,8 @@ describe("sync push + pull", () => {
   it("pushes records and pulls them from cursor 0", async () => {
     const res = await sync(doc, req([obs("11111111-1111-4111-8111-111111111111"), obs("22222222-2222-4222-8222-222222222222")]), "sub-a");
     expect(res.applied).toEqual([
-      { id: "11111111-1111-4111-8111-111111111111", result: "applied" },
-      { id: "22222222-2222-4222-8222-222222222222", result: "applied" },
+      { id: "11111111-1111-4111-8111-111111111111", result: "applied", observationNumber: expect.any(Number) },
+      { id: "22222222-2222-4222-8222-222222222222", result: "applied", observationNumber: expect.any(Number) },
     ]);
 
     const pulled = await pull(doc, "0");

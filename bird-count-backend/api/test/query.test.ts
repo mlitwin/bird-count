@@ -1,6 +1,19 @@
 // Query layer: golden-fixture drift gate, ledger semantics, and the
 // materialized cache against DynamoDB Local (docker).
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+
+// In-memory Valkey stub so sync calls in this test file run without a Redis container.
+let seq = 0;
+const fakeClient = { get: async (_key: string) => String(seq) };
+vi.mock("../src/valkey.js", () => ({
+  valkeyClient: () => fakeClient,
+  tripSeqKey: (trip: string) => `trip:${trip}:seq`,
+  guardedIncr: async (_client: unknown, _key: string) => ++seq,
+  raiseOnlySet: async (_client: unknown, _key: string, value: number) => {
+    if (value > seq) { seq = value; return true; }
+    return false;
+  },
+}));
 import { execSync } from "node:child_process";
 import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -197,6 +210,7 @@ beforeAll(async () => {
             { AttributeName: "pk", AttributeType: "S" },
             { AttributeName: "sk", AttributeType: "S" },
             { AttributeName: "serverUpdatedAt", AttributeType: "N" },
+            { AttributeName: "observationNumber", AttributeType: "N" },
           ],
           KeySchema: [
             { AttributeName: "pk", KeyType: "HASH" },
@@ -208,6 +222,14 @@ beforeAll(async () => {
               KeySchema: [
                 { AttributeName: "pk", KeyType: "HASH" },
                 { AttributeName: "serverUpdatedAt", KeyType: "RANGE" },
+              ],
+              Projection: { ProjectionType: "ALL" },
+            },
+            {
+              IndexName: "gsi_observationNumber",
+              KeySchema: [
+                { AttributeName: "pk", KeyType: "HASH" },
+                { AttributeName: "observationNumber", KeyType: "RANGE" },
               ],
               Projection: { ProjectionType: "ALL" },
             },

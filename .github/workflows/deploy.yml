@@ -40,8 +40,8 @@ jobs:
         run: npm test
 
   deploy:
-    # main push -> dev; vX.Y.Z tag -> prod
-    if: github.event_name == 'push'
+    # main push -> dev; vX.Y.Z tag -> prod; never runs on PRs or feature branches
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     needs: test
     runs-on: ubuntu-latest
     permissions:
