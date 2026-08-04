@@ -24,6 +24,10 @@ export interface ObservationRecordDTO {
    * Client-set ms epoch; whole-record LWW for the location backfill. Absent on legacy v1 records — consumers backfill with epoch-ms of `end` (same rule as the iOS decoder, convergent across devices).
    */
   updatedAt?: number;
+  /**
+   * Strictly increasing, server-assigned sequence number scoped to the trip. Reassigned on every accepted write (append or edit). Absent on legacy records that predate this feature. Clients must treat this field as read-only and must not upload it.
+   */
+  observationNumber?: number;
 }
 /**
  * Location where an observation was recorded (mirrors ObservationLocation.swift)
@@ -55,6 +59,10 @@ export interface SyncRequest {
    */
   cursor?: string;
   /**
+   * Highest observationNumber the client has pulled from the server (excludes P2P-only records). When present, the server pulls all records with observationNumber greater than this in ascending order. 0 or absent means the client has pulled nothing via the number-ordered path; the server falls back to the cursor-based pull.
+   */
+  serverSyncedObservationNumberHWM?: number;
+  /**
    * @maxItems 100
    */
   changes: ObservationRecordDTO[];
@@ -68,9 +76,17 @@ export interface SyncResponse {
   applied: {
     id: string;
     result: 'applied' | 'stale' | 'invalid';
+    /**
+     * Server-assigned sequence number for this write. Present only when result is "applied".
+     */
+    observationNumber?: number;
   }[];
   changes: ObservationRecordDTO[];
   hasMore: boolean;
+  /**
+   * Current value of the trip's sequence counter (the highest observationNumber assigned so far). Not a count of live observations — burned numbers and superseded record versions mean this can exceed the number of live records. Clients compare against their serverSyncedObservationNumberHWM to know when they are fully caught up.
+   */
+  tripSequenceHighWater?: number;
 }
 
 /**

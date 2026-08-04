@@ -41,6 +41,11 @@ resource "aws_iam_role_policy_attachment" "logs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+resource "aws_iam_role_policy_attachment" "vpc" {
+  role       = aws_iam_role.lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
+
 resource "aws_lambda_function" "api" {
   function_name    = "${var.project_name}-${var.environment}-api"
   role             = aws_iam_role.lambda.arn
@@ -51,9 +56,15 @@ resource "aws_lambda_function" "api" {
   timeout          = 15
   memory_size      = 256
 
+  vpc_config {
+    subnet_ids         = var.subnet_ids
+    security_group_ids = [var.lambda_sg_id]
+  }
+
   environment {
     variables = {
-      TABLE_NAME = var.table_name
+      TABLE_NAME      = var.table_name
+      VALKEY_ENDPOINT = var.valkey_endpoint
     }
   }
 
@@ -199,4 +210,68 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx" {
   treat_missing_data  = "notBreaching"
   alarm_actions       = var.alarm_email != "" ? [aws_sns_topic.alarms[0].arn] : []
   tags                = var.tags
+}
+
+# ── seq-maintenance Lambda ────────────────────────────────────────────────────
+# Operator-invoked only (no API Gateway route). Seeds and backfills the Valkey
+# sequence counter. Invoke via: aws lambda invoke --function-name <name> ...
+
+data "archive_file" "seq_maintenance_zip" {
+  type        = "zip"
+  source_file = "${var.lambda_dist_dir}/seqMaintenance.mjs"
+  output_path = "${var.lambda_dist_dir}/seqMaintenance.zip"
+}
+
+resource "aws_cloudwatch_log_group" "seq_maintenance" {
+  name              = "/aws/lambda/${var.project_name}-${var.environment}-seq-maintenance"
+  retention_in_days = 30
+  tags              = var.tags
+}
+
+resource "aws_iam_role" "seq_maintenance" {
+  name               = "${var.project_name}-${var.environment}-seq-maintenance"
+  assume_role_policy = data.aws_iam_policy_document.assume.json
+  tags               = var.tags
+}
+
+resource "aws_iam_role_policy" "seq_maintenance_table" {
+  name   = "table-access"
+  role   = aws_iam_role.seq_maintenance.id
+  policy = var.table_policy_json
+}
+
+resource "aws_iam_role_policy_attachment" "seq_maintenance_logs" {
+  role       = aws_iam_role.seq_maintenance.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "seq_maintenance_vpc" {
+  role       = aws_iam_role.seq_maintenance.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
+
+resource "aws_lambda_function" "seq_maintenance" {
+  function_name    = "${var.project_name}-${var.environment}-seq-maintenance"
+  role             = aws_iam_role.seq_maintenance.arn
+  runtime          = "nodejs24.x"
+  handler          = "seqMaintenance.handler"
+  filename         = data.archive_file.seq_maintenance_zip.output_path
+  source_code_hash = data.archive_file.seq_maintenance_zip.output_base64sha256
+  timeout          = 300
+  memory_size      = 256
+
+  vpc_config {
+    subnet_ids         = var.subnet_ids
+    security_group_ids = [var.lambda_sg_id]
+  }
+
+  environment {
+    variables = {
+      TABLE_NAME      = var.table_name
+      VALKEY_ENDPOINT = var.valkey_endpoint
+    }
+  }
+
+  depends_on = [aws_cloudwatch_log_group.seq_maintenance]
+  tags       = var.tags
 }

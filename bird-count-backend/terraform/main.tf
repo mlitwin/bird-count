@@ -77,6 +77,30 @@ module "db" {
   tags = local.common_tags
 }
 
+# VPC: private subnets + Lambda SG + DynamoDB/CloudWatch VPC endpoints
+module "vpc" {
+  source = "./modules/vpc"
+
+  project_name = local.project_name
+  environment  = var.environment
+
+  tags = local.common_tags
+}
+
+# Valkey (ElastiCache Serverless) sequence counter for observationNumber
+module "valkey" {
+  source = "./modules/valkey"
+
+  project_name = local.project_name
+  environment  = var.environment
+
+  vpc_id       = module.vpc.vpc_id
+  subnet_ids   = module.vpc.private_subnet_ids
+  lambda_sg_id = module.vpc.lambda_security_group_id
+
+  tags = local.common_tags
+}
+
 # Sync API: Lambda + HTTP API + JWT authorizer
 module "api" {
   source = "./modules/api"
@@ -93,7 +117,10 @@ module "api" {
     "https://${module.storage.cloudfront_domain_name}",
     "http://localhost:8788",
   ]
-  alarm_email = var.alarm_email
+  alarm_email     = var.alarm_email
+  subnet_ids      = module.vpc.private_subnet_ids
+  lambda_sg_id    = module.vpc.lambda_security_group_id
+  valkey_endpoint = module.valkey.endpoint_address
 
   tags = local.common_tags
 }

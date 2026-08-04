@@ -20,6 +20,11 @@
     "updatedAt": {
       "type": "integer",
       "description": "Client-set ms epoch; whole-record LWW for the location backfill. Absent on legacy v1 records — consumers backfill with epoch-ms of `end` (same rule as the iOS decoder, convergent across devices)."
+    },
+    "observationNumber": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Strictly increasing, server-assigned sequence number scoped to the trip. Reassigned on every accepted write (append or edit). Absent on legacy records that predate this feature. Clients must treat this field as read-only and must not upload it."
     }
   },
   "required": ["id", "taxonId", "begin", "end", "count"],
