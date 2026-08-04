@@ -208,7 +208,7 @@ describe("sync push + pull", () => {
     const seen = new Set<string>();
     let pages = 0;
     for (;;) {
-      const page = await pull(doc, cursor, 200);
+      const page = await pull(doc, cursor);
       pages++;
       page.changes.forEach((c) => seen.add(c.id));
       if (!page.hasMore) break;
@@ -264,7 +264,7 @@ describe("sync push + pull", () => {
       obs(`66666666-0000-4000-8000-${String(i).padStart(12, "0")}`),
     );
     await sync(doc, req(many), "sub-a");
-    const page = await pull(doc, "0", 5);
+    const page = await pull(doc, "0", undefined, 5);
     expect(page.changes).toHaveLength(5);
     expect(page.hasMore).toBe(true);
 
@@ -272,7 +272,7 @@ describe("sync push + pull", () => {
     let cursor = "0";
     const seen = new Set<string>();
     for (let i = 0; i < 20; i++) {
-      const p = await pull(doc, cursor, 5);
+      const p = await pull(doc, cursor, undefined, 5);
       p.changes.forEach((c) => seen.add(c.id!));
       if (!p.hasMore && cursor === p.cursor) break;
       cursor = p.cursor;
