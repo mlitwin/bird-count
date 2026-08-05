@@ -1,5 +1,28 @@
 # Plan: Strictly Increasing Observation Sequence Numbers
 
+## Status
+
+| Layer | Status |
+|---|---|
+| Schema (wire contract) | ✅ Done — deployed |
+| DynamoDB GSI `gsi_observationNumber` | ✅ Done — deployed |
+| Valkey (ElastiCache Serverless) | ✅ Done — deployed, seeded |
+| `seq-maintenance` Lambda | ✅ Done — deployed |
+| Backend sync/pull (guarded INCR, HWM-primary pull, noop repair, 503) | ✅ Done — deployed |
+| Lambda authorizer (M2M + user tokens) | ✅ Done — deployed (see note below) |
+| E2E test suite | ✅ Done — 37 checks, runs via `make e2e` |
+| iOS `ObservationRecordDTO`: add `observationNumber` | ⬜ Not started |
+| iOS `ObservationStore`: `serverSyncedHWM`, `localObservationNumberMax`, `applyServerObservationNumbers` | ⬜ Not started |
+| iOS `CloudAPIClient`: HWM in request, `observationNumber` in applied, `tripSequenceHighWater` in response | ⬜ Not started |
+| iOS `CloudSyncService`: send HWM, call `applyServerObservationNumbers`, retire `cursorRewindMs` | ⬜ Not started |
+| iOS P2P: `localObservationNumberMax` in hello, delta-send optimization | ⬜ Not started |
+
+### Auth note (not in original plan)
+
+The JWT authorizer was replaced with a Lambda authorizer (`birdcount-{env}-authorizer`) because Cognito `client_credentials` access tokens (version 2) carry no `aud` claim, so API Gateway's built-in JWT authorizer always rejected M2M tokens with 401. The Lambda authorizer validates user tokens by `aud` (iOS + web client IDs) and M2M tokens by `scope` (resource server identifier + `/sync`). It runs outside the VPC to reach Cognito's public JWKS endpoint.
+
+---
+
 ## Problem Statement
 
 Observations currently have no ordering guarantee beyond `serverUpdatedAt` (a millisecond timestamp). A monotonically increasing, server-assigned `observationNumber` scoped per trip enables:
@@ -72,12 +95,12 @@ For v1 (single trip): `trip:shared:seq`.
 ### Lambda → Valkey connection
 
 - VPC is required for ElastiCache. Lambda must be placed in the same VPC with a security group that allows outbound port 6379 to the ElastiCache security group.
-- Use the `ioredis` client (or the AWS SDK's ElastiCache Data API if/when it supports Valkey with simple INCR — check at implementation time).
+- Use the `ioredis` client.
 - Connection is established once per Lambda cold start and reused across warm invocations.
 
 ### Sequence number assignment
 
-In `sync.ts`, for each accepted observation (result = `"applied"`), issue a **guarded INCR** — increment only if the key already exists, otherwise fail loudly:
+In `sync.ts`, for each accepted observation (result = `"written"`), issue a **guarded INCR** — increment only if the key already exists, otherwise fail loudly:
 
 ```typescript
 // Lua, run via EVAL — atomic. Returns the new number, or -1 if the key is absent.
@@ -99,13 +122,13 @@ Why guarded rather than a bare `INCR`: a bare `INCR` on an **absent** key auto-c
 
 **Ordering vs. the DynamoDB write.** The guarded INCR happens *before* the DynamoDB write. If the write then fails, the number is burned and the sequence has a permanent gap. Sequence *values* are therefore not guaranteed gap-free; only the invariant "no two accepted writes share a number" holds. This is fine for HWM/watermark use (clients tolerate gaps) but means `tripSequenceHighWater` (below) is a high-water mark, not a live count. If burned-number gaps must be avoided, INCR after a successful conditional write instead — accept the extra round-trip, and note that a mid-write crash then leaves a record with no number (repaired lazily on its next update, or by backfill).
 
-**Which writes get a number.** Every accepted mutation increments — both append (new ledger entry, incl. negate entries) and edit (additive change to an existing entry) — per the mutation model in the Problem Statement. There are no deletes, so there is no tombstone case to handle. An edit must bump the sequence so peers and cursors observing the watermark re-receive the changed record; keeping the old number would let the HWM optimization filter it out and the edit would never propagate.
+**Which writes get a number.** Every accepted mutation (`putResult === "written"`) increments — both append (new ledger entry, incl. negate entries) and edit (additive change to an existing entry) — per the mutation model in the Problem Statement. Equal-`updatedAt` re-uploads (noop path) preserve the existing `observationNumber` and do **not** issue a new INCR; this prevents a first/recovery sync (which re-uploads the entire ledger) from renumbering everything. There are no deletes, so there is no tombstone case to handle.
 
 ---
 
 ## Valkey Population (Maintenance Lambda)
 
-The Valkey counter is seeded by a dedicated **maintenance Lambda**, never lazily by the write-path Lambda. The write-path Lambda only ever issues the guarded INCR above; if the key is absent it returns 503 (see Resilience) rather than trying to seed. This removes the distributed lock, the spin-wait, the in-Lambda DynamoDB max-scan, and the warm-Lambda key-loss heuristics that a self-seeding design requires.
+The Valkey counter is seeded by a dedicated **maintenance Lambda**, never lazily by the write-path Lambda. The write-path Lambda only ever issues the guarded INCR above; if the key is absent it returns 503 (see Resilience) rather than trying to seed.
 
 ### Why a maintenance Lambda (not a locally-run script)
 
@@ -136,38 +159,37 @@ Seed logic (`action: "seed"` / tail of `"backfill"`):
 ### How to invoke
 
 ```bash
-# dry-run status check (safe, read-only)
-aws lambda invoke \
-  --function-name bird-count-<env>-seq-maintenance \
-  --payload '{"action":"status","trip":"shared"}' \
-  --cli-binary-format raw-in-base64-out /dev/stdout
+# read-only status check
+make seq-status                  # ENV=dev by default
 
-# re-seed after a key-loss incident: dry-run, eyeball the numbers, then commit
-aws lambda invoke --function-name bird-count-<env>-seq-maintenance \
-  --payload '{"action":"seed","trip":"shared","dryRun":true}'  --cli-binary-format raw-in-base64-out /dev/stdout
-aws lambda invoke --function-name bird-count-<env>-seq-maintenance \
-  --payload '{"action":"seed","trip":"shared","dryRun":false}' --cli-binary-format raw-in-base64-out /dev/stdout
+# re-seed after a key-loss incident: dry-run first, eyeball the numbers, then commit
+make seq-seed                    # DRYRUN=true by default — safe to run first
+make seq-seed DRYRUN=false       # writes to Valkey
+
+# initial rollout or recovery backfill
+make seq-backfill                # dry-run
+make seq-backfill DRYRUN=false   # assigns numbers + seeds counter
+
+# target prod
+make seq-status ENV=prod
+make seq-seed   ENV=prod DRYRUN=false
 ```
 
-Use the `op-run` / Makefile credential wrapper (per repo AWS-creds convention) rather than `aws configure`. Put these exact commands in the runbook so a re-seed is muscle memory, not archaeology.
+All targets inject 1Password credentials via `op run` (same pattern as the rest of the Makefile). `DRYRUN` defaults to `true` so a bare `make seq-seed` / `make seq-backfill` is always safe.
 
-Invocations to run:
+Invocations:
 
-1. Once at initial rollout: `action: "backfill"` (dry-run, then real) — numbers existing records and seeds the counter, before the write-path Lambda goes live.
-2. Immediately after the write-path Lambda is live: `action: "backfill"` again to catch deploy-window stragglers (idempotent).
+1. ✅ Initial rollout: `action: "backfill"` (dry-run, then real) — completed before write-path Lambda went live.
+2. ✅ Immediately after deploy: `action: "backfill"` again for deploy-window stragglers — completed.
 3. On demand, if the key is ever lost (failover, flush, cluster replacement): `action: "seed"`.
 
 ### Resilience — 503, do not degrade
 
 If Valkey is unavailable, or the guarded INCR returns the "absent key" sentinel, the write path returns **503** and does not persist the observation:
 
-- The server **never** stores a record without an `observationNumber`. "Every stored observation has a number" is a hard invariant (after backfill), which keeps `tripSequenceHighWater`, the pull filter, and client dedup simple — there is no server-side unnumbered-record class to reason about.
+- The server **never** stores a new record without an `observationNumber`. Any legacy unnumbered records were cleared by the initial backfill; the repair path in the noop branch handles the edge case of a prior `setObservationNumber` failure.
 - Clients treat 503 as a transient sync failure and retry with backoff. They remain fully functional offline: local capture and P2P are unaffected, so a Valkey outage degrades *cloud sync availability*, not the app.
-- Alarm on Valkey connection errors and on any occurrence of the absent-key sentinel (the latter means the counter was lost and the `seq-maintenance` Lambda must be re-invoked with `action: "seed"`).
-
-This trades a little cloud-sync availability for a large drop in complexity and the elimination of the silent-corruption failure mode. For a birding app where sync is convenience, not a hard real-time requirement, that is the right trade.
-
-> Apply the same 503 stance to any other hard dependency the sync write path gains (e.g. a future strongly-consistent metadata store): fail the write cleanly and let the client retry, rather than accepting a partially-numbered or degraded write.
+- The existing 5xx CloudWatch alarm fires on sustained 503s. No dedicated Valkey-error alarm is deployed yet — the generic 5xx is sufficient for v1.
 
 ---
 
@@ -175,31 +197,26 @@ This trades a little cloud-sync availability for a large drop in complexity and 
 
 ### Existing observations
 
-Pre-feature records in DynamoDB have no `observationNumber`. These are treated as legacy and assigned numbers by the `seq-maintenance` Lambda's `backfill` action (see Valkey Population).
+Pre-feature records in DynamoDB have no `observationNumber`. These are treated as legacy and assigned numbers by the `seq-maintenance` Lambda's `backfill` action.
 
 #### Backfill = the maintenance Lambda's `backfill` action
 
-Backfill and the Valkey seed are the same `seq-maintenance` code path (`action: "backfill"`), invoked per the "How to invoke" instructions above:
+Backfill and the Valkey seed are the same `seq-maintenance` code path (`action: "backfill"`):
 
 1. Scan all items in the `changes` GSI ordered by `serverUpdatedAt` ascending (deterministic, reproducible).
 2. Assign `observationNumber` 1, 2, 3, … in that order to any item lacking one.
 3. Write back with a conditional `attribute_not_exists(observationNumber)` guard so it is idempotent and re-runnable.
-4. After the scan completes, run the seed step: `SET trip:shared:seq <max assigned number>`, raising-only (never lower an already-live counter). Key on **max**, not count — for a clean backfill they're equal, but keying on max keeps a re-run or a partially-numbered table from resetting the counter below an already-issued number.
+4. After the scan completes, run the seed step: `SET trip:shared:seq <max assigned number>`, raising-only.
 
-Always run with `dryRun: true` first and confirm the reported `before`/`dynamoMax`/`after` before committing.
+#### Rollout sequence (completed for dev)
 
-#### Rollout sequence
-
-Because the write path 503s when the counter isn't seeded, ordering matters:
-
-1. Deploy the `seq-maintenance` Lambda and invoke `action: "backfill"` so every existing record has a number and `trip:shared:seq` exists.
-2. Deploy the numbering (write-path) Lambda. From its first write it issues guarded INCRs from the correct high-water mark.
-
-> **Deploy-window stragglers.** The *old* (pre-numbering) write-path Lambda does not number writes, so any observation it accepts between the backfill scan and the new write-path Lambda going live has no `observationNumber`. These are the *only* unnumbered records the server ever holds. Because `backfill` is idempotent and re-runnable, just **invoke it again** right after the new write-path Lambda is live to number them (and raise the counter if needed). No maintenance window required; no lazy self-seeding needed. After this second pass, "every stored observation has a number" holds with no exceptions.
+1. ✅ Deployed `seq-maintenance` Lambda and invoked `action: "backfill"` — all existing records numbered and `trip:shared:seq` seeded.
+2. ✅ Deployed numbering (write-path) Lambda. First production write: Ruddy-breasted Seedeater (observationNumber = 1).
+3. ✅ Re-ran `backfill` for deploy-window stragglers.
 
 #### Client handling of legacy/unnumbered records
 
-Post-backfill the server holds no unnumbered records, but a *client* can still hold one transiently: a record it created offline, or received via P2P, before its server sync assigned/delivered the number. Clients treat such records as "unordered" — include them in P2P payloads, but skip watermark logic until the number arrives (via `applied` for the origin device, or via the pull import for everyone else).
+Post-backfill the server holds no unnumbered records (except for the edge case of a failed `setObservationNumber`, handled by the noop repair path). A *client* can still hold one transiently: a record it created offline, or received via P2P, before its server sync assigned/delivered the number. Clients treat such records as "unordered" — include them in P2P payloads, but skip watermark logic until the number arrives (via `applied` for the origin device, or via the pull import for everyone else).
 
 ---
 
@@ -245,7 +262,7 @@ A record may exist in the local store without an `observationNumber` (created of
 
 **Do not** try to promote the number via the LWW merge path by checking `observationNumber != nil` as a secondary update condition. That would make the merge semantics inconsistent and silently resurrect otherwise-stale data. The `applied` path is the correct mechanism for the origin device; the import path is correct for all others.
 
-The server should return the newly assigned `observationNumber` in the `applied` array entry for pushed records so the pushing client learns the number in the same response that accepted the push, without waiting for the pull phase of the same or a subsequent sync.
+The server returns the newly assigned `observationNumber` in the `applied` array entry for pushed records so the pushing client learns the number in the same response that accepted the push, without waiting for the pull phase of the same or a subsequent sync.
 
 ---
 
@@ -263,7 +280,7 @@ The server should return the newly assigned `observationNumber` in the `applied`
 }
 ```
 
-This is `serverSyncedHWM` from the client state section — the server-confirmed value, **not** the local max. **HWM-primary pull:** when the client sends this field, the server queries the `(pk, observationNumber)` GSI for `observationNumber > serverSyncedObservationNumberHWM`, ordered ascending, and paginates in that order. There is no separate timestamp filter and no post-hoc AND filter — the GSI query *is* the pull.
+This is `serverSyncedHWM` from the client state section — the server-confirmed value, **not** the local max. **HWM-primary pull:** when the client sends this field, the server queries the `(pk, observationNumber)` GSI for `observationNumber > serverSyncedObservationNumberHWM`, ordered ascending, and paginates in that order.
 
 **Legacy fallback.** A client that does not send `serverSyncedObservationNumberHWM` (older build) falls back to the existing timestamp-`cursor` pull path unchanged. The server keeps both paths during the transition and picks per request based on which field the client sends.
 
@@ -313,11 +330,11 @@ For the **origin device**, `observationNumber` can only arrive via `applied`.
        // stream, not the push echo (see Advancement rules)
    }
    ```
-4. `ObservationRecordDTO` — add `observationNumber: Int?` (optional, `decodeIfPresent`).
+4. `ObservationRecordDTO` — add `observationNumber: Int?` (optional, `decodeIfPresent`). **Do not add it to `encode`/`CodingKeys` for the outbound direction** — clients must never upload it (see Backward Compatibility). The server's `toStored` already strips any client-supplied value as defense-in-depth.
 
-#### Server pull logic (HWM-primary)
+#### Server pull logic (HWM-primary) — implemented
 
-When the client sends `serverSyncedObservationNumberHWM`, the server Queries the `(pk, observationNumber)` GSI with a **KeyConditionExpression** — no post-hoc filtering:
+When the client sends `serverSyncedObservationNumberHWM`, the server queries the `(pk, observationNumber)` GSI with a **KeyConditionExpression** — no post-hoc filtering:
 
 ```typescript
 const page = await ddb.query({
@@ -333,22 +350,9 @@ const page = await ddb.query({
 
 Because `observationNumber > :hwm` is a **key condition** (not a `FilterExpression`), DynamoDB's `Limit` and `LastEvaluatedKey` apply to the *matched* rows — pagination is exact, and the truncation hazard of a post-`Limit` filter does not arise. The client advances `serverSyncedHWM` to the highest number in each page (see Advancement rules).
 
-No unnumbered records appear on this path: post-backfill every stored record has a number, so there is nothing to special-case. (A client on the legacy `cursor` path may still receive records the ordinary way; that path is unchanged.)
+#### Sync response: `tripSequenceHighWater` — implemented
 
-#### Sync response: `tripSequenceHighWater`
-
-Add `tripSequenceHighWater` to `SyncResponse`:
-
-```json
-"tripSequenceHighWater": {
-  "type": "integer",
-  "description": "Current value of the trip's sequence counter (the highest observationNumber assigned so far). NOT a count of live observations — burned numbers and superseded record versions mean this exceeds the number of live records. Lets clients know when they are fully caught up."
-}
-```
-
-> Named `tripSequenceHighWater`, not `tripObservationCount`: because numbers bump on every write and can be burned on failed writes, the counter is strictly ≥ the live observation count and the two diverge over time. Calling it a "count" would mislead clients into using it for UI totals.
-
-Populated from `GET trip:shared:seq` in Valkey. Clients compare against their `serverSyncedHWM`: if `serverSyncedHWM >= tripSequenceHighWater` the client has pulled everything the server has and no further pull page is needed. (Comparing `localObservationNumberMax` instead can mislead — P2P can push it near the high-water while server-side gaps remain; the number-ordered pull, keyed off `serverSyncedHWM`, is what actually closes them.)
+`tripSequenceHighWater` is included in the sync response (and in GET /v1/observations when the `hwm` parameter is present). Populated from `GET trip:shared:seq` in Valkey. Clients compare against their `serverSyncedHWM`: if `serverSyncedHWM >= tripSequenceHighWater` the client has pulled everything the server has and no further pull page is needed.
 
 ---
 
@@ -393,9 +397,7 @@ After a successful P2P receive, update `localObservationNumberMax` from `max(rec
 
 #### No persistent per-peer sent-HWM needed
 
-The sending device does not need to persistently track "what I sent to peer X last session." The peer's hello in each new session announces its current `localObservationNumberMax`, which is the correct input for computing the delta. Persistent tracking of the sender's view would add complexity with no correctness benefit — the peer's self-reported max is always fresher.
-
-However, if the peer's announced max decreases between sessions (device reinstall, data loss), the sender should treat the new lower value at face value and re-send the full delta from zero. Do not clamp to a stored sent-HWM.
+The sending device does not need to persistently track "what I sent to peer X last session." The peer's hello in each new session announces its current `localObservationNumberMax`, which is the correct input for computing the delta.
 
 #### Backward compatibility
 
@@ -434,172 +436,114 @@ This is slightly wasteful (A re-fetches 81–100 from server even though it got 
 
 ---
 
-## Infrastructure (Terraform)
+## Infrastructure (Terraform) — Implemented
 
-### New module: `valkey`
+All infrastructure is deployed. Notes on what was actually built vs. the original plan:
 
-```hcl
-module "valkey" {
-  source = "./modules/valkey"
+- **VPC module**: private subnets + Lambda security group + DynamoDB/CloudWatch VPC endpoints. ✅
+- **Valkey module**: ElastiCache Serverless (Valkey mode), `birdcount-{env}-seq`. ✅
+- **API Lambda**: placed in VPC, same security group used by seq-maintenance. ✅
+- **seq-maintenance Lambda**: own IAM role, in VPC, not on API Gateway. ✅
+- **Lambda authorizer** (`birdcount-{env}-authorizer`): runs **outside the VPC** (needs internet access to fetch Cognito JWKS). Separate IAM role with basic execution only. ✅ (not in original plan — added to handle M2M auth)
+- **Security groups**: `valkey` SG: inbound 6379 from Lambda SG. Lambda SG: outbound 6379 to Valkey, outbound 443 to VPC endpoints. ✅
 
-  project_name = local.project_name
-  environment  = var.environment
-  vpc_id       = module.vpc.vpc_id
-  subnet_ids   = module.vpc.private_subnet_ids
-  lambda_sg_id = module.api.lambda_security_group_id
-
-  tags = local.common_tags
-}
-```
-
-### VPC requirement
-
-Current Lambda is not in a VPC. Adding VPC placement:
-- Creates a `aws_lambda_function` VPC config with private subnets.
-- Adds `AWSLambdaVPCAccessExecutionRole` policy to the Lambda role.
-- Since the 2019 Hyperplane ENI re-architecture the ENI is provisioned at function create/update time, not per cold-start, so VPC placement adds only negligible cold-start overhead (tens of ms) — no ENI pre-warming needed. The Hyperplane ENI itself is not billed.
-- NAT Gateway (or VPC endpoint) required for Lambda to reach DynamoDB and CloudWatch from within the VPC. Use VPC Interface Endpoints for DynamoDB and CloudWatch to avoid NAT costs.
-
-### ElastiCache Serverless (Valkey)
-
-```hcl
-resource "aws_elasticache_serverless_cache" "valkey" {
-  engine = "valkey"
-  name   = "${var.project_name}-${var.environment}-seq"
-
-  cache_usage_limits {
-    data_storage {
-      maximum = 1   # GB — counter only, negligible storage
-      unit    = "GB"
-    }
-    ecpu_per_second {
-      maximum = 1000
-    }
-  }
-
-  subnet_ids         = var.subnet_ids
-  security_group_ids = [aws_security_group.valkey.id]
-}
-```
-
-### `seq-maintenance` Lambda
-
-A second function, in the **same** private subnets and security group as the write-path Lambda (so it reaches DynamoDB and Valkey), but **not** attached to API Gateway — operator-invoked only.
-
-```hcl
-resource "aws_lambda_function" "seq_maintenance" {
-  function_name = "${var.project_name}-${var.environment}-seq-maintenance"
-  role          = aws_iam_role.seq_maintenance.arn
-  handler       = "seqMaintenance.handler"
-  # ... runtime/source shared with the API build ...
-
-  timeout = 300  # full-partition scan headroom; runs rarely
-
-  vpc_config {
-    subnet_ids         = var.subnet_ids
-    security_group_ids = [module.api.lambda_security_group_id]
-  }
-
-  environment {
-    variables = {
-      VALKEY_ENDPOINT = aws_elasticache_serverless_cache.valkey.endpoint[0].address
-      TABLE_NAME      = var.table_name
-    }
-  }
-}
-```
-
-- IAM role: DynamoDB read + conditional write on the table (for `backfill`), plus `AWSLambdaVPCAccessExecutionRole`. No API Gateway permission. Restrict `lambda:InvokeFunction` to the operator role so invocation is IAM-gated and audited (CloudTrail).
-- Longer `timeout` than the write path because it scans the whole partition; it runs rarely, so cost is negligible.
-- Reuses the write-path Lambda's security group — no new SG rules needed (it egresses 6379 to Valkey and 443 to VPC endpoints exactly like the write path).
-
-### Security groups
-
-- `valkey` SG: inbound 6379 from Lambda SG only (shared by write-path and `seq-maintenance` Lambdas).
-- Lambda SG: outbound 6379 to Valkey SG; outbound 443 to VPC endpoints.
+Note: module wiring uses `module.vpc.lambda_security_group_id` (not `module.api.lambda_security_group_id` as the original plan sketch showed).
 
 ---
 
 ## Backward Compatibility & Rollout Safety
 
-**Yes — the backend can ship ahead of (or without) any iOS client update, and existing clients keep working.** This holds because of three properties verified in the code:
+**Yes — the backend shipped ahead of any iOS client update, and existing clients keep working.** This holds because of three properties verified in the code:
 
-1. **iOS ignores unknown response fields.** The client uses hand-written `Codable` with explicit `CodingKeys` (`bird-count-ios/BirdCount/Models/ObservationDTO.swift:65`), and the drift-gate test states the intent outright: *"Swift decoders ignore unknown keys by design; the strict boundary is the backend's ajv validation"* (`bird-count-ios/TestsCore/SchemaConformanceTests.swift:17`). So new outbound fields — `observationNumber` on records, `tripSequenceHighWater` on the response — are invisible to old clients.
-2. **The HWM pull is opt-in.** Old clients send only `cursor` (`CloudAPIClient.swift:8`); branch the server on presence of `serverSyncedObservationNumberHWM` and old clients get the unchanged `serverUpdatedAt` pull path (`sync.ts:55`, `dynamo.ts:65`). The `changes` GSI is untouched, so adding `gsi_observationNumber` doesn't affect it.
-3. **503 is within the existing failure contract.** iOS throws on any non-200 (`CloudAPIClient.swift:66`) and `CloudSyncService` turns it into a transient `.failure`, without advancing/persisting the cursor (it's saved only on success at `CloudSyncService.swift:186`). A Valkey-down 503 looks like any other 5xx and is retried.
+1. **iOS ignores unknown response fields.** The client uses hand-written `Codable` with explicit `CodingKeys` (`bird-count-ios/BirdCount/Models/ObservationDTO.swift:74`). `observationNumber` is not in `CodingKeys`, so the server's field is silently dropped on decode. This is the correct behavior until the iOS changes land.
+2. **The HWM pull is opt-in.** Old clients send only `cursor`; the server branches on presence of `serverSyncedObservationNumberHWM` and old clients get the unchanged `serverUpdatedAt` pull path.
+3. **503 is within the existing failure contract.** iOS throws on any non-200 (`CloudAPIClient.swift:66`) and `CloudSyncService` turns it into a transient `.failure`, without advancing/persisting the cursor (saved only on success).
 
-**Do not bump `schemaVersion`.** The server rejects `schemaVersion > SUPPORTED_SCHEMA_VERSION` (=2) at `index.ts:40`, and the client sends `2` (`CloudAPIClient.swift:6`). `observationNumber` is additive-optional, so it stays at 2 — bumping it would make an old server 400-reject new clients.
+**Do not bump `schemaVersion`.** `observationNumber` is additive-optional, stays at 2.
 
 ### The one asymmetric hazard — inbound ajv validation
 
-The server validates **incoming** `SyncRequest`s (including each `changes` item against `observation.schema.json`) with ajv, and every schema object is `additionalProperties: false` (`validate.ts`, `observation.schema.json:26`). Consequences:
+The server validates **incoming** `SyncRequest`s (including each `changes` item) with ajv, and every schema object is `additionalProperties: false`. Consequences:
 
 - Adding optional `observationNumber` to the schema does **not** break old clients — they never send it.
-- But a **new** client that *re-encodes* `observationNumber` on upload would be **400-rejected by a not-yet-updated server**, creating a deploy-order constraint and a break window.
-- **Fix that removes the constraint entirely: make `observationNumber` read-only / upload-omitted on the client.** Decode it, never encode it — leave it out of the DTO's `encode`/`CodingKeys` (the DTO already hand-rolls both, `ObservationDTO.swift:51-66`). Then client and server deploy in any order, and the server also ignores any stray client-supplied value as defense-in-depth (`toStored`, `sync.ts:17`).
-- Keep `serverSyncedObservationNumberHWM` **optional** in `SyncRequest` and decode `tripSequenceHighWater` with `decodeIfPresent` so a new client also tolerates a not-yet-updated server mid-rollout.
+- A **new** client that *re-encodes* `observationNumber` on upload would be 400-rejected. **Fix: `observationNumber` is decode-only** — add to `ObservationRecordDTO.init(from:)` and `decodeIfPresent`, but do **not** add it to `encode(to:)` or `CodingKeys` for the encoder direction. The server's `toStored` also strips any client-supplied value as defense-in-depth.
+- Keep `serverSyncedObservationNumberHWM` **optional** in `SyncRequest` so a new iOS client also tolerates a not-yet-updated server.
 
-### Rollout-order functional hazard — renumber storm
+### Rollout-order functional hazard — renumber storm (mitigated in implementation)
 
-First-ever sync and recovery sync **re-upload the entire ledger** (`markAllDirty` when the cursor is nil, `CloudSyncService.swift:145`; recovery reset at `:117`). The re-put is an idempotent no-op overwrite (`putObservation` accepts equal `updatedAt`, `dynamo.ts:48`). If the INCR fires on *every* accepted put, one recovery sync **re-numbers the whole ledger** and forces every other device to re-pull everything.
-
-→ **Gate the INCR on a genuine state change** (new record, or strictly newer `updatedAt`), not merely on a successful conditional put; on an equal-`updatedAt` no-op, preserve the record's existing `observationNumber`. This keeps the "gate INCR on `ok === true`" note from step 5 honest and prevents the storm.
+First-ever sync and recovery sync re-upload the entire ledger (`markAllDirty` when the cursor is nil, `CloudSyncService.swift:145`). The re-put is an equal-`updatedAt` no-op. The INCR is gated on `putResult === "written"` (genuine new/updated record), not on any successful conditional put — equal-`updatedAt` no-ops return the `{ kind: "noop" }` branch and preserve the stored `observationNumber`. This correctly prevents the renumber storm.
 
 ### Rollout checklist
 
-1. Schema PR (additive, optional, no `schemaVersion` bump) → regenerate types → land backend that assigns/stamps numbers and preserves the legacy cursor path.
-2. Run `seq-maintenance backfill` (before the numbering Lambda is live) → deploy numbering Lambda → re-run `backfill` for deploy-window stragglers.
-3. Ship iOS whenever: it decodes the new fields, **omits `observationNumber` on upload**, and sends the HWM. No coordinated release required.
+1. ✅ Schema PR (additive, optional, no `schemaVersion` bump) — deployed.
+2. ✅ Run `seq-maintenance backfill` before numbering Lambda live → deploy numbering Lambda → re-run `backfill` for stragglers — completed.
+3. ⬜ Ship iOS: decode new fields, **omit `observationNumber` on upload**, send HWM. No coordinated backend release required.
 
 ---
 
 ## Implementation Order
 
-Each step lists the concrete files to touch (verified against the current tree; `path:line` anchors are clickable). The paths also serve as a correctness check — the plan's claims about existing behavior were validated against this code.
+Steps 1–5 are complete and deployed to dev. Steps 6–8 are the remaining iOS work.
 
-1. **Schema** — the wire contract; TS types are generated from it, so this is the source of truth.
-   - `bird-count-schema/schemas/observation.schema.json` — add optional `observationNumber` (integer, `minimum: 1`). ⚠️ `additionalProperties: false` (`observation.schema.json:26`) means *every* new field must be declared here or validation rejects it.
-   - `bird-count-schema/schemas/sync.schema.json` — add `serverSyncedObservationNumberHWM` to `SyncRequest` (`sync.schema.json:11`), `observationNumber` to the `applied` item (`sync.schema.json:34`), and `tripSequenceHighWater` to `SyncResponse` (`sync.schema.json:29`). All three objects are also `additionalProperties: false`.
-   - Regenerate: `npm run generate` in `bird-count-schema` (`bird-count-schema/scripts/generate-ts.mjs`) → refreshes `bird-count-backend/api/src/generated/types.ts`. Add/refresh golden fixtures under `bird-count-schema/fixtures/valid/`.
-2. **DynamoDB GSI** — `bird-count-backend/terraform/modules/db/main.tf`: add an `observationNumber` attribute (type `N`) and a second `global_secondary_index` `gsi_observationNumber` `(pk, observationNumber)`, `projection_type = ALL` (mirror the existing `changes` GSI at `db/main.tf:29`). The IAM readwrite doc already covers `/index/*` Query (`db/main.tf:45`).
-3. **`seq-maintenance` Lambda** — `status` / `seed` / `backfill` actions with `dryRun`; assign numbers to existing records by `serverUpdatedAt` order (reuse the `changes` GSI query in `bird-count-backend/api/src/dynamo.ts:65`); `SET trip:<trip>:seq <max>` raising-only; idempotent — reuse the existing conditional-put guard (`dynamo.ts:48`, `attribute_not_exists`). Document the `aws lambda invoke` commands in the runbook.
-4. **Terraform** — root wiring in `bird-count-backend/terraform/main.tf` (modules at `main.tf:39-82`): add a `valkey` module + VPC/endpoints; update the write-path Lambda for VPC (`modules/api/main.tf:44`, `aws_lambda_function.api` — currently **no** `vpc_config`, confirming the plan) and its role (`modules/api/main.tf:27`); add the `seq-maintenance` Lambda (own role, no API Gateway route, shared SG/subnets). Reuse the existing SNS-alarm pattern (`modules/api/main.tf:159-189`) for the 503-rate and Valkey-error alarms. If assigning the number via a follow-up `UpdateItem`, add `dynamodb:UpdateItem` to the readwrite policy (`db/main.tf:45` currently grants only Get/Put/Query).
-5. **Backend** — `bird-count-backend/api/src/sync.ts` + `dynamo.ts`:
-   - Guarded INCR (incr-if-exists Lua) on each accepted write. In `sync.ts:84-91` the loop already has the `applied`/`stale` result from `putObservation` (`dynamo.ts:39`) — gate the INCR on a *genuine state change* (new record or strictly newer `updatedAt`), not just `ok === true`: an equal-`updatedAt` no-op re-put must keep its existing number, or first/recovery syncs renumber the whole ledger (see Backward Compatibility → renumber storm). This means `putObservation` must distinguish "created/updated" from "idempotent no-op," and preserve the stored `observationNumber` on the no-op.
-   - In `toStored` (`sync.ts:17`) **do not trust** a client-supplied `observationNumber` — assign server-side only (the current `...o` spread would otherwise pass it through).
-   - Absent-key/Valkey-down → **503** from `index.ts` (route handlers at `modules/api/main.tf:104`).
-   - `toWire` (`sync.ts:37`) already returns all DTO fields, so `observationNumber` flows outbound once it's on the DTO; add it to each `applied` entry (`sync.ts:90`).
-   - **HWM-primary pull**: add a `queryByNumber` beside `queryChanges` (`dynamo.ts:65`) — same shape, `KeyConditionExpression: "pk = :pk AND observationNumber > :hwm"` on `gsi_observationNumber`, native `Limit`/`LastEvaluatedKey`. Branch in `pull`/`sync` (`sync.ts:55,73`) on whether the request carries the HWM; keep the existing `serverUpdatedAt` path (`dynamo.ts:65`) for legacy clients. Add `tripSequenceHighWater` (from `GET trip:shared:seq`) to the response.
-6. **iOS client state** — `bird-count-ios/BirdCount/Models/ObservationDTO.swift:10` (add `observationNumber: Int?`, `decodeIfPresent` per the existing pattern at `ObservationDTO.swift:43`); `bird-count-ios/BirdCount/Stores/ObservationStore.swift` — persist `serverSyncedHWM` + `localObservationNumberMax` beside `cloudSyncCursor`; add `applyServerObservationNumbers` (the `mergeDTOs` LWW skip that drops the echo is at `ObservationStore.swift:498-506` — this is why the `applied` path is required; the import/update branches at `:499,:509` capture the number for non-origin devices).
-7. **iOS cloud sync** — `bird-count-ios/BirdCount/Cloud/CloudAPIClient.swift`: add `serverSyncedObservationNumberHWM` to `SyncRequestBody` (`:5`), `observationNumber` to `SyncAppliedResult` (`:12`), `tripSequenceHighWater` to `SyncResponseBody` (`:17`) and `PullResponseBody` (`:25`). In `CloudSyncService.syncNow` (`CloudSyncService.swift:163-186`) send the HWM, call `applyServerObservationNumbers` where `applied` is processed (`:166`), and advance `serverSyncedHWM` per ordered page. (This can eventually retire the client-side `cursorRewindMs` hack at `CloudSyncService.swift:38`/`:227`.)
-8. **iOS P2P** — `bird-count-ios/BirdCount/Sync/SyncMessage.swift:30` add `var localObservationNumberMax: Int? = nil` to `SyncHelloMessage` (follow the existing optional-with-default backward-compat pattern at `:40-41`); delta-filter the `PayloadV1.observations` (`bird-count-ios/BirdCount/Models/PayloadV1.swift:12`) best-effort; advance `localObservationNumberMax` after a P2P receive; full-send fallback when the field is absent.
-9. **Tests** — unit: seed raising-only, backfill idempotency, guarded-INCR returns 503 on absent key / Valkey down (server never stores an unnumbered record), HWM advancement (advance to highest number pulled; P2P receipt does *not* advance `serverSyncedHWM`), number-ordered pull pagination (native `Limit`/`LastEvaluatedKey`, no truncation), edit-renumbers-and-redelivers-above-HWM, negate/adjustment-child appends-and-syncs, GSI entry moves when `observationNumber` changes. Existing suites to extend: `bird-count-ios/TestsCore/ObservationStoreTests.swift`, `bird-count-ios/Tests/ObservationSyncTests.swift`, `bird-count-ios/TestsCore/SyncQueueTests.swift`. Integration: full sync roundtrip with mixed P2P + server ordering, legacy-cursor client fallback, and a client 503-retry path.
+1. ✅ **Schema** — `observationNumber` on observation, `serverSyncedObservationNumberHWM` + `observationNumber` in applied + `tripSequenceHighWater` on sync. Deployed.
+
+2. ✅ **DynamoDB GSI** — `gsi_observationNumber (pk, observationNumber)`. Deployed.
+
+3. ✅ **`seq-maintenance` Lambda** — `status` / `seed` / `backfill` with `dryRun`. Seeded in dev. First observation: Ruddy-breasted Seedeater (observationNumber = 1).
+
+4. ✅ **Terraform** — VPC, Valkey, seq-maintenance Lambda, API Lambda in VPC, Lambda authorizer (replaces JWT authorizer).
+
+5. ✅ **Backend** — guarded INCR on new writes, noop preserves number, repair path, HWM-primary pull via `queryByNumber`, `tripSequenceHighWater` from Valkey, 503 on absent key. E2E test suite: 37 checks (`make e2e`).
+
+6. ⬜ **iOS client state** — `bird-count-ios/BirdCount/Models/ObservationDTO.swift`:
+   - Add `observationNumber: Int?` to `ObservationRecordDTO`, decoded with `decodeIfPresent`. **Do not encode it** — add to `init(from:)` only, not to `encode(to:)` or the `CodingKeys` enum (the encoder direction must remain clean to avoid ajv 400 rejections).
+   - `bird-count-ios/BirdCount/Stores/ObservationStore.swift`: persist `serverSyncedHWM: Int` + `localObservationNumberMax: Int` beside `cloudSyncCursor`.
+   - Add `applyServerObservationNumbers(_ entries: [(id: UUID, number: Int)])` — in-place update that bypasses LWW merge (see Client State Management). The LWW skip that drops the echo is at `ObservationStore.swift:498-506`; this is why the `applied` path is the only route for the origin device.
+
+7. ⬜ **iOS cloud sync** — `bird-count-ios/BirdCount/Cloud/CloudAPIClient.swift`:
+   - Add `var serverSyncedObservationNumberHWM: Int?` to `SyncRequestBody` (`:5`).
+   - Add `let observationNumber: Int?` to `SyncAppliedResult` (`:12`).
+   - Add `let tripSequenceHighWater: Int?` to `SyncResponseBody` (`:17`) and `PullResponseBody` (`:25`).
+   - Add `func observations(hwm: Int, limit: Int = 200)` variant using `?hwm=\(hwm)` (existing `since:` variant stays for legacy fallback).
+   - `CloudSyncService.syncNow` (`CloudSyncService.swift:163`): send `serverSyncedObservationNumberHWM`, call `store.applyServerObservationNumbers` where applied is processed (`:166`), advance `serverSyncedHWM` per ordered page. This eventually retires the `cursorRewindMs` hack at `CloudSyncService.swift:38`/`:229`.
+
+8. ⬜ **iOS P2P** — `bird-count-ios/BirdCount/Sync/SyncMessage.swift`:
+   - Add `var localObservationNumberMax: Int? = nil` to `SyncHelloMessage` (`:30`), following the existing optional-with-default backward-compat pattern.
+   - Delta-filter `PayloadV1.observations` (`bird-count-ios/BirdCount/Models/PayloadV1.swift:12`) best-effort: send records with `observationNumber > peerHello.localObservationNumberMax ?? 0`, always including unnumbered records.
+   - After a P2P receive, update `localObservationNumberMax`; do not update `serverSyncedHWM`.
+   - Full-send fallback when peer's hello omits the field.
+
+9. ⬜ **iOS tests** — extend `bird-count-ios/TestsCore/ObservationStoreTests.swift` and `bird-count-ios/Tests/ObservationSyncTests.swift`:
+   - HWM advancement (advance from ordered pull; P2P receipt does *not* advance `serverSyncedHWM`).
+   - `applyServerObservationNumbers` sets number without LWW merge, doesn't advance `serverSyncedHWM`.
+   - Decode-only: encoding a DTO with `observationNumber` set does not emit the field.
+   - Delta-send P2P optimization: records above peer max are sent; records at or below are omitted; unnumbered always sent.
 
 ---
 
 ## Decisions
 
-Settled — build to these. (Rationale lives in the linked sections; this list is the at-a-glance record so the open items below aren't diluted.)
+Settled — build to these.
 
 - **`observationNumber` is a per-trip write sequence**, reassigned on every accepted write (append or edit), *not* a stable creation ordinal. → *Problem Statement*.
 - **No deletes — append-only ledger.** Counts change only via appended negate entries; edits are additive and never change counts. Both appends and edits bump the watermark and sync back like new records. No tombstones needed. → *Problem Statement (Mutation model)*.
 - **Counter = Valkey `INCR`**, one key per trip (`trip:<tripId>:seq`); ElastiCache Serverless. → *Valkey (Auto-Incrementor)*.
 - **Guarded INCR** (incr-if-exists Lua); a bare `INCR` is never used. → *Sequence number assignment*.
-- **503 on dependency-down, no graceful degradation — accepted, not provisional.** If Valkey is unavailable or the key is unseeded, the write path 503s and stores nothing; the server never holds an unnumbered record (post-backfill). Clients retry; offline capture + P2P are unaffected, so an outage degrades cloud-sync availability only, never the app. This blast radius is accepted for v1/GA (sync is convenience, not real-time). Alarm on sustained 503 rate. → *Resilience*.
-- **Seeding/backfill/re-seed run via the operator-invoked `seq-maintenance` Lambda** (in-VPC, IAM-gated, not on API Gateway) — no bastion or SSM tunnel. → *Valkey Population*.
-- **`maxmemory-policy noeviction`.** With the guarded INCR, failover/flush/eviction surface as 503 + alarm (re-invoke `seq-maintenance` `action: "seed"`), never silent corruption.
-- **Two client HWMs** (`serverSyncedHWM` = highest number pulled from server; `localObservationNumberMax` = any-source max). Because the pull is number-ordered, `serverSyncedHWM` advancement is a simple "highest number drained" — no contiguous-prefix bookkeeping. → *Client State Management*.
-- **HWM-primary pull via the `(pk, observationNumber)` GSI**, paginated by number (`observationNumber > HWM`, ascending). Build the GSI now. The timestamp `cursor` is kept only as a legacy fallback for clients that don't yet send the HWM, and is deprecated over a ~3-release window gated on telemetry. → *Data Model*, *Protocol Changes*.
-- **Write trip-aware from day one.** Only `shared` exists in v1, but the `trip:<tripId>:seq` key and the `seq-maintenance` `trip` param carry the trip through so multi-trip needs no rework later.
+- **503 on dependency-down, no graceful degradation — accepted, not provisional.** → *Resilience*.
+- **Seeding/backfill/re-seed run via the operator-invoked `seq-maintenance` Lambda** (in-VPC, IAM-gated, not on API Gateway). → *Valkey Population*.
+- **`maxmemory-policy noeviction`.** With the guarded INCR, failover/flush/eviction surface as 503 + alarm, never silent corruption.
+- **Two client HWMs** (`serverSyncedHWM` = highest number pulled from server; `localObservationNumberMax` = any-source max). → *Client State Management*.
+- **HWM-primary pull via the `(pk, observationNumber)` GSI**, paginated by number. Timestamp `cursor` kept as legacy fallback; deprecated over ~3-release window gated on telemetry. → *Data Model*, *Protocol Changes*.
+- **Write trip-aware from day one.** Only `shared` exists in v1, but the key and param carry the trip through so multi-trip needs no rework later.
+- **Lambda authorizer replaces JWT authorizer.** Cognito client_credentials tokens (version 2) have no `aud` claim, so API Gateway's built-in JWT authorizer cannot validate M2M tokens. A Lambda authorizer validates user tokens by `aud` and M2M tokens by `scope`; runs outside VPC to reach Cognito JWKS. → *Auth note*.
 
 ## Deferred features
 
 Not in scope now; the design leaves room for them.
 
-- **Date-range–scoped pull.** A future mode where a client requests "everything I haven't seen *within a date range*" — e.g. to focus sync/UI on the range the user is currently reviewing rather than the whole trip. Implemented as the HWM pull plus a date predicate. The `serverUpdatedAt` GSI (or a dedicated date GSI) retained through the cursor transition can back this; note that a date `FilterExpression` layered on the number-ordered Query is post-`Limit`, so this feature needs its own paging design (a date-keyed GSI, or over-fetch-and-refill) rather than a naive filter. Deferring it is why the legacy date GSI isn't deleted the instant the cursor is gone.
+- **Date-range–scoped pull.** A future mode where a client requests "everything I haven't seen *within a date range*." The `serverUpdatedAt` GSI retained through the cursor transition can back this; note that a date `FilterExpression` layered on the number-ordered Query is post-`Limit`, so this feature needs its own paging design (a date-keyed GSI, or over-fetch-and-refill).
+- **Dedicated Valkey/503-rate alarm.** Currently covered by the generic 5xx CloudWatch alarm. A specific alarm metric filter on "sequence counter not seeded" log lines would shorten the MTTR for a key-loss incident.
 
 ## Open Questions
 
-Genuinely undecided — needs a call (or a measurement) before or during implementation.
-
-- *(none blocking — the cursor/pagination fork and delete model are resolved above. VPC cold-start impact is negligible post-Hyperplane; measure p99 in staging as due diligence, but it is not expected to gate anything.)*
+- *(none blocking — all design decisions are settled. iOS implementation can proceed with steps 6–8 in order; P2P (step 8) can be deferred to a follow-up if needed, since the server and cloud-sync changes (steps 6–7) deliver the primary efficiency benefit.)*

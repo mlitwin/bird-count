@@ -1,4 +1,4 @@
-.PHONY: help whoami aws tf init plan apply output validate api-test api-build e2e e2e-init web-config web-test web-deploy bootstrap
+.PHONY: help whoami aws tf init plan apply output validate api-test api-build e2e e2e-init seq-status seq-seed seq-backfill web-config web-test web-deploy bootstrap
 
 # AWS credentials come from 1Password via `op run` (see aws.env).
 ENV ?= dev
@@ -34,6 +34,9 @@ help:
 	@echo "              Set LOCAL=1 for redirectURI=localhost:8788"
 	@echo "  e2e-init    One-time: fetch M2M credentials from Terraform and store in 1Password"
 	@echo "  e2e         Run E2E tests against deployed API (ENV=dev|prod)"
+	@echo "  seq-status  Report Valkey counter value vs DynamoDB max (read-only)"
+	@echo "  seq-seed    Raise Valkey counter to DynamoDB max (dry-run by default; DRYRUN=false to commit)"
+	@echo "  seq-backfill Assign observationNumbers to unnumbered records, then seed (DRYRUN=false to commit)"
 	@echo "  bootstrap   One-time: GitHub OIDC provider + deploy role + account budget"
 
 whoami:
@@ -86,6 +89,28 @@ e2e-init:
 	    && op item edit "$$ITEM" --vault Private $$FIELDS \
 	    || op item create --category Login --title "$$ITEM" --vault Private $$FIELDS) && \
 	  echo "Done. Credentials stored in 1Password item '$$ITEM'."
+
+SEQ_FN    = birdcount-$(ENV)-seq-maintenance
+DRYRUN   ?= true
+
+# seq-maintenance Lambda operations (use DRYRUN=false to actually write).
+seq-status:
+	$(OP_RUN) aws lambda invoke \
+	  --function-name $(SEQ_FN) \
+	  --payload '{"action":"status","trip":"shared"}' \
+	  --cli-binary-format raw-in-base64-out /dev/stdout
+
+seq-seed:
+	$(OP_RUN) aws lambda invoke \
+	  --function-name $(SEQ_FN) \
+	  --payload '{"action":"seed","trip":"shared","dryRun":$(DRYRUN)}' \
+	  --cli-binary-format raw-in-base64-out /dev/stdout
+
+seq-backfill:
+	$(OP_RUN) aws lambda invoke \
+	  --function-name $(SEQ_FN) \
+	  --payload '{"action":"backfill","trip":"shared","dryRun":$(DRYRUN)}' \
+	  --cli-binary-format raw-in-base64-out /dev/stdout
 
 # Run E2E tests against the deployed API.
 # Credentials are read from 1Password via e2e-$(ENV).env — run `make e2e-init` first.
