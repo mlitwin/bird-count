@@ -86,6 +86,12 @@ jobs:
         working-directory: bird-count-backend/terraform
         run: |
           terraform init -backend-config=environments/${DEPLOY_ENV}.backend.hcl
+          # Pre-apply VPC and Valkey so subnet/SG IDs are in state before the Lambda
+          # vpc_config block is evaluated. Without this, adding vpc_config to an existing
+          # Lambda triggers an AWS provider "inconsistent final plan" error because
+          # subnet_ids is unknown at plan time.
+          terraform apply -auto-approve -var-file=environments/${DEPLOY_ENV}.tfvars \
+            -target=module.vpc -target=module.valkey
           terraform apply -auto-approve -var-file=environments/${DEPLOY_ENV}.tfvars
 
       - name: Deploy web viewer (${{ env.DEPLOY_ENV }})
