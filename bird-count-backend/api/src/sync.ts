@@ -4,10 +4,24 @@ import type {
   SyncRequest,
   SyncResponse,
 } from "./generated/types.js";
-import { putObservation, queryChanges, type StoredObservation } from "./dynamo.js";
+import {
+  putObservation,
+  queryChanges,
+  queryByNumber,
+  setObservationNumber,
+  type StoredObservation,
+} from "./dynamo.js";
+import { valkeyClient, tripSeqKey, guardedIncr } from "./valkey.js";
 
 export const SCOPE = "shared"; // v1: one shared pool; later "trip#<uuid>" / "user#<sub>"
 const PULL_LIMIT = 200;
+
+export class SeqUnavailableError extends Error {
+  constructor(msg: string) {
+    super(msg);
+    this.name = "SeqUnavailableError";
+  }
+}
 
 /** Missing on legacy v1 records; the backfill rule matches the iOS decoder. */
 function effectiveUpdatedAt(o: ObservationRecordDTO): number {
@@ -20,12 +34,15 @@ function toStored(
   serverUpdatedAt: number,
   schemaVersion: number,
 ): StoredObservation {
+  // Explicitly exclude observationNumber — it is server-assigned only.
+  // Any client-supplied value is ignored here; the write path sets it via INCR + UpdateItem.
+  const { observationNumber: _clientSupplied, ...rest } = o;
   return {
-    ...o,
+    ...rest,
     pk: SCOPE,
     sk: `obs#${o.id}`,
-    observer: o.observer ?? "",
-    status: o.status ?? "completed",
+    observer: rest.observer ?? "",
+    status: rest.status ?? "completed",
     updatedAt: effectiveUpdatedAt(o),
     observerSub,
     serverUpdatedAt,
@@ -43,20 +60,44 @@ export interface PullResult {
   changes: ObservationRecordDTO[];
   cursor: string;
   hasMore: boolean;
+  tripSequenceHighWater?: number;
 }
 
 /**
- * Strictly-after-cursor delta. The query is exclusive so pagination always
- * advances; the clock-skew overlap is the CLIENT's job — rewind the stored
- * cursor ~5s when starting a sync session (apply is idempotent, so
- * re-delivery is harmless). A server-side overlap would break pagination
- * whenever more records fall in the window than the page limit.
+ * Pull a page of changes.
+ *
+ * When hwm is present: HWM-primary path — queries gsi_observationNumber in ascending order.
+ * Otherwise: legacy timestamp-cursor path (clients that do not yet send the HWM field).
  */
 export async function pull(
   doc: DynamoDBDocumentClient,
   cursor: string | undefined,
+  hwm: number | undefined,
   limit = PULL_LIMIT,
 ): Promise<PullResult> {
+  if (hwm !== undefined) {
+    const page = await queryByNumber(doc, SCOPE, hwm, limit);
+    let maxSeen = hwm;
+    for (const item of page.items) {
+      if ((item.observationNumber ?? 0) > maxSeen) maxSeen = item.observationNumber!;
+    }
+    // Fetch tripSequenceHighWater from Valkey for the client's catch-up check.
+    let tripSequenceHighWater: number | undefined;
+    try {
+      const raw = await valkeyClient().get(tripSeqKey(SCOPE));
+      if (raw !== null) tripSequenceHighWater = Number(raw);
+    } catch {
+      // Non-fatal: omit the field rather than failing the pull.
+    }
+    return {
+      changes: page.items.map(toWire),
+      cursor: String(maxSeen),
+      hasMore: page.hasMore,
+      tripSequenceHighWater,
+    };
+  }
+
+  // Legacy timestamp-cursor pull (unchanged).
   const since = Number(cursor ?? "0") || 0;
   const page = await queryChanges(doc, SCOPE, since, limit);
   let maxSeen = since;
@@ -76,6 +117,8 @@ export async function sync(
   observerSub: string,
 ): Promise<SyncResponse> {
   const serverTime = Date.now();
+  const valkey = valkeyClient();
+  const seqKey = tripSeqKey(SCOPE);
 
   const applied: SyncResponse["applied"] = [];
   // Unique, increasing serverUpdatedAt within the batch so a page boundary
@@ -83,20 +126,39 @@ export async function sync(
   let stamp = Date.now();
   for (const change of request.changes) {
     stamp = Math.max(Date.now(), stamp + 1);
-    const ok = await putObservation(
-      doc,
-      toStored(change, observerSub, stamp, request.schemaVersion),
-    );
-    applied.push({ id: change.id, result: ok ? "applied" : "stale" });
+    const stored = toStored(change, observerSub, stamp, request.schemaVersion);
+
+    const putResult = await putObservation(doc, stored);
+
+    if (putResult === "written") {
+      // Genuine new record or additive edit: assign a fresh sequence number.
+      // INCR before UpdateItem; if UpdateItem fails the number is burned (gap, not corruption).
+      const n = await guardedIncr(valkey, seqKey);
+      if (n === -1) throw new SeqUnavailableError("sequence counter not seeded");
+      await setObservationNumber(doc, stored.pk, stored.sk, n);
+      applied.push({ id: change.id, result: "applied", observationNumber: n });
+    } else if (putResult === "stale") {
+      applied.push({ id: change.id, result: "stale" });
+    } else {
+      // Equal-updatedAt re-upload (e.g. recovery sync). The stored record is unchanged.
+      if (putResult.observationNumber !== undefined) {
+        // Already numbered: return the known number so the client doesn't need a pull round-trip.
+        applied.push({ id: change.id, result: "applied", observationNumber: putResult.observationNumber });
+      } else {
+        // Prior setObservationNumber failed — repair now by assigning a fresh number.
+        // INCR rather than re-using the originally burned number (which is unrecoverable).
+        const n = await guardedIncr(valkey, seqKey);
+        if (n === -1) throw new SeqUnavailableError("sequence counter not seeded");
+        await setObservationNumber(doc, stored.pk, stored.sk, n);
+        applied.push({ id: change.id, result: "applied", observationNumber: n });
+      }
+    }
   }
 
-  // Return the pull page's cursor untouched. The pull runs after the push,
-  // so this device's own rows are part of the delta and the cursor advances
-  // past them once pagination drains them (echoes are absorbed by the
-  // client's idempotent merge). Maxing with the pushed stamps here would
-  // leapfrog any not-yet-delivered page when hasMore is true, permanently
-  // skipping other devices' records.
-  const pulled = await pull(doc, request.cursor);
+  // Pull runs after push. Return the pull page's cursor untouched so this device's
+  // own rows are part of the delta and the cursor advances once pagination drains them.
+  const hwm = request.serverSyncedObservationNumberHWM;
+  const pulled = await pull(doc, request.cursor, hwm);
 
   return {
     serverTime,
@@ -104,5 +166,6 @@ export async function sync(
     applied,
     changes: pulled.changes,
     hasMore: pulled.hasMore,
+    tripSequenceHighWater: pulled.tripSequenceHighWater,
   };
 }

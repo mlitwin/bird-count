@@ -38,8 +38,8 @@ locals {
 }
 
 resource "aws_iam_openid_connect_provider" "github" {
-  url             = "https://token.actions.githubusercontent.com"
-  client_id_list  = ["sts.amazonaws.com"]
+  url            = "https://token.actions.githubusercontent.com"
+  client_id_list = ["sts.amazonaws.com"]
   thumbprint_list = [
     "6938fd4d98bab03faadb97b34396831e3780aea1",
     "1c58a3a8518e8759bf075b76b750d4f2df264fcd",
@@ -101,9 +101,9 @@ data "aws_iam_policy_document" "deploy_iam" {
 }
 
 resource "aws_iam_role" "github_deploy" {
-  name               = "birdcount-github-deploy"
-  description        = "Assumed by GitHub Actions (${local.github_repo}) to deploy the backend"
-  assume_role_policy = data.aws_iam_policy_document.github_trust.json
+  name                 = "birdcount-github-deploy"
+  description          = "Assumed by GitHub Actions (${local.github_repo}) to deploy the backend"
+  assume_role_policy   = data.aws_iam_policy_document.github_trust.json
   max_session_duration = 3600
 }
 

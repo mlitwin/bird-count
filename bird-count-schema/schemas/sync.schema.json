@@ -17,6 +17,11 @@
           "type": "string",
           "description": "Max serverUpdatedAt seen by this client, as decimal string; \"0\" or absent for first sync"
         },
+        "serverSyncedObservationNumberHWM": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Highest observationNumber the client has pulled from the server (excludes P2P-only records). When present, the server pulls all records with observationNumber greater than this in ascending order. 0 or absent means the client has pulled nothing via the number-ordered path; the server falls back to the cursor-based pull."
+        },
         "changes": {
           "type": "array",
           "maxItems": 100,
@@ -37,7 +42,12 @@
             "type": "object",
             "properties": {
               "id": { "type": "string", "format": "uuid" },
-              "result": { "enum": ["applied", "stale", "invalid"] }
+              "result": { "enum": ["applied", "stale", "invalid"] },
+              "observationNumber": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Server-assigned sequence number for this write. Present only when result is \"applied\"."
+              }
             },
             "required": ["id", "result"],
             "additionalProperties": false
@@ -47,7 +57,11 @@
           "type": "array",
           "items": { "$ref": "observation.schema.json" }
         },
-        "hasMore": { "type": "boolean" }
+        "hasMore": { "type": "boolean" },
+        "tripSequenceHighWater": {
+          "type": "integer",
+          "description": "Current value of the trip's sequence counter (the highest observationNumber assigned so far). Not a count of live observations — burned numbers and superseded record versions mean this can exceed the number of live records. Clients compare against their serverSyncedObservationNumberHWM to know when they are fully caught up."
+        }
       },
       "required": ["serverTime", "cursor", "applied", "changes", "hasMore"],
       "additionalProperties": false

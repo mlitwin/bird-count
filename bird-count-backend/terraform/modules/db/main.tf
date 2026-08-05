@@ -26,10 +26,22 @@ resource "aws_dynamodb_table" "data" {
     type = "N"
   }
 
+  attribute {
+    name = "observationNumber"
+    type = "N"
+  }
+
   global_secondary_index {
     name            = "changes"
     hash_key        = "pk"
     range_key       = "serverUpdatedAt"
+    projection_type = "ALL"
+  }
+
+  global_secondary_index {
+    name            = "gsi_observationNumber"
+    hash_key        = "pk"
+    range_key       = "observationNumber"
     projection_type = "ALL"
   }
 
@@ -49,6 +61,7 @@ data "aws_iam_policy_document" "readwrite" {
       "dynamodb:DescribeTable",
       "dynamodb:GetItem",
       "dynamodb:PutItem",
+      "dynamodb:UpdateItem",
       "dynamodb:Query",
     ]
     resources = [

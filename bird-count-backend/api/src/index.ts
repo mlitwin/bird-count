@@ -1,7 +1,7 @@
 import type { APIGatewayProxyEventV2WithJWTAuthorizer, APIGatewayProxyResultV2 } from "aws-lambda";
 import { docClient } from "./dynamo.js";
 import { parseSyncRequest } from "./validate.js";
-import { pull, sync, SCOPE } from "./sync.js";
+import { pull, sync, SCOPE, SeqUnavailableError } from "./sync.js";
 import { computeSummary, queryObservations, refreshLedger, validateRange } from "./ledger.js";
 
 const SUPPORTED_SCHEMA_VERSION = 2;
@@ -40,13 +40,22 @@ export async function handler(
     if (request.schemaVersion > SUPPORTED_SCHEMA_VERSION) {
       return json(400, { error: `unsupported schemaVersion ${request.schemaVersion}; server supports ${SUPPORTED_SCHEMA_VERSION}` });
     }
-    return json(200, await sync(doc, request, sub));
+    try {
+      return json(200, await sync(doc, request, sub));
+    } catch (err) {
+      if (err instanceof SeqUnavailableError) {
+        return json(503, { error: "sequence counter unavailable; retry" });
+      }
+      throw err;
+    }
   }
 
   if (route === "GET /v1/observations") {
     const since = event.queryStringParameters?.since;
+    const hwmParam = event.queryStringParameters?.hwm;
+    const hwm = hwmParam !== undefined ? Number(hwmParam) : undefined;
     const limit = Math.min(Number(event.queryStringParameters?.limit ?? "200") || 200, 200);
-    return json(200, await pull(doc, since, limit));
+    return json(200, await pull(doc, since, hwm, limit));
   }
 
   if (route === "GET /v1/summary") {

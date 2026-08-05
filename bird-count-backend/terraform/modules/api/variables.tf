@@ -41,6 +41,21 @@ variable "alarm_email" {
   default     = ""
 }
 
+variable "subnet_ids" {
+  description = "Private subnet IDs for Lambda VPC placement"
+  type        = list(string)
+}
+
+variable "lambda_sg_id" {
+  description = "Security group ID shared by all Lambda functions"
+  type        = string
+}
+
+variable "valkey_endpoint" {
+  description = "ElastiCache Serverless Valkey endpoint (host:port) passed as VALKEY_ENDPOINT"
+  type        = string
+}
+
 variable "tags" {
   type    = map(string)
   default = {}
