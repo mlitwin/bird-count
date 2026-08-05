@@ -1,10 +1,17 @@
 # Sync API: Lambda (TypeScript, nodejs24.x) behind an API Gateway HTTP API
-# with a Cognito JWT authorizer. Build the bundle first: `make api-build`.
+# with a Lambda authorizer that handles both Cognito user tokens and M2M tokens.
+# Build the bundle first: `make api-build`.
 
 data "archive_file" "lambda_zip" {
   type        = "zip"
   source_file = "${var.lambda_dist_dir}/index.mjs"
   output_path = "${var.lambda_dist_dir}/lambda.zip"
+}
+
+data "archive_file" "authorizer_zip" {
+  type        = "zip"
+  source_file = "${var.lambda_dist_dir}/authorizer.mjs"
+  output_path = "${var.lambda_dist_dir}/authorizer.zip"
 }
 
 resource "aws_cloudwatch_log_group" "api" {
@@ -87,16 +94,64 @@ resource "aws_apigatewayv2_api" "http" {
   tags = var.tags
 }
 
-resource "aws_apigatewayv2_authorizer" "jwt" {
-  api_id           = aws_apigatewayv2_api.http.id
-  authorizer_type  = "JWT"
-  identity_sources = ["$request.header.Authorization"]
-  name             = "cognito"
+# Lambda authorizer: handles Cognito user tokens (validates aud) and M2M tokens
+# (validates scope). Must run outside the VPC to reach the Cognito JWKS URL.
 
-  jwt_configuration {
-    audience = var.jwt_audience
-    issuer   = var.issuer_url
+resource "aws_iam_role" "authorizer" {
+  name               = "${var.project_name}-${var.environment}-authorizer"
+  assume_role_policy = data.aws_iam_policy_document.assume.json
+  tags               = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "authorizer_logs" {
+  role       = aws_iam_role.authorizer.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_cloudwatch_log_group" "authorizer" {
+  name              = "/aws/lambda/${var.project_name}-${var.environment}-authorizer"
+  retention_in_days = 30
+  tags              = var.tags
+}
+
+resource "aws_lambda_function" "authorizer" {
+  function_name    = "${var.project_name}-${var.environment}-authorizer"
+  role             = aws_iam_role.authorizer.arn
+  runtime          = "nodejs24.x"
+  handler          = "authorizer.handler"
+  filename         = data.archive_file.authorizer_zip.output_path
+  source_code_hash = data.archive_file.authorizer_zip.output_base64sha256
+  timeout          = 5
+
+  environment {
+    variables = {
+      USER_POOL_ID   = var.user_pool_id
+      USER_AUDIENCES = join(",", var.user_audiences)
+      M2M_SCOPE      = var.m2m_scope
+    }
   }
+
+  depends_on = [aws_cloudwatch_log_group.authorizer]
+  tags       = var.tags
+}
+
+resource "aws_lambda_permission" "authorizer" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.authorizer.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*"
+}
+
+resource "aws_apigatewayv2_authorizer" "lambda" {
+  api_id                            = aws_apigatewayv2_api.http.id
+  authorizer_type                   = "REQUEST"
+  name                              = "lambda-authorizer"
+  authorizer_uri                    = aws_lambda_function.authorizer.invoke_arn
+  authorizer_payload_format_version = "2.0"
+  enable_simple_responses           = true
+  identity_sources                  = ["$request.header.Authorization"]
+  authorizer_result_ttl_in_seconds  = 300
 }
 
 resource "aws_apigatewayv2_integration" "lambda" {
@@ -116,32 +171,32 @@ resource "aws_apigatewayv2_route" "sync" {
   api_id             = aws_apigatewayv2_api.http.id
   route_key          = "POST /v1/sync"
   target             = "integrations/${aws_apigatewayv2_integration.lambda.id}"
-  authorization_type = "JWT"
-  authorizer_id      = aws_apigatewayv2_authorizer.jwt.id
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.lambda.id
 }
 
 resource "aws_apigatewayv2_route" "observations" {
   api_id             = aws_apigatewayv2_api.http.id
   route_key          = "GET /v1/observations"
   target             = "integrations/${aws_apigatewayv2_integration.lambda.id}"
-  authorization_type = "JWT"
-  authorizer_id      = aws_apigatewayv2_authorizer.jwt.id
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.lambda.id
 }
 
 resource "aws_apigatewayv2_route" "summary" {
   api_id             = aws_apigatewayv2_api.http.id
   route_key          = "GET /v1/summary"
   target             = "integrations/${aws_apigatewayv2_integration.lambda.id}"
-  authorization_type = "JWT"
-  authorizer_id      = aws_apigatewayv2_authorizer.jwt.id
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.lambda.id
 }
 
 resource "aws_apigatewayv2_route" "observations_query" {
   api_id             = aws_apigatewayv2_api.http.id
   route_key          = "GET /v1/observations/query"
   target             = "integrations/${aws_apigatewayv2_integration.lambda.id}"
-  authorization_type = "JWT"
-  authorizer_id      = aws_apigatewayv2_authorizer.jwt.id
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.lambda.id
 }
 
 resource "aws_apigatewayv2_stage" "default" {

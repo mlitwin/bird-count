@@ -10,11 +10,12 @@
  * Run via: make e2e   (injects vars from terraform output + 1Password)
  */
 
-const API_URL = process.env.E2E_API_URL!;
+// Strip trailing slash and any /v1 stage suffix — we add explicit paths below.
+const API_URL = process.env.E2E_API_URL!.replace(/\/v\d+\/?$/, "").replace(/\/$/, "");
 const TOKEN_ENDPOINT = process.env.E2E_TOKEN_ENDPOINT!;
 const CLIENT_ID = process.env.E2E_CLIENT_ID!;
 const CLIENT_SECRET = process.env.E2E_CLIENT_SECRET!;
-// Resource server identifier is the `aud` in client-credentials tokens.
+// Resource server identifier used as scope prefix for M2M tokens.
 // Format: https://{project}-{env}-api.internal  (set by Terraform auth module)
 const RESOURCE_SERVER = process.env.E2E_RESOURCE_SERVER!;
 
@@ -50,7 +51,10 @@ async function callSync(token: string, body: unknown) {
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  return { status: res.status, body: await res.json() };
+  const text = await res.text();
+  let parsed: unknown;
+  try { parsed = JSON.parse(text); } catch { parsed = text; }
+  return { status: res.status, body: parsed as Record<string, unknown> };
 }
 
 async function callPull(token: string, params: Record<string, string | number> = {}) {
@@ -58,7 +62,17 @@ async function callPull(token: string, params: Record<string, string | number> =
   const res = await fetch(`${API_URL}/v1/observations?${qs}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  return { status: res.status, body: await res.json() };
+  const text = await res.text();
+  let parsed: unknown;
+  try { parsed = JSON.parse(text); } catch { parsed = text; }
+  return { status: res.status, body: parsed as Record<string, unknown> };
+}
+
+function requireStatus(label: string, actual: number, expected: number, body: unknown): boolean {
+  if (actual === expected) { console.log(`  ✓ ${label}`); passed++; return true; }
+  console.error(`  ✗ ${label}: expected ${expected}, got ${actual}`, JSON.stringify(body));
+  failed++;
+  return false;
 }
 
 function obs(id: string, over: Record<string, unknown> = {}) {
@@ -98,20 +112,20 @@ function assert(label: string, condition: boolean, detail?: unknown) {
 
 async function run() {
   const token = await fetchToken();
-  console.log("Token obtained.\n");
 
   // IDs scoped to this run so parallel runs don't collide.
-  const run = Date.now().toString(36);
-  const id1 = `11111111-E2E0-4000-8000-${run.padStart(12, "0")}`;
-  const id2 = `22222222-E2E0-4000-8000-${run.padStart(12, "0")}`;
-  const id3 = `33333333-E2E0-4000-8000-${run.padStart(12, "0")}`;
+  // Use hex (not base-36) so the last segment stays valid UUID hex chars.
+  const run = Date.now().toString(16).padStart(12, "0").slice(-12);
+  const id1 = `11111111-E2E0-4000-8000-${run}`;
+  const id2 = `22222222-E2E0-4000-8000-${run}`;
+  const id3 = `33333333-E2E0-4000-8000-${run}`;
 
   // ── 1. New client: push assigns observationNumber ──────────────────────────
   console.log("1. New client push (with HWM)");
   {
     const { status, body } = await callSync(token, syncReq([obs(id1), obs(id2)], { serverSyncedObservationNumberHWM: 0 }));
-    assert("status 200", status === 200, status);
-    const a = body.applied as Array<{ id: string; result: string; observationNumber?: number }>;
+    if (!requireStatus("status 200", status, 200, body)) { console.error("   Aborting remaining tests."); return; }
+    const a = (body.applied ?? []) as Array<{ id: string; result: string; observationNumber?: number }>;
     assert("two applied entries", a.length === 2, a.length);
     assert("id1 result=applied", a[0]?.result === "applied");
     assert("id1 has observationNumber", typeof a[0]?.observationNumber === "number", a[0]);
@@ -121,12 +135,12 @@ async function run() {
     console.log(`   observationNumbers: ${a[0]?.observationNumber}, ${a[1]?.observationNumber}  hwm: ${body.tripSequenceHighWater}`);
   }
 
-  // ── 2. Legacy client: push without HWM still works ──────────────────────────
+  // ── 2. Legacy client: push without HWM still works ─────────────────────────
   console.log("\n2. Legacy client push (no HWM)");
   {
     const { status, body } = await callSync(token, syncReq([obs(id3)]));
-    assert("status 200", status === 200, status);
-    const a = body.applied as Array<{ result: string }>;
+    if (!requireStatus("status 200", status, 200, body)) return;
+    const a = (body.applied ?? []) as Array<{ result: string }>;
     assert("applied result=applied", a[0]?.result === "applied");
     assert("no tripSequenceHighWater on legacy path", body.tripSequenceHighWater === undefined, body.tripSequenceHighWater);
   }
@@ -136,24 +150,26 @@ async function run() {
   {
     const stale = obs(id1, { updatedAt: 1752566400000 - 1000, observer: "stale-writer" });
     const { status, body } = await callSync(token, syncReq([stale]));
-    assert("status 200", status === 200, status);
-    assert("result=stale", body.applied[0]?.result === "stale", body.applied[0]);
+    if (!requireStatus("status 200", status, 200, body)) return;
+    const a = (body.applied ?? []) as Array<{ result: string }>;
+    assert("result=stale", a[0]?.result === "stale", a[0]);
   }
 
   // ── 4. Noop re-upload returns existing observationNumber ───────────────────
   console.log("\n4. Noop re-upload (same updatedAt)");
   {
     const { status, body } = await callSync(token, syncReq([obs(id1)], { serverSyncedObservationNumberHWM: 0 }));
-    assert("status 200", status === 200, status);
-    assert("result=applied (noop)", body.applied[0]?.result === "applied", body.applied[0]);
-    assert("observationNumber returned on noop", typeof body.applied[0]?.observationNumber === "number", body.applied[0]);
+    if (!requireStatus("status 200", status, 200, body)) return;
+    const a = (body.applied ?? []) as Array<{ result: string; observationNumber?: number }>;
+    assert("result=applied (noop)", a[0]?.result === "applied", a[0]);
+    assert("observationNumber returned on noop", typeof a[0]?.observationNumber === "number", a[0]);
   }
 
   // ── 5. HWM pull returns records in ascending order ─────────────────────────
   console.log("\n5. HWM pull (hwm=0)");
   {
     const { status, body } = await callPull(token, { hwm: 0 });
-    assert("status 200", status === 200, status);
+    if (!requireStatus("status 200", status, 200, body)) return;
     const nums = (body.changes as Array<{ observationNumber?: number }>)
       .map((c) => c.observationNumber)
       .filter((n): n is number => n !== undefined);
@@ -167,7 +183,7 @@ async function run() {
   console.log("\n6. Legacy pull (no hwm)");
   {
     const { status, body } = await callPull(token, { since: "0" });
-    assert("status 200", status === 200, status);
+    if (!requireStatus("status 200", status, 200, body)) return;
     assert("changes returned", Array.isArray(body.changes), body);
     assert("no tripSequenceHighWater on legacy pull", body.tripSequenceHighWater === undefined, body.tripSequenceHighWater);
   }
@@ -175,8 +191,8 @@ async function run() {
   // ── 7. Cross-client: legacy upload visible via HWM pull ────────────────────
   console.log("\n7. Cross-client visibility");
   {
-    // id3 was uploaded by the legacy client above; check it appears in HWM pull
-    const { body } = await callPull(token, { hwm: 0 });
+    const { status, body } = await callPull(token, { hwm: 0 });
+    if (!requireStatus("status 200", status, 200, body)) return;
     const ids = (body.changes as Array<{ id: string }>).map((c) => c.id);
     assert("legacy-uploaded id3 visible via HWM pull", ids.includes(id3), ids.filter(id => id.includes("33333333")));
   }

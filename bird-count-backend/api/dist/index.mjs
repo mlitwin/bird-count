@@ -22092,7 +22092,8 @@ function json(statusCode, body) {
   };
 }
 function subOf(event) {
-  const sub = event.requestContext.authorizer?.jwt?.claims?.sub;
+  const ctx = event.requestContext.authorizer?.lambda;
+  const sub = ctx?.sub;
   return typeof sub === "string" ? sub : void 0;
 }
 async function handler(event) {

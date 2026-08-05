@@ -20,14 +20,19 @@ variable "table_policy_json" {
   type        = string
 }
 
-variable "issuer_url" {
-  description = "Cognito user pool issuer URL for the JWT authorizer"
+variable "user_pool_id" {
+  description = "Cognito user pool ID (used by the Lambda authorizer to build the JWKS URL)"
   type        = string
 }
 
-variable "jwt_audience" {
-  description = "Cognito app client ids accepted by the JWT authorizer"
+variable "user_audiences" {
+  description = "Cognito app client IDs for user tokens (iOS + web); M2M tokens are validated by scope instead"
   type        = list(string)
+}
+
+variable "m2m_scope" {
+  description = "Required OAuth2 scope for M2M (client_credentials) tokens, e.g. resource_server_id/sync"
+  type        = string
 }
 
 variable "cors_allow_origins" {

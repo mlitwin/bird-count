@@ -111,8 +111,9 @@ module "api" {
   lambda_dist_dir   = "${path.module}/../api/dist"
   table_name        = module.db.table_name
   table_policy_json = module.db.readwrite_policy_json
-  issuer_url        = module.auth.issuer_url
-  jwt_audience      = [module.auth.client_id, module.auth.web_client_id, module.auth.resource_server_identifier]
+  user_pool_id      = module.auth.user_pool_id
+  user_audiences    = [module.auth.client_id, module.auth.web_client_id]
+  m2m_scope         = "${module.auth.resource_server_identifier}/sync"
   cors_allow_origins = [
     "https://${module.storage.cloudfront_domain_name}",
     "http://localhost:8788",

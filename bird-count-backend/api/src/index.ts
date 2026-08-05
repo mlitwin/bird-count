@@ -17,7 +17,9 @@ function json(statusCode: number, body: unknown): APIGatewayProxyResultV2 {
 }
 
 function subOf(event: APIGatewayProxyEventV2WithJWTAuthorizer): string | undefined {
-  const sub = event.requestContext.authorizer?.jwt?.claims?.sub;
+  // Lambda REQUEST authorizer (simple response) puts context in authorizer.lambda
+  const ctx = (event.requestContext.authorizer as unknown as { lambda?: Record<string, unknown> })?.lambda;
+  const sub = ctx?.sub;
   return typeof sub === "string" ? sub : undefined;
 }
 
@@ -30,7 +32,7 @@ export async function handler(
     return json(200, { ok: true });
   }
 
-  // JWT authorizer runs before us on the remaining routes; sub is the identity.
+  // Lambda authorizer runs before us on the remaining routes; sub is the identity.
   const sub = subOf(event);
   if (!sub) return json(401, { error: "unauthorized" });
 
