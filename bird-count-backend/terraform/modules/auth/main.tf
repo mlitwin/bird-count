@@ -99,3 +99,34 @@ resource "aws_cognito_user_pool_client" "web" {
 
   prevent_user_existence_errors = "ENABLED"
 }
+
+# --- Machine-to-machine (server-to-server) auth for E2E tests ---
+
+# Resource server declares this API as a protected resource.
+# Its identifier becomes the `aud` claim in client-credentials tokens and
+# must be added to the API Gateway JWT authorizer's audience list.
+resource "aws_cognito_resource_server" "api" {
+  user_pool_id = aws_cognito_user_pool.users.id
+  identifier   = "https://${var.project_name}-${var.environment}-api.internal"
+  name         = "${var.project_name}-${var.environment}-api"
+
+  scope {
+    scope_name        = "sync"
+    scope_description = "Full access to the sync API"
+  }
+}
+
+# M2M app client: client credentials only, no human sign-in.
+resource "aws_cognito_user_pool_client" "e2e" {
+  name         = "${var.project_name}-${var.environment}-e2e"
+  user_pool_id = aws_cognito_user_pool.users.id
+
+  generate_secret                      = true
+  allowed_oauth_flows                  = ["client_credentials"]
+  allowed_oauth_flows_user_pool_client = true
+  allowed_oauth_scopes                 = ["${aws_cognito_resource_server.api.identifier}/sync"]
+
+  access_token_validity = 1 # hours; no refresh token for M2M
+
+  depends_on = [aws_cognito_resource_server.api]
+}

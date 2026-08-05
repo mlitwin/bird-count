@@ -1,4 +1,4 @@
-.PHONY: help whoami aws tf init plan apply output validate api-test api-build web-config web-test web-deploy bootstrap
+.PHONY: help whoami aws tf init plan apply output validate api-test api-build e2e e2e-init web-config web-test web-deploy bootstrap
 
 # AWS credentials come from 1Password via `op run` (see aws.env).
 ENV ?= dev
@@ -32,6 +32,8 @@ help:
 	@echo "  web-test    Run bird-count-web unit tests"
 	@echo "  web-deploy  Build + sync web viewer to S3 + invalidate CloudFront"
 	@echo "              Set LOCAL=1 for redirectURI=localhost:8788"
+	@echo "  e2e-init    One-time: fetch M2M credentials from Terraform and store in 1Password"
+	@echo "  e2e         Run E2E tests against deployed API (ENV=dev|prod)"
 	@echo "  bootstrap   One-time: GitHub OIDC provider + deploy role + account budget"
 
 whoami:
@@ -65,6 +67,31 @@ api-test:
 
 api-build:
 	cd api && npm run generate && npm run build
+
+# One-time setup: pull M2M credentials from Terraform state and store them in
+# 1Password so subsequent `make e2e` runs need no AWS access.
+# Re-run only if you terraform-destroy and recreate the Cognito resources.
+e2e-init:
+	@echo "Fetching e2e credentials from Terraform (ENV=$(ENV))..."
+	@cd $(TF_DIR) && $(TF_INIT) > /dev/null && \
+	  TF_OUT=$$($(OP_RUN_TF) terraform output -json) && \
+	  API_URL=$$(echo "$$TF_OUT"        | jq -r '.api_url.value') && \
+	  TOKEN_EP=$$(echo "$$TF_OUT"       | jq -r '.token_endpoint.value') && \
+	  CLIENT_ID=$$(echo "$$TF_OUT"      | jq -r '.e2e_client_id.value') && \
+	  CLIENT_SECRET=$$(echo "$$TF_OUT"  | jq -r '.e2e_client_secret.value') && \
+	  RS=$$(echo "$$TF_OUT"             | jq -r '.e2e_resource_server.value') && \
+	  ITEM="bird-count-e2e-$(ENV)" && \
+	  FIELDS="api_url[text]=$$API_URL token_endpoint[text]=$$TOKEN_EP client_id[text]=$$CLIENT_ID client_secret[password]=$$CLIENT_SECRET resource_server[text]=$$RS" && \
+	  (op item get "$$ITEM" --vault Private > /dev/null 2>&1 \
+	    && op item edit "$$ITEM" --vault Private $$FIELDS \
+	    || op item create --category Login --title "$$ITEM" --vault Private $$FIELDS) && \
+	  echo "Done. Credentials stored in 1Password item '$$ITEM'."
+
+# Run E2E tests against the deployed API.
+# Credentials are read from 1Password via e2e-$(ENV).env — run `make e2e-init` first.
+e2e:
+	op run --env-file e2e-$(ENV).env -- \
+	  api/node_modules/.bin/tsx api/test/e2e/run.ts
 
 # Generate bird-count-web/js/config.js from the current terraform state.
 # LOCAL=1 sets redirectURI to http://localhost:8788/ for local dev.

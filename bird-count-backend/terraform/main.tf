@@ -112,7 +112,7 @@ module "api" {
   table_name        = module.db.table_name
   table_policy_json = module.db.readwrite_policy_json
   issuer_url        = module.auth.issuer_url
-  jwt_audience      = [module.auth.client_id, module.auth.web_client_id]
+  jwt_audience      = [module.auth.client_id, module.auth.web_client_id, module.auth.resource_server_identifier]
   cors_allow_origins = [
     "https://${module.storage.cloudfront_domain_name}",
     "http://localhost:8788",

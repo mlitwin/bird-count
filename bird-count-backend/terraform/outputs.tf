@@ -40,3 +40,24 @@ output "api_url" {
 output "table_name" {
   value = module.db.table_name
 }
+
+output "e2e_resource_server" {
+  description = "Cognito resource server identifier (scope prefix) for E2E tests"
+  value       = module.auth.resource_server_identifier
+}
+
+output "e2e_client_id" {
+  description = "M2M client ID for E2E tests"
+  value       = module.auth.e2e_client_id
+}
+
+output "e2e_client_secret" {
+  description = "M2M client secret for E2E tests"
+  value       = module.auth.e2e_client_secret
+  sensitive   = true
+}
+
+output "token_endpoint" {
+  description = "Cognito token endpoint for client credentials flow"
+  value       = module.auth.token_endpoint
+}
