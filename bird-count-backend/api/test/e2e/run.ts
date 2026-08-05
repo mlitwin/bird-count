@@ -93,6 +93,10 @@ function syncReq(changes: unknown[], extra: Record<string, unknown> = {}) {
   return { schemaVersion: 2, clientId: "E2E00000-0000-4E2E-8E2E-E2E000000000", changes, ...extra };
 }
 
+function syncReqB(changes: unknown[], extra: Record<string, unknown> = {}) {
+  return { schemaVersion: 2, clientId: "E2E00000-0000-4E2E-8E2E-E2E000000001", changes, ...extra };
+}
+
 // ── test runner ──────────────────────────────────────────────────────────────
 
 let passed = 0;
@@ -120,6 +124,9 @@ async function run() {
   const id2 = `22222222-E2E0-4000-8000-${run}`;
   const id3 = `33333333-E2E0-4000-8000-${run}`;
 
+  // Capture observationNumbers from test 1 for use in incremental-HWM tests.
+  let n1 = 0, n2 = 0;
+
   // ── 1. New client: push assigns observationNumber ──────────────────────────
   console.log("1. New client push (with HWM)");
   {
@@ -132,7 +139,9 @@ async function run() {
     assert("id2 result=applied", a[1]?.result === "applied");
     assert("id2 observationNumber > id1", (a[1]?.observationNumber ?? 0) > (a[0]?.observationNumber ?? 0));
     assert("tripSequenceHighWater present", typeof body.tripSequenceHighWater === "number", body);
-    console.log(`   observationNumbers: ${a[0]?.observationNumber}, ${a[1]?.observationNumber}  hwm: ${body.tripSequenceHighWater}`);
+    n1 = a[0]?.observationNumber ?? 0;
+    n2 = a[1]?.observationNumber ?? 0;
+    console.log(`   observationNumbers: ${n1}, ${n2}  hwm: ${body.tripSequenceHighWater}`);
   }
 
   // ── 2. Legacy client: push without HWM still works ─────────────────────────
@@ -195,6 +204,48 @@ async function run() {
     if (!requireStatus("status 200", status, 200, body)) return;
     const ids = (body.changes as Array<{ id: string }>).map((c) => c.id);
     assert("legacy-uploaded id3 visible via HWM pull", ids.includes(id3), ids.filter(id => id.includes("33333333")));
+  }
+
+  // ── 8. Incremental HWM: hwm=N only returns records with observationNumber > N ─
+  console.log("\n8. Incremental HWM pull (hwm=n1, should include id2 but not id1)");
+  {
+    const { status, body } = await callPull(token, { hwm: n1 });
+    if (!requireStatus("status 200", status, 200, body)) return;
+    const changes = (body.changes ?? []) as Array<{ id: string; observationNumber?: number }>;
+    const nums = changes.map((c) => c.observationNumber).filter((n): n is number => n !== undefined);
+    assert("all observationNumbers > n1", nums.every((n) => n > n1), nums.filter((n) => n <= n1));
+    const ids = changes.map((c) => c.id);
+    assert("id2 present (observationNumber=n2)", ids.includes(id2), { n1, n2, ids: ids.slice(0, 5) });
+    assert("id1 absent (observationNumber=n1 not > n1)", !ids.includes(id1));
+  }
+
+  console.log("\n8b. Incremental HWM pull (hwm=n2, should include neither id1 nor id2)");
+  {
+    const { status, body } = await callPull(token, { hwm: n2 });
+    if (!requireStatus("status 200", status, 200, body)) return;
+    const changes = (body.changes ?? []) as Array<{ id: string; observationNumber?: number }>;
+    const nums = changes.map((c) => c.observationNumber).filter((n): n is number => n !== undefined);
+    assert("all observationNumbers > n2", nums.every((n) => n > n2), nums.filter((n) => n <= n2));
+    const ids = changes.map((c) => c.id);
+    assert("id1 absent", !ids.includes(id1));
+    assert("id2 absent", !ids.includes(id2));
+  }
+
+  // ── 9. Cross-client: Client B sync sees Client A's records in embedded pull ─
+  console.log("\n9. Cross-client sync (Client B sees Client A's changes via embedded pull)");
+  {
+    const id4 = `44444444-E2E0-4000-8000-${run}`;
+    // Client B syncs its own new observation WITH HWM=0, so the embedded pull
+    // returns all numbered records including id1 and id2 (pushed by Client A).
+    const { status, body } = await callSync(token, syncReqB([obs(id4)], { serverSyncedObservationNumberHWM: 0 }));
+    if (!requireStatus("status 200", status, 200, body)) return;
+    const a = (body.applied ?? []) as Array<{ id: string; result: string; observationNumber?: number }>;
+    assert("B's own push applied", a[0]?.result === "applied", a[0]);
+    assert("B's push gets observationNumber", typeof a[0]?.observationNumber === "number", a[0]);
+    const changes = (body.changes ?? []) as Array<{ id: string }>;
+    const changeIds = changes.map((c) => c.id);
+    assert("Client A's id1 visible in B's sync response", changeIds.includes(id1), changeIds.slice(0, 5));
+    assert("Client A's id2 visible in B's sync response", changeIds.includes(id2), changeIds.slice(0, 5));
   }
 
   // ── summary ─────────────────────────────────────────────────────────────────
