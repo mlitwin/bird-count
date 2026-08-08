@@ -27,10 +27,17 @@ export async function handler(event: {
     let sub: string | undefined;
 
     if (payload.aud !== undefined) {
+      // Cognito ID token: audience = client_id
       const auds = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
       if (!auds.some((a) => USER_AUDIENCES.has(a))) return { isAuthorized: false };
       sub = typeof payload.sub === "string" ? payload.sub : undefined;
+    } else if (typeof (payload as Record<string, unknown>)["client_id"] === "string") {
+      // Cognito user access token: no aud, uses client_id instead
+      const clientId = (payload as Record<string, unknown>)["client_id"] as string;
+      if (!USER_AUDIENCES.has(clientId)) return { isAuthorized: false };
+      sub = typeof payload.sub === "string" ? payload.sub : undefined;
     } else {
+      // M2M (client_credentials) token: no aud, no client_id, must carry required scope
       const scopes =
         typeof payload.scope === "string" ? payload.scope.split(" ") : [];
       if (!scopes.includes(M2M_SCOPE)) return { isAuthorized: false };

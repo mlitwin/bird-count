@@ -44,3 +44,62 @@ describe("shared fixtures through request validation", () => {
     expect(parseSyncRequest(undefined).errors).toBeDefined();
   });
 });
+
+describe("iOS SyncRequestBody payloads", () => {
+  it("accepts request with serverSyncedObservationNumberHWM=0", () => {
+    const body = JSON.stringify({
+      schemaVersion: 2,
+      clientId: "D7E8F9A0-B1C2-4D3E-9F4A-5B6C7D8E9F0A",
+      cursor: "0",
+      serverSyncedObservationNumberHWM: 0,
+      changes: [{
+        id: "A1B2C3D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D",
+        taxonId: "amecro",
+        begin: "2026-08-07T20:00:00.000Z",
+        end: "2026-08-07T21:00:00.000Z",
+        count: 1,
+        observer: "",
+        status: "completed",
+        updatedAt: 1754596800000,
+      }],
+    });
+    expect(parseSyncRequest(body).request).toBeDefined();
+  });
+
+  it("accepts request with serverSyncedObservationNumberHWM=50 and empty changes", () => {
+    const body = JSON.stringify({
+      schemaVersion: 2,
+      clientId: "D7E8F9A0-B1C2-4D3E-9F4A-5B6C7D8E9F0A",
+      cursor: "1754596800000",
+      serverSyncedObservationNumberHWM: 50,
+      changes: [],
+    });
+    expect(parseSyncRequest(body).request).toBeDefined();
+  });
+
+  it("accepts request with location and HWM", () => {
+    const body = JSON.stringify({
+      schemaVersion: 2,
+      clientId: "D7E8F9A0-B1C2-4D3E-9F4A-5B6C7D8E9F0A",
+      cursor: "0",
+      serverSyncedObservationNumberHWM: 0,
+      changes: [{
+        id: "A1B2C3D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D",
+        taxonId: "amecro",
+        begin: "2026-08-07T20:00:00.000Z",
+        end: "2026-08-07T21:00:00.000Z",
+        count: 1,
+        observer: "user@example.com",
+        status: "completed",
+        updatedAt: 1754596800000,
+        location: {
+          latitude: 38.44,
+          longitude: -122.71,
+          horizontalAccuracy: 5.0,
+          timestamp: "2026-08-07T20:00:00.000Z",
+        },
+      }],
+    });
+    expect(parseSyncRequest(body).request).toBeDefined();
+  });
+});

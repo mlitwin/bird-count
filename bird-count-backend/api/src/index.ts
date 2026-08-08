@@ -48,6 +48,7 @@ export async function handler(
       if (err instanceof SeqUnavailableError) {
         return json(503, { error: "sequence counter unavailable; retry" });
       }
+      console.error("sync unhandled error:", err);
       throw err;
     }
   }
