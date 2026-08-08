@@ -155,6 +155,86 @@ struct ObservationSyncTests {
 
     // MARK: - Observation number tests
 
+    // MARK: - Wire encoding against server schema
+
+    /// Validates that the JSON produced by the iOS sync encoder is accepted by the server's
+    /// AJV schema. Encodes a full SyncRequestBody (the exact struct CloudSyncService sends)
+    /// and checks the JSON structure against the observation.schema.json rules.
+    ///
+    /// Allowed observation fields: id, parentId, taxonId, begin, end, count,
+    ///   location, observer, status, updatedAt, observationNumber
+    /// Allowed sync-request fields: schemaVersion, clientId, cursor,
+    ///   serverSyncedObservationNumberHWM, changes
+    @Test func syncRequestBodyMatchesServerSchema() throws {
+        let allowedObsKeys: Set<String> = [
+            "id", "parentId", "taxonId", "begin", "end", "count",
+            "location", "observer", "status", "updatedAt", "observationNumber"
+        ]
+        let allowedLocationKeys: Set<String> = [
+            "latitude", "longitude", "horizontalAccuracy", "timestamp",
+            "altitude", "verticalAccuracy", "name", "notes"
+        ]
+        let allowedRequestKeys: Set<String> = [
+            "schemaVersion", "clientId", "cursor",
+            "serverSyncedObservationNumberHWM", "changes"
+        ]
+
+        func assertNoAdditionalProperties(
+            _ json: [String: Any], allowed: Set<String>, context: String
+        ) {
+            let extra = Set(json.keys).subtracting(allowed)
+            #expect(extra.isEmpty, "Extra properties in \(context): \(extra)")
+        }
+
+        // Build one DTO with observationNumber set (server-assigned, stored in the record)
+        var dto = ObservationRecordDTO(
+            id: UUID(), taxonId: "amecro",
+            begin: Date(), end: Date(), count: 2, observer: "test@example.com"
+        )
+        dto.observationNumber = 42   // must be stripped from the wire encoding
+
+        // Build a DTO with location
+        let location = ObservationLocation(
+            latitude: 38.44, longitude: -122.71, horizontalAccuracy: 5.0
+        )
+        let dtoWithLocation = ObservationRecordDTO(
+            id: UUID(), taxonId: "norbla",
+            begin: Date(), end: Date(), count: 1, location: location
+        )
+
+        // Wrap in a SyncRequestBody exactly as CloudSyncService does
+        var req = SyncRequestBody(
+            clientId: UUID().uuidString, cursor: "0", changes: [dto, dtoWithLocation]
+        )
+        req.serverSyncedObservationNumberHWM = 50
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let data = try encoder.encode(req)
+
+        let topLevel = try #require(
+            try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        )
+
+        // Top-level request fields
+        assertNoAdditionalProperties(topLevel, allowed: allowedRequestKeys, context: "SyncRequestBody")
+
+        let changes = try #require(topLevel["changes"] as? [[String: Any]])
+        for (i, change) in changes.enumerated() {
+            assertNoAdditionalProperties(change, allowed: allowedObsKeys, context: "changes[\(i)]")
+            // observationNumber must never appear (decode-only)
+            #expect(change["observationNumber"] == nil, "changes[\(i)] must not encode observationNumber")
+
+            if let loc = change["location"] as? [String: Any] {
+                assertNoAdditionalProperties(loc, allowed: allowedLocationKeys, context: "changes[\(i)].location")
+            }
+        }
+
+        // Print for manual inspection if the test fails
+        let pretty = String(data: try JSONSerialization.data(withJSONObject: topLevel, options: .prettyPrinted), encoding: .utf8) ?? ""
+        print("SyncRequestBody JSON:\n\(pretty)")
+    }
+
     @Test func dtoObservationNumberDecodeOnly() throws {
         var dto = ObservationRecordDTO(id: UUID(), taxonId: "amecro",
                                        begin: Date(), end: Date(), count: 1, observer: "")

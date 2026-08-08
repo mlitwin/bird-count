@@ -58,6 +58,9 @@ import Observation
     /// can deliver a child before its parent); reattached on later merges.
     private var pendingOrphanDTOs: [ObservationRecordDTO] = []
 
+    /// Number of records held in orphan limbo (parent not yet received).
+    public var pendingOrphanCount: Int { pendingOrphanDTOs.count }
+
     /// Injectable so tests can isolate persistence (suites run concurrently
     /// in one process; sharing .standard makes them clobber each other).
     private let defaults: UserDefaults

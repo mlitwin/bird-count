@@ -153,6 +153,12 @@ public final class CloudSyncService {
             let dirty = store.dirtyIds
             let toPush = store.flatDTOs().filter { dirty.contains($0.id) }
 
+            // Dirty IDs with no corresponding tree record can never be uploaded or
+            // server-acked, so they would stay stuck forever. Collect them now for
+            // pruning after a successful sync.
+            let toPushIds = Set(toPush.map { $0.id })
+            let ghostDirtyIds = dirty.subtracting(toPushIds)
+
             var cursor = Self.rewound(store.cloudSyncCursor)
             var merged = ObservationStore.MergeStatistics()
 
@@ -201,6 +207,11 @@ public final class CloudSyncService {
                         hasMore = page.hasMore
                     }
                 }
+            }
+
+            if !ghostDirtyIds.isEmpty {
+                print("[CloudSync] pruning \(ghostDirtyIds.count) ghost dirty IDs not found in local tree: \(ghostDirtyIds.map { $0.uuidString }.joined(separator: ", "))")
+                store.clearDirty(ghostDirtyIds)
             }
 
             store.cloudSyncCursor = cursor

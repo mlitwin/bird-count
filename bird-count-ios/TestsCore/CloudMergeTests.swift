@@ -140,6 +140,36 @@ struct CloudMergeTests {
     }
 
     @Test
+    func ghostDirtyIdIsDetectableAndClearable() throws {
+        // Simulate the scenario where a UUID is in dirtyIds (e.g. persisted from a
+        // prior session) but the corresponding observation is absent from the tree
+        // (e.g. data loss / corruption).  The ID cannot be server-acked because it
+        // is never included in toPush; it must be detectable and prunable.
+        let suiteName = "CloudMergeTests-ghost-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let ghostId = UUID()
+        defaults.set([ghostId.uuidString], forKey: "CloudDirtyIds")
+        // No observations written — tree will be empty on load.
+
+        let store = ObservationStore(testing: false, defaults: defaults)
+
+        // Ghost state: in dirtyIds but absent from flatDTOs.
+        #expect(store.dirtyIds.contains(ghostId))
+        #expect(store.flatDTOs().isEmpty)
+
+        // CloudSyncService detects and prunes via: dirty − toPushIds
+        let toPushIds = Set(store.flatDTOs().map { $0.id })
+        let ghostIds = store.dirtyIds.subtracting(toPushIds)
+        #expect(ghostIds == [ghostId])
+
+        // Pruning clears the stuck ID.
+        store.clearDirty(ghostIds)
+        #expect(store.dirtyIds.isEmpty)
+    }
+
+    @Test
     func dtoWireFormatUsesMillisecondUpdatedAt() throws {
         let record = dto(updatedAt: Date(timeIntervalSince1970: 1_782_914_790))
         let encoder = JSONEncoder(); encoder.dateEncodingStrategy = .iso8601
