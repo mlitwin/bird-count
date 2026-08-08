@@ -6,12 +6,14 @@ struct SyncRequestBody: Encodable {
     var schemaVersion = 2
     let clientId: String
     var cursor: String?
+    var serverSyncedObservationNumberHWM: Int?
     let changes: [ObservationRecordDTO]
 }
 
 struct SyncAppliedResult: Decodable {
     let id: UUID
     let result: String // "applied" | "stale" | "invalid"
+    let observationNumber: Int?
 }
 
 struct SyncResponseBody: Decodable {
@@ -20,12 +22,14 @@ struct SyncResponseBody: Decodable {
     let applied: [SyncAppliedResult]
     let changes: [ObservationRecordDTO]
     let hasMore: Bool
+    let tripSequenceHighWater: Int?
 }
 
 struct PullResponseBody: Decodable {
     let changes: [ObservationRecordDTO]
     let cursor: String
     let hasMore: Bool
+    let tripSequenceHighWater: Int?
 }
 
 /// Authenticated HTTP client for the sync API.
@@ -51,6 +55,10 @@ struct CloudAPIClient {
 
     func observations(since cursor: String, limit: Int = 200) async throws -> PullResponseBody {
         try await send(path: "/v1/observations?since=\(cursor)&limit=\(limit)", method: "GET", body: nil)
+    }
+
+    func observations(hwm: Int, limit: Int = 200) async throws -> PullResponseBody {
+        try await send(path: "/v1/observations?hwm=\(hwm)&limit=\(limit)", method: "GET", body: nil)
     }
 
     private func send<Response: Decodable>(path: String, method: String, body: Data?) async throws -> Response {

@@ -152,4 +152,73 @@ struct ObservationSyncTests {
             try ObservationImportService.importFromSync(payload, into: store)
         }
     }
+
+    // MARK: - Observation number tests
+
+    @Test func dtoObservationNumberDecodeOnly() throws {
+        var dto = ObservationRecordDTO(id: UUID(), taxonId: "amecro",
+                                       begin: Date(), end: Date(), count: 1, observer: "")
+        dto.observationNumber = 42
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let encoded = try encoder.encode(dto)
+        let json = String(data: encoded, encoding: .utf8)!
+
+        // Must NOT appear in the outbound JSON (server ajv additionalProperties:false would 400)
+        #expect(!json.contains("observationNumber"))
+
+        // Inbound JSON with the field must be captured by the decoder
+        let withNumber = json.dropLast() + ",\"observationNumber\":99}"
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let decoded = try decoder.decode(ObservationRecordDTO.self, from: Data(withNumber.utf8))
+        #expect(decoded.observationNumber == 99)
+    }
+
+    @Test func exportDeltaFilterByPeerMax() {
+        let store = makeStore()
+        let range = makeRange()
+
+        store.addObservation("amecro", begin: Date(), count: 1)
+        store.addObservation("norbla", begin: Date(), count: 1)
+        store.addObservation("rewbla", begin: Date(), count: 1) // stays unnumbered
+
+        let ids = store.observations.map { $0.id }
+        store.applyServerObservationNumbers([(id: ids[0], number: 10), (id: ids[1], number: 20)])
+
+        // peerMax = 0 (legacy / no HWM) → full send
+        let full = ObservationExportService.exportForSync(displayName: "Me", in: range, from: store, peerMax: 0)
+        #expect(full.observations.count == 3)
+
+        // peerMax = 15 → exclude #10 (≤ 15), include #20 and unnumbered
+        let delta = ObservationExportService.exportForSync(displayName: "Me", in: range, from: store, peerMax: 15)
+        #expect(delta.observations.count == 2)
+        #expect(!delta.observations.map(\.id).contains(ids[0]))
+        #expect(delta.observations.map(\.id).contains(ids[1]))
+        #expect(delta.observations.map(\.id).contains(ids[2])) // unnumbered always sent
+
+        // peerMax = 20 → only unnumbered remains
+        let atMax = ObservationExportService.exportForSync(displayName: "Me", in: range, from: store, peerMax: 20)
+        #expect(atMax.observations.count == 1)
+        #expect(atMax.observations.first?.id == ids[2])
+    }
+
+    @Test func p2pImportAdvancesLocalMaxNotServerHWM() throws {
+        let store = makeStore()
+        store.advanceServerSyncedHWM(to: 50) // baseline from a prior server sync
+
+        var dto = ObservationRecordDTO(id: UUID(), taxonId: "amecro",
+                                       begin: Date(), end: Date(), count: 1, observer: "peer")
+        dto.observationNumber = 75
+        let payload = PayloadV1(
+            schemaVersion: 2, appVersion: "1.0", senderDisplayName: "Peer",
+            rangeStart: Date().addingTimeInterval(-3600), rangeEnd: Date(),
+            observations: [dto]
+        )
+        _ = try ObservationImportService.importFromSync(payload, into: store)
+
+        #expect(store.localObservationNumberMax == 75)
+        #expect(store.serverSyncedHWM == 50) // P2P receipt must never advance serverSyncedHWM
+    }
 }

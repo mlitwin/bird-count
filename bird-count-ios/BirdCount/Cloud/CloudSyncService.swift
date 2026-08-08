@@ -35,7 +35,6 @@ public final class CloudSyncService {
     public let auth: CloudAuthService
 
     private static let pushChunkSize = 100 // sync.schema.json maxItems
-    private static let cursorRewindMs: Int64 = 5000
     private static let lastSyncKey = "CloudLastSyncDate"
     private static let clientIdKey = "CloudClientId"
     private static let autoSyncKey = "CloudAutoSyncEnabled"
@@ -151,7 +150,7 @@ public final class CloudSyncService {
             let dirty = store.dirtyIds
             let toPush = store.flatDTOs().filter { dirty.contains($0.id) }
 
-            var cursor = Self.rewound(store.cloudSyncCursor)
+            var cursor = store.cloudSyncCursor ?? "0"
             var merged = ObservationStore.MergeStatistics()
 
             // Push in chunks; each round trip also pulls a delta page.
@@ -162,21 +161,39 @@ public final class CloudSyncService {
 
             for (index, chunk) in chunks.enumerated() {
                 state = .syncing("Syncing \(index + 1)/\(chunks.count)…")
-                let response = try await api.sync(SyncRequestBody(clientId: clientId, cursor: cursor, changes: chunk))
+                var req = SyncRequestBody(clientId: clientId, cursor: cursor, changes: chunk)
+                req.serverSyncedObservationNumberHWM = store.serverSyncedHWM
+                let response = try await api.sync(req)
                 let acknowledged = response.applied
                     .filter { $0.result == "applied" || $0.result == "stale" }
                     .map { $0.id }
                 store.clearDirty(acknowledged)
+                // mergeDTOs first: echo records hit duplicatesSkipped (same updatedAt),
+                // preserving any observationNumber already in the working copy.
                 accumulate(&merged, store.mergeDTOs(response.changes, markDirty: false))
+                let responseMax = response.changes.compactMap(\.observationNumber).max() ?? 0
+                store.advanceServerSyncedHWM(to: responseMax)
+                // Apply server-assigned numbers to pushed records after the merge so
+                // applyServerObservationNumbers triggers only one rebuildDerived() per chunk.
+                let numberedApplied = response.applied.compactMap { e -> (id: UUID, number: Int)? in
+                    guard e.result == "applied", let n = e.observationNumber else { return nil }
+                    return (e.id, n)
+                }
+                store.applyServerObservationNumbers(numberedApplied)
                 cursor = response.cursor
 
-                // Drain remaining delta pages on the last chunk.
+                // Drain remaining delta pages on the last chunk via HWM-primary pull.
                 if index == chunks.count - 1 {
                     var hasMore = response.hasMore
                     while hasMore {
                         state = .syncing("Downloading…")
-                        let page = try await api.observations(since: cursor)
+                        let page = try await api.observations(hwm: store.serverSyncedHWM)
+                        // Guard: GSI-based HWM pull cannot return hasMore=true with empty changes,
+                        // but break defensively to avoid an infinite loop if the server misbehaves.
+                        guard !page.changes.isEmpty else { break }
                         accumulate(&merged, store.mergeDTOs(page.changes, markDirty: false))
+                        let pageMax = page.changes.compactMap(\.observationNumber).max() ?? 0
+                        store.advanceServerSyncedHWM(to: pageMax)
                         cursor = page.cursor
                         hasMore = page.hasMore
                     }
@@ -224,8 +241,4 @@ public final class CloudSyncService {
         total.orphansHeld = new.orphansHeld
     }
 
-    private static func rewound(_ cursor: String?) -> String {
-        guard let cursor, let value = Int64(cursor) else { return "0" }
-        return String(max(0, value - cursorRewindMs))
-    }
 }

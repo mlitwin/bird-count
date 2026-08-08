@@ -21,9 +21,19 @@ public class ObservationExportService {
     /// - Parameter displayName: The sender's display name to embed in the payload.
     /// - Parameter range: The date range to filter observations.
     /// - Parameter from: The observation store to export from.
-    public static func exportForSync(displayName: String, in range: DateRange, from store: ObservationStore) -> PayloadV1 {
+    /// - Parameter peerMax: Peer's `localObservationNumberMax`; records with
+    ///   `observationNumber <= peerMax` are skipped (peer already has them).
+    ///   0 (default) = legacy peer or no HWM data → full send.
+    public static func exportForSync(displayName: String, in range: DateRange, from store: ObservationStore, peerMax: Int = 0) -> PayloadV1 {
         let filteredRecords = filterRecords(from: store.observations, in: range)
-        let flattenedDTOs = flattenToDTO(records: filteredRecords)
+        var flattenedDTOs = flattenToDTO(records: filteredRecords)
+        if peerMax > 0 {
+            // Best-effort delta: always include unnumbered records (peer may not have them).
+            flattenedDTOs = flattenedDTOs.filter { dto in
+                guard let n = dto.observationNumber else { return true }
+                return n > peerMax
+            }
+        }
         let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Unknown"
 
         return PayloadV1(

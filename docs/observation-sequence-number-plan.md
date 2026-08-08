@@ -11,11 +11,11 @@
 | Backend sync/pull (guarded INCR, HWM-primary pull, noop repair, 503) | ✅ Done — deployed |
 | Lambda authorizer (M2M + user tokens) | ✅ Done — deployed (see note below) |
 | E2E test suite | ✅ Done — 37 checks, runs via `make e2e` |
-| iOS `ObservationRecordDTO`: add `observationNumber` | ⬜ Not started |
-| iOS `ObservationStore`: `serverSyncedHWM`, `localObservationNumberMax`, `applyServerObservationNumbers` | ⬜ Not started |
-| iOS `CloudAPIClient`: HWM in request, `observationNumber` in applied, `tripSequenceHighWater` in response | ⬜ Not started |
-| iOS `CloudSyncService`: send HWM, call `applyServerObservationNumbers`, retire `cursorRewindMs` | ⬜ Not started |
-| iOS P2P: `localObservationNumberMax` in hello, delta-send optimization | ⬜ Not started |
+| iOS `ObservationRecordDTO`: add `observationNumber` | ✅ Done |
+| iOS `ObservationStore`: `serverSyncedHWM`, `localObservationNumberMax`, `applyServerObservationNumbers` | ✅ Done |
+| iOS `CloudAPIClient`: HWM in request, `observationNumber` in applied, `tripSequenceHighWater` in response | ✅ Done |
+| iOS `CloudSyncService`: send HWM, call `applyServerObservationNumbers`, retire `cursorRewindMs` | ✅ Done |
+| iOS P2P: `localObservationNumberMax` in hello, delta-send optimization | ✅ Done |
 
 ### Auth note (not in original plan)
 

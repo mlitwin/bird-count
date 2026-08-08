@@ -56,7 +56,12 @@ import UIKit
     func initiateSync() {
         guard case .readyToSync(let info) = state else { return }
         let payload = info.localWillSend
-            ? ObservationExportService.exportForSync(displayName: displayName, in: syncFilter, from: observationStore)
+            ? ObservationExportService.exportForSync(
+                displayName: displayName,
+                in: syncFilter,
+                from: observationStore,
+                peerMax: info.peerLocalObservationNumberMax ?? 0
+              )
             : nil
         Task { [weak self] in
             guard let self else { return }
@@ -79,11 +84,13 @@ import UIKit
 
     private func buildHello() -> SyncHelloMessage {
         let summary: SyncSendSummary? = rolePreference != .receiveOnly ? localSendSummary : nil
+        let hwm = observationStore.localObservationNumberMax
         return SyncHelloMessage(
             displayName: displayName,
             peerID: localPeerID,
             rolePreference: rolePreference,
-            sendSummary: summary
+            sendSummary: summary,
+            localObservationNumberMax: hwm > 0 ? hwm : nil
         )
     }
 

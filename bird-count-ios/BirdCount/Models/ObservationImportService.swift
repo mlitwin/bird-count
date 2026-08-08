@@ -34,6 +34,11 @@ public class ObservationImportService {
         // the cloud on the next cloud sync.
         let stats = store.mergeDTOs(payload.observations, markDirty: true)
 
+        // Advance localObservationNumberMax from received records.
+        // serverSyncedHWM is NOT updated — P2P receipt is not server confirmation.
+        let p2pMax = payload.observations.compactMap(\.observationNumber).max() ?? 0
+        store.advanceLocalObservationNumberMax(to: p2pMax)
+
         return ImportStatistics(
             totalRecordsProcessed: payload.observations.count,
             newRecordsImported: stats.imported + stats.updated,

@@ -21,6 +21,8 @@ import Observation
     private let dirtyIdsKey = "CloudDirtyIds"
     private let cursorKey = "CloudSyncCursor"
     private let orphansKey = "CloudOrphanDTOs"
+    private let serverSyncedHWMKey = "ServerSyncedHWM"
+    private let localObsNumberMaxKey = "LocalObsNumberMax"
 
     // MARK: Cloud sync state
     /// Ids of records created or mutated locally (or received via P2P) that
@@ -32,6 +34,18 @@ import Observation
     /// nil means never synced: the first sync uploads everything.
     public var cloudSyncCursor: String? {
         didSet { defaults.set(cloudSyncCursor, forKey: cursorKey) }
+    }
+
+    /// Highest observationNumber confirmed received from the server via ordered pull.
+    /// Sent to the server as `serverSyncedObservationNumberHWM`; never updated from P2P.
+    public private(set) var serverSyncedHWM: Int = 0 {
+        didSet { defaults.set(serverSyncedHWM, forKey: serverSyncedHWMKey) }
+    }
+
+    /// Highest observationNumber seen from any source (server or P2P).
+    /// Used in P2P hello to tell peers what you have locally.
+    public private(set) var localObservationNumberMax: Int = 0 {
+        didSet { defaults.set(localObservationNumberMax, forKey: localObsNumberMaxKey) }
     }
 
     /// Cloud-delivered children whose parent has not arrived yet (pagination
@@ -117,6 +131,8 @@ import Observation
         dirtyIds.removeAll()
         pendingOrphanDTOs.removeAll()
         cloudSyncCursor = nil
+        serverSyncedHWM = 0
+        localObservationNumberMax = 0
         persistCloudState()
     }
 
@@ -431,6 +447,44 @@ import Observation
         persistCloudState()
     }
 
+    /// Advance `serverSyncedHWM` to `value` if higher. Also advances `localObservationNumberMax`
+    /// since server-received records are always a source of local numbers.
+    public func advanceServerSyncedHWM(to value: Int) {
+        if value > serverSyncedHWM { serverSyncedHWM = value }
+        if value > localObservationNumberMax { localObservationNumberMax = value }
+    }
+
+    /// Advance `localObservationNumberMax` only — used after P2P receive.
+    /// Does NOT touch `serverSyncedHWM`: P2P receipt is not server confirmation.
+    public func advanceLocalObservationNumberMax(to value: Int) {
+        if value > localObservationNumberMax { localObservationNumberMax = value }
+    }
+
+    /// Stamp server-assigned observationNumbers onto local records without going through LWW merge.
+    /// The LWW check (updatedAt strict greater-than) skips echoed records from the server, so the
+    /// origin device can only receive its own pushed record's number via the `applied` array.
+    /// Does NOT advance `serverSyncedHWM` — that advances only from the ordered pull stream.
+    public func applyServerObservationNumbers(_ entries: [(id: UUID, number: Int)]) {
+        guard !entries.isEmpty else { return }
+        let byId = Dictionary(uniqueKeysWithValues: entries)
+        var working = observations
+        var maxSeen = localObservationNumberMax
+
+        func apply(_ records: inout [ObservationRecord]) {
+            for i in records.indices {
+                if let n = byId[records[i].id] {
+                    records[i].data.observationNumber = n
+                    if n > maxSeen { maxSeen = n }
+                }
+                apply(&records[i].children)
+            }
+        }
+        apply(&working)
+
+        if maxSeen > localObservationNumberMax { localObservationNumberMax = maxSeen }
+        observations = working
+    }
+
     /// All record ids, top-level and children, flattened.
     public var allRecordIds: [UUID] { flatDTOs().map { $0.id } }
 
@@ -585,6 +639,8 @@ import Observation
             dirtyIds = Set(strings.compactMap(UUID.init(uuidString:)))
         }
         cloudSyncCursor = defaults.string(forKey: cursorKey)
+        serverSyncedHWM = defaults.integer(forKey: serverSyncedHWMKey)
+        localObservationNumberMax = defaults.integer(forKey: localObsNumberMaxKey)
         if let data = defaults.data(forKey: orphansKey) {
             let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601
             pendingOrphanDTOs = (try? decoder.decode([ObservationRecordDTO].self, from: data)) ?? []

@@ -205,11 +205,13 @@ final class PeerAutoSyncService {
             )
         }
         helloAdvertisedSend = summary != nil
+        let hwm = observationStore.localObservationNumberMax
         return SyncHelloMessage(
             displayName: SyncViewModel.resolveDisplayName(from: settingsStore),
             peerID: identity.peerID,
             rolePreference: .sendAndReceive,
-            sendSummary: summary
+            sendSummary: summary,
+            localObservationNumberMax: hwm > 0 ? hwm : nil
         )
     }
 
@@ -295,7 +297,13 @@ final class PeerAutoSyncService {
 
         hasInitiatedThisSession = true
         let canSend = helloAdvertisedSend && info.localWillSend
-        let dtos = canSend ? observationStore.flatDTOs().filter { pending.contains($0.id) } : []
+        let peerMax = info.peerLocalObservationNumberMax ?? 0
+        let dtos = canSend ? observationStore.flatDTOs().filter { dto in
+            guard pending.contains(dto.id) else { return false }
+            // Best-effort: skip records the peer already has via server sync.
+            if peerMax > 0, let n = dto.observationNumber, n <= peerMax { return false }
+            return true
+        } : []
         activeSession = (
             peerID: info.peerID,
             sentVersions: Dictionary(uniqueKeysWithValues: dtos.map { ($0.id, $0.updatedAt) })

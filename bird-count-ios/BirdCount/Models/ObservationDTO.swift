@@ -22,6 +22,10 @@ public struct ObservationRecordDTO: Identifiable, Codable, Equatable {
     /// milliseconds since epoch (see bird-count-schema/schemas/observation.schema.json),
     /// unlike the other dates which are ISO8601 strings.
     public var updatedAt: Date
+    /// Server-assigned, strictly increasing sequence number scoped to the trip.
+    /// Decode-only: never encoded on upload (ajv additionalProperties:false would reject it).
+    /// Absent on legacy records; nil locally until a server sync assigns it.
+    public var observationNumber: Int?
 
     public init(id: UUID, parentId: UUID? = nil, taxonId: String, begin: Date, end: Date, count: Int, location: ObservationLocation? = nil, observer: String = "", status: ObservationStatus = .completed, updatedAt: Date? = nil) {
         self.id = id
@@ -55,6 +59,10 @@ public struct ObservationRecordDTO: Identifiable, Codable, Equatable {
         } else {
             updatedAt = end
         }
+        // observationNumber is decode-only (not in CodingKeys/encode) so the server's
+        // field is captured without being re-uploaded to the server.
+        let extras = try decoder.container(keyedBy: ExtraKeys.self)
+        observationNumber = try extras.decodeIfPresent(Int.self, forKey: .observationNumber)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -74,4 +82,6 @@ public struct ObservationRecordDTO: Identifiable, Codable, Equatable {
     private enum CodingKeys: String, CodingKey {
         case id, parentId, taxonId, begin, end, count, location, observer, status, updatedAt
     }
+
+    private enum ExtraKeys: String, CodingKey { case observationNumber }
 }

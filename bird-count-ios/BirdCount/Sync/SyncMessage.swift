@@ -39,6 +39,9 @@ struct SyncHelloMessage: Codable, Equatable {
     /// app versions; all handling must tolerate nil.
     var publicKey: Data? = nil
     var nonce: Data? = nil
+    /// Highest observationNumber in the sender's local store (any source, incl. P2P).
+    /// Absent on legacy builds; receiver falls back to full-send when nil.
+    var localObservationNumberMax: Int? = nil
 }
 
 // MARK: - Auth Message
@@ -100,6 +103,9 @@ struct SyncReadyInfo: Equatable {
     var peerPublicKey: Data? = nil
     /// True when the peer proved possession of peerPublicKey this session.
     var peerVerified: Bool = false
+    /// Peer's `localObservationNumberMax` from their hello. nil means legacy build
+    /// (no HWM announced); sender must fall back to full-send.
+    var peerLocalObservationNumberMax: Int? = nil
 
     /// Negotiate roles between local and peer hello messages.
     /// Returns nil when the combination is incompatible (nothing would transfer).
@@ -115,7 +121,8 @@ struct SyncReadyInfo: Equatable {
             localWillSend: localRole.localShouldSend(peerPrefers: peerRole),
             peerID: peer.peerID,
             peerPublicKey: verified ? peer.publicKey : nil,
-            peerVerified: verified
+            peerVerified: verified,
+            peerLocalObservationNumberMax: peer.localObservationNumberMax
         )
     }
 }
