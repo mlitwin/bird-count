@@ -3,7 +3,7 @@ import Network
 import Observation
 import UIKit
 
-@Observable final class NetworkSyncTransport: SyncTransport {
+@Observable final class NetworkSyncTransport: SyncTransport, @unchecked Sendable {
 
     // MARK: - SyncTransport
 
@@ -121,6 +121,8 @@ import UIKit
             }
         }
 
+        let finalReceivedCount = receivedCount
+        let finalDuplicatesSkipped = duplicatesSkipped
         await MainActor.run {
             // Connection failure resumes the continuation with nil and sets
             // .error state. Don't overwrite that with .completed.
@@ -128,8 +130,8 @@ import UIKit
 
             let stats = SyncCompletionStats(
                 sentCount: payload?.observations.count ?? 0,
-                receivedCount: receivedCount,
-                duplicatesSkipped: duplicatesSkipped
+                receivedCount: finalReceivedCount,
+                duplicatesSkipped: finalDuplicatesSkipped
             )
             setState(.completed(stats: stats))
         }

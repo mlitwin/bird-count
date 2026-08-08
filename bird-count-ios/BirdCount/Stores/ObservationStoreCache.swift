@@ -56,10 +56,7 @@ struct ObservationStoreCache {
     }
     
     private mutating func processRecord(_ record: ObservationRecord) {
-        // Add this record's count to its taxonId
-        let previousCount = counts[record.taxonId, default: 0]
         counts[record.taxonId, default: 0] += record.count
-        let newCount = counts[record.taxonId]!
         
         // Update lastObservedAt
         let ts = record.end
