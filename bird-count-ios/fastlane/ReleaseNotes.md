@@ -1,4 +1,4 @@
-Changes since v1.0.38-71:
+Changes since v1.0.39-72:
 
-• 1cac5ef fix bump
-• 3d0176a build
+• eca8ba1 Prune ghost dirty IDs that can never be server-acked
+• 4637b1c Fix Lambda authorizer to accept Cognito user access tokens
