@@ -6,6 +6,9 @@ struct CountAdjustSheet: View, Identifiable {
     let taxon: Taxon
     // Optional parent record id; when present, new observations will be attached as children of this parent
     var parentId: UUID? = nil
+    // Optional explicit begin/end for root observations (e.g. Summary tab passes the filter range)
+    var begin: Date? = nil
+    var end: Date? = nil
     let onDone: () -> Void
     // Optional callback fired after pressing Done; indicates if a root observation was actually added (true)
     // Used by callers like HomeView to clear the filter when a new observation is created from a taxon.
@@ -67,7 +70,9 @@ struct CountAdjustSheet: View, Identifiable {
         } else {
             // For new root additions, treat tempCount as the count to add; allow 0 => no-op
             if tempCount > 0 {
-                observations.addObservationWithLocation(taxon.id, begin: Date(), end: nil, count: tempCount)
+                let effectiveBegin = begin ?? Date()
+                let effectiveEnd = end ?? effectiveBegin
+                observations.addObservationWithLocation(taxon.id, begin: effectiveBegin, end: effectiveEnd, count: tempCount)
                 didAddRootObservation = true
             }
         }

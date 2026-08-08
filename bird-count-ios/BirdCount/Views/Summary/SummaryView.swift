@@ -59,7 +59,12 @@ struct SummaryView: View {
                 }
             }
             .sheet(item: $selectedTaxon) { taxon in
-                CountAdjustSheet(taxon: taxon, onDone: { selectedTaxon = nil })
+                CountAdjustSheet(
+                    taxon: taxon,
+                    begin: dateRangeStore.dateRange.begin,
+                    end: dateRangeStore.dateRange.end,
+                    onDone: { selectedTaxon = nil }
+                )
             }
             .environment(pulseState)
         }
@@ -94,9 +99,13 @@ struct SummaryView: View {
                 counts: filteredCounts,
                 syncAttributions: syncAttributions,
                 bottomAnchored: false,
-                onBadgeTap: { taxon in selectedTaxon = taxon },
-                onSelect: { taxon in speciesLogTaxon = taxon },
-                onQuickAdd: { _ in }
+                onDetails: { taxon in speciesLogTaxon = taxon },
+                onTap: { taxon in selectedTaxon = taxon },
+                onQuickAdd: { taxon in
+                    let range = dateRangeStore.dateRange
+                    observations.addObservationWithLocation(taxon.id, begin: range.begin, end: range.end, count: 1)
+                    pulseState.trigger(speciesId: taxon.id)
+                }
             )
         }
     }

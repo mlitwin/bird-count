@@ -5,7 +5,6 @@ struct ObservationRecordView: View {
     @Environment(SettingsStore.self) private var settings
     let record: ObservationRecord
     var onTap: (() -> Void)? = nil
-    var onBadgeTap: (() -> Void)? = nil
 
     var body: some View {
         VStack(spacing: 0) {
@@ -28,13 +27,8 @@ struct ObservationRecordView: View {
                                 : Strings.Sync.fromSyncedUsers.string
                         )
                 }
-                Button {
-                    onBadgeTap?()
-                } label: {
-                    CountBadge(count: totalCount)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Count \(totalCount), tap to adjust")
+                CountBadge(count: totalCount)
+                    .accessibilityLabel("Count \(totalCount)")
             }
             .padding(.horizontal)
             .padding(.vertical, 8)

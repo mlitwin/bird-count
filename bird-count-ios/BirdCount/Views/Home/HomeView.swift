@@ -39,6 +39,40 @@ struct HomeView: View {
         }
     }
 
+    private var taxaWithEntriesIds: Set<String> {
+        let range = dateRangeStore.dateRange
+        return Set(observations.observations.filter {
+            $0.end >= range.begin && $0.begin <= range.end
+        }.map { $0.taxonId })
+    }
+
+    private var undoableTaxonIds: Set<String> {
+        let range = dateRangeStore.dateRange
+        return Set(observations.observations.filter {
+            $0.observer == settings.loginEmail &&
+            $0.totalCount > 0 &&
+            $0.end >= range.begin &&
+            $0.begin <= range.end
+        }.map { $0.taxonId })
+    }
+
+    private func undoTaxon(_ taxon: Taxon) {
+        let range = dateRangeStore.dateRange
+        guard let rec = observations.observations
+            .filter({
+                $0.taxonId == taxon.id &&
+                $0.observer == settings.loginEmail &&
+                $0.totalCount > 0 &&
+                $0.end >= range.begin &&
+                $0.begin <= range.end
+            })
+            .sorted(by: { $0.begin > $1.begin })
+            .first
+        else { return }
+        _ = observations.addChildObservationWithLocation(parentId: rec.id, taxonId: rec.taxonId, begin: Date(), end: nil, count: -rec.totalCount)
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -184,10 +218,18 @@ struct HomeView: View {
                 taxa: filtered,
                 counts: filteredCounts,
                 syncAttributions: syncAttributions,
+                undoableTaxonIds: undoableTaxonIds,
+                detailsTaxonIds: taxaWithEntriesIds,
                 scrollToBottomSignal: scrollToBottomSignal,
                 bottomAnchored: true,
-                onBadgeTap: { taxon in selectedTaxon = taxon },
-                onSelect: { taxon in speciesLogTaxon = taxon },
+                onDetails: { taxon in speciesLogTaxon = taxon },
+                onUndo: { taxon in undoTaxon(taxon) },
+                onTap: { taxon in
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) {
+                        selectedTaxon = taxon
+                        filterFocused = false
+                    }
+                },
                 onQuickAdd: { taxon in
                     observations.addObservationWithLocation(taxon.id, count: 1)
                     let hadFilter = !filterText.isEmpty

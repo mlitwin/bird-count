@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// Reusable chronological list of ObservationRecords with swipe-to-adjust/delete
-/// and NavigationStack push to ObservationDetailsView on tap.
+/// Reusable chronological list of ObservationRecords.
+/// Tap: add a child observation. Swipe-right: immediate +1.
+/// Swipe-left: reveal Delete (net-zero) and Details (observation detail screen).
 /// taxonId: when set, filters live to records for that species only; nil = all records.
 struct ObservationLogContent: View {
     var taxonId: String? = nil
@@ -27,22 +28,36 @@ struct ObservationLogContent: View {
     var body: some View {
         ScrollViewReader { reader in
         List(effectiveRecords) { rec in
-            ObservationRecordView(record: rec, onTap: { selectedRecord = rec }, onBadgeTap: { adjustRecord = rec })
+            ObservationRecordView(record: rec, onTap: { adjustRecord = rec })
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
-                .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                // Swipe-right: immediate +1 child observation
+                .swipeActions(edge: .leading, allowsFullSwipe: true) {
                     if taxonomy.taxon(id: rec.taxonId) != nil {
-                        Button { adjustRecord = rec } label: {
-                            Label(Strings.Observation.adjust.string, systemImage: "plus.circle")
+                        Button {
+                            _ = observations.addChildObservationWithLocation(
+                                parentId: rec.id,
+                                taxonId: rec.taxonId,
+                                begin: Date(),
+                                end: nil,
+                                count: 1
+                            )
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        } label: {
+                            Label("+1", systemImage: "plus.circle")
                         }
                         .tint(.accentColor)
                     }
                 }
+                // Swipe-left: Delete and Details
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    Button { selectedRecord = rec } label: {
+                        Label(Strings.Observation.details.string, systemImage: "info.circle")
+                    }
+                    .tint(.blue)
                     if rec.totalCount > 0 {
                         Button(role: .destructive) {
                             let total = rec.totalCount
-                            guard total > 0 else { return }
                             _ = observations.addChildObservationWithLocation(
                                 parentId: rec.id,
                                 taxonId: rec.taxonId,
