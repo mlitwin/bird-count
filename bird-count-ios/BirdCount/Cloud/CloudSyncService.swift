@@ -5,10 +5,11 @@ import UIKit
 /// Manual cloud sync: gather dirty records -> chunked POST /v1/sync ->
 /// LWW-apply pulled changes -> advance cursor -> clear pushed dirty ids.
 ///
-/// Cursor semantics: the server's pull is strictly-after-cursor (so
-/// pagination always advances). The clock-skew overlap is OUR job: rewind
-/// the stored cursor a few seconds when a sync session starts. Re-delivered
-/// records are absorbed by the store's idempotent LWW merge.
+/// Cursor semantics: the server's pull is strictly-after-cursor. We rewind the
+/// stored cursor a few seconds to absorb server/client clock skew — re-delivered
+/// records are absorbed by the store's idempotent LWW merge. Numbered records are
+/// also covered by the HWM drain loop, but the rewind remains for legacy
+/// unnumbered records that are not indexed in the observationNumber GSI.
 @Observable
 @MainActor
 public final class CloudSyncService {
@@ -35,6 +36,7 @@ public final class CloudSyncService {
     public let auth: CloudAuthService
 
     private static let pushChunkSize = 100 // sync.schema.json maxItems
+    private static let cursorRewindMs: Int64 = 5000
     private static let lastSyncKey = "CloudLastSyncDate"
     private static let clientIdKey = "CloudClientId"
     private static let autoSyncKey = "CloudAutoSyncEnabled"
@@ -113,13 +115,14 @@ public final class CloudSyncService {
         }
     }
 
-    /// Recovery sync: forget the cursor so the next sync re-uploads every
+    /// Recovery sync: forget the cursor and HWMs so the next sync re-uploads every
     /// local record and re-pulls the entire cloud pool from zero. Both sides
     /// merge idempotently, so this is always safe — just chatty. For devices
     /// whose cursor has advanced past records they never received.
     public func resyncAll(store: ObservationStore) async {
         guard !isSyncing else { return }
         store.cloudSyncCursor = nil
+        store.resetSyncHWMs()
         await syncNow(store: store)
     }
 
@@ -150,7 +153,7 @@ public final class CloudSyncService {
             let dirty = store.dirtyIds
             let toPush = store.flatDTOs().filter { dirty.contains($0.id) }
 
-            var cursor = store.cloudSyncCursor ?? "0"
+            var cursor = Self.rewound(store.cloudSyncCursor)
             var merged = ObservationStore.MergeStatistics()
 
             // Push in chunks; each round trip also pulls a delta page.
@@ -241,4 +244,8 @@ public final class CloudSyncService {
         total.orphansHeld = new.orphansHeld
     }
 
+    private static func rewound(_ cursor: String?) -> String {
+        guard let cursor, let value = Int64(cursor) else { return "0" }
+        return String(max(0, value - cursorRewindMs))
+    }
 }

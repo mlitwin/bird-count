@@ -205,13 +205,12 @@ final class PeerAutoSyncService {
             )
         }
         helloAdvertisedSend = summary != nil
-        let hwm = observationStore.localObservationNumberMax
         return SyncHelloMessage(
             displayName: SyncViewModel.resolveDisplayName(from: settingsStore),
             peerID: identity.peerID,
             rolePreference: .sendAndReceive,
             sendSummary: summary,
-            localObservationNumberMax: hwm > 0 ? hwm : nil
+            localObservationNumberMax: observationStore.localObservationNumberMaxIfAny
         )
     }
 

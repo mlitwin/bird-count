@@ -55,12 +55,13 @@ import UIKit
 
     func initiateSync() {
         guard case .readyToSync(let info) = state else { return }
+        let peerMax = info.peerVerified ? (info.peerLocalObservationNumberMax ?? 0) : 0
         let payload = info.localWillSend
             ? ObservationExportService.exportForSync(
                 displayName: displayName,
                 in: syncFilter,
                 from: observationStore,
-                peerMax: info.peerLocalObservationNumberMax ?? 0
+                peerMax: peerMax
               )
             : nil
         Task { [weak self] in
@@ -84,13 +85,12 @@ import UIKit
 
     private func buildHello() -> SyncHelloMessage {
         let summary: SyncSendSummary? = rolePreference != .receiveOnly ? localSendSummary : nil
-        let hwm = observationStore.localObservationNumberMax
         return SyncHelloMessage(
             displayName: displayName,
             peerID: localPeerID,
             rolePreference: rolePreference,
             sendSummary: summary,
-            localObservationNumberMax: hwm > 0 ? hwm : nil
+            localObservationNumberMax: observationStore.localObservationNumberMaxIfAny
         )
     }
 

@@ -48,6 +48,12 @@ import Observation
         didSet { defaults.set(localObservationNumberMax, forKey: localObsNumberMaxKey) }
     }
 
+    /// localObservationNumberMax as an Optional — nil when no observations have been numbered yet.
+    /// Convenience for building P2P hello messages (nil signals legacy/no-HWM to the peer).
+    public var localObservationNumberMaxIfAny: Int? {
+        localObservationNumberMax > 0 ? localObservationNumberMax : nil
+    }
+
     /// Cloud-delivered children whose parent has not arrived yet (pagination
     /// can deliver a child before its parent); reattached on later merges.
     private var pendingOrphanDTOs: [ObservationRecordDTO] = []
@@ -460,13 +466,20 @@ import Observation
         if value > localObservationNumberMax { localObservationNumberMax = value }
     }
 
+    /// Reset both HWMs to zero without wiping observations. Called by resyncAll so the
+    /// server re-delivers all records via the ordered pull stream.
+    public func resetSyncHWMs() {
+        serverSyncedHWM = 0
+        localObservationNumberMax = 0
+    }
+
     /// Stamp server-assigned observationNumbers onto local records without going through LWW merge.
     /// The LWW check (updatedAt strict greater-than) skips echoed records from the server, so the
     /// origin device can only receive its own pushed record's number via the `applied` array.
     /// Does NOT advance `serverSyncedHWM` — that advances only from the ordered pull stream.
     public func applyServerObservationNumbers(_ entries: [(id: UUID, number: Int)]) {
         guard !entries.isEmpty else { return }
-        let byId = Dictionary(uniqueKeysWithValues: entries)
+        let byId = Dictionary(entries, uniquingKeysWith: { _, last in last })
         var working = observations
         var maxSeen = localObservationNumberMax
 

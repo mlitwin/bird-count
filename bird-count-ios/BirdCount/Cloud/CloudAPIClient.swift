@@ -22,14 +22,12 @@ struct SyncResponseBody: Decodable {
     let applied: [SyncAppliedResult]
     let changes: [ObservationRecordDTO]
     let hasMore: Bool
-    let tripSequenceHighWater: Int?
 }
 
 struct PullResponseBody: Decodable {
     let changes: [ObservationRecordDTO]
     let cursor: String
     let hasMore: Bool
-    let tripSequenceHighWater: Int?
 }
 
 /// Authenticated HTTP client for the sync API.
