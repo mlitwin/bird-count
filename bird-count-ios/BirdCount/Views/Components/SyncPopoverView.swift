@@ -14,6 +14,7 @@ struct SyncStatusSheet: View {
 
     @State private var showPairSheet = false
     @State private var signInError: String?
+    @State private var showResyncConfirmation = false
 
     private var hasSyncTargets: Bool {
         cloudAuth.isSignedIn || !pairedPeers.peers.isEmpty
@@ -28,6 +29,7 @@ struct SyncStatusSheet: View {
             List {
                 cloudSection
                 pairedDevicesSection
+                resyncAllSection
             }
             .navigationTitle("Sync")
             .navigationBarTitleDisplayMode(.inline)
@@ -35,21 +37,26 @@ struct SyncStatusSheet: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(Strings.General.close.string) { dismiss() }
                 }
-                ToolbarItem(placement: .primaryAction) {
-                    Button("Re-sync All") {
-                        if cloudAuth.isSignedIn {
-                            Task { await cloudSync.resyncAll(store: observations) }
-                        }
-                        for peer in pairedPeers.peers {
-                            pairedPeers.resetPending(for: peer.id, store: observations)
-                            if autoSync.presentPeerIDs.contains(peer.id) {
-                                autoSync.syncNow(peerID: peer.id)
-                            }
+            }
+            .confirmationDialog(
+                "Re-sync all data?",
+                isPresented: $showResyncConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Re-sync All") {
+                    if cloudAuth.isSignedIn {
+                        Task { await cloudSync.resyncAll(store: observations) }
+                    }
+                    for peer in pairedPeers.peers {
+                        pairedPeers.resetPending(for: peer.id, store: observations)
+                        if autoSync.presentPeerIDs.contains(peer.id) {
+                            autoSync.syncNow(peerID: peer.id)
                         }
                     }
-                    .foregroundStyle(hasSyncTargets ? AnyShapeStyle(.orange) : AnyShapeStyle(.tertiary))
-                    .disabled(!hasSyncTargets)
                 }
+                Button(Strings.General.cancel.string, role: .cancel) {}
+            } message: {
+                Text("Re-queues every observation for upload to the cloud and delivery to all paired peers. Nothing is deleted; use this if devices are out of sync.")
             }
         }
         .sheet(isPresented: $showPairSheet) {
@@ -167,6 +174,19 @@ struct SyncStatusSheet: View {
             Text(Strings.Sync.pairedDevices.string)
         } footer: {
             Text(Strings.Sync.pairExplanation.string)
+        }
+    }
+
+    // MARK: - Re-sync All section
+
+    @ViewBuilder
+    private var resyncAllSection: some View {
+        Section {
+            Button("Re-sync All") {
+                showResyncConfirmation = true
+            }
+            .foregroundStyle(hasSyncTargets ? AnyShapeStyle(.orange) : AnyShapeStyle(.tertiary))
+            .disabled(!hasSyncTargets)
         }
     }
 
