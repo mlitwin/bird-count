@@ -69,7 +69,8 @@ final class PeerAutoSyncService {
 
     /// Trigger an immediate silent sync with a specific present peer. The
     /// current session is torn down and rediscovered so a fresh hello (with
-    /// the current queue) goes out right away.
+    /// the current queue) goes out right away. The restart is global — all
+    /// present peers reconnect on the next discovery cycle, not just peerID.
     func syncNow(peerID: UUID) {
         guard isRunning, presentPeerIDs.contains(peerID) else { return }
         scheduleRestart(after: 0)

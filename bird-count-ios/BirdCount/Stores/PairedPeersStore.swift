@@ -133,7 +133,7 @@ public final class PairedPeersStore {
             current[id] == sentVersion
         }
         peers[index].pendingIds.subtract(deliverable.keys)
-        peers[index].lastSyncDate = Date()
+        if !deliverable.isEmpty { peers[index].lastSyncDate = Date() }
         persist()
     }
 

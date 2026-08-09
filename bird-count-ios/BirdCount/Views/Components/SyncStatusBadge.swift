@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Compact header badge showing sync activity. Always visible — idle state
 /// uses a static icon; the spinner runs only during an active transfer. Tap
-/// opens `SyncPopoverView` anchored to this badge per HIG popover guidelines.
+/// opens `SyncStatusSheet` as a sheet.
 struct SyncStatusBadge: View {
     @Environment(ObservationStore.self) private var observations
     @Environment(PairedPeersStore.self) private var pairedPeers

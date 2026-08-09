@@ -13,11 +13,14 @@ struct SyncStatusSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var showPairSheet = false
-    @State private var emailText: String = ""
     @State private var signInError: String?
 
     private var hasSyncTargets: Bool {
         cloudAuth.isSignedIn || !pairedPeers.peers.isEmpty
+    }
+
+    private var emailBinding: Binding<String> {
+        Binding(get: { settings.loginEmail }, set: { settings.loginEmail = $0 })
     }
 
     var body: some View {
@@ -26,7 +29,6 @@ struct SyncStatusSheet: View {
                 cloudSection
                 pairedDevicesSection
             }
-            .onAppear { emailText = settings.loginEmail }
             .navigationTitle("Sync")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -35,7 +37,9 @@ struct SyncStatusSheet: View {
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button("Re-sync All") {
-                        Task { await cloudSync.resyncAll(store: observations) }
+                        if cloudAuth.isSignedIn {
+                            Task { await cloudSync.resyncAll(store: observations) }
+                        }
                         for peer in pairedPeers.peers {
                             pairedPeers.resetPending(for: peer.id, store: observations)
                             if autoSync.presentPeerIDs.contains(peer.id) {
@@ -59,14 +63,11 @@ struct SyncStatusSheet: View {
     private var cloudSection: some View {
         Section {
             // Email address used as observer identifier
-            TextField(Strings.User.emailPlaceholder.string, text: $emailText)
+            TextField(Strings.User.emailPlaceholder.string, text: emailBinding)
                 .textContentType(.emailAddress)
                 .keyboardType(.emailAddress)
                 .autocapitalization(.none)
                 .disableAutocorrection(true)
-                .onChange(of: emailText) { _, newValue in
-                    settings.loginEmail = newValue
-                }
 
             if cloudAuth.isSignedIn {
                 // Apple ID display
@@ -86,10 +87,6 @@ struct SyncStatusSheet: View {
                         .foregroundStyle(.secondary)
                 }
 
-                // In-progress or error message
-                if case .syncing(let msg) = cloudSync.state {
-                    Text(msg).font(.footnote).foregroundStyle(.secondary)
-                }
                 if case .failure(let msg) = cloudSync.state {
                     Text(msg).font(.footnote).foregroundStyle(.orange)
                 }
@@ -117,11 +114,11 @@ struct SyncStatusSheet: View {
                     set: { cloudSync.autoSyncEnabled = $0 }
                 ))
 
-                // Sync Now
-                if cloudSync.isSyncing {
+                // Sync Now / in-progress indicator
+                if case .syncing(let msg) = cloudSync.state {
                     HStack(spacing: 8) {
                         ProgressView().controlSize(.small)
-                        Text("Syncing…").foregroundStyle(.secondary)
+                        Text(msg).foregroundStyle(.secondary)
                     }
                 } else {
                     Button("Sync Now") {
@@ -129,8 +126,8 @@ struct SyncStatusSheet: View {
                     }
                 }
 
-                // Re-sync All
-                Button("Re-sync All") {
+                // Re-upload All (cloud only; toolbar "Re-sync All" covers cloud + peers)
+                Button("Re-upload All") {
                     Task { await cloudSync.resyncAll(store: observations) }
                 }
                 .foregroundStyle(.orange)
@@ -176,14 +173,12 @@ struct SyncStatusSheet: View {
     // MARK: - Cloud status helpers
 
     private var cloudStatusColor: Color {
-        guard cloudAuth.isSignedIn else { return Color(.secondaryLabel) }
         if case .failure = cloudSync.state { return .orange }
         if cloudSync.isOnWifi && cloudSync.autoSyncEnabled { return .green }
         return .yellow
     }
 
     private var cloudStatusLabel: String {
-        guard cloudAuth.isSignedIn else { return "Not signed in" }
         if case .failure(let msg) = cloudSync.state { return msg }
         if cloudSync.isOnWifi && cloudSync.autoSyncEnabled { return "Wi-Fi · Auto-sync on" }
         if cloudSync.isOnWifi { return "Wi-Fi · Auto-sync off" }
@@ -256,10 +251,14 @@ private struct PeerRows: View {
 
 // MARK: - Utilities
 
+private let relativeDateFormatter: RelativeDateTimeFormatter = {
+    let f = RelativeDateTimeFormatter()
+    f.unitsStyle = .abbreviated
+    return f
+}()
+
 private func relativeDate(_ date: Date) -> String {
-    let formatter = RelativeDateTimeFormatter()
-    formatter.unitsStyle = .abbreviated
-    return formatter.localizedString(for: date, relativeTo: Date())
+    relativeDateFormatter.localizedString(for: date, relativeTo: Date())
 }
 
 #if DEBUG
