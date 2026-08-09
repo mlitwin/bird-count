@@ -7,6 +7,7 @@ SIMULATOR ?= iPhone 16
 OS ?= 18.5
 DEST ?= platform=iOS Simulator,name=$(SIMULATOR),OS=$(OS)
 CONFIGURATION ?= Debug
+REPO_ROOT := $(shell git -C "$(dir $(abspath $(lastword $(MAKEFILE_LIST))))" rev-parse --show-toplevel 2>/dev/null)
 
 .DEFAULT_GOAL := help
 
@@ -103,8 +104,8 @@ prep-alpha:
 	@echo "📄 Review the release notes above before proceeding"
 	@echo "⬆️ Bumping version numbers..."
 	git add fastlane/ReleaseNotes.md
-	git commit -m "Update release notes for alpha release"
 	bundle exec fastlane bump_patch
+	git -C "$(REPO_ROOT)" commit -m "Update release notes for alpha release"
 	@echo "✅ Alpha preparation complete!"
 
 prep-patch:
