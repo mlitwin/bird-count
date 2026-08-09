@@ -104,8 +104,9 @@ prep-alpha:
 	@echo "📄 Review the release notes above before proceeding"
 	@echo "⬆️ Bumping version numbers..."
 	git add fastlane/ReleaseNotes.md
-	bundle exec fastlane bump_patch
 	git -C "$(REPO_ROOT)" commit -m "Update release notes for alpha release"
+	bundle exec fastlane bump_patch
+	git -C "$(REPO_ROOT)" commit -m "Update version and build number for alpha release"
 	@echo "✅ Alpha preparation complete!"
 
 prep-patch:
