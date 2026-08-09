@@ -1,3 +1,4 @@
-Changes since v1.0.43-76:
+Changes since v1.0.44-77:
 
-• 9738742 fix
+• 2613897 menu reform continued
+• 871e6cf menu reform
