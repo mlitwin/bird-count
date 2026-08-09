@@ -1,4 +1,5 @@
-Changes since v1.0.44-77:
+Changes since v1.0.45-78:
 
-• 2613897 menu reform continued
-• 871e6cf menu reform
+• 41eb29e fix test
+• b997447 review fixes
+• 1cc419b revamp sync UI
