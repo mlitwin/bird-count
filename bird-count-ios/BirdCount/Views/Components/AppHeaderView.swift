@@ -38,7 +38,7 @@ struct AppHeaderView: View {
             }
             .overlay(alignment: .trailing) {
                 HStack(spacing: 8) {
-                    SyncStatusBadge(action: { showSettings = true })
+                    SyncStatusBadge()
                     Button(action: { showSettings = true }) {
                         Image(systemName: "gearshape")
                             .font(.headline)

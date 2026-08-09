@@ -13,6 +13,8 @@ public struct PairedPeer: Codable, Equatable, Identifiable {
     /// Records queued for delivery to this peer; cleared on confirmed send.
     /// Same store-and-forward role as the cloud's dirtyIds, but per peer.
     public var pendingIds: Set<UUID>
+    /// Timestamp of the last confirmed delivery to this peer.
+    public var lastSyncDate: Date? = nil
 }
 
 /// Persistent list of paired devices plus a per-peer outbound queue.
@@ -131,6 +133,16 @@ public final class PairedPeersStore {
             current[id] == sentVersion
         }
         peers[index].pendingIds.subtract(deliverable.keys)
+        peers[index].lastSyncDate = Date()
+        persist()
+    }
+
+    /// Reset the peer's outbound queue to the full local record set, then
+    /// persist. Call when the user requests a re-sync — the next exchange
+    /// re-delivers everything; nothing is deleted.
+    public func resetPending(for peerID: UUID, store: ObservationStore) {
+        guard let index = peers.firstIndex(where: { $0.id == peerID }) else { return }
+        peers[index].pendingIds = Set(store.allRecordIds)
         persist()
     }
 

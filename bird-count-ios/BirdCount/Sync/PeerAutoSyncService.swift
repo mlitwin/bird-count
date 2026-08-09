@@ -67,6 +67,14 @@ final class PeerAutoSyncService {
     /// must never send data a stale hello didn't announce — restart instead.
     private var helloAdvertisedSend = false
 
+    /// Trigger an immediate silent sync with a specific present peer. The
+    /// current session is torn down and rediscovered so a fresh hello (with
+    /// the current queue) goes out right away.
+    func syncNow(peerID: UUID) {
+        guard isRunning, presentPeerIDs.contains(peerID) else { return }
+        scheduleRestart(after: 0)
+    }
+
     /// Delay before rediscovering after a completed sync (both sides restart;
     /// short keeps paired devices connected-and-ready while near each other).
     static let restartAfterCompletion: TimeInterval = 5
