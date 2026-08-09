@@ -488,20 +488,20 @@ struct SpeciesListViewTests {
 
     @Test("Default parameter values")
     func defaultParameters() {
-        let view = SpeciesListView(taxa: [], onSelect: { _ in })
+        let view = SpeciesListView(taxa: [], onTap: { _ in })
         #expect(view.scrollToBottomSignal == 0)
         #expect(view.counts.isEmpty)
     }
 
     @Test("Renders with empty taxa list")
     func rendersEmpty() {
-        let v = render(SpeciesListView(taxa: [], onSelect: { _ in }).environment(PulseAnimationState()))
+        let v = render(SpeciesListView(taxa: [], onTap: { _ in }).environment(PulseAnimationState()))
         #expect(v.bounds.height > 0)
     }
 
     @Test("Renders a single species")
     func rendersSingleSpecies() {
-        let v = render(SpeciesListView(taxa: makeTaxa(1), onSelect: { _ in }).environment(PulseAnimationState()))
+        let v = render(SpeciesListView(taxa: makeTaxa(1), onTap: { _ in }).environment(PulseAnimationState()))
         #expect(v.bounds.height > 0)
     }
 
@@ -509,14 +509,14 @@ struct SpeciesListViewTests {
     func rendersManySpecies() {
         let taxa = makeTaxa(40)
         let counts = Dictionary(uniqueKeysWithValues: taxa.map { ($0.id, 3) })
-        let v = render(SpeciesListView(taxa: taxa, counts: counts, onSelect: { _ in }).environment(PulseAnimationState()))
+        let v = render(SpeciesListView(taxa: taxa, counts: counts, onTap: { _ in }).environment(PulseAnimationState()))
         #expect(v.bounds.height > 0)
     }
 
     @Test("Starts scrolled to bottom with many species")
     func initialPositionIsAtBottomWithManySpecies() async throws {
         let taxa = makeTaxa(40)
-        let w = TestWindow(SpeciesListView(taxa: taxa, onSelect: { _ in }).environment(PulseAnimationState()))
+        let w = TestWindow(SpeciesListView(taxa: taxa, onTap: { _ in }).environment(PulseAnimationState()))
         try await Task.sleep(for: .milliseconds(300))
         guard let sv = findScrollView(in: w.view) else {
             Issue.record("UIScrollView not found"); return
@@ -529,7 +529,7 @@ struct SpeciesListViewTests {
 
     @Test("Renders with non-zero scrollToBottomSignal")
     func rendersWithScrollSignal() {
-        let v = render(SpeciesListView(taxa: makeTaxa(5), scrollToBottomSignal: 3, onSelect: { _ in }).environment(PulseAnimationState()))
+        let v = render(SpeciesListView(taxa: makeTaxa(5), scrollToBottomSignal: 3, onTap: { _ in }).environment(PulseAnimationState()))
         #expect(v.bounds.height > 0)
     }
 
@@ -538,7 +538,7 @@ struct SpeciesListViewTests {
         let taxa = makeTaxa(5)
         let pulse = PulseAnimationState()
         pulse.trigger(speciesId: taxa[2].id)
-        let v = render(SpeciesListView(taxa: taxa, onSelect: { _ in }).environment(pulse))
+        let v = render(SpeciesListView(taxa: taxa, onTap: { _ in }).environment(pulse))
         #expect(v.bounds.height > 0)
     }
 
@@ -546,18 +546,18 @@ struct SpeciesListViewTests {
     func rendersWithCounts() {
         let taxa = makeTaxa(10)
         let counts = Dictionary(uniqueKeysWithValues: taxa.map { ($0.id, Int.random(in: 1...20)) })
-        let v = render(SpeciesListView(taxa: taxa, counts: counts, onSelect: { _ in }).environment(PulseAnimationState()))
+        let v = render(SpeciesListView(taxa: taxa, counts: counts, onTap: { _ in }).environment(PulseAnimationState()))
         #expect(v.bounds.height > 0)
     }
 
-    @Test("onSelect and onQuickAdd closures accepted without crash")
+    @Test("onTap and onQuickAdd closures accepted without crash")
     func closuresAccepted() {
         var selectedId: String?
         var quickAddId: String?
         let taxa = makeTaxa(3)
         let v = render(SpeciesListView(
             taxa: taxa,
-            onSelect: { selectedId = $0.id },
+            onTap: { selectedId = $0.id },
             onQuickAdd: { quickAddId = $0.id }
         ).environment(PulseAnimationState()))
         #expect(v.bounds.height > 0)
