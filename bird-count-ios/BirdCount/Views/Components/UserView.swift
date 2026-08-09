@@ -1,18 +1,11 @@
 import SwiftUI
 
-/// User view containing user settings, account information, and cloud sync.
-struct UserView: View {
+struct AccountView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(SettingsStore.self) private var settingsStore
-    @Environment(ObservationStore.self) private var observations
     @Environment(CloudAuthService.self) private var cloudAuth
-    @Environment(CloudSyncService.self) private var cloudSync
-    @Environment(PairedPeersStore.self) private var pairedPeers
-    @Environment(PeerAutoSyncService.self) private var autoSync
     @State private var emailText: String = ""
     @State private var signInError: String?
-    @State private var showPairSheet = false
-    @State private var showResyncConfirmation = false
 
     var body: some View {
         NavigationStack {
@@ -23,7 +16,7 @@ struct UserView: View {
                             .font(.system(size: 60))
                             .foregroundStyle(.tint)
 
-                        Text("User Settings")
+                        Text("Account")
                             .font(.title2.weight(.semibold))
                     }
                     .frame(maxWidth: .infinity)
@@ -44,72 +37,13 @@ struct UserView: View {
                         }
                 }
 
-                Section("Cloud Sync") {
+                Section("Apple ID") {
                     if cloudAuth.isSignedIn {
                         HStack {
                             Text("Account")
                             Spacer()
                             Text(cloudAuth.accountEmail ?? "Signed in")
                                 .foregroundStyle(.secondary)
-                        }
-                        Button {
-                            Task { await cloudSync.syncNow(store: observations) }
-                        } label: {
-                            HStack {
-                                Text("Sync now")
-                                Spacer()
-                                if cloudSync.isSyncing { ProgressView() }
-                            }
-                        }
-                        .disabled(cloudSync.isSyncing)
-                        if case .syncing(let message) = cloudSync.state {
-                            Text(message).font(.footnote).foregroundStyle(.secondary)
-                        }
-                        if case .failure(let message) = cloudSync.state {
-                            Text(message).font(.footnote).foregroundStyle(.red)
-                        }
-                        HStack {
-                            Text(Strings.User.queuedForUpload.string)
-                            Spacer()
-                            Image(systemName: cloudSync.isOnWifi ? "wifi" : "wifi.slash")
-                                .font(.subheadline)
-                                .foregroundStyle(cloudSync.isOnWifi ? AnyShapeStyle(.green) : AnyShapeStyle(.secondary))
-                                .accessibilityLabel(
-                                    cloudSync.isOnWifi
-                                        ? Strings.User.connectionAvailable.string
-                                        : Strings.User.connectionUnavailable.string
-                                )
-                            Text("\(observations.dirtyIds.count)")
-                                .monospacedDigit()
-                                .foregroundStyle(.secondary)
-                        }
-                        if let last = cloudSync.lastSyncDate {
-                            HStack {
-                                Text("Last sync")
-                                Spacer()
-                                Text(last.formatted(date: .abbreviated, time: .shortened))
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        Toggle("Auto sync on Wi-Fi", isOn: Binding(
-                            get: { cloudSync.autoSyncEnabled },
-                            set: { cloudSync.autoSyncEnabled = $0 }
-                        ))
-                        Button("Re-sync all data") {
-                            showResyncConfirmation = true
-                        }
-                        .disabled(cloudSync.isSyncing)
-                        .confirmationDialog(
-                            "Re-sync all data?",
-                            isPresented: $showResyncConfirmation,
-                            titleVisibility: .visible
-                        ) {
-                            Button("Re-sync all") {
-                                Task { await cloudSync.resyncAll(store: observations) }
-                            }
-                            Button(Strings.General.cancel.string, role: .cancel) {}
-                        } message: {
-                            Text("Re-uploads every observation on this device and re-downloads everything from the cloud. Nothing is deleted; use this if devices are out of sync.")
                         }
                         Button("Sign out", role: .destructive) { cloudAuth.signOut() }
                     } else {
@@ -125,56 +59,11 @@ struct UserView: View {
                         }
                     }
                 }
-
-                Section {
-                    ForEach(pairedPeers.peers) { peer in
-                        let present = autoSync.presentPeerIDs.contains(peer.id)
-                        HStack {
-                            Image(systemName: "iphone")
-                                .foregroundStyle(.tint)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(peer.displayName)
-                                HStack(spacing: 4) {
-                                    Image(systemName: present
-                                        ? "antenna.radiowaves.left.and.right"
-                                        : "antenna.radiowaves.left.and.right.slash")
-                                        .font(.caption2)
-                                        .foregroundStyle(present ? AnyShapeStyle(.green) : AnyShapeStyle(.secondary))
-                                        .accessibilityLabel(
-                                            present
-                                                ? Strings.User.connectionAvailable.string
-                                                : Strings.User.connectionUnavailable.string
-                                        )
-                                    Text(String(format: Strings.User.peerQueued.string, peer.pendingIds.count))
-                                        .font(.caption)
-                                        .monospacedDigit()
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                            Spacer()
-                            Button(Strings.Sync.unpair.string, role: .destructive) {
-                                pairedPeers.unpair(peer.id)
-                            }
-                        }
-                    }
-                    Button {
-                        showPairSheet = true
-                    } label: {
-                        Label(Strings.Sync.pairNewDevice.string, systemImage: "link.badge.plus")
-                    }
-                } header: {
-                    Text(Strings.Sync.pairedDevices.string)
-                } footer: {
-                    Text(Strings.Sync.pairExplanation.string)
-                }
-            }
-            .sheet(isPresented: $showPairSheet) {
-                PairDeviceSheet()
             }
             .onAppear {
                 emailText = settingsStore.loginEmail
             }
-            .navigationTitle("User")
+            .navigationTitle("Account")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -189,18 +78,8 @@ struct UserView: View {
 
 #Preview {
     let auth = CloudAuthService()
-    let store = ObservationStore()
     let settings = SettingsStore()
-    let peers = PairedPeersStore()
-    return UserView()
+    return AccountView()
         .environment(settings)
-        .environment(store)
         .environment(auth)
-        .environment(CloudSyncService(auth: auth))
-        .environment(peers)
-        .environment(PeerAutoSyncService(
-            observationStore: store,
-            settingsStore: settings,
-            pairedPeers: peers
-        ))
 }

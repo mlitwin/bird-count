@@ -75,7 +75,7 @@ struct AppHeaderView: View {
             )
         )
         .sheet(isPresented: $showUserView) {
-            UserView()
+            AccountView()
         }
     }
 }

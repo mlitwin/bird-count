@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 @main
 struct BirdCountApp: App {
@@ -15,8 +14,6 @@ struct BirdCountApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
-        UITabBar.appearance().unselectedItemTintColor = .systemGray3
-
         let auth = CloudAuthService()
         _cloudAuth = State(initialValue: auth)
         _cloudSync = State(initialValue: CloudSyncService(auth: auth))
@@ -67,8 +64,7 @@ struct BirdCountApp: App {
     }
 }
 private struct TopTabsRoot: View {
-    private enum Tab { case home, summary, log }
-    @State private var selection: Tab = .home
+    @State private var selection: AppTab = .home
     @State private var showSettings: Bool = false
     @State private var showLeftDrawer: Bool = false
     @State private var homeNavState = AppNavigationState()
@@ -85,21 +81,16 @@ private struct TopTabsRoot: View {
 
     var body: some View {
         ZStack {
-            TabView(selection: $selection) {
-                HomeView()
-                    .environment(homeNavState)
-                    .tabItem { Label(Strings.Tab.home.string, systemImage: "house.fill") }
-                    .tag(Tab.home)
-
-                SummaryView()
-                    .environment(summaryNavState)
-                    .tabItem { Label(Strings.Tab.summary.string, systemImage: "chart.bar") }
-                    .tag(Tab.summary)
-
-                LogView()
-                    .environment(logNavState)
-                    .tabItem { Label(Strings.Tab.log.string, systemImage: "list.bullet") }
-                    .tag(Tab.log)
+            Group {
+                switch selection {
+                case .home:    HomeView().environment(homeNavState)
+                case .summary: SummaryView().environment(summaryNavState)
+                case .log:     LogView().environment(logNavState)
+                }
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                // Spacer preserving the height the tab bar previously occupied.
+                Color.clear.frame(height: 49)
             }
             .safeAreaInset(edge: .top, spacing: 0) {
                 VStack(spacing: 0) {
@@ -108,35 +99,13 @@ private struct TopTabsRoot: View {
                     Divider()
                 }
             }
-            .onAppear { patchHomeTabBarItem() }
             .sheet(isPresented: $showSettings) { SettingsView(show: $showSettings) }
 
             LeftDrawerView(
                 isPresented: $showLeftDrawer,
-                showSettings: $showSettings,
-                showShareOptions: .constant(false)
+                selectedTab: $selection,
+                showSettings: $showSettings
             )
         }
-    }
-}
-
-private func findTabBarController(_ vc: UIViewController?) -> UITabBarController? {
-    guard let vc else { return nil }
-    if let tabVC = vc as? UITabBarController { return tabVC }
-    return vc.children.lazy.compactMap { findTabBarController($0) }.first
-}
-
-private func patchHomeTabBarItem() {
-    DispatchQueue.main.async {
-        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let tabVC = findTabBarController(scene.windows.first?.rootViewController),
-              let items = tabVC.tabBar.items, items.count >= 3 else { return }
-
-        let config = UIImage.SymbolConfiguration(pointSize: 22, weight: .semibold)
-        let color = UIColor.tintColor
-        let icon = UIImage(systemName: "house.fill", withConfiguration: config)?
-            .withTintColor(color, renderingMode: .alwaysOriginal)
-        items[0].image = icon
-        items[0].selectedImage = icon
     }
 }

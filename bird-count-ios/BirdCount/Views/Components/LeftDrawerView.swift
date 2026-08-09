@@ -2,20 +2,18 @@ import SwiftUI
 
 struct LeftDrawerView: View {
     @Binding var isPresented: Bool
+    @Binding var selectedTab: AppTab
     @Binding var showSettings: Bool
-    @Binding var showShareOptions: Bool
     @Environment(ObservationStore.self) private var observations
-    @Environment(TaxonomyStore.self) private var taxonomy
-    @Environment(DateRangeStore.self) private var dateRangeStore
     @Environment(SettingsStore.self) private var settingsStore
+    @Environment(DateRangeStore.self) private var dateRangeStore
 
     @State private var showSyncSheet: Bool = false
     @State private var shareSheet: Bool = false
     @State private var importSheet: Bool = false
-    
+
     var body: some View {
         ZStack {
-            // Background overlay
             if isPresented {
                 Color.black.opacity(0.3)
                     .ignoresSafeArea()
@@ -25,19 +23,17 @@ struct LeftDrawerView: View {
                         }
                     }
             }
-            
-            // Drawer content
+
             HStack {
                 if isPresented {
                     VStack(alignment: .leading, spacing: 0) {
-                        // Header
                         HStack {
                             Text(Strings.General.menu.string)
                                 .font(.title2.weight(.semibold))
                                 .foregroundColor(.primary)
-                            
+
                             Spacer()
-                            
+
                             Button(action: {
                                 withAnimation(.easeInOut(duration: 0.3)) {
                                     isPresented = false
@@ -50,22 +46,46 @@ struct LeftDrawerView: View {
                         }
                         .padding()
                         .background(Color(.systemGroupedBackground))
-                        
+
                         Divider()
-                        
-                        // Menu items
+
                         VStack(spacing: 0) {
-                            // Share section
+                            DrawerMenuSection(title: "Navigate") {
+                                DrawerMenuItem(
+                                    icon: "house.fill",
+                                    title: Strings.Tab.home.string,
+                                    isSelected: selectedTab == .home
+                                ) {
+                                    selectedTab = .home
+                                    withAnimation(.easeInOut(duration: 0.3)) { isPresented = false }
+                                }
+                                DrawerMenuItem(
+                                    icon: "chart.bar",
+                                    title: Strings.Tab.summary.string,
+                                    isSelected: selectedTab == .summary
+                                ) {
+                                    selectedTab = .summary
+                                    withAnimation(.easeInOut(duration: 0.3)) { isPresented = false }
+                                }
+                                DrawerMenuItem(
+                                    icon: "list.bullet",
+                                    title: Strings.Tab.log.string,
+                                    isSelected: selectedTab == .log
+                                ) {
+                                    selectedTab = .log
+                                    withAnimation(.easeInOut(duration: 0.3)) { isPresented = false }
+                                }
+                            }
+
                             DrawerMenuSection(title: Strings.Share.title.string) {
                                 DrawerMenuItem(
                                     icon: "square.and.arrow.down",
-                                    title: Strings.Import.importData.string,
-                                    disabled: false
+                                    title: Strings.Import.importData.string
                                 ) {
                                     isPresented = false
                                     importSheet = true
                                 }
-                                
+
                                 DrawerMenuItem(
                                     icon: "square.and.arrow.up",
                                     title: Strings.Share.export.string,
@@ -74,7 +94,7 @@ struct LeftDrawerView: View {
                                     isPresented = false
                                     shareSheet = true
                                 }
-                                
+
                                 DrawerMenuItem(
                                     icon: "iphone.radiowaves.left.and.right",
                                     title: "Sync with Nearby Phones"
@@ -83,11 +103,7 @@ struct LeftDrawerView: View {
                                     showSyncSheet = true
                                 }
                             }
-                            
-                            Divider()
-                                .padding(.horizontal)
-                            
-                            // Settings section
+
                             DrawerMenuSection(title: Strings.Settings.title.string) {
                                 DrawerMenuItem(
                                     icon: "gearshape",
@@ -99,16 +115,15 @@ struct LeftDrawerView: View {
                             }
                         }
                         .background(Color(.systemBackground))
-                        
+
                         Spacer()
                     }
-                    .frame(width: 280)
+                    .frame(width: 320)
                     .background(Color(.systemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 0))
                     .shadow(radius: 10)
                     .transition(.move(edge: .leading))
                 }
-                
+
                 Spacer()
             }
         }
@@ -126,8 +141,6 @@ struct LeftDrawerView: View {
             )
         }
     }
-    
-    // MARK: - Helper Methods - Removed export logic, now in ShareActivitySheet
 }
 
 // MARK: - Supporting Components
@@ -135,15 +148,16 @@ struct LeftDrawerView: View {
 private struct DrawerMenuSection<Content: View>: View {
     let title: String
     @ViewBuilder let content: Content
-    
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 0) {
             Text(title)
-                .font(.headline)
+                .font(.footnote.weight(.semibold))
                 .foregroundColor(.secondary)
-                .padding(.horizontal)
-                .padding(.top, 16)
-            
+                .padding(.horizontal, 16)
+                .padding(.top, 20)
+                .padding(.bottom, 4)
+
             content
         }
     }
@@ -153,32 +167,40 @@ private struct DrawerMenuItem: View {
     let icon: String
     let title: String
     let disabled: Bool
+    let isSelected: Bool
     let action: () -> Void
-    
-    init(icon: String, title: String, disabled: Bool = false, action: @escaping () -> Void) {
+
+    init(icon: String, title: String, disabled: Bool = false, isSelected: Bool = false, action: @escaping () -> Void) {
         self.icon = icon
         self.title = title
         self.disabled = disabled
+        self.isSelected = isSelected
         self.action = action
     }
-    
+
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 16) {
+            HStack(spacing: 12) {
                 Image(systemName: icon)
-                    .font(.headline)
+                    .font(.body.weight(.medium))
                     .foregroundColor(disabled ? .secondary : .accentColor)
-                    .frame(width: 24)
-                
+                    .frame(width: 22)
+
                 Text(title)
                     .font(.body)
+                    .fontWeight(isSelected ? .semibold : .regular)
                     .foregroundColor(disabled ? .secondary : .primary)
-                
+
                 Spacer()
             }
-            .padding(.horizontal)
-            .padding(.vertical, 12)
-            .background(Color(.systemBackground))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(
+                isSelected
+                    ? RoundedRectangle(cornerRadius: 10).fill(Color.accentColor.opacity(0.12))
+                    : RoundedRectangle(cornerRadius: 10).fill(Color.clear)
+            )
+            .padding(.horizontal, 8)
         }
         .disabled(disabled)
         .buttonStyle(PlainButtonStyle())
@@ -190,11 +212,11 @@ private struct DrawerMenuItem: View {
     ZStack {
         Color(.systemGroupedBackground)
             .ignoresSafeArea()
-        
+
         LeftDrawerView(
             isPresented: .constant(true),
-            showSettings: .constant(false),
-            showShareOptions: .constant(false)
+            selectedTab: .constant(.home),
+            showSettings: .constant(false)
         )
         .environment(ObservationStore())
         .environment(TaxonomyStore())
