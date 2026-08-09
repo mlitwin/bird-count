@@ -17,7 +17,7 @@ node_modules/
 DerivedData/
 xcuserdata/
 *.xcuserstate
-/*.xcodeproj/xcshareddata/xcschemes/
+**/*.xcodeproj/xcshareddata/xcschemes/**
 
 # Swift Package Manager
 .build/
