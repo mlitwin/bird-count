@@ -1,5 +1,3 @@
-Changes since v1.0.45-78:
+Changes since v1.0.46-79:
 
-• 41eb29e fix test
-• b997447 review fixes
-• 1cc419b revamp sync UI
+• a0cccb0 bring back resync all dialog
