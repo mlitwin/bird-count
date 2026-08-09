@@ -1,6 +1,8 @@
 # macOS
 .DS_Store
 
+/docs/
+
 # Terraform
 **/.terraform/
 *.tfstate
@@ -15,6 +17,7 @@ node_modules/
 DerivedData/
 xcuserdata/
 *.xcuserstate
+*.xcodeproj/xcshareddata/xcschemes/
 
 # Swift Package Manager
 .build/
