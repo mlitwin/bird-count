@@ -103,8 +103,7 @@ private struct TopTabsRoot: View {
 
             LeftDrawerView(
                 isPresented: $showLeftDrawer,
-                selectedTab: $selection,
-                showSettings: $showSettings
+                selectedTab: $selection
             )
         }
     }

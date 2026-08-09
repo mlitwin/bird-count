@@ -3,7 +3,6 @@ import SwiftUI
 struct LeftDrawerView: View {
     @Binding var isPresented: Bool
     @Binding var selectedTab: AppTab
-    @Binding var showSettings: Bool
     @Environment(ObservationStore.self) private var observations
     @Environment(SettingsStore.self) private var settingsStore
     @Environment(DateRangeStore.self) private var dateRangeStore
@@ -104,15 +103,6 @@ struct LeftDrawerView: View {
                                 }
                             }
 
-                            DrawerMenuSection(title: Strings.Settings.title.string) {
-                                DrawerMenuItem(
-                                    icon: "gearshape",
-                                    title: Strings.Settings.title.string
-                                ) {
-                                    isPresented = false
-                                    showSettings = true
-                                }
-                            }
                         }
                         .background(Color(.systemBackground))
 
@@ -215,8 +205,7 @@ private struct DrawerMenuItem: View {
 
         LeftDrawerView(
             isPresented: .constant(true),
-            selectedTab: .constant(.home),
-            showSettings: .constant(false)
+            selectedTab: .constant(.home)
         )
         .environment(ObservationStore())
         .environment(TaxonomyStore())

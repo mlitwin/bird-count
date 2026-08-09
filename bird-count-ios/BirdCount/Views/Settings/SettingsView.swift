@@ -12,6 +12,8 @@ struct SettingsView: View {
     @State private var confirmClear: Bool = false
     @State private var showPairSheet = false
     @State private var showResyncConfirmation = false
+    @State private var emailText: String = ""
+    @State private var signInError: String?
 
     private let availableChecklists: [String] = ["checklist-US-CA-041", "checklist-US-ME"]
 
@@ -34,6 +36,38 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
+                Section("Account") {
+                    TextField(Strings.User.emailPlaceholder.string, text: $emailText)
+                        .textContentType(.emailAddress)
+                        .keyboardType(.emailAddress)
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                        .onChange(of: emailText) { _, newValue in
+                            settings.loginEmail = newValue
+                        }
+
+                    if cloudAuth.isSignedIn {
+                        HStack {
+                            Text("Apple ID")
+                            Spacer()
+                            Text(cloudAuth.accountEmail ?? "Signed in")
+                                .foregroundStyle(.secondary)
+                        }
+                        Button("Sign out", role: .destructive) { cloudAuth.signOut() }
+                    } else {
+                        Button("Sign in with Apple") {
+                            signInError = nil
+                            Task {
+                                do { try await cloudAuth.signIn() }
+                                catch { signInError = error.localizedDescription }
+                            }
+                        }
+                        if let signInError {
+                            Text(signInError).font(.footnote).foregroundStyle(.red)
+                        }
+                    }
+                }
+
                 Section("Checklist") {
                     Picker("Region checklist", selection: binding(\.selectedChecklistId)) {
                         Text("None (global)").tag(String?.none)
@@ -171,6 +205,7 @@ struct SettingsView: View {
                     }
                 }
             }
+            .onAppear { emailText = settings.loginEmail }
             .navigationTitle("Settings")
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Close") { show = false } } }
             .alert("Clear all counts?", isPresented: $confirmClear) {
