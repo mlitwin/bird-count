@@ -1,3 +1,3 @@
-Changes since v1.0.46-79:
+Changes since v1.0.47-80:
 
-• a0cccb0 bring back resync all dialog
+• e07dc5c badge
