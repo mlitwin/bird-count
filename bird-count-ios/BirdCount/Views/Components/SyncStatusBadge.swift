@@ -7,7 +7,6 @@ struct SyncStatusBadge: View {
     @Environment(ObservationStore.self) private var observations
     @Environment(PairedPeersStore.self) private var pairedPeers
     @Environment(CloudSyncService.self) private var cloudSync
-    @Environment(CloudAuthService.self) private var cloudAuth
     @Environment(PeerAutoSyncService.self) private var autoSync
 
     @State private var showSheet = false
@@ -19,13 +18,13 @@ struct SyncStatusBadge: View {
                     ProgressView()
                         .controlSize(.small)
                 } else {
-                    Image(systemName: hasCloudError ? "exclamationmark.arrow.circlepath" : "arrow.2.circlepath")
+                    Image(systemName: "arrow.2.circlepath")
                         .font(.headline)
                 }
             }
             .padding(8)
             .background(Circle().fill(Color(.secondarySystemBackground)))
-            .foregroundStyle(hasCloudError ? AnyShapeStyle(.orange) : AnyShapeStyle(.secondary))
+            .foregroundStyle(.secondary)
         }
         .accessibilityLabel(accessibilityText)
         .sheet(isPresented: $showSheet) {
@@ -45,11 +44,6 @@ struct SyncStatusBadge: View {
 
     private var isActive: Bool {
         cloudSync.isSyncing || autoSync.isExchanging
-    }
-
-    private var hasCloudError: Bool {
-        guard cloudAuth.isSignedIn, case .failure = cloudSync.state else { return false }
-        return true
     }
 
     private var accessibilityText: String {
