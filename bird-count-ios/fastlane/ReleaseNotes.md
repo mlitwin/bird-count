@@ -1,4 +1,3 @@
-Changes since v1.0.48-81:
+Changes since v1.0.49-82:
 
-• 809430a fix bottom scroll edge case
-• c83d9cf build
+• 0f51c48 fix date wrong on wake issue
