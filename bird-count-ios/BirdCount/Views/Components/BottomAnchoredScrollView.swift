@@ -41,10 +41,16 @@ struct BottomAnchoredScrollView<Content: View>: View {
                     Color.clear.frame(height: 0).id(sentinelID)
                 }
                 .onChange(of: scrollToBottomTrigger) { _, _ in
-                    var t = Transaction(animation: .none)
-                    t.disablesAnimations = true
-                    withTransaction(t) {
-                        proxy.scrollTo(sentinelID, anchor: .bottom)
+                    // Defer by one run-loop tick so the LazyVStack can commit its
+                    // updated layout (re-sorted rows) before the scroll resolves.
+                    // Firing synchronously here targets stale estimated row heights
+                    // and lands slightly above the true bottom.
+                    Task { @MainActor in
+                        var t = Transaction(animation: .none)
+                        t.disablesAnimations = true
+                        withTransaction(t) {
+                            proxy.scrollTo(sentinelID, anchor: .bottom)
+                        }
                     }
                 }
             }
