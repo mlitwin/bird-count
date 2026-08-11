@@ -164,6 +164,17 @@ final class DateRangeStore {
         }
     }
 
+    /// Re-apply time-relative presets (today, last hour) so the range stays current
+    /// after the app is backgrounded overnight and resumed. Call on foreground.
+    func refreshIfNeeded() {
+        switch dateRangePreset {
+        case .today, .lastHour:
+            applyPreset(dateRangePreset)
+        default:
+            break
+        }
+    }
+
     func shiftRangeByDays(_ days: Int) {
         let cal = Calendar.current
         let newStart = cal.date(byAdding: .day, value: days, to: dateRange.begin) ?? dateRange.begin
