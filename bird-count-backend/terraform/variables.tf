@@ -49,3 +49,11 @@ variable "enable_waf" {
   type        = bool
   default     = false
 }
+
+# Whether to create the CloudWatch Logs interface endpoint in the VPC module.
+# Set to true for prod environments where Lambdas are in-VPC and need Logs.
+# Defaults to false to avoid per-AZ interface endpoint charges in dev/local.
+variable "create_logs_endpoint" {
+  type    = bool
+  default = false
+}

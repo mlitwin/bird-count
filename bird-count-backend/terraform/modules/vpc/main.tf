@@ -1,8 +1,8 @@
 # VPC for Lambda + ElastiCache placement.
 # Two private subnets (required by ElastiCache Serverless, which needs ≥2 AZs).
 # No public subnets or NAT gateway — internet access is via VPC endpoints only:
-#   DynamoDB  → Gateway endpoint (free)
-#   CloudWatch Logs → Interface endpoint (required for Lambda logs from private subnet)
+#   DynamoDB  → Gateway endpoint (free, always on)
+#   CloudWatch Logs → Interface endpoint (optional, set create_logs_endpoint=true)
 
 data "aws_region" "current" {}
 
@@ -37,7 +37,6 @@ resource "aws_route_table_association" "private" {
 }
 
 # Security group shared by all Lambda functions (API + seq-maintenance).
-# Outbound 443 rule covers the CloudWatch Logs interface endpoint.
 # The Valkey module adds an outbound 6379 rule to this SG via a separate resource
 # so neither module circularly depends on the other.
 resource "aws_security_group" "lambda" {
@@ -56,8 +55,9 @@ resource "aws_vpc_security_group_egress_rule" "lambda_https" {
   cidr_ipv4         = "0.0.0.0/0"
 }
 
-# Security group for VPC interface endpoints.
+# Security group for VPC interface endpoints — only created when an interface endpoint is enabled.
 resource "aws_security_group" "vpc_endpoints" {
+  count       = var.create_logs_endpoint ? 1 : 0
   name        = "${var.project_name}-${var.environment}-vpc-endpoints"
   description = "Interface endpoint inbound HTTPS from Lambda"
   vpc_id      = aws_vpc.main.id
@@ -65,7 +65,8 @@ resource "aws_security_group" "vpc_endpoints" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "endpoints_from_lambda" {
-  security_group_id            = aws_security_group.vpc_endpoints.id
+  count                        = var.create_logs_endpoint ? 1 : 0
+  security_group_id            = aws_security_group.vpc_endpoints[0].id
   description                  = "HTTPS from Lambda SG"
   ip_protocol                  = "tcp"
   from_port                    = 443
@@ -82,15 +83,15 @@ resource "aws_vpc_endpoint" "dynamodb" {
   tags              = var.tags
 }
 
-# CloudWatch Logs Interface endpoint — Lambda in a private subnet cannot reach
-# the public Logs endpoint without this. Private DNS resolves logs.*.amazonaws.com
-# to the endpoint ENIs inside the VPC.
+# CloudWatch Logs interface endpoint — opt-in via create_logs_endpoint=true.
+# Needed when Lambdas are in-VPC and there is no NAT gateway.
 resource "aws_vpc_endpoint" "logs" {
+  count               = var.create_logs_endpoint ? 1 : 0
   vpc_id              = aws_vpc.main.id
   service_name        = "com.amazonaws.${data.aws_region.current.name}.logs"
   vpc_endpoint_type   = "Interface"
   subnet_ids          = aws_subnet.private[*].id
-  security_group_ids  = [aws_security_group.vpc_endpoints.id]
+  security_group_ids  = [aws_security_group.vpc_endpoints[0].id]
   private_dns_enabled = true
   tags                = var.tags
 }

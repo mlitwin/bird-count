@@ -84,6 +84,8 @@ module "vpc" {
   project_name = local.project_name
   environment  = var.environment
 
+  create_logs_endpoint = var.create_logs_endpoint
+
   tags = local.common_tags
 }
 
