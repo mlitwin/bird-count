@@ -11,6 +11,7 @@
 		016F3729A67669002D767B27 /* observation-adjustment-child.json in Resources */ = {isa = PBXBuildFile; fileRef = B7D32FBDCDAB7E999A7EA487 /* observation-adjustment-child.json */; };
 		01AC7F32970E3D8A9AA07947 /* sync-request.json in Resources */ = {isa = PBXBuildFile; fileRef = E3F1B6AAB1C30F8EBD94700D /* sync-request.json */; };
 		034D179F87D0FA03A1C9FABA /* ObservationRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB13F58DAFB4B97D611643BD /* ObservationRecord.swift */; };
+		03E657E4F3F126D20EE676B1 /* DiagnosticsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAD10E79283C9BAD3837E4D5 /* DiagnosticsLog.swift */; };
 		0881BF12D112140CF51F09E9 /* Strings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D126F22854D45BBBEFC25C7F /* Strings.swift */; };
 		09BFE79C18C41F5D41E96AF7 /* AppTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE2810786236E54F09E919D /* AppTab.swift */; };
 		0AC86B5E2CBE362C8C2809B5 /* CommonnessRangeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA5730A98F05F30514E60A1 /* CommonnessRangeView.swift */; };
@@ -51,6 +52,7 @@
 		43EA14B516E42A868118D263 /* SpeciesRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F73A0EC9E9DB138EA0784C2F /* SpeciesRow.swift */; };
 		47FB6008BE8519B9F446ECED /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 783AD92EE988689DEFC27F00 /* SettingsView.swift */; };
 		4B1502BCC309C7909CB58C05 /* HeaderSpacingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D7AE2C3B7717C8EA9B78229 /* HeaderSpacingView.swift */; };
+		4C49D4BD1F9EBFA3DC896137 /* DiagnosticsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAD10E79283C9BAD3837E4D5 /* DiagnosticsLog.swift */; };
 		50E6FE2FF48EEC8A338ABD21 /* ObservationLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF2F46315BDAC6BEDF1AA1C /* ObservationLocation.swift */; };
 		50EE06DA5183920B0950A212 /* Taxon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74ADC22819086097B12402BC /* Taxon.swift */; };
 		523C39EC6322BD2B9D47FA9C /* PayloadV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65AC4B6E1A3FAEA5DB80436 /* PayloadV1.swift */; };
@@ -292,6 +294,7 @@
 		D13E17FBFFCB94E03FB1A7C0 /* LocationDetailsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationDetailsSection.swift; sourceTree = "<group>"; };
 		D33D33A059C7E1BBC989BE48 /* ImportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportSheet.swift; sourceTree = "<group>"; };
 		D7D70D18D2EE1B8F7FD18DEC /* CloudConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudConfig.swift; sourceTree = "<group>"; };
+		DAD10E79283C9BAD3837E4D5 /* DiagnosticsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsLog.swift; sourceTree = "<group>"; };
 		DADA4B0CCFCE53D3C7F061C8 /* DateRange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateRange.swift; sourceTree = "<group>"; };
 		E1AE8BBD3313453070C1CF58 /* ShareActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareActivityView.swift; sourceTree = "<group>"; };
 		E26A0D071F7ECDAC07D93236 /* observation-legacy-v1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "observation-legacy-v1.json"; sourceTree = "<group>"; };
@@ -378,6 +381,14 @@
 				BD5A6738564B6A2C3B8CC0FC /* summary-cases.json */,
 			);
 			path = derived;
+			sourceTree = "<group>";
+		};
+		450A45E846B9646B6F0A5310 /* Diagnostics */ = {
+			isa = PBXGroup;
+			children = (
+				DAD10E79283C9BAD3837E4D5 /* DiagnosticsLog.swift */,
+			);
+			path = Diagnostics;
 			sourceTree = "<group>";
 		};
 		506504D8E4EB265F3C61EE8F /* Components */ = {
@@ -493,6 +504,7 @@
 				9F3E57E196D1687022B624BA /* BirdCountApp.swift */,
 				F8D30DB1E6B90E66BCDF31DA /* BirdCount */,
 				15892B2A155397A7B6D8B82B /* Cloud */,
+				450A45E846B9646B6F0A5310 /* Diagnostics */,
 				D6E4CA2A577999312B34EFA5 /* Localization */,
 				78B9C2EEC76652E9C1DC01AC /* Models */,
 				BDFC81D89BC0C43232A8FBF1 /* Resources */,
@@ -898,6 +910,7 @@
 				25504B0B7E81C5314B41B4D1 /* DateRangePickerSheet.swift in Sources */,
 				EA346BFABBA8BAE1E3688F4D /* DateRangePreset.swift in Sources */,
 				9288B6EA2B9DCAC3A584E6A2 /* DateRangeStore.swift in Sources */,
+				4C49D4BD1F9EBFA3DC896137 /* DiagnosticsLog.swift in Sources */,
 				C0197699A83CDB67080AC075 /* ExportFormat.swift in Sources */,
 				3EAF9095FB1E0E06EBED6F9B /* ExportSheet.swift in Sources */,
 				4B1502BCC309C7909CB58C05 /* HeaderSpacingView.swift in Sources */,
@@ -969,6 +982,7 @@
 				7EEFDB7446CA306481FEA245 /* DateRange.swift in Sources */,
 				9874D743B0DE7388BE4F74FC /* DateRangePreset.swift in Sources */,
 				A70D9BC5A037E5C385A97A37 /* DateRangeStore.swift in Sources */,
+				03E657E4F3F126D20EE676B1 /* DiagnosticsLog.swift in Sources */,
 				41A379257CB36EF84B8F4DCF /* ExportFormat.swift in Sources */,
 				BCF2B2A1BD62C977C6FF3609 /* ObservationDTO.swift in Sources */,
 				74B8F430E8C93C588A4362D4 /* ObservationImportService.swift in Sources */,

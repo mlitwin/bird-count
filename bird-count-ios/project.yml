@@ -111,6 +111,7 @@ targets:
       - path: BirdCount/Stores
         excludes:
           - LocationManager.swift  # iOS-specific, not cross-platform
+      - path: BirdCount/Diagnostics
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: org.antoninus.birdcount.core
       CURRENT_PROJECT_VERSION: "84"

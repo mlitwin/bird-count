@@ -149,6 +149,7 @@ struct SpeciesRow: View {
                         }
                     }
                     .onEnded { value in
+                        DiagnosticsLog.log(.gesture, "[\(taxon.id)] drag ended: translation=\(value.translation.width) leftRevealOpen=\(leftRevealOpen)")
                         if leftRevealOpen {
                             // While reveal is open, any rightward swipe closes it; ignore quick-add
                             if value.translation.width > 0 { closeLeftReveal() }
@@ -167,6 +168,7 @@ struct SpeciesRow: View {
                                 leftDragOffset = 0
                                 leftRevealOpen = shouldOpen
                             }
+                            DiagnosticsLog.log(.gesture, "[\(taxon.id)] leftRevealOpen -> \(shouldOpen)")
                             if shouldOpen {
                                 revealCoordinator.open(taxon.id)
                                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -183,9 +185,11 @@ struct SpeciesRow: View {
                 }
             }
             .onChange(of: shouldPulse) { _, newValue in
+                DiagnosticsLog.log(.animation, "[\(taxon.id)] shouldPulse -> \(newValue)")
                 if newValue {
                     withAnimation(.easeIn(duration: 0.3)) { isPulsing = true }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        DiagnosticsLog.log(.animation, "[\(taxon.id)] pulse fade-out begin")
                         withAnimation(.easeOut(duration: 1.7)) { isPulsing = false }
                     }
                 } else {

@@ -68,6 +68,9 @@ import Observation
     public init() {
         defaults = .standard
         load()
+        #if DEBUG
+        loadLiveSimDatasetIfRequested()
+        #endif
         rebuildDerived()
     }
 
@@ -722,6 +725,33 @@ import Observation
         }
         loadCloudState()
     }
+
+    #if DEBUG
+    /// Live Simulator testing hook (see docs/live-simulator-testing-plan.md).
+    /// Launch with `-LiveSimDataset <path-to-json>` to replace normal persisted
+    /// state with a realistic fixture (e.g. a date-shifted prod export) instead
+    /// of empty/synthetic data. Never compiled into Release builds.
+    private func loadLiveSimDatasetIfRequested() {
+        guard let path = ProcessInfo.processInfo.environment["LIVE_SIM_DATASET"]
+            ?? Self.launchArgumentValue(for: "-LiveSimDataset") else { return }
+        do {
+            let data = try Data(contentsOf: URL(fileURLWithPath: path))
+            let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601
+            let dtos = try decoder.decode([ObservationRecordDTO].self, from: data)
+            observations = []
+            let stats = mergeDTOs(dtos, markDirty: false)
+            DiagnosticsLog.log(.sync, "Loaded live-sim dataset from \(path): \(dtos.count) DTOs -> \(stats.imported) imported")
+        } catch {
+            DiagnosticsLog.log(.sync, "Failed to load live-sim dataset from \(path): \(error)")
+        }
+    }
+
+    private static func launchArgumentValue(for flag: String) -> String? {
+        let args = ProcessInfo.processInfo.arguments
+        guard let index = args.firstIndex(of: flag), index + 1 < args.count else { return nil }
+        return args[index + 1]
+    }
+    #endif
 }
 
 // MARK: - Lightweight proxy to expose observation data without coupling stores

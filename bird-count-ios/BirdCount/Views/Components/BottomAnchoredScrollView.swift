@@ -41,6 +41,7 @@ struct BottomAnchoredScrollView<Content: View>: View {
                     Color.clear.frame(height: 0).id(sentinelID)
                 }
                 .onChange(of: scrollToBottomTrigger) { _, _ in
+                    DiagnosticsLog.log(.scroll, "trigger fired: scrollTo(sentinel) scheduled")
                     // Defer by one run-loop tick so the LazyVStack can commit its
                     // updated layout (re-sorted rows) before the scroll resolves.
                     // Firing synchronously here targets stale estimated row heights
@@ -51,6 +52,7 @@ struct BottomAnchoredScrollView<Content: View>: View {
                         withTransaction(t) {
                             proxy.scrollTo(sentinelID, anchor: .bottom)
                         }
+                        DiagnosticsLog.log(.scroll, "trigger: scrollTo(sentinel) sent")
                     }
                 }
             }
@@ -58,5 +60,14 @@ struct BottomAnchoredScrollView<Content: View>: View {
         .id(scrollToBottomOnChange)
         .defaultScrollAnchor(.bottom, for: .initialOffset)
         .defaultScrollAnchor(.bottom, for: .alignment)
+        .onScrollGeometryChange(for: CGFloat.self) { geometry in
+            geometry.contentSize.height
+        } action: { oldHeight, newHeight in
+            guard oldHeight != newHeight else { return }
+            DiagnosticsLog.log(.scroll, "SwiftUI contentSize.height: \(oldHeight) -> \(newHeight)")
+        }
+        .onChange(of: scrollToBottomOnChange) { _, newValue in
+            DiagnosticsLog.log(.scroll, "content-set changed (id: \(String(describing: newValue))) -> ScrollView teardown/rebuild")
+        }
     }
 }

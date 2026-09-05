@@ -1,4 +1,4 @@
-.PHONY: help generate build-test test test-app test-core analyze-tests analyze-bundle list-dests simulators prep-alpha prep-patch prep-minor prep-major fastlane-alpha fastlane-beta screenshots clean
+.PHONY: help generate build-test test test-app test-core analyze-tests analyze-bundle list-dests simulators prep-alpha prep-patch prep-minor prep-major fastlane-alpha fastlane-beta screenshots clean sim-live
 
 # Configurable variables
 SCHEME ?= BirdCount
@@ -30,6 +30,8 @@ help:
 	@echo "  fastlane-alpha Build and upload to TestFlight (uses fastlane/ReleaseNotes.md)"
 	@echo "  fastlane-beta Build Ad-Hoc beta and host locally in docs/builds directory"
 	@echo "  screenshots   Generate App Store screenshots using fastlane snapshot"
+	@echo "  sim-live      Build, install, and launch with a hydrated dataset (see docs/live-simulator-testing-plan.md)"
+	@echo "                Set DATASET=path/to/file.json (default: data/live-sim-dataset.json)"
 	@echo "Variables (override with VAR=value): SCHEME, PROJECT, SIMULATOR, DEST, CONFIGURATION"
 
 # Regenerate the Xcode project from project.yml
@@ -131,6 +133,29 @@ build-test: generate
 		build-for-testing && \
 	echo "✅ Build test SUCCEEDED" || \
 	(echo "❌ Build test FAILED" && exit 1)
+
+# Live Simulator testing: build the real app (no mocks), install it, and
+# launch with a hydrated dataset instead of empty/synthetic state.
+# See docs/live-simulator-testing-plan.md.
+DATASET ?= data/live-sim-dataset.json
+BUNDLE_ID = org.antoninus.birdcount.app
+sim-live:
+	@test -f "$(DATASET)" || { echo "❌ Dataset not found: $(DATASET) (see scripts/pull-live-sim-dataset.mjs and scripts/shift-live-sim-dataset.mjs)"; exit 1; }
+	@echo "📱 Building for $(SIMULATOR)..."
+	@xcodebuild \
+		-project "$(PROJECT)" \
+		-scheme "$(SCHEME)" \
+		-configuration "$(CONFIGURATION)" \
+		-destination "$(DEST)" \
+		-quiet \
+		build
+	@xcrun simctl boot "$(SIMULATOR)" 2>/dev/null || true
+	@open -a Simulator
+	@APP_PATH=$$(xcodebuild -project "$(PROJECT)" -scheme "$(SCHEME)" -configuration "$(CONFIGURATION)" -destination "$(DEST)" -showBuildSettings 2>/dev/null | awk -F'= ' '/ BUILT_PRODUCTS_DIR/ {print $$2; exit}')/BirdCount.app; \
+	echo "📦 Installing $$APP_PATH..."; \
+	xcrun simctl install "$(SIMULATOR)" "$$APP_PATH"
+	@echo "🚀 Launching with LIVE_SIM_DATASET=$(DATASET)..."
+	@SIMCTL_CHILD_LIVE_SIM_DATASET="$(abspath $(DATASET))" xcrun simctl launch --console-pty "$(SIMULATOR)" "$(BUNDLE_ID)"
 
 # Clean build artifacts and derived data
 clean:
