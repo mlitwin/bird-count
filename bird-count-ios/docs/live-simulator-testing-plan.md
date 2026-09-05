@@ -36,8 +36,20 @@ scope-based M2M branch. Fixed, tested (added a regression test), and deployed
 to both dev and prod (scoped `-target` apply to avoid unrelated infra drift
 already pending in prod state).
 
-**Not done**: steps 4–6 (timing-variability tooling, the documented diagnosis
-workflow, and applying it to the three known bugs) are still open.
+Steps 4–6 are now documented:
+
+- [`live-simulator-diagnosis-workflow.md`](live-simulator-diagnosis-workflow.md) —
+  step 4 (timing-variability knobs: Slow Animations, Instruments, a
+  need-driven injectable clock if one turns out to be necessary) and step 5
+  (the repeatable manual reproduce → log stream → screen recording →
+  correlate workflow).
+- [`live-sim-bug-findings.md`](live-sim-bug-findings.md) — step 6, applying
+  the tooling to the three known issues. **Caveat**: this environment has no
+  way to inject real touch/trackpad input into the Simulator (no
+  `idb`/`cliclick`, and `simctl` has no touch command), so these are
+  code-grounded hypotheses with a specific confirming log signal named for
+  each, not confirmed live captures. A human running the diagnosis workflow
+  is the next step for each.
 
 ## Goal
 
