@@ -39,19 +39,49 @@ Attempt 3 already used successfully for the *other* scroll path, applied
 here via the same `ProxyHolder` bridge (`onScrollGeometryChange` doesn't fire
 when nested inside `ScrollViewReader`, so the proxy has to be smuggled out).
 
-**On testing this**: I tried to add a regression test modeling this
-(content growing after the trigger's initial scroll, without a token
-change) and found it passed identically with and without the fix —
-`.defaultScrollAnchor(.bottom, for: .alignment)` already auto-corrects a
-plain, whole-view content-size jump on its own, regardless of this fix. The
-actual bug needs a live `LazyVStack` progressively realizing individual
-off-screen cells during a reorder — a `TestWindow`-hosted content swap
-doesn't exercise that, and a synthetic test built to force it would mostly
-be testing SwiftUI's internal estimation heuristics rather than this fix.
-I removed the non-discriminating test rather than keep one that can't fail.
-The existing 90-test suite (`make test-app` / `BirdCountTests`) still passes
-with the fix in place. Confirmation that the *actual* on-device symptom is
-resolved is via the diagnosis workflow: watch for `"corrective
+**On testing this**: I tried two rounds of regression tests, both against
+`Tests/BottomScrollTests.swift`'s existing `TestWindow` (`UIHostingController`
++ `layoutIfNeeded()`) harness:
+
+1. **Whole-view content swap** (short content → tall content via `w.update`,
+   same trigger/token). Passed identically with and without the fix —
+   `.defaultScrollAnchor(.bottom, for: .alignment)` already auto-corrects a
+   plain, whole-view content-size jump on its own, regardless of this fix.
+2. **Realistic reorder with real cell-recycling pressure**, following up on
+   a suggestion to push further: 4000 rows of *variable, real-content*
+   height (`Text` with genuinely different line counts, not a fixed
+   `.frame`, so SwiftUI's LazyVStack has an actual per-cell estimate to get
+   wrong) in a stable id-set (no `.id()` teardown — the trigger path only).
+   Scrolled away from a middle row via `sv.setContentOffset(.zero,
+   animated: false)` (the same technique — and the closest analogue to
+   `ScrollViewReader.scrollTo` available outside the view — the existing
+   suite already uses to fake "user scrolled elsewhere" cheaply), then
+   reordered that row to the very end and fired the trigger, checking the
+   final offset against a 5pt tolerance (tight enough to actually catch a
+   ~10px gap, unlike this file's existing 60pt bound).
+
+Result 2 is the more interesting one: **both** the pre-fix and post-fix code
+landed with `delta = 0.0` — `contentOffset.y` exactly equal to `maxOffset`,
+not even a fractional gap. Digging into why: `TestWindow.update()` calls
+`hostingController.view.layoutIfNeeded()` synchronously, which forces
+SwiftUI to fully resolve `LazyVStack`'s layout — including every row's real
+height — in that single synchronous pass. There's no opportunity for an
+"estimate now, render exactly later" gap to exist, because nothing in this
+harness is asynchronous the way a live app's `CADisplayLink`-driven,
+animation-based rendering pipeline is. In other words: **`layoutIfNeeded()`
+collapses exactly the race window this bug lives in.** This isn't a
+tooling gap I could paper over with a bigger row count or more extreme
+height variance — it's a structural mismatch between how this harness
+drives SwiftUI (synchronous, on-demand) and how the real race happens
+(asynchronous, frame-scheduled). It also explains, in hindsight, why
+`scroll-to-bottom.md`'s own multi-week debugging saga for the sibling bug
+needed real device/Simulator log correlation rather than unit tests to
+pin down.
+
+I removed both non-discriminating tests rather than keep ones that can't
+fail. The existing 90-test suite (`make test-app` / `BirdCountTests`) still
+passes with the fix in place. Confirmation that the *actual* on-device
+symptom is resolved is via the diagnosis workflow: watch for `"corrective
 scrollTo(sentinel) fired after contentSize settle"` in the `.scroll` log
 during a real repro, and confirm the final position lands at the true
 bottom (not just within the existing tests' generous tolerance).
