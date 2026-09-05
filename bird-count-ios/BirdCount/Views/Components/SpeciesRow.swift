@@ -5,6 +5,19 @@ import Observation
 /// Injected via environment so only SpeciesRow re-renders on animation changes,
 /// not SpeciesListView, SpeciesListContent, or BottomAnchoredScrollView.
 @Observable final class PulseAnimationState {
+    /// Fade-in, then a hold at full intensity, then fade-out — timings shared
+    /// with SpeciesRow's `isPulsing` animation below so the visual and the
+    /// clear-timer stay in sync. Previously fade-out began immediately after
+    /// fade-in with no hold, so the highlight was only ever at full intensity
+    /// for an instant — reported as "less prominent" on-device than on
+    /// Simulator (see docs/live-sim-bug-findings.md #3; same color/opacity on
+    /// both, but device screens (True Tone, ambient dimming) need a longer
+    /// look at peak intensity to register).
+    static let fadeInDuration: Double = 0.3
+    static let holdDuration: Double = 0.6
+    static let fadeOutDuration: Double = 1.7
+    static let totalDuration: Double = fadeInDuration + holdDuration + fadeOutDuration
+
     private(set) var recentlyUpdatedSpeciesId: String? = nil
     private(set) var showPulseAnimation: Bool = false
     private var clearTask: Task<Void, Never>? = nil
@@ -14,7 +27,7 @@ import Observation
         recentlyUpdatedSpeciesId = speciesId
         showPulseAnimation = true
         clearTask = Task { @MainActor in
-            try? await Task.sleep(for: .seconds(2))
+            try? await Task.sleep(for: .seconds(Self.totalDuration))
             guard !Task.isCancelled else { return }
             showPulseAnimation = false
             recentlyUpdatedSpeciesId = nil
@@ -135,7 +148,22 @@ struct SpeciesRow: View {
             .gesture(
                 DragGesture(minimumDistance: 20, coordinateSpace: .local)
                     .onChanged { value in
-                        guard abs(value.translation.width) > abs(value.translation.height) else { return }
+                        guard abs(value.translation.width) > abs(value.translation.height) else {
+                            // The drag has become predominantly vertical — the enclosing
+                            // ScrollView is likely about to (or already did) take over the
+                            // touch for scrolling, in which case UIKit cancels this gesture
+                            // recognizer and `.onEnded` never fires. Reset any partial swipe
+                            // reveal now, or it's stuck visible (at whatever opacity it last
+                            // reached) until the row is interacted with again. See
+                            // docs/live-sim-bug-findings.md #2.
+                            if rightSwipeOffset != 0 || leftDragOffset != 0 {
+                                withAnimation(.easeOut(duration: 0.15)) {
+                                    rightSwipeOffset = 0
+                                    leftDragOffset = 0
+                                }
+                            }
+                            return
+                        }
                         guard !leftRevealOpen else { return }
                         if value.translation.width > 0 {
                             // Right swipe: close any other open reveal first
@@ -187,10 +215,10 @@ struct SpeciesRow: View {
             .onChange(of: shouldPulse) { _, newValue in
                 DiagnosticsLog.log(.animation, "[\(taxon.id)] shouldPulse -> \(newValue)")
                 if newValue {
-                    withAnimation(.easeIn(duration: 0.3)) { isPulsing = true }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    withAnimation(.easeIn(duration: PulseAnimationState.fadeInDuration)) { isPulsing = true }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + PulseAnimationState.fadeInDuration + PulseAnimationState.holdDuration) {
                         DiagnosticsLog.log(.animation, "[\(taxon.id)] pulse fade-out begin")
-                        withAnimation(.easeOut(duration: 1.7)) { isPulsing = false }
+                        withAnimation(.easeOut(duration: PulseAnimationState.fadeOutDuration)) { isPulsing = false }
                     }
                 } else {
                     isPulsing = false
@@ -233,7 +261,7 @@ struct SpeciesRow: View {
                 CountBadge(count: count)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.green.opacity(0.8), lineWidth: isPulsing ? 2 : 0)
+                            .stroke(Color.green.opacity(0.9), lineWidth: isPulsing ? 2.5 : 0)
                     )
                     .accessibilityLabel(String(format: Strings.Accessibility.countLabel.string, taxon.commonName, count))
             }
@@ -242,11 +270,11 @@ struct SpeciesRow: View {
         .padding(.vertical, 8)
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color.green.opacity(isPulsing ? 0.15 : 0))
+                .fill(Color.green.opacity(isPulsing ? 0.28 : 0))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.green.opacity(0.8), lineWidth: isPulsing ? 2 : 0)
+                .stroke(Color.green.opacity(0.9), lineWidth: isPulsing ? 2.5 : 0)
         )
     }
 }
