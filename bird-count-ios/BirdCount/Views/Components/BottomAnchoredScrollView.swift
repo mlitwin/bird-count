@@ -24,14 +24,46 @@ import SwiftUI
 ///   bottom when the content *set* is unchanged (e.g. observation added without
 ///   active filter; row re-sorted to the bottom). Uses
 ///   `ScrollViewReader.proxy.scrollTo` against a zero-height sentinel anchored
-///   after the content. Reliable on this path because the `LazyVStack` is stable
-///   across the scroll.
+///   after the content.
+///
+///   This is not always a small re-sort: `TaxonomyStore.search()` always
+///   returns the *full* checklist (species aren't filtered by observed
+///   status), with species observed in the current range sorted to the
+///   bottom. Observing a species for the first time in range can move its
+///   row from anywhere in a several-thousand-row list to the very last
+///   position — the `LazyVStack` has to realize and measure a swath of rows
+///   it had never rendered before to know the true bottom, so the initial
+///   `scrollTo` can land short by however much those newly-realized rows'
+///   *estimated* heights differed from their *actual* heights (reported as a
+///   persistent ~10px shortfall — see docs/live-sim-bug-findings.md #1). A
+///   second, corrective `scrollTo` fires once `onScrollGeometryChange` below
+///   reports the contentSize actually settling, the same "wait for the real
+///   geometry, then correct" approach documented as working (for the other
+///   scroll path) in docs/scroll-to-bottom.md's Attempt 3.
 struct BottomAnchoredScrollView<Content: View>: View {
     var scrollToBottomTrigger: Int = 0
     var scrollToBottomOnChange: AnyHashable? = nil
     @ViewBuilder var content: () -> Content
 
     @State private var sentinelID = UUID()
+    @State private var proxyHolder = ProxyHolder()
+    @State private var pendingCorrectiveScroll = false
+
+    /// Bridges the `ScrollViewProxy` out of `ScrollViewReader`'s scope so
+    /// `onScrollGeometryChange` (attached to the outer `ScrollView`, since it
+    /// never fires when nested inside `ScrollViewReader` — see
+    /// docs/scroll-to-bottom.md Attempt 2) can trigger a corrective scroll.
+    private final class ProxyHolder {
+        var proxy: ScrollViewProxy?
+    }
+
+    private func scrollToSentinel(_ proxy: ScrollViewProxy) {
+        var t = Transaction(animation: .none)
+        t.disablesAnimations = true
+        withTransaction(t) {
+            proxy.scrollTo(sentinelID, anchor: .bottom)
+        }
+    }
 
     var body: some View {
         ScrollView {
@@ -40,19 +72,26 @@ struct BottomAnchoredScrollView<Content: View>: View {
                     content()
                     Color.clear.frame(height: 0).id(sentinelID)
                 }
+                .onAppear { proxyHolder.proxy = proxy }
                 .onChange(of: scrollToBottomTrigger) { _, _ in
                     DiagnosticsLog.log(.scroll, "trigger fired: scrollTo(sentinel) scheduled")
+                    pendingCorrectiveScroll = true
                     // Defer by one run-loop tick so the LazyVStack can commit its
                     // updated layout (re-sorted rows) before the scroll resolves.
                     // Firing synchronously here targets stale estimated row heights
-                    // and lands slightly above the true bottom.
+                    // and lands slightly above the true bottom. This alone isn't
+                    // always enough (see the corrective scroll below), but it gets
+                    // the common case right without waiting on a geometry signal.
                     Task { @MainActor in
-                        var t = Transaction(animation: .none)
-                        t.disablesAnimations = true
-                        withTransaction(t) {
-                            proxy.scrollTo(sentinelID, anchor: .bottom)
-                        }
+                        scrollToSentinel(proxy)
                         DiagnosticsLog.log(.scroll, "trigger: scrollTo(sentinel) sent")
+                        // If no contentSize change follows (the pre-emptive scroll
+                        // already landed correctly, or the move was too small to
+                        // change estimated layout), stop waiting after a bounded
+                        // window rather than risk a corrective scroll firing later
+                        // on some unrelated geometry change (e.g. a later filter).
+                        try? await Task.sleep(for: .milliseconds(500))
+                        pendingCorrectiveScroll = false
                     }
                 }
             }
@@ -65,6 +104,10 @@ struct BottomAnchoredScrollView<Content: View>: View {
         } action: { oldHeight, newHeight in
             guard oldHeight != newHeight else { return }
             DiagnosticsLog.log(.scroll, "SwiftUI contentSize.height: \(oldHeight) -> \(newHeight)")
+            guard pendingCorrectiveScroll, let proxy = proxyHolder.proxy else { return }
+            pendingCorrectiveScroll = false
+            DiagnosticsLog.log(.scroll, "corrective scrollTo(sentinel) fired after contentSize settle")
+            scrollToSentinel(proxy)
         }
         .onChange(of: scrollToBottomOnChange) { _, newValue in
             DiagnosticsLog.log(.scroll, "content-set changed (id: \(String(describing: newValue))) -> ScrollView teardown/rebuild")

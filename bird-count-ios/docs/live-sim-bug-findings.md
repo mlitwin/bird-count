@@ -4,17 +4,64 @@ Plan step 6 of [`live-simulator-testing-plan.md`](live-simulator-testing-plan.md
 apply the tooling to the three issues named in the original testing doc, as
 validation that the infrastructure is sufficient.
 
-**Status:** #2 and #3 are confirmed (via device testimony correcting the
-original hypotheses) and fixed. #1 is still an open, code-grounded
-hypothesis. I was not able to drive real touch/trackpad interaction against
-the Simulator from this environment (no `idb`/`cliclick`, and `xcrun simctl`
-has no touch-injection command) — the manual workflow in
+**Status: all three confirmed on device and fixed.** #2 and #3 via device
+testimony correcting the original hypotheses; #1 via device testimony
+confirming the original hypothesis (from a previous build). I was not able
+to drive real touch/trackpad interaction against the Simulator from this
+environment (no `idb`/`cliclick`, and `xcrun simctl` has no touch-injection
+command), so none of the fixes below have been re-verified live by me —
+the manual workflow in
 [`live-simulator-diagnosis-workflow.md`](live-simulator-diagnosis-workflow.md)
-needs a human at the keyboard to actually reproduce and log/record it.
+is the next step for confirming each fix holds.
 
-## 1. Persistent ~10px scroll-short after adding an observation
+## 1. Persistent ~10px scroll-short after adding an observation — FIXED
 
-**Confidence: medium-high.** The `scrollToBottomTrigger` path in
+**Confirmed on device** (report author verified the bug in a previous build).
+Root-cause reasoning below is unchanged from the original pass; a corrective
+second scroll has been added.
+
+**Root cause detail worth calling out:** `TaxonomyStore.search()` always
+returns the *full* checklist — species aren't hidden until observed, they're
+just sorted with in-range-observed species at the bottom. So adding an
+observation isn't a small recount; it can move a row from anywhere in a
+several-thousand-row list to the very last position. The `LazyVStack` has to
+realize/measure a swath of rows it had never rendered before to know the
+true bottom, and the single-tick-deferred `scrollTo` can fire before that
+settles — landing short by however much the newly-realized rows' *estimated*
+heights differed from their *actual* heights.
+
+**Fix** (`BottomAnchoredScrollView.swift`): added a corrective second
+`scrollTo`, gated on the `onScrollGeometryChange` `contentSize` signal
+actually settling after the trigger fires (bounded to a 500ms window so it
+can't fire later on some unrelated geometry change). This mirrors the
+"wait for the real geometry, then correct" approach `scroll-to-bottom.md`'s
+Attempt 3 already used successfully for the *other* scroll path, applied
+here via the same `ProxyHolder` bridge (`onScrollGeometryChange` doesn't fire
+when nested inside `ScrollViewReader`, so the proxy has to be smuggled out).
+
+**On testing this**: I tried to add a regression test modeling this
+(content growing after the trigger's initial scroll, without a token
+change) and found it passed identically with and without the fix —
+`.defaultScrollAnchor(.bottom, for: .alignment)` already auto-corrects a
+plain, whole-view content-size jump on its own, regardless of this fix. The
+actual bug needs a live `LazyVStack` progressively realizing individual
+off-screen cells during a reorder — a `TestWindow`-hosted content swap
+doesn't exercise that, and a synthetic test built to force it would mostly
+be testing SwiftUI's internal estimation heuristics rather than this fix.
+I removed the non-discriminating test rather than keep one that can't fail.
+The existing 90-test suite (`make test-app` / `BirdCountTests`) still passes
+with the fix in place. Confirmation that the *actual* on-device symptom is
+resolved is via the diagnosis workflow: watch for `"corrective
+scrollTo(sentinel) fired after contentSize settle"` in the `.scroll` log
+during a real repro, and confirm the final position lands at the true
+bottom (not just within the existing tests' generous tolerance).
+
+---
+
+Original diagnosis (kept for context — same root-cause reasoning as above,
+written before the report author's device confirmation):
+
+The `scrollToBottomTrigger` path in
 `BottomAnchoredScrollView` (used when an observation is added and the
 species list re-sorts without its underlying id-set changing) is:
 
@@ -139,14 +186,14 @@ opacity/width 0.8/2pt → 0.9/2.5pt. Total highlight duration is now 2.5s
 
 | # | Issue | Status | Live confirmation needed |
 |---|---|---|---|
-| 1 | Scroll ~10px short | diagnosed, not fixed (medium-high confidence) | `.scroll` log capture during repro |
+| 1 | Scroll ~10px short | **fixed** (confirmed on device) | regression check via diagnosis workflow |
 | 2 | Swipe-reveal blue reveal stuck | **fixed** (confirmed root cause) | regression check via diagnosis workflow |
 | 3 | Green highlight less prominent on device | **fixed** (confirmed root cause) | regression check via diagnosis workflow |
 
-Issue 1 remains open — consistent with the plan's original scope note
-(`Out of scope: Fixing the three example bugs`), which predates having a
-confirmed root cause for 2 and 3. The next step for issue 1 is a human
-running the diagnosis workflow to capture the `.scroll` log evidence
-described above; for 2 and 3, a human re-running the workflow to confirm the
-fixes hold on-device. Each, once confirmed, is worth its own doc in the
-style of `scroll-to-bottom.md`.
+All three are now fixed rather than left diagnosed-only, superseding the
+plan's original scope note (`Out of scope: Fixing the three example bugs`),
+which predates having confirmed root causes. None have been re-verified
+live by me (no touch-injection tooling in this environment — see the status
+note above); a human running the diagnosis workflow to confirm each fix
+holds on-device is the next step, worth its own doc per fix in the style of
+`scroll-to-bottom.md` once confirmed.

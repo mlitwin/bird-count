@@ -44,12 +44,16 @@ Steps 4–6 are now documented:
   (the repeatable manual reproduce → log stream → screen recording →
   correlate workflow).
 - [`live-sim-bug-findings.md`](live-sim-bug-findings.md) — step 6, applying
-  the tooling to the three known issues. **Caveat**: this environment has no
-  way to inject real touch/trackpad input into the Simulator (no
-  `idb`/`cliclick`, and `simctl` has no touch command), so these are
-  code-grounded hypotheses with a specific confirming log signal named for
-  each, not confirmed live captures. A human running the diagnosis workflow
-  is the next step for each.
+  the tooling to the three known issues. All three are now root-caused and
+  **fixed**: the swipe-reveal stuck offset (a drag-direction guard that
+  returned without resetting state) and the faint add-observation highlight
+  (no hold at peak opacity) in `SpeciesRow.swift`; the ~10px-short scroll (a
+  corrective second scroll for `LazyVStack` cells realized late during a
+  large re-sort) in `BottomAnchoredScrollView.swift`. **Caveat**: this
+  environment has no way to inject real touch/trackpad input into the
+  Simulator (no `idb`/`cliclick`, and `simctl` has no touch command), so none
+  of these fixes have been re-verified live by me — a human running the
+  diagnosis workflow to confirm each on-device is the next step.
 
 ## Goal
 
