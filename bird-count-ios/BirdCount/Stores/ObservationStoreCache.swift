@@ -59,7 +59,7 @@ struct ObservationStoreCache {
         counts[record.taxonId, default: 0] += record.count
         
         // Update lastObservedAt
-        let ts = record.end
+        let     ts = record.end
         if let existing = lastObservedAt[record.taxonId] {
             if ts > existing { lastObservedAt[record.taxonId] = ts }
         } else {
