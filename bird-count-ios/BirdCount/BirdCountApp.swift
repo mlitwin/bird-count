@@ -11,6 +11,9 @@ struct BirdCountApp: App {
     @State private var cloudSync: CloudSyncService
     @State private var pairedPeers: PairedPeersStore
     @State private var peerAutoSync: PeerAutoSyncService
+    #if DEBUG
+    @State private var debugTestHook = DebugTestHook()
+    #endif
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -44,6 +47,9 @@ struct BirdCountApp: App {
                 .environment(cloudSync)
                 .environment(pairedPeers)
                 .environment(peerAutoSync)
+                #if DEBUG
+                .environment(debugTestHook)
+                #endif
                 .onAppear {
                     // Set up store dependencies
                     observationStore.setSettingsStore(settingsStore)

@@ -38,6 +38,40 @@ races that only show up "sometimes" often show up "always" at 0.1× speed:
   when that need is concrete — see `Not done` items below for where this
   first came up.
 
+## 1.5. No-touch triggering, when the bug doesn't need a gesture
+
+Some bugs (the scroll-short one is the example so far) are reachable by a
+plain state mutation — `addObservation` — not by the gesture itself. For
+those, `DebugTestHook` (`BirdCount/Diagnostics/DebugTestHook.swift`,
+`#if DEBUG` only) lets you trigger that mutation from outside the running
+process, with no touch/trackpad input at all — useful in environments
+without touch-injection tooling (`idb`, `cliclick`), and for scripting rapid
+successive triggers that are awkward to do reliably by hand.
+
+The app polls its Documents directory every 0.5s for a file named
+`debug-add-request.txt` containing a taxon id; on finding one, it deletes
+the file and runs the exact same mutation + scroll-trigger + pulse path as
+a real quick-add tap (`HomeView.performAdd`). A custom URL scheme
+(`birdcount://debug/...` via `simctl openurl`) was tried first and
+rejected — iOS shows an "Open in BirdCount?" confirmation dialog for every
+externally-triggered custom-scheme open, which itself needs a touch to
+dismiss.
+
+```
+DATA_DIR=$(xcrun simctl get_app_container booted org.antoninus.birdcount.app data)
+echo -n "<taxonId>" > "$DATA_DIR/Documents/debug-add-request.txt"
+```
+
+Pick a taxon id from `data/live-sim-dataset.json` / the bundled checklist
+that's *not* already observed in range — one far from the sort order's
+"recently observed" bucket (low commonness, or simply absent from the
+dataset) reliably realizes the most previously-unrendered `LazyVStack` rows,
+which is what the scroll-short bug needs. Fire two in quick succession
+(`sleep 0.3` between writes) to increase the odds of catching the corrective
+scroll actually needing to fire — a single add often lands correctly on the
+first try because the deferred scroll and the layout commit happen to land
+in the same update cycle.
+
 ## 2. Reproduce with logging + recording (plan step 5)
 
 1. `make sim-live DATASET=data/live-sim-dataset.json` — builds, installs, and

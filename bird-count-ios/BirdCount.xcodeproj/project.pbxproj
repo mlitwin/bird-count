@@ -33,6 +33,7 @@
 		2A88C0C67223A4C44B9A31F9 /* ObservationJSONImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB12E82781CB9796FB9325C9 /* ObservationJSONImportService.swift */; };
 		2F254EB92FDCE66308F3191B /* ObservationRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB13F58DAFB4B97D611643BD /* ObservationRecord.swift */; };
 		3129079F2309F20DB90CB40F /* PayloadV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65AC4B6E1A3FAEA5DB80436 /* PayloadV1.swift */; };
+		33EC4B86185B65C19EFE13CC /* DebugTestHook.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA16C1991B253151E78B176E /* DebugTestHook.swift */; };
 		34B99CC261BFEB041014BE8C /* ObserverAttribution.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF950B624CB607CBE3D9EEE /* ObserverAttribution.swift */; };
 		368ABDC28BEE74FCF03AB008 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1C2576ACDD95729987584994 /* Assets.xcassets */; };
 		377DB66A35FF3BE2021A6BF6 /* ObservationLocationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48123A84923C3A9D21804AB8 /* ObservationLocationTests.swift */; };
@@ -91,6 +92,7 @@
 		893488E7C53A13FA2EA4C24F /* ObservationLogContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB55B0755B177E8C1BC5D771 /* ObservationLogContent.swift */; };
 		8AC2B9839C8D7FB4B9620D67 /* MergeLedgerScaleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73D0F3E4989A498EC1917779 /* MergeLedgerScaleTests.swift */; };
 		8AECC4A83ED77A4A5505C932 /* cloud-config.json in Resources */ = {isa = PBXBuildFile; fileRef = CB1762F3F0912449C759255A /* cloud-config.json */; };
+		8C4673C35FC8D25CD8D8F888 /* DebugTestHook.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA16C1991B253151E78B176E /* DebugTestHook.swift */; };
 		8C89FD0D2B4426DD0EC54A1F /* PairedPeersStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F92BC5FD3F5836297FAD7F2D /* PairedPeersStore.swift */; };
 		8CBC66555D3B77474B42746A /* ObservationExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE337F05758535174D947692 /* ObservationExportService.swift */; };
 		9011BEC0A95145374777045E /* TaxonomyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 102D036CF7E1F208793BECF3 /* TaxonomyStore.swift */; };
@@ -308,6 +310,7 @@
 		F6A0C5EC7F393B0C8A4C4510 /* SyncSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncSheet.swift; sourceTree = "<group>"; };
 		F73A0EC9E9DB138EA0784C2F /* SpeciesRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeciesRow.swift; sourceTree = "<group>"; };
 		F92BC5FD3F5836297FAD7F2D /* PairedPeersStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairedPeersStore.swift; sourceTree = "<group>"; };
+		FA16C1991B253151E78B176E /* DebugTestHook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugTestHook.swift; sourceTree = "<group>"; };
 		FB43FA5A755AAC8A71FA0FAA /* summary-response-nonpositive-count.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "summary-response-nonpositive-count.json"; sourceTree = "<group>"; };
 		FBCE0B9078509DFFC117339F /* ObservationRecordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationRecordView.swift; sourceTree = "<group>"; };
 		FD5CA0E3C376B95BE1EA2C72 /* CloudConfigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudConfigTests.swift; sourceTree = "<group>"; };
@@ -386,6 +389,7 @@
 		450A45E846B9646B6F0A5310 /* Diagnostics */ = {
 			isa = PBXGroup;
 			children = (
+				FA16C1991B253151E78B176E /* DebugTestHook.swift */,
 				DAD10E79283C9BAD3837E4D5 /* DiagnosticsLog.swift */,
 			);
 			path = Diagnostics;
@@ -910,6 +914,7 @@
 				25504B0B7E81C5314B41B4D1 /* DateRangePickerSheet.swift in Sources */,
 				EA346BFABBA8BAE1E3688F4D /* DateRangePreset.swift in Sources */,
 				9288B6EA2B9DCAC3A584E6A2 /* DateRangeStore.swift in Sources */,
+				33EC4B86185B65C19EFE13CC /* DebugTestHook.swift in Sources */,
 				4C49D4BD1F9EBFA3DC896137 /* DiagnosticsLog.swift in Sources */,
 				C0197699A83CDB67080AC075 /* ExportFormat.swift in Sources */,
 				3EAF9095FB1E0E06EBED6F9B /* ExportSheet.swift in Sources */,
@@ -982,6 +987,7 @@
 				7EEFDB7446CA306481FEA245 /* DateRange.swift in Sources */,
 				9874D743B0DE7388BE4F74FC /* DateRangePreset.swift in Sources */,
 				A70D9BC5A037E5C385A97A37 /* DateRangeStore.swift in Sources */,
+				8C4673C35FC8D25CD8D8F888 /* DebugTestHook.swift in Sources */,
 				03E657E4F3F126D20EE676B1 /* DiagnosticsLog.swift in Sources */,
 				41A379257CB36EF84B8F4DCF /* ExportFormat.swift in Sources */,
 				BCF2B2A1BD62C977C6FF3609 /* ObservationDTO.swift in Sources */,

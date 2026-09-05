@@ -14,7 +14,23 @@ struct HomeView: View {
     @State private var sheetContentHeight: CGFloat = 0
     @State private var filterFocused: Bool = false
     @State private var pulseState = PulseAnimationState()
+    #if DEBUG
+    @Environment(DebugTestHook.self) private var debugTestHook
+    #endif
     private let speciesListBottomPadding: CGFloat = 48
+
+    /// Shared by the real quick-add tap and the DEBUG-only external test hook
+    /// (see DebugTestHook) so both exercise the identical mutation + scroll
+    /// + pulse path.
+    private func performAdd(taxonId: String) {
+        observations.addObservationWithLocation(taxonId, count: 1)
+        let hadFilter = !filterText.isEmpty
+        filterText = ""
+        pulseState.trigger(speciesId: taxonId)
+        if !hadFilter {
+            scrollToBottomSignal &+= 1
+        }
+    }
 
     private var filtered: [Taxon] {
         taxonomy.search(
@@ -121,6 +137,14 @@ struct HomeView: View {
             }
             .toolbar(.hidden, for: .navigationBar)
             .toolbarBackground(.hidden, for: .navigationBar)
+            #if DEBUG
+            .onChange(of: debugTestHook.pendingAddTaxonId) { _, newValue in
+                guard let taxonId = newValue else { return }
+                debugTestHook.pendingAddTaxonId = nil
+                DiagnosticsLog.log(.sync, "Debug hook: performing addObservation for taxonId=\(taxonId)")
+                performAdd(taxonId: taxonId)
+            }
+            #endif
             .onAppear { ObservationStoreProxy.shared.register(observations) }
             .onChange(of: settings.selectedChecklistId) { _, newId in
                 if let id = newId { taxonomy.loadChecklist(id: id) }
@@ -230,15 +254,7 @@ struct HomeView: View {
                         filterFocused = false
                     }
                 },
-                onQuickAdd: { taxon in
-                    observations.addObservationWithLocation(taxon.id, count: 1)
-                    let hadFilter = !filterText.isEmpty
-                    filterText = ""
-                    pulseState.trigger(speciesId: taxon.id)
-                    if !hadFilter {
-                        scrollToBottomSignal &+= 1
-                    }
-                }
+                onQuickAdd: { taxon in performAdd(taxonId: taxon.id) }
             )
         }
     }

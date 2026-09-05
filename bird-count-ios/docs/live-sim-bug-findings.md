@@ -6,13 +6,14 @@ validation that the infrastructure is sufficient.
 
 **Status: all three confirmed on device and fixed.** #2 and #3 via device
 testimony correcting the original hypotheses; #1 via device testimony
-confirming the original hypothesis (from a previous build). I was not able
-to drive real touch/trackpad interaction against the Simulator from this
-environment (no `idb`/`cliclick`, and `xcrun simctl` has no touch-injection
-command), so none of the fixes below have been re-verified live by me —
-the manual workflow in
-[`live-simulator-diagnosis-workflow.md`](live-simulator-diagnosis-workflow.md)
-is the next step for confirming each fix holds.
+confirming the original hypothesis (from a previous build), and — since —
+via a live capture in this Simulator (see #1 below). I still can't drive
+real touch/trackpad interaction here (no `idb`/`cliclick`, `simctl` has no
+touch command), but for bugs reachable without a tap gesture, a new
+`DebugTestHook` (see
+[`live-simulator-diagnosis-workflow.md`](live-simulator-diagnosis-workflow.md))
+sidesteps that entirely. #2 and #3 need real swipe/drag gestures, so those
+still await a human running the manual workflow.
 
 ## 1. Persistent ~10px scroll-short after adding an observation — FIXED
 
@@ -80,11 +81,37 @@ pin down.
 
 I removed both non-discriminating tests rather than keep ones that can't
 fail. The existing 90-test suite (`make test-app` / `BirdCountTests`) still
-passes with the fix in place. Confirmation that the *actual* on-device
-symptom is resolved is via the diagnosis workflow: watch for `"corrective
-scrollTo(sentinel) fired after contentSize settle"` in the `.scroll` log
-during a real repro, and confirm the final position lands at the true
-bottom (not just within the existing tests' generous tolerance).
+passes with the fix in place.
+
+**Live confirmation, since**: added `DebugTestHook` (see
+"No-touch triggering" in
+[`live-simulator-diagnosis-workflow.md`](live-simulator-diagnosis-workflow.md))
+to trigger `addObservation` from outside the running process, and captured
+the real app (hydrated with the 11,145-species checklist + 20k-observation
+dataset) live in the Simulator:
+
+- A single add of a far-from-bottom species landed correctly with no
+  correction needed — `contentSize` had already settled by the time the
+  trigger's own scroll fired, so the deferred single scroll alone was
+  enough.
+- **Two rapid successive adds** (mimicking fast user interaction — the
+  exact failure mode named in the original bug report) did produce the race:
+  the second add's `contentSize` change arrived *after* its own trigger's
+  scroll had already fired, but *before* the 500ms corrective window closed
+  — the corrective scroll fired and the log shows it landing correctly:
+  ```
+  SwiftUI contentSize.height: 804669.0 -> 804202.0
+  corrective scrollTo(sentinel) fired after contentSize settle
+  ```
+  A follow-up screenshot confirmed the newly-added species was fully visible
+  at the true bottom, not clipped or short.
+
+This is real, live evidence — not just a unit test — that (a) the race this
+fix targets does occur in the live app under realistic conditions, and
+(b) the corrective scroll catches it and lands correctly when it does. It's
+not a repeated/statistical sample (one live catch), so it doesn't rule out
+rarer variants of the same race, but it's a meaningfully stronger
+confirmation than the code-reasoning-only original diagnosis.
 
 ---
 
