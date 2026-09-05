@@ -1028,18 +1028,19 @@ async function handler(event) {
   try {
     const { payload } = await jwtVerify(token, JWKS, { issuer: ISSUER });
     let sub;
+    const scopes = typeof payload.scope === "string" ? payload.scope.split(" ") : [];
     if (payload.aud !== void 0) {
       const auds = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
       if (!auds.some((a) => USER_AUDIENCES.has(a))) return { isAuthorized: false };
+      sub = typeof payload.sub === "string" ? payload.sub : void 0;
+    } else if (scopes.includes(M2M_SCOPE)) {
       sub = typeof payload.sub === "string" ? payload.sub : void 0;
     } else if (typeof payload["client_id"] === "string") {
       const clientId = payload["client_id"];
       if (!USER_AUDIENCES.has(clientId)) return { isAuthorized: false };
       sub = typeof payload.sub === "string" ? payload.sub : void 0;
     } else {
-      const scopes = typeof payload.scope === "string" ? payload.scope.split(" ") : [];
-      if (!scopes.includes(M2M_SCOPE)) return { isAuthorized: false };
-      sub = typeof payload.sub === "string" ? payload.sub : void 0;
+      return { isAuthorized: false };
     }
     if (!sub) return { isAuthorized: false };
     return { isAuthorized: true, context: { sub } };

@@ -26,10 +26,20 @@ export async function handler(event: {
 
     let sub: string | undefined;
 
+    const scopes =
+      typeof payload.scope === "string" ? payload.scope.split(" ") : [];
+
     if (payload.aud !== undefined) {
       // Cognito ID token: audience = client_id
       const auds = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
       if (!auds.some((a) => USER_AUDIENCES.has(a))) return { isAuthorized: false };
+      sub = typeof payload.sub === "string" ? payload.sub : undefined;
+    } else if (scopes.includes(M2M_SCOPE)) {
+      // M2M (client_credentials) token: no aud, carries the required resource-
+      // server scope. Checked before the client_id branch below because Cognito
+      // client-credentials tokens also carry a `client_id` claim (same as user
+      // access tokens) — scope, not client_id, is what distinguishes them here,
+      // since the ios/web user pool clients are never granted this scope.
       sub = typeof payload.sub === "string" ? payload.sub : undefined;
     } else if (typeof (payload as Record<string, unknown>)["client_id"] === "string") {
       // Cognito user access token: no aud, uses client_id instead
@@ -37,11 +47,7 @@ export async function handler(event: {
       if (!USER_AUDIENCES.has(clientId)) return { isAuthorized: false };
       sub = typeof payload.sub === "string" ? payload.sub : undefined;
     } else {
-      // M2M (client_credentials) token: no aud, no client_id, must carry required scope
-      const scopes =
-        typeof payload.scope === "string" ? payload.scope.split(" ") : [];
-      if (!scopes.includes(M2M_SCOPE)) return { isAuthorized: false };
-      sub = typeof payload.sub === "string" ? payload.sub : undefined;
+      return { isAuthorized: false };
     }
 
     if (!sub) return { isAuthorized: false };

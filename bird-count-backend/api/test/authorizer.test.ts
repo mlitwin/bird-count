@@ -123,4 +123,17 @@ describe("authorizer - M2M token (scope path)", () => {
     const r = await handler({ headers: { Authorization: "Bearer m2m-no-sub.token" } });
     expect(r.isAuthorized).toBe(false);
   });
+
+  it("allows M2M token even though it also carries a client_id claim", async () => {
+    // Real Cognito client-credentials tokens always include client_id alongside
+    // scope (unlike the other cases above, which omit it) — the scope check
+    // must take priority over the client_id/USER_AUDIENCES branch, or every
+    // real M2M token gets misrouted into the user-token path and denied.
+    mockVerify.mockResolvedValue({
+      payload: { sub: "m2m-client", scope: M2M_SCOPE, client_id: "e2e-m2m-client-id" },
+    });
+    const r = await handler({ headers: { Authorization: "Bearer valid.m2m.token" } });
+    expect(r.isAuthorized).toBe(true);
+    expect(r.context?.sub).toBe("m2m-client");
+  });
 });
