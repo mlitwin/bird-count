@@ -17,6 +17,67 @@ still await a human running the manual workflow.
 
 ## 1. Persistent ~10px scroll-short after adding an observation — FIXED
 
+**Update (2026-10-25): the corrective-scroll fix below was incomplete; replaced
+by sticky-bottom re-pinning.** Reported again on device: 28pt short after a
+*filter-typed* swipe-add. Reproduced deterministically
+(`SwipeScrollReproTests.testFilterSwipeReplay`, 28.00pt 6/6, screen identical
+to the device screenshot) once the Simulator matched the device:
+
+- **Data:** that day's prod records *including the `observer` field* (pulled
+  read-only from DynamoDB `birdcount-data-prod`, `changes` index). The app's
+  JSON export omits `observer`, and without another user's records there are
+  no attribution icons — and no bug.
+- **Dynamic Type extra-large** (device rows 73pt vs 68pt at default) and the
+  device user's login email (`-Settings_loginEmail`).
+- **Path:** an add with a filter active clears the filter → content-set
+  change → `.id` ScrollView rebuild. The trigger and the old 500ms corrective
+  scroll never run on this path.
+
+Mechanism (logs + UIKit introspection): the rebuilt ScrollView lands at the
+bottom using estimated row heights; ~11ms later a row measures 28pt taller
+(a name wrapping next to the attribution icon) and nothing re-pins. Two
+further wrinkles: the late height change arrives inside an animated
+transaction (the add's pulse `easeIn(0.3)`), so `UIScrollView.contentSize`
+*animates* toward the new value over ~300ms and each `scrollTo` is clamped to
+wherever it has reached; and the estimate can flap within a few ms
+(813607 → 852587 → 813607).
+
+Fix (`BottomAnchoredScrollView`): a sticky "wants bottom" intent (set
+initially, on rebuild, on trigger, and when a user scroll ends at the
+bottom; cleared when it ends elsewhere). Any content-height change while it is
+set schedules a coalesced, deferred re-pin that retries every 50ms (max 1s)
+until the list is actually at the bottom. Bookkeeping lives in a plain
+reference type — any view invalidation from inside the geometry/phase
+callbacks breaks pinning by itself (found when a debug probe's `@Observable`
+read did exactly that; see `BottomAnchoredScrollViewRowGrowthTests`). The
+one-shot corrective scroll is removed: the re-pin covers its trigger path
+(18/18 at 0.00 from bottom / 250pt / 440pt up, XXL text) and also the
+launch-time gap (previously 30pt at XXL). Rejected:
+`.defaultScrollAnchor(.bottom, for: .sizeChanges)` overshoots 54pt.
+
+Hardening that followed:
+
+- **Pulse animation scoped** (`SpeciesRow`): `.animation(_:value:)` on the
+  highlight shapes instead of `withAnimation`. Confirmed source of the
+  animated contentSize: with it, every re-pin lands on attempt 1.
+- **One post-add path** (`HomeView.didAddObservation`), always requesting the
+  bottom; `BottomAnchoredScrollView` handles both bottom requests outside the
+  `.id`-rebuilt subtree.
+- **Regression test:** `UITests/ScrollRegressionTests` (`make test-scroll`) —
+  synthetic, anonymized fixture of the device session generated at run time;
+  Dynamic Type and login set via launch arguments, so no Simulator setup.
+  Negative controls: with the re-pin disabled and the old filter-path skip
+  restored, it fails at exactly 28.0pt (filter and launch tests).
+- **Unit tests** assert the exact bottom gap at 1pt (was 60pt, which hid this
+  bug class).
+
+Rules to keep it fixed: no view invalidation from scroll geometry/phase
+callbacks; scope animations to the views they animate, never wrap data
+changes in `withAnimation`; every "show the bottom" request goes through
+`BottomAnchoredScrollView`.
+
+Original notes follow.
+
 **Confirmed on device** (report author verified the bug in a previous build).
 Root-cause reasoning below is unchanged from the original pass; a corrective
 second scroll has been added.

@@ -1,4 +1,4 @@
-.PHONY: help generate build-test test test-app test-core analyze-tests analyze-bundle list-dests simulators prep-alpha prep-patch prep-minor prep-major fastlane-alpha fastlane-beta screenshots clean sim-live
+.PHONY: help generate build-test test test-app test-core test-scroll analyze-tests analyze-bundle list-dests simulators prep-alpha prep-patch prep-minor prep-major fastlane-alpha fastlane-beta screenshots clean sim-live
 
 # Configurable variables
 SCHEME ?= BirdCount
@@ -18,6 +18,7 @@ help:
 	@echo "  test          Run both app and core tests"
 	@echo "  test-app      Build and run unit tests on the iOS Simulator (\"$(SIMULATOR)\", OS=$(OS))"
 	@echo "  test-core     Build and run macOS unit tests for pure Swift logic (no Simulator)"
+	@echo "  test-scroll   UI regression tests for species-list bottom anchoring (\"$(SCROLL_SIMULATOR)\", OS=$(SCROLL_OS))"
 	@echo "  analyze-tests Analyze the most recent test results without re-running tests"
 	@echo "  analyze-bundle Analyze a specific test bundle (BUNDLE=path/to/results.xcresult)"
 	@echo "  clean         Clean build artifacts and derived data"
@@ -69,6 +70,21 @@ test-app:
 	(echo "❌ App tests FAILED - Analyzing results..."; \
 	 ./scripts/simple-test-parser.sh "$$RESULT_PATH" || true; \
 	 exit 1)
+# Scroll-position UI regression tests (docs/live-sim-bug-findings.md #1).
+# Pinned to the device width the bug was reproduced on (402pt); name wrapping,
+# and so the regression, depends on width.
+SCROLL_SIMULATOR ?= iPhone 17
+SCROLL_OS ?= 26.4
+test-scroll:
+	@echo "📱 Running scroll regression tests on $(SCROLL_SIMULATOR) ($(SCROLL_OS))..."
+	@xcodebuild \
+		-project "$(PROJECT)" \
+		-scheme "$(SCHEME)" \
+		-configuration "$(CONFIGURATION)" \
+		-destination "platform=iOS Simulator,name=$(SCROLL_SIMULATOR),OS=$(SCROLL_OS)" \
+		-only-testing:BirdCountUITests/ScrollRegressionTests \
+		test
+
 # Build and run macOS-native core tests (fast, no simulator)
 test-core:
 	@echo "🧪 Running core tests..."

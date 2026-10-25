@@ -85,11 +85,12 @@ private func waitForNewScrollView(in view: UIView, replacing previous: UIScrollV
     return findScrollView(in: view)
 }
 
-/// Tolerance for bottom-scroll assertions (pt). `defaultScrollAnchor(.bottom)` and
-/// `scrollTo(anchor:.bottom)` both land slightly short of `contentSize − bounds` on
-/// devices with safe-area insets; 60 pt covers observed real-device/simulator gaps
-/// while still catching "completely failed to scroll" cases (offset near 0).
-private let bottomScrollTolerance: CGFloat = 60
+/// Tolerance for bottom-scroll assertions (pt), measured with `bottomGap`
+/// (which accounts for `adjustedContentInset`). Deliberately tight: the
+/// "lands a few points short" bug class (docs/live-sim-bug-findings.md #1)
+/// was invisible behind the previous 60pt tolerance, which only existed to
+/// absorb safe-area insets the old `contentSize − bounds` formula ignored.
+private let bottomScrollTolerance: CGFloat = 1
 
 private func makeTaxa(_ count: Int) -> [Taxon] {
     (1...max(1, count)).map { i in
@@ -124,8 +125,8 @@ private var shortContent: some View {
 }
 
 /// Tall content using LazyVStack — mirrors SpeciesListContent in the real app.
-/// LazyVStack measures row heights lazily; the first onGeometryChange firing may
-/// see an intermediate (underestimated) content height rather than the final height.
+/// LazyVStack measures row heights lazily; the first geometry report may see an
+/// intermediate (estimated) content height rather than the final height.
 private var tallLazyContent: some View {
     LazyVStack(spacing: 6) {
         ForEach(0..<50, id: \.self) { i in
@@ -205,34 +206,32 @@ struct BottomAnchoredScrollViewBehaviorTests {
         }
         let maxOffset = max(0, sv.contentSize.height - sv.bounds.height)
         #expect(maxOffset > 0, "Content must overflow screen for this test to be meaningful")
-        #expect(sv.contentOffset.y >= maxOffset - bottomScrollTolerance,
-                "Should start scrolled to bottom (defaultScrollAnchor + onAppear)")
+        #expect(abs(bottomGap(sv)) <= bottomScrollTolerance,
+                "Should start scrolled to bottom (defaultScrollAnchor + onAppear) (gap=\(bottomGap(sv)))")
     }
 
-    @Test("Trigger increment snaps to bottom without animation")
-    func triggerScrollsToBottomWithoutAnimation() async throws {
+    // Scrolled-away → trigger → bottom is covered with real touches by
+    // UITests/ScrollRegressionTests.testSwipeAddFromScrolledUpLandsAtBottom.
+    // It can't be faked here: `setContentOffset` on the backing UIScrollView
+    // bypasses SwiftUI's scroll state, so a later `scrollTo` may be a no-op
+    // (this test failed that way, before and after the sticky-bottom change).
+    @Test("Trigger increment keeps bottom without animation")
+    func triggerKeepsBottomWithoutAnimation() async throws {
         let w = TestWindow(BottomAnchoredScrollView(scrollToBottomTrigger: 0) { tallContent })
         try await Task.sleep(for: .milliseconds(300))
         guard let sv = findScrollView(in: w.view) else {
             Issue.record("UIScrollView not found"); return
         }
-
-        // Manually scroll to top to simulate the state before an observation is added.
-        sv.setContentOffset(.zero, animated: false)
-        #expect(sv.contentOffset.y < 10, "Precondition: should be near top")
+        #expect(abs(bottomGap(sv)) <= bottomScrollTolerance, "Precondition: at bottom (gap=\(bottomGap(sv)))")
 
         // Fire the trigger (mirrors HomeView incrementing scrollToBottomSignal).
         w.update(BottomAnchoredScrollView(scrollToBottomTrigger: 1) { tallContent })
-        // Yield so SwiftUI's onChange fires and scrollTo executes.
         try await Task.sleep(for: .milliseconds(300))
 
-        let maxOffset = max(0, sv.contentSize.height - sv.bounds.height)
-        #expect(sv.contentOffset.y >= maxOffset - bottomScrollTolerance,
-                "Should snap to bottom after trigger")
-
-        // withAnimation(.none) must suppress the onChange transaction so no animation runs.
-        // On iOS 26+ ScrollPosition.scrollTo inherits the ambient onChange animation;
-        // withAnimation(.none) is the explicit suppression.
+        #expect(abs(bottomGap(sv)) <= bottomScrollTolerance,
+                "Should stay at bottom after trigger (gap=\(bottomGap(sv)))")
+        // The scroll runs in a no-animation transaction; on iOS 26+ scrollTo
+        // otherwise inherits the ambient onChange animation.
         let animKeys = sv.layer.animationKeys() ?? []
         #expect(animKeys.isEmpty, "scrollTo must not animate")
     }
@@ -253,8 +252,8 @@ struct BottomAnchoredScrollViewBehaviorTests {
         }
         let maxOffset = max(0, sv.contentSize.height - sv.bounds.height)
         #expect(maxOffset > 0, "Tall content must overflow screen")
-        #expect(sv.contentOffset.y >= maxOffset - bottomScrollTolerance,
-                "Should scroll to bottom after content set change (blank-list regression path)")
+        #expect(abs(bottomGap(sv)) <= bottomScrollTolerance,
+                "Should scroll to bottom after content set change (blank-list regression path) (gap=\(bottomGap(sv)))")
     }
 
     // MARK: Filter-clear regression tests
@@ -302,8 +301,8 @@ struct BottomAnchoredScrollViewBehaviorTests {
         }
         let maxOffset = max(0, sv.contentSize.height - sv.bounds.height)
         #expect(maxOffset > 0, "Tall content must overflow screen")
-        #expect(sv.contentOffset.y >= maxOffset - bottomScrollTolerance,
-                "Should scroll to bottom after filter-clear content expansion (scrollToBottomTrigger unchanged)")
+        #expect(abs(bottomGap(sv)) <= bottomScrollTolerance,
+                "Should scroll to bottom after filter-clear content expansion (scrollToBottomTrigger unchanged) (gap=\(bottomGap(sv)))")
     }
 
     @Test("Filter-clear: short-to-tall expansion does not leave view near top")
@@ -337,18 +336,14 @@ struct BottomAnchoredScrollViewBehaviorTests {
 
     // MARK: Two-pass render regression
     //
-    // In the real-app async rendering pipeline, SwiftUI may increment scrollEpoch
-    // (from onChange) in one render pass, then expand the content height in a
-    // subsequent pass. The epoch guard alone fires the scroll against the pre-expansion
-    // height (0 offset for short content), then blocks the corrective scroll when
-    // height later grows (same epoch). Result: view stuck at top of expanded list.
-    //
-    // This test simulates the two-pass scenario directly: first change only the token
-    // (epoch increments, same short height), then separately expand the content height
-    // (epoch unchanged, height grows). The second update should trigger a re-scroll.
+    // SwiftUI may deliver a content-set change in one render pass and the
+    // resulting height growth in a later one. A scroll issued only for the
+    // first pass lands against the pre-expansion height; the later growth must
+    // still re-pin (sticky bottom). First change only the token (same short
+    // height), then separately expand the content height (same token).
 
-    @Test("Two-pass: epoch fires with short height, then content expands — must re-scroll")
-    func twoPassEpochThenHeightExpansion() async throws {
+    @Test("Two-pass: token changes with short height, then content expands — must re-scroll")
+    func twoPassTokenThenHeightExpansion() async throws {
         let token1 = AnyHashable(Set(["a"]))
         let w = TestWindow(
             BottomAnchoredScrollView(scrollToBottomTrigger: 0, scrollToBottomOnChange: token1) {
@@ -399,22 +394,17 @@ struct BottomAnchoredScrollViewBehaviorTests {
         }
         let maxOffset = max(0, sv.contentSize.height - sv.bounds.height)
         #expect(maxOffset > 0, "Tall content must overflow screen")
-        #expect(sv.contentOffset.y >= maxOffset - bottomScrollTolerance,
-                "Must re-scroll to bottom when height grows after epoch-only pass")
+        #expect(abs(bottomGap(sv)) <= bottomScrollTolerance,
+                "Must re-scroll to bottom when height grows after token-only pass (gap=\(bottomGap(sv)))")
     }
 
     // MARK: LazyVStack progressive-height regression
     //
     // The real app's SpeciesListContent uses LazyVStack(spacing:6). Unlike VStack,
     // LazyVStack may report a smaller initial height (only visible rows measured),
-    // then grow as more rows come into view. The epoch-based guard
-    //   `guard old.epoch != new.epoch else { return }`
-    // fires the scroll once (against the underestimated height) and then ignores
-    // subsequent height-growth notifications because the epoch is unchanged.
-    // Result: view stuck near the top of the expanded list (shows "Penguins" bug).
-    //
-    // These tests use LazyVStack content so they reproduce the bug before the fix
-    // and verify the fix handles progressive height refinement.
+    // then grow as more rows come into view. A one-shot scroll against the
+    // underestimated height leaves the view short or near the top (the old
+    // "Penguins" bug); progressive refinement must keep it pinned.
 
     @Test("Filter-clear: LazyVStack short-to-tall expansion scrolls to bottom (real-app content type)")
     func filterClearLazyVStackScrollsToBottom() async throws {
@@ -444,8 +434,8 @@ struct BottomAnchoredScrollViewBehaviorTests {
         }
         let maxOffset = max(0, sv.contentSize.height - sv.bounds.height)
         #expect(maxOffset > 0, "Tall LazyVStack content must overflow screen")
-        #expect(sv.contentOffset.y >= maxOffset - bottomScrollTolerance,
-                "Should scroll to bottom after filter-clear expansion with LazyVStack content")
+        #expect(abs(bottomGap(sv)) <= bottomScrollTolerance,
+                "Should scroll to bottom after filter-clear expansion with LazyVStack content (gap=\(bottomGap(sv)))")
     }
 
     @Test("Renders empty content without crash")
@@ -523,8 +513,8 @@ struct SpeciesListViewTests {
         }
         let maxOffset = max(0, sv.contentSize.height - sv.bounds.height)
         #expect(maxOffset > 0, "40 species rows must overflow screen")
-        #expect(sv.contentOffset.y >= maxOffset - bottomScrollTolerance,
-                "Species list should start at bottom on first render")
+        #expect(abs(bottomGap(sv)) <= bottomScrollTolerance,
+                "Species list should start at bottom on first render (gap=\(bottomGap(sv)))")
     }
 
     @Test("Renders with non-zero scrollToBottomSignal")
@@ -563,5 +553,75 @@ struct SpeciesListViewTests {
         #expect(v.bounds.height > 0)
         _ = selectedId
         _ = quickAddId
+    }
+}
+
+// MARK: - BottomAnchoredScrollView — Row height change while resting at bottom
+
+/// Content whose row `grownIndex` is `extra` points taller than the rest.
+/// Same identity/id-set throughout, no trigger — mirrors a row re-measuring
+/// (name wrap, badge appearing) after the list has settled at the bottom.
+private func rowGrowthContent(grownIndex: Int, extra: CGFloat) -> some View {
+    LazyVStack(spacing: 6) {
+        ForEach(0..<200, id: \.self) { i in
+            Color.clear.frame(height: 44 + (i == grownIndex ? extra : 0)).id(i)
+        }
+    }
+}
+
+/// Exact distance (pt) from the true bottom; positive = short of bottom.
+@MainActor
+private func bottomGap(_ sv: UIScrollView) -> CGFloat {
+    sv.contentSize.height + sv.adjustedContentInset.bottom - sv.bounds.height - sv.contentOffset.y
+}
+
+@MainActor
+@Suite("BottomAnchoredScrollView — row height change at rest", .serialized)
+struct BottomAnchoredScrollViewRowGrowthTests {
+
+    @Test("Visible bottom row grows by 8pt: stays pinned to bottom", arguments: [199, 2])
+    func rowGrowthKeepsBottomPinned(grownIndex: Int) async throws {
+        let w = TestWindow(BottomAnchoredScrollView { rowGrowthContent(grownIndex: grownIndex, extra: 0) })
+        try await Task.sleep(for: .milliseconds(300))
+        guard let sv = findScrollView(in: w.view) else {
+            Issue.record("UIScrollView not found"); return
+        }
+        #expect(abs(bottomGap(sv)) < 0.5, "Precondition: at bottom (gap=\(bottomGap(sv)))")
+
+        w.update(BottomAnchoredScrollView { rowGrowthContent(grownIndex: grownIndex, extra: 8) })
+        try await Task.sleep(for: .milliseconds(300))
+        w.view.layoutIfNeeded()
+
+        #expect(abs(bottomGap(sv)) < 0.5,
+                "Row \(grownIndex) grew 8pt; gap=\(bottomGap(sv)) contentSize=\(sv.contentSize.height)")
+    }
+
+    /// Mirrors an add: trigger fires, then the bottom row re-measures in
+    /// steps (`growths` at `delaysMs` after the trigger). The corrective
+    /// scroll is one-shot and bounded to 500ms.
+    @Test("Row re-measures after trigger: stays pinned", arguments: [
+        ([100, 200], [8.0, 16.0]),   // two changes inside the corrective window
+        ([700], [8.0]),              // one change after the window closes
+        ([100, 700], [8.0, 16.0]),   // one inside, one after
+    ])
+    func rowGrowthAfterTrigger(delaysMs: [Int], growths: [Double]) async throws {
+        let w = TestWindow(BottomAnchoredScrollView(scrollToBottomTrigger: 0) { rowGrowthContent(grownIndex: 199, extra: 0) })
+        try await Task.sleep(for: .milliseconds(300))
+        guard let sv = findScrollView(in: w.view) else {
+            Issue.record("UIScrollView not found"); return
+        }
+        #expect(abs(bottomGap(sv)) < 0.5, "Precondition: at bottom (gap=\(bottomGap(sv)))")
+
+        w.update(BottomAnchoredScrollView(scrollToBottomTrigger: 1) { rowGrowthContent(grownIndex: 199, extra: 0) })
+        var elapsed = 0
+        for (delay, extra) in zip(delaysMs, growths) {
+            try await Task.sleep(for: .milliseconds(delay - elapsed))
+            elapsed = delay
+            w.update(BottomAnchoredScrollView(scrollToBottomTrigger: 1) { rowGrowthContent(grownIndex: 199, extra: CGFloat(extra)) })
+        }
+        try await Task.sleep(for: .milliseconds(400))
+        w.view.layoutIfNeeded()
+        #expect(abs(bottomGap(sv)) < 0.5,
+                "delays=\(delaysMs) growths=\(growths): gap=\(bottomGap(sv))")
     }
 }

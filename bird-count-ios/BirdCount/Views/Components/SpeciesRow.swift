@@ -62,6 +62,13 @@ struct SpeciesRow: View {
     @Environment(PulseAnimationState.self) private var pulseState
     @Environment(RevealCoordinator.self) private var revealCoordinator
     @State private var isPulsing = false
+    /// Animation for the next `isPulsing` change, applied only to the
+    /// highlight shapes via `.animation(_:value:)`. Never `withAnimation`
+    /// here: the pulse starts in the same update as the add's list re-sort,
+    /// and a `withAnimation` transaction leaks into that layout — the list's
+    /// contentSize then animates and the bottom anchor creeps (see
+    /// docs/live-sim-bug-findings.md #1).
+    @State private var pulseAnimation: Animation? = nil
 
     @State private var rightSwipeOffset: CGFloat = 0
     @State private var leftDragOffset: CGFloat = 0
@@ -177,7 +184,7 @@ struct SpeciesRow: View {
                         }
                     }
                     .onEnded { value in
-                        DiagnosticsLog.log(.gesture, "[\(taxon.id)] drag ended: translation=\(value.translation.width) leftRevealOpen=\(leftRevealOpen)")
+                        DiagnosticsLog.log(.gesture, "[\(taxon.id)] drag ended: translation=\(value.translation.width),\(value.translation.height) velocity=\(value.velocity.width),\(value.velocity.height) leftRevealOpen=\(leftRevealOpen)")
                         if leftRevealOpen {
                             // While reveal is open, any rightward swipe closes it; ignore quick-add
                             if value.translation.width > 0 { closeLeftReveal() }
@@ -215,12 +222,15 @@ struct SpeciesRow: View {
             .onChange(of: shouldPulse) { _, newValue in
                 DiagnosticsLog.log(.animation, "[\(taxon.id)] shouldPulse -> \(newValue)")
                 if newValue {
-                    withAnimation(.easeIn(duration: PulseAnimationState.fadeInDuration)) { isPulsing = true }
+                    pulseAnimation = .easeIn(duration: PulseAnimationState.fadeInDuration)
+                    isPulsing = true
                     DispatchQueue.main.asyncAfter(deadline: .now() + PulseAnimationState.fadeInDuration + PulseAnimationState.holdDuration) {
                         DiagnosticsLog.log(.animation, "[\(taxon.id)] pulse fade-out begin")
-                        withAnimation(.easeOut(duration: PulseAnimationState.fadeOutDuration)) { isPulsing = false }
+                        pulseAnimation = .easeOut(duration: PulseAnimationState.fadeOutDuration)
+                        isPulsing = false
                     }
                 } else {
+                    pulseAnimation = nil
                     isPulsing = false
                 }
             }
@@ -262,6 +272,7 @@ struct SpeciesRow: View {
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(Color.green.opacity(0.9), lineWidth: isPulsing ? 2.5 : 0)
+                            .animation(pulseAnimation, value: isPulsing)
                     )
                     .accessibilityLabel(String(format: Strings.Accessibility.countLabel.string, taxon.commonName, count))
             }
@@ -271,10 +282,12 @@ struct SpeciesRow: View {
         .background(
             RoundedRectangle(cornerRadius: 8)
                 .fill(Color.green.opacity(isPulsing ? 0.28 : 0))
+                .animation(pulseAnimation, value: isPulsing)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 8)
                 .stroke(Color.green.opacity(0.9), lineWidth: isPulsing ? 2.5 : 0)
+                .animation(pulseAnimation, value: isPulsing)
         )
     }
 }

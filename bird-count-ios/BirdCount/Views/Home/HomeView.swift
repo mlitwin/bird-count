@@ -19,17 +19,24 @@ struct HomeView: View {
     #endif
     private let speciesListBottomPadding: CGFloat = 48
 
-    /// Shared by the real quick-add tap and the DEBUG-only external test hook
-    /// (see DebugTestHook) so both exercise the identical mutation + scroll
-    /// + pulse path.
+    /// Shared by the real quick-add swipe and the DEBUG-only external test
+    /// hook (see DebugTestHook) so both exercise the identical mutation +
+    /// scroll + pulse path.
     private func performAdd(taxonId: String) {
         observations.addObservationWithLocation(taxonId, count: 1)
-        let hadFilter = !filterText.isEmpty
+        didAddObservation(taxonId: taxonId)
+    }
+
+    /// The single post-add UI path (quick-add, count sheet, debug hook):
+    /// clear the filter, pulse the row, and ask the list to show the bottom.
+    /// The request is unconditional — with a filter active, clearing it also
+    /// rebuilds the list (content-set change), and BottomAnchoredScrollView
+    /// treats both signals the same way. Keeping one path matters: the
+    /// filter-only path once skipped the scroll request and hid a bug.
+    private func didAddObservation(taxonId: String) {
         filterText = ""
         pulseState.trigger(speciesId: taxonId)
-        if !hadFilter {
-            scrollToBottomSignal &+= 1
-        }
+        scrollToBottomSignal &+= 1
     }
 
     private var filtered: [Taxon] {
@@ -185,14 +192,7 @@ struct HomeView: View {
                                         withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) { selectedTaxon = nil }
                                     },
                                     onCommitted: { didAdd in
-                                        if didAdd {
-                                            let hadFilter = !filterText.isEmpty
-                                            filterText = ""
-                                            pulseState.trigger(speciesId: taxon.id)
-                                            if !hadFilter {
-                                                scrollToBottomSignal &+= 1
-                                            }
-                                        }
+                                        if didAdd { didAddObservation(taxonId: taxon.id) }
                                     }
                                 )
                                 .background(
