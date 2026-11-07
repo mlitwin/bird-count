@@ -2,15 +2,18 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { execSync } from "node:child_process";
 import { CreateTableCommand, DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { GetCommand } from "@aws-sdk/lib-dynamodb";
 
 
 process.env.TABLE_NAME = "birdcount-data-test";
 process.env.SEQ_TABLE_NAME = "birdcount-seq-test";
+// Settle horizon off by default so push-then-pull tests see their writes immediately.
+process.env.PULL_SETTLE_MS = "0";
 const PORT = 8123;
 const ENDPOINT = `http://localhost:${PORT}`;
 
-const { docClient } = await import("../src/dynamo.js");
-const { sync, pull } = await import("../src/sync.js");
+const { docClient, putObservation } = await import("../src/dynamo.js");
+const { sync, pull, SCOPE } = await import("../src/sync.js");
 const { tripSeqKey, getSeq, guardedIncr, raiseOnlySet } = await import("../src/seq.js");
 
 const doc = docClient(ENDPOINT);
@@ -277,6 +280,149 @@ describe("sync push + pull", () => {
       cursor = p.cursor;
     }
     expect(seen.size).toBeGreaterThanOrEqual(17);
+  });
+});
+
+async function stored(id: string) {
+  const res = await doc.send(
+    new GetCommand({ TableName: "birdcount-data-test", Key: { pk: SCOPE, sk: `obs#${id}` }, ConsistentRead: true }),
+  );
+  return res.Item!;
+}
+
+async function withSettleMs<T>(ms: number, fn: () => Promise<T>): Promise<T> {
+  process.env.PULL_SETTLE_MS = String(ms);
+  try {
+    return await fn();
+  } finally {
+    process.env.PULL_SETTLE_MS = "0";
+  }
+}
+
+// Directly land an item with a chosen number, as a concurrent sync would.
+async function landNumbered(id: string, n: number, numberedAt: number, updatedAt = 1782914400000) {
+  const now = Date.now();
+  return putObservation(doc, {
+    ...obs(id, { updatedAt }),
+    pk: SCOPE,
+    sk: `obs#${id}`,
+    observerSub: "sub-x",
+    serverUpdatedAt: numberedAt,
+    createdAt: now,
+    schemaVersion: 2,
+    observationNumber: n,
+    numberedAt,
+  });
+}
+
+describe("single-phase numbering", () => {
+  it("writes observationNumber and numberedAt with the record", async () => {
+    const id = "a1a1a1a1-0000-4000-8000-000000000001";
+    const res = await sync(doc, req([obs(id)]), "sub-a");
+    const item = await stored(id);
+    expect(item.observationNumber).toBe(res.applied[0].observationNumber);
+    expect(typeof item.numberedAt).toBe("number");
+  });
+
+  it("stale push burns a number but leaves the stored record and number alone", async () => {
+    const id = "a1a1a1a1-0000-4000-8000-000000000002";
+    const first = await sync(doc, req([obs(id)]), "sub-a");
+    const res = await sync(doc, req([obs(id, { updatedAt: 1782914400000 - 1 })]), "sub-b");
+    expect(res.applied[0]).toEqual({ id, result: "stale" });
+    expect((await stored(id)).observationNumber).toBe(first.applied[0].observationNumber);
+  });
+
+  it("noop re-upload returns the stored number", async () => {
+    const id = "a1a1a1a1-0000-4000-8000-000000000003";
+    const first = await sync(doc, req([obs(id)]), "sub-a");
+    const again = await sync(doc, req([obs(id)]), "sub-a");
+    expect(again.applied[0].observationNumber).toBe(first.applied[0].observationNumber);
+  });
+
+  it("newer edit whose number is not above the stored one renumbers and retries", async () => {
+    // Stands in for: our sync allocates n, a concurrent writer allocates a higher number for an
+    // older version and lands first. Our newer version must not land with the lower number, or
+    // readers already past the stored number would never see it. Here the stored item already
+    // holds the number our first allocation will get (c+1), forcing one renumber round.
+    const id = "a1a1a1a1-0000-4000-8000-000000000004";
+    const c = (await getSeq(doc, tripSeqKey(SCOPE)))!;
+    expect(await landNumbered(id, c + 1, Date.now(), 1782914400000)).toBe("written");
+    const res = await sync(doc, req([obs(id, { updatedAt: 1782914400000 + 1 })]), "sub-a");
+    expect(res.applied[0]).toEqual({ id, result: "applied", observationNumber: c + 2 });
+    const item = await stored(id);
+    expect(item.observationNumber).toBe(c + 2);
+    expect(item.updatedAt).toBe(1782914400000 + 1);
+  });
+});
+
+describe("pull settle horizon", () => {
+  it("holds back unsettled records without advancing the HWM cursor", async () => {
+    const base = await pull(doc, undefined, 0, 10_000);
+    const hwm = Number(base.cursor);
+    const id = "b2b2b2b2-0000-4000-8000-000000000001";
+    await sync(doc, req([obs(id)]), "sub-a");
+
+    const held = await withSettleMs(60_000, () => pull(doc, undefined, hwm));
+    expect(held.changes.map((c) => c.id)).not.toContain(id);
+    expect(held.cursor).toBe(String(hwm));
+    expect(held.hasMore).toBe(false);
+
+    const released = await pull(doc, undefined, hwm);
+    expect(released.changes.map((c) => c.id)).toContain(id);
+  });
+
+  it("holds back unsettled records on the legacy timestamp path", async () => {
+    const base = await pull(doc, "0", undefined, 10_000);
+    const id = "b2b2b2b2-0000-4000-8000-000000000002";
+    await sync(doc, req([obs(id)]), "sub-a");
+
+    const held = await withSettleMs(60_000, () => pull(doc, base.cursor, undefined));
+    expect(held.changes.map((c) => c.id)).not.toContain(id);
+    expect(held.cursor).toBe(base.cursor);
+
+    const released = await pull(doc, base.cursor, undefined);
+    expect(released.changes.map((c) => c.id)).toContain(id);
+  });
+
+  it("out-of-order landing: a later number cannot carry the cursor past an earlier in-flight one", async () => {
+    const base = await pull(doc, undefined, 0, 10_000);
+    const hwm = Number(base.cursor);
+    const c = (await getSeq(doc, tripSeqKey(SCOPE)))!;
+    const early = "b2b2b2b2-0000-4000-8000-000000000003";
+    const late = "b2b2b2b2-0000-4000-8000-000000000004";
+    // Two concurrent syncs allocate c+1 (early) then c+2 (late); late lands first.
+    await guardedIncr(doc, tripSeqKey(SCOPE));
+    await guardedIncr(doc, tripSeqKey(SCOPE));
+    const allocatedAt = Date.now();
+    await landNumbered(late, c + 2, allocatedAt);
+
+    // Device pulls while c+1 is still in flight: nothing is released, cursor stays put.
+    const during = await withSettleMs(10_000, () => pull(doc, undefined, hwm));
+    expect(during.changes.map((c) => c.id)).not.toContain(late);
+    expect(Number(during.cursor)).toBe(hwm);
+
+    await landNumbered(early, c + 1, allocatedAt);
+    // After the horizon passes, both arrive in order.
+    const after = await pull(doc, undefined, hwm);
+    const ids = after.changes.map((c) => c.id);
+    expect(ids.indexOf(early)).toBeGreaterThanOrEqual(0);
+    expect(ids.indexOf(early)).toBeLessThan(ids.indexOf(late));
+  });
+
+  it("without the horizon the same race skips the earlier record (documents the bug)", async () => {
+    const base = await pull(doc, undefined, 0, 10_000);
+    const hwm = Number(base.cursor);
+    const c = (await getSeq(doc, tripSeqKey(SCOPE)))!;
+    const early = "b2b2b2b2-0000-4000-8000-000000000005";
+    const late = "b2b2b2b2-0000-4000-8000-000000000006";
+    await guardedIncr(doc, tripSeqKey(SCOPE));
+    await guardedIncr(doc, tripSeqKey(SCOPE));
+    await landNumbered(late, c + 2, Date.now());
+    const during = await pull(doc, undefined, hwm); // PULL_SETTLE_MS=0
+    expect(Number(during.cursor)).toBe(c + 2);
+    await landNumbered(early, c + 1, Date.now());
+    const after = await pull(doc, undefined, Number(during.cursor));
+    expect(after.changes.map((c) => c.id)).not.toContain(early);
   });
 });
 

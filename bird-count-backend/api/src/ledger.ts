@@ -20,7 +20,7 @@ import type {
   SummaryResponse,
   SummarySpeciesRow,
 } from "./generated/types.js";
-import { toWire } from "./sync.js";
+import { pullSettleMs, settledPrefix, toWire } from "./sync.js";
 
 const PAGE_LIMIT = 200;
 
@@ -41,13 +41,20 @@ export async function refreshLedger(
     cache = { records: new Map(), cursor: 0 };
     caches.set(scope, cache);
   }
+  // Same settle horizon as pull(): unsettled rows are cached for freshness but the cursor
+  // stops before them, so the next refresh re-reads them (set replaces) instead of
+  // permanently skipping a row that lands late with an earlier serverUpdatedAt.
+  const horizon = Date.now() - pullSettleMs();
   for (;;) {
     const page = await queryChanges(doc, scope, cache.cursor, PAGE_LIMIT);
+    const settled = settledPrefix(page.items, (i) => i.serverUpdatedAt, horizon);
     for (const item of page.items) {
       cache.records.set(item.id, item); // re-put (LWW backfill) replaces
+    }
+    for (const item of settled) {
       if (item.serverUpdatedAt > cache.cursor) cache.cursor = item.serverUpdatedAt;
     }
-    if (!page.hasMore) break;
+    if (!page.hasMore || settled.length < page.items.length) break;
   }
   return cache;
 }

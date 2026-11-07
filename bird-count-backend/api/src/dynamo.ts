@@ -15,6 +15,8 @@ export interface StoredObservation extends ObservationRecordDTO {
   serverUpdatedAt: number;
   createdAt: number;
   schemaVersion: number;
+  /** Server clock just after observationNumber was allocated; drives the pull settle horizon. */
+  numberedAt?: number;
 }
 
 if (!process.env.TABLE_NAME) {
@@ -33,8 +35,12 @@ export function docClient(endpoint?: string): DynamoDBDocumentClient {
   });
 }
 
-/** "noop" carries the stored observationNumber (may be absent if a prior setObservationNumber failed). */
-export type PutResult = "written" | "stale" | { kind: "noop"; observationNumber?: number };
+/** "noop" carries the stored observationNumber (absent on legacy items whose number stamp failed). */
+export type PutResult =
+  | "written"
+  | "stale"
+  | "renumber"
+  | { kind: "noop"; observationNumber?: number };
 
 function extractNumber(raw: unknown): number | undefined {
   if (typeof raw === "number") return raw;
@@ -44,16 +50,21 @@ function extractNumber(raw: unknown): number | undefined {
 }
 
 /**
- * Conditional upsert. Returns:
- *   "written"               — new record or strictly newer updatedAt (caller must assign a sequence number)
+ * Conditional upsert of a record that already carries its observationNumber (allocated by the
+ * caller), so the number lands in the same write as the data. Returns:
+ *   "written"               — new record, or strictly newer updatedAt with a higher number
+ *   "renumber"              — strictly newer updatedAt, but the stored number is >= ours (a
+ *                            concurrent writer allocated later and landed first); the caller
+ *                            must allocate a fresh number and retry, or readers already past
+ *                            the stored number would never see this version
  *   { kind:"noop", ... }   — equal updatedAt re-upload; stored record is untouched.
- *                            observationNumber is the stored value if already set, or undefined if a
- *                            prior setObservationNumber failed and needs repair.
+ *                            observationNumber is the stored value if already set, or undefined
+ *                            on a legacy item whose two-phase number stamp failed (needs repair).
  *   "stale"                 — incoming updatedAt is older than stored; rejected
  *
- * Condition is strict (< not <=) so equal-updatedAt re-puts do not overwrite the stored
- * observationNumber.  ReturnValuesOnConditionCheckFailure surfaces the old item so we can
- * distinguish noop from stale and read back the existing number, without a GetItem round-trip.
+ * The updatedAt condition is strict (< not <=) so equal-updatedAt re-puts do not overwrite the
+ * stored observationNumber. ReturnValuesOnConditionCheckFailure surfaces the old item so we can
+ * classify the failure and read back the existing number, without a GetItem round-trip.
  */
 export async function putObservation(
   doc: DynamoDBDocumentClient,
@@ -64,8 +75,10 @@ export async function putObservation(
       new PutCommand({
         TableName: TABLE,
         Item: item,
-        ConditionExpression: "attribute_not_exists(sk) OR updatedAt < :u",
-        ExpressionAttributeValues: { ":u": item.updatedAt },
+        ConditionExpression:
+          "attribute_not_exists(sk) OR (updatedAt < :u AND " +
+          "(attribute_not_exists(observationNumber) OR observationNumber < :n))",
+        ExpressionAttributeValues: { ":u": item.updatedAt, ":n": item.observationNumber },
         ReturnValuesOnConditionCheckFailure: "ALL_OLD",
       }),
     );
@@ -79,6 +92,7 @@ export async function putObservation(
       if (storedUpdatedAt !== undefined && storedUpdatedAt === item.updatedAt) {
         return { kind: "noop", observationNumber: extractNumber(rawItem?.observationNumber) };
       }
+      if (storedUpdatedAt !== undefined && storedUpdatedAt < item.updatedAt) return "renumber";
       return "stale";
     }
     throw err;
@@ -86,7 +100,8 @@ export async function putObservation(
 }
 
 /**
- * Stamp observationNumber onto a stored item, but only if it would raise the existing value.
+ * Repair path only (legacy items stored without a number): stamp observationNumber and
+ * numberedAt onto a stored item, but only if it would raise the existing value.
  * Silently ignores ConditionalCheckFailedException — a concurrent write already set a higher number;
  * the skipped number is a gap (not corruption), which is explicitly allowed by the design.
  */
@@ -95,15 +110,16 @@ export async function setObservationNumber(
   pk: string,
   sk: string,
   n: number,
+  numberedAt: number,
 ): Promise<void> {
   try {
     await doc.send(
       new UpdateCommand({
         TableName: TABLE,
         Key: { pk, sk },
-        UpdateExpression: "SET observationNumber = :n",
+        UpdateExpression: "SET observationNumber = :n, numberedAt = :t",
         ConditionExpression: "attribute_not_exists(observationNumber) OR observationNumber < :n",
-        ExpressionAttributeValues: { ":n": n },
+        ExpressionAttributeValues: { ":n": n, ":t": numberedAt },
       }),
     );
   } catch (err) {

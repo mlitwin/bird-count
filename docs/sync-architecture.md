@@ -188,6 +188,13 @@ Query the `changes` GSI for `serverUpdatedAt > cursor`, ascending, limited
   page forever (guaranteed during a bulk first upload). So the server is
   strict — pagination always advances — and the overlap is the client's
   one-time rewind at session start.
+- **Settle horizon.** Both pull paths (and the web ledger) release only
+  records numbered/stamped at least `PULL_SETTLE_MS` (10 s) ago, stopping at
+  the first newer one with `hasMore=false`. Concurrent writes land and reach
+  the GSIs out of allocation order; without the horizon a cursor can pass a
+  record that becomes visible later. This is a delayed cutoff, not an
+  overlap, so pagination still always advances. See
+  [hwm-gsi-race-analysis.md](../bird-count-backend/docs/hwm-gsi-race-analysis.md).
 - The response `cursor` is `max(request cursor, max serverUpdatedAt pulled,
   max stamp pushed this call)`, so a client that pushed but had nothing to
   pull still advances past its own writes.

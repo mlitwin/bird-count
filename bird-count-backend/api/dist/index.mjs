@@ -7739,8 +7739,8 @@ async function putObservation(doc2, item) {
       new PutCommand({
         TableName: TABLE,
         Item: item,
-        ConditionExpression: "attribute_not_exists(sk) OR updatedAt < :u",
-        ExpressionAttributeValues: { ":u": item.updatedAt },
+        ConditionExpression: "attribute_not_exists(sk) OR (updatedAt < :u AND (attribute_not_exists(observationNumber) OR observationNumber < :n))",
+        ExpressionAttributeValues: { ":u": item.updatedAt, ":n": item.observationNumber },
         ReturnValuesOnConditionCheckFailure: "ALL_OLD"
       })
     );
@@ -7752,20 +7752,21 @@ async function putObservation(doc2, item) {
       if (storedUpdatedAt !== void 0 && storedUpdatedAt === item.updatedAt) {
         return { kind: "noop", observationNumber: extractNumber(rawItem?.observationNumber) };
       }
+      if (storedUpdatedAt !== void 0 && storedUpdatedAt < item.updatedAt) return "renumber";
       return "stale";
     }
     throw err;
   }
 }
-async function setObservationNumber(doc2, pk, sk, n) {
+async function setObservationNumber(doc2, pk, sk, n, numberedAt) {
   try {
     await doc2.send(
       new UpdateCommand({
         TableName: TABLE,
         Key: { pk, sk },
-        UpdateExpression: "SET observationNumber = :n",
+        UpdateExpression: "SET observationNumber = :n, numberedAt = :t",
         ConditionExpression: "attribute_not_exists(observationNumber) OR observationNumber < :n",
-        ExpressionAttributeValues: { ":n": n }
+        ExpressionAttributeValues: { ":n": n, ":t": numberedAt }
       })
     );
   } catch (err) {
@@ -8003,6 +8004,14 @@ async function guardedIncr(doc2, key) {
 // src/sync.ts
 var SCOPE = "shared";
 var PULL_LIMIT = 200;
+var MAX_RENUMBER_ATTEMPTS = 5;
+function pullSettleMs() {
+  return Number(process.env.PULL_SETTLE_MS ?? 1e4);
+}
+function settledPrefix(items, stampOf, horizon) {
+  const end = items.findIndex((item) => stampOf(item) > horizon);
+  return end === -1 ? items : items.slice(0, end);
+}
 var SeqUnavailableError = class extends Error {
   constructor(msg) {
     super(msg);
@@ -8012,7 +8021,7 @@ var SeqUnavailableError = class extends Error {
 function effectiveUpdatedAt(o) {
   return o.updatedAt ?? Date.parse(o.end);
 }
-function toStored(o, observerSub, serverUpdatedAt, schemaVersion) {
+function toStored(o, observerSub, serverUpdatedAt, schemaVersion, observationNumber, numberedAt) {
   const { observationNumber: _clientSupplied, ...rest } = o;
   return {
     ...rest,
@@ -8024,18 +8033,22 @@ function toStored(o, observerSub, serverUpdatedAt, schemaVersion) {
     observerSub,
     serverUpdatedAt,
     createdAt: Date.now(),
-    schemaVersion
+    schemaVersion,
+    observationNumber,
+    numberedAt
   };
 }
 function toWire(item) {
-  const { pk, sk, observerSub, serverUpdatedAt, createdAt, schemaVersion, ...wire } = item;
+  const { pk, sk, observerSub, serverUpdatedAt, createdAt, schemaVersion, numberedAt, ...wire } = item;
   return wire;
 }
 async function pull(doc2, cursor, hwm, limit = PULL_LIMIT) {
+  const horizon = Date.now() - pullSettleMs();
   if (hwm !== void 0) {
     const page2 = await queryByNumber(doc2, SCOPE, hwm, limit);
+    const items2 = settledPrefix(page2.items, (i) => i.numberedAt ?? 0, horizon);
     let maxSeen2 = hwm;
-    for (const item of page2.items) {
+    for (const item of items2) {
       if ((item.observationNumber ?? 0) > maxSeen2) maxSeen2 = item.observationNumber;
     }
     let tripSequenceHighWater;
@@ -8044,49 +8057,64 @@ async function pull(doc2, cursor, hwm, limit = PULL_LIMIT) {
     } catch {
     }
     return {
-      changes: page2.items.map(toWire),
+      changes: items2.map(toWire),
       cursor: String(maxSeen2),
-      hasMore: page2.hasMore,
+      hasMore: page2.hasMore && items2.length === page2.items.length,
       tripSequenceHighWater
     };
   }
   const since = Number(cursor ?? "0") || 0;
   const page = await queryChanges(doc2, SCOPE, since, limit);
+  const items = settledPrefix(page.items, (i) => i.serverUpdatedAt, horizon);
   let maxSeen = since;
-  for (const item of page.items) {
+  for (const item of items) {
     if (item.serverUpdatedAt > maxSeen) maxSeen = item.serverUpdatedAt;
   }
   return {
-    changes: page.items.map(toWire),
+    changes: items.map(toWire),
     cursor: String(maxSeen),
-    hasMore: page.hasMore
+    hasMore: page.hasMore && items.length === page.items.length
   };
 }
 async function sync(doc2, request, observerSub) {
   const serverTime = Date.now();
   const seqKey = tripSeqKey(SCOPE);
+  const allocate = async () => {
+    const n = await guardedIncr(doc2, seqKey);
+    if (n === -1) throw new SeqUnavailableError("sequence counter not seeded");
+    return { n, numberedAt: Date.now() };
+  };
   const applied = [];
   let stamp = Date.now();
   for (const change of request.changes) {
     stamp = Math.max(Date.now(), stamp + 1);
-    const stored = toStored(change, observerSub, stamp, request.schemaVersion);
-    const putResult = await putObservation(doc2, stored);
+    let putResult;
+    let alloc;
+    let attempts = 0;
+    do {
+      if (++attempts > MAX_RENUMBER_ATTEMPTS) {
+        throw new Error(`renumber did not converge for ${change.id}`);
+      }
+      alloc = await allocate();
+      const stored = toStored(
+        change,
+        observerSub,
+        stamp,
+        request.schemaVersion,
+        alloc.n,
+        alloc.numberedAt
+      );
+      putResult = await putObservation(doc2, stored);
+    } while (putResult === "renumber");
     if (putResult === "written") {
-      const n = await guardedIncr(doc2, seqKey);
-      if (n === -1) throw new SeqUnavailableError("sequence counter not seeded");
-      await setObservationNumber(doc2, stored.pk, stored.sk, n);
-      applied.push({ id: change.id, result: "applied", observationNumber: n });
+      applied.push({ id: change.id, result: "applied", observationNumber: alloc.n });
     } else if (putResult === "stale") {
       applied.push({ id: change.id, result: "stale" });
+    } else if (putResult.observationNumber !== void 0) {
+      applied.push({ id: change.id, result: "applied", observationNumber: putResult.observationNumber });
     } else {
-      if (putResult.observationNumber !== void 0) {
-        applied.push({ id: change.id, result: "applied", observationNumber: putResult.observationNumber });
-      } else {
-        const n = await guardedIncr(doc2, seqKey);
-        if (n === -1) throw new SeqUnavailableError("sequence counter not seeded");
-        await setObservationNumber(doc2, stored.pk, stored.sk, n);
-        applied.push({ id: change.id, result: "applied", observationNumber: n });
-      }
+      await setObservationNumber(doc2, SCOPE, `obs#${change.id}`, alloc.n, alloc.numberedAt);
+      applied.push({ id: change.id, result: "applied", observationNumber: alloc.n });
     }
   }
   const hwm = request.serverSyncedObservationNumberHWM;
@@ -8110,13 +8138,17 @@ async function refreshLedger(doc2, scope) {
     cache = { records: /* @__PURE__ */ new Map(), cursor: 0 };
     caches.set(scope, cache);
   }
+  const horizon = Date.now() - pullSettleMs();
   for (; ; ) {
     const page = await queryChanges(doc2, scope, cache.cursor, PAGE_LIMIT);
+    const settled = settledPrefix(page.items, (i) => i.serverUpdatedAt, horizon);
     for (const item of page.items) {
       cache.records.set(item.id, item);
+    }
+    for (const item of settled) {
       if (item.serverUpdatedAt > cache.cursor) cache.cursor = item.serverUpdatedAt;
     }
-    if (!page.hasMore) break;
+    if (!page.hasMore || settled.length < page.items.length) break;
   }
   return cache;
 }

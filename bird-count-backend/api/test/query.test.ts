@@ -9,6 +9,8 @@ import { CreateTableCommand, DynamoDBClient } from "@aws-sdk/client-dynamodb";
 
 process.env.TABLE_NAME = "birdcount-data-test";
 process.env.SEQ_TABLE_NAME = "birdcount-seq-test";
+// Settle horizon off by default so push-then-pull tests see their writes immediately.
+process.env.PULL_SETTLE_MS = "0";
 const PORT = 8124; // sync.test.ts runs its own container on 8123 in parallel
 const ENDPOINT = `http://localhost:${PORT}`;
 
@@ -276,5 +278,29 @@ describe("refreshLedger (DynamoDB Local)", () => {
 
     const summary = computeSummary(after.records.values(), JULY.begin, JULY.end);
     expect(summary.species.find((s) => s.taxonId === "sonspa")?.count).toBe(4);
+  });
+
+  it("caches unsettled records but keeps the cursor before them", async () => {
+    const before = await refreshLedger(doc, SCOPE);
+    const beforeCursor = before.cursor;
+    const id = "44444444-4444-4444-8444-444444444444";
+    await sync(doc, syncReq([rec(id, {
+      taxonId: "sonspa",
+      count: 1,
+      observer: "test",
+      status: "completed",
+      updatedAt: 1782914400000,
+    })]), "sub-a");
+
+    process.env.PULL_SETTLE_MS = "60000";
+    try {
+      const held = await refreshLedger(doc, SCOPE);
+      expect(held.records.has(id)).toBe(true);
+      expect(held.cursor).toBe(beforeCursor);
+    } finally {
+      process.env.PULL_SETTLE_MS = "0";
+    }
+    const settled = await refreshLedger(doc, SCOPE);
+    expect(settled.cursor).toBeGreaterThan(beforeCursor);
   });
 });

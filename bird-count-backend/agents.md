@@ -23,6 +23,11 @@ overview: [README.md](README.md). Sync protocol details:
 - The data model is an **append-only ledger**. Do not add delete endpoints,
   tombstones, TTLs, or in-place mutations. The only permitted overwrite is
   the `updatedAt`-guarded LWW put (location backfill).
+- Pulls (HWM, legacy, and the web ledger) must keep the **settle horizon**
+  (`pullSettleMs`/`settledPrefix` in `sync.ts`): never release a record, or
+  advance a cursor past one, numbered/stamped within the last
+  `PULL_SETTLE_MS`. Writes must keep the number in the same put as the data.
+  See [docs/hwm-gsi-race-analysis.md](docs/hwm-gsi-race-analysis.md).
 - Pull queries must stay **strictly-after-cursor** — a server-side overlap
   window breaks pagination (see sync-architecture.md). The overlap is the
   client's job.

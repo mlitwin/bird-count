@@ -19,6 +19,8 @@ const CLIENT_SECRET = process.env.E2E_CLIENT_SECRET!;
 // Format: https://{project}-{env}-api.internal  (set by Terraform auth module)
 const RESOURCE_SERVER = process.env.E2E_RESOURCE_SERVER!;
 
+const SETTLE_WAIT_MS = 12_000;
+
 for (const v of ["E2E_API_URL", "E2E_TOKEN_ENDPOINT", "E2E_CLIENT_ID", "E2E_CLIENT_SECRET", "E2E_RESOURCE_SERVER"]) {
   if (!process.env[v]) { console.error(`Missing env var: ${v}`); process.exit(1); }
 }
@@ -144,6 +146,16 @@ async function run() {
     console.log(`   observationNumbers: ${n1}, ${n2}  hwm: ${body.tripSequenceHighWater}`);
   }
 
+  // ── 1b. Settle horizon: just-pushed records are held back from pulls ────────
+  console.log("\n1b. Settle horizon holds back just-pushed records");
+  {
+    const { status, body } = await callPull(token, { hwm: n1 - 1 });
+    if (!requireStatus("status 200", status, 200, body)) return;
+    const ids = ((body.changes ?? []) as Array<{ id: string }>).map((c) => c.id);
+    assert("id1 not yet released", !ids.includes(id1), ids.slice(0, 5));
+    assert("cursor not advanced past held-back records", Number(body.cursor) < n1, body.cursor);
+  }
+
   // ── 2. Legacy client: push without HWM still works ─────────────────────────
   console.log("\n2. Legacy client push (no HWM)");
   {
@@ -173,6 +185,11 @@ async function run() {
     assert("result=applied (noop)", a[0]?.result === "applied", a[0]);
     assert("observationNumber returned on noop", typeof a[0]?.observationNumber === "number", a[0]);
   }
+
+  // Pulls only release records numbered more than the server's settle horizon
+  // (PULL_SETTLE_MS, default 10s) ago; wait it out before the visibility checks.
+  console.log(`\n   waiting ${SETTLE_WAIT_MS / 1000}s for the settle horizon…`);
+  await new Promise((r) => setTimeout(r, SETTLE_WAIT_MS));
 
   // ── 5. HWM pull returns records in ascending order ─────────────────────────
   console.log("\n5. HWM pull (hwm=0)");
