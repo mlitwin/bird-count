@@ -86,6 +86,12 @@ jobs:
         working-directory: bird-count-backend/terraform
         run: |
           terraform init -backend-config=environments/${DEPLOY_ENV}.backend.hcl
+          # One-time (Valkey → DynamoDB seq migration): move the Lambdas off the VPC
+          # before the full apply destroys the subnets/SG they are attached to.
+          # Terraform otherwise destroys those first and hangs on in-use ENIs.
+          # Remove once prod has been migrated.
+          terraform apply -auto-approve -var-file=environments/${DEPLOY_ENV}.tfvars \
+            -target=module.api
           terraform apply -auto-approve -var-file=environments/${DEPLOY_ENV}.tfvars
 
       - name: Deploy web viewer (${{ env.DEPLOY_ENV }})
