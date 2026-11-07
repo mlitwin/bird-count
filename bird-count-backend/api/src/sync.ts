@@ -11,7 +11,7 @@ import {
   setObservationNumber,
   type StoredObservation,
 } from "./dynamo.js";
-import { valkeyClient, tripSeqKey, guardedIncr } from "./valkey.js";
+import { tripSeqKey, getSeq, guardedIncr } from "./seq.js";
 
 export const SCOPE = "shared"; // v1: one shared pool; later "trip#<uuid>" / "user#<sub>"
 const PULL_LIMIT = 200;
@@ -81,11 +81,10 @@ export async function pull(
     for (const item of page.items) {
       if ((item.observationNumber ?? 0) > maxSeen) maxSeen = item.observationNumber!;
     }
-    // Fetch tripSequenceHighWater from Valkey for the client's catch-up check.
+    // Fetch tripSequenceHighWater from the seq counter for the client's catch-up check.
     let tripSequenceHighWater: number | undefined;
     try {
-      const raw = await valkeyClient().get(tripSeqKey(SCOPE));
-      if (raw !== null) tripSequenceHighWater = Number(raw);
+      tripSequenceHighWater = (await getSeq(doc, tripSeqKey(SCOPE))) ?? undefined;
     } catch {
       // Non-fatal: omit the field rather than failing the pull.
     }
@@ -117,7 +116,6 @@ export async function sync(
   observerSub: string,
 ): Promise<SyncResponse> {
   const serverTime = Date.now();
-  const valkey = valkeyClient();
   const seqKey = tripSeqKey(SCOPE);
 
   const applied: SyncResponse["applied"] = [];
@@ -133,7 +131,7 @@ export async function sync(
     if (putResult === "written") {
       // Genuine new record or additive edit: assign a fresh sequence number.
       // INCR before UpdateItem; if UpdateItem fails the number is burned (gap, not corruption).
-      const n = await guardedIncr(valkey, seqKey);
+      const n = await guardedIncr(doc, seqKey);
       if (n === -1) throw new SeqUnavailableError("sequence counter not seeded");
       await setObservationNumber(doc, stored.pk, stored.sk, n);
       applied.push({ id: change.id, result: "applied", observationNumber: n });
@@ -147,7 +145,7 @@ export async function sync(
       } else {
         // Prior setObservationNumber failed — repair now by assigning a fresh number.
         // INCR rather than re-using the originally burned number (which is unrecoverable).
-        const n = await guardedIncr(valkey, seqKey);
+        const n = await guardedIncr(doc, seqKey);
         if (n === -1) throw new SeqUnavailableError("sequence counter not seeded");
         await setObservationNumber(doc, stored.pk, stored.sk, n);
         applied.push({ id: change.id, result: "applied", observationNumber: n });

@@ -1,19 +1,6 @@
 // Query layer: golden-fixture drift gate, ledger semantics, and the
 // materialized cache against DynamoDB Local (docker).
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-
-// In-memory Valkey stub so sync calls in this test file run without a Redis container.
-let seq = 0;
-const fakeClient = { get: async (_key: string) => String(seq) };
-vi.mock("../src/valkey.js", () => ({
-  valkeyClient: () => fakeClient,
-  tripSeqKey: (trip: string) => `trip:${trip}:seq`,
-  guardedIncr: async (_client: unknown, _key: string) => ++seq,
-  raiseOnlySet: async (_client: unknown, _key: string, value: number) => {
-    if (value > seq) { seq = value; return true; }
-    return false;
-  },
-}));
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { execSync } from "node:child_process";
 import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -21,11 +8,13 @@ import { fileURLToPath } from "node:url";
 import { CreateTableCommand, DynamoDBClient } from "@aws-sdk/client-dynamodb";
 
 process.env.TABLE_NAME = "birdcount-data-test";
+process.env.SEQ_TABLE_NAME = "birdcount-seq-test";
 const PORT = 8124; // sync.test.ts runs its own container on 8123 in parallel
 const ENDPOINT = `http://localhost:${PORT}`;
 
 const { docClient } = await import("../src/dynamo.js");
 const { sync, SCOPE } = await import("../src/sync.js");
+const { tripSeqKey, raiseOnlySet } = await import("../src/seq.js");
 const { computeSummary, queryObservations, refreshLedger, resetLedgerCache, validateRange } =
   await import("../src/ledger.js");
 
@@ -236,12 +225,21 @@ beforeAll(async () => {
           ],
         }),
       );
+      await client.send(
+        new CreateTableCommand({
+          TableName: "birdcount-seq-test",
+          BillingMode: "PAY_PER_REQUEST",
+          AttributeDefinitions: [{ AttributeName: "pk", AttributeType: "S" }],
+          KeySchema: [{ AttributeName: "pk", KeyType: "HASH" }],
+        }),
+      );
       break;
     } catch (err) {
       if (i > 40) throw err;
       await new Promise((r) => setTimeout(r, 250));
     }
   }
+  await raiseOnlySet(doc, tripSeqKey("shared"), 0);
 }, 60_000);
 
 afterAll(() => {

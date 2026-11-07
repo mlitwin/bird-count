@@ -34,8 +34,8 @@ help:
 	@echo "              Set LOCAL=1 for redirectURI=localhost:8788"
 	@echo "  e2e-init    One-time: fetch M2M credentials from Terraform and store in 1Password"
 	@echo "  e2e         Run E2E tests against deployed API (ENV=dev|prod)"
-	@echo "  seq-status  Report Valkey counter value vs DynamoDB max (read-only)"
-	@echo "  seq-seed    Raise Valkey counter to DynamoDB max (dry-run by default; DRYRUN=false to commit)"
+	@echo "  seq-status  Report seq counter value vs DynamoDB max (read-only)"
+	@echo "  seq-seed    Raise seq counter to max(DynamoDB max, FLOOR) (dry-run by default; DRYRUN=false to commit)"
 	@echo "  seq-backfill Assign observationNumbers to unnumbered records, then seed (DRYRUN=false to commit)"
 	@echo "  bootstrap   One-time: GitHub OIDC provider + deploy role + account budget"
 
@@ -92,6 +92,7 @@ e2e-init:
 
 SEQ_FN    = birdcount-$(ENV)-seq-maintenance
 DRYRUN   ?= true
+FLOOR    ?= 0
 
 # seq-maintenance Lambda operations (use DRYRUN=false to actually write).
 seq-status:
@@ -103,7 +104,7 @@ seq-status:
 seq-seed:
 	$(OP_RUN) aws lambda invoke \
 	  --function-name $(SEQ_FN) \
-	  --payload '{"action":"seed","trip":"shared","dryRun":$(DRYRUN)}' \
+	  --payload '{"action":"seed","trip":"shared","dryRun":$(DRYRUN),"floor":$(FLOOR)}' \
 	  --cli-binary-format raw-in-base64-out /dev/stdout
 
 seq-backfill:

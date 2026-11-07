@@ -46,18 +46,8 @@ variable "alarm_email" {
   default     = ""
 }
 
-variable "subnet_ids" {
-  description = "Private subnet IDs for Lambda VPC placement"
-  type        = list(string)
-}
-
-variable "lambda_sg_id" {
-  description = "Security group ID shared by all Lambda functions"
-  type        = string
-}
-
-variable "valkey_endpoint" {
-  description = "ElastiCache Serverless Valkey endpoint (host:port) passed as VALKEY_ENDPOINT"
+variable "seq_table_name" {
+  description = "DynamoDB table holding the observationNumber counter, passed as SEQ_TABLE_NAME"
   type        = string
 }
 

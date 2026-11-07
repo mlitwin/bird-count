@@ -48,11 +48,6 @@ resource "aws_iam_role_policy_attachment" "logs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-resource "aws_iam_role_policy_attachment" "vpc" {
-  role       = aws_iam_role.lambda.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
-}
-
 resource "aws_lambda_function" "api" {
   function_name    = "${var.project_name}-${var.environment}-api"
   role             = aws_iam_role.lambda.arn
@@ -63,15 +58,10 @@ resource "aws_lambda_function" "api" {
   timeout          = 60
   memory_size      = 1024
 
-  vpc_config {
-    subnet_ids         = var.subnet_ids
-    security_group_ids = [var.lambda_sg_id]
-  }
-
   environment {
     variables = {
-      TABLE_NAME      = var.table_name
-      VALKEY_ENDPOINT = var.valkey_endpoint
+      TABLE_NAME     = var.table_name
+      SEQ_TABLE_NAME = var.seq_table_name
     }
   }
 
@@ -95,7 +85,7 @@ resource "aws_apigatewayv2_api" "http" {
 }
 
 # Lambda authorizer: handles Cognito user tokens (validates aud) and M2M tokens
-# (validates scope). Must run outside the VPC to reach the Cognito JWKS URL.
+# (validates scope).
 
 resource "aws_iam_role" "authorizer" {
   name               = "${var.project_name}-${var.environment}-authorizer"
@@ -268,8 +258,8 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx" {
 }
 
 # ── seq-maintenance Lambda ────────────────────────────────────────────────────
-# Operator-invoked only (no API Gateway route). Seeds and backfills the Valkey
-# sequence counter. Invoke via: aws lambda invoke --function-name <name> ...
+# Operator-invoked only (no API Gateway route). Seeds and backfills the
+# observationNumber sequence counter. Invoke via: aws lambda invoke --function-name <name> ...
 
 data "archive_file" "seq_maintenance_zip" {
   type        = "zip"
@@ -300,11 +290,6 @@ resource "aws_iam_role_policy_attachment" "seq_maintenance_logs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-resource "aws_iam_role_policy_attachment" "seq_maintenance_vpc" {
-  role       = aws_iam_role.seq_maintenance.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
-}
-
 resource "aws_lambda_function" "seq_maintenance" {
   function_name    = "${var.project_name}-${var.environment}-seq-maintenance"
   role             = aws_iam_role.seq_maintenance.arn
@@ -315,15 +300,10 @@ resource "aws_lambda_function" "seq_maintenance" {
   timeout          = 300
   memory_size      = 256
 
-  vpc_config {
-    subnet_ids         = var.subnet_ids
-    security_group_ids = [var.lambda_sg_id]
-  }
-
   environment {
     variables = {
-      TABLE_NAME      = var.table_name
-      VALKEY_ENDPOINT = var.valkey_endpoint
+      TABLE_NAME     = var.table_name
+      SEQ_TABLE_NAME = var.seq_table_name
     }
   }
 

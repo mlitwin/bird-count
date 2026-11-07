@@ -54,6 +54,29 @@ resource "aws_dynamodb_table" "data" {
   tags = var.tags
 }
 
+# observationNumber sequence counter: one item per trip key ("trip:<scope>:seq"),
+# incremented with conditional UpdateItem. Kept out of the data table because
+# it is mutated in place, which the append-only ledger forbids.
+resource "aws_dynamodb_table" "seq" {
+  name         = "${var.project_name}-seq-${var.environment}"
+  billing_mode = "PAY_PER_REQUEST"
+
+  hash_key = "pk"
+
+  attribute {
+    name = "pk"
+    type = "S"
+  }
+
+  point_in_time_recovery {
+    enabled = true
+  }
+
+  deletion_protection_enabled = var.environment == "prod"
+
+  tags = var.tags
+}
+
 data "aws_iam_policy_document" "readwrite" {
   statement {
     effect = "Allow"
@@ -67,6 +90,7 @@ data "aws_iam_policy_document" "readwrite" {
     resources = [
       aws_dynamodb_table.data.arn,
       "${aws_dynamodb_table.data.arn}/index/*",
+      aws_dynamodb_table.seq.arn,
     ]
   }
 }

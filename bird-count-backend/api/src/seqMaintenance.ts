@@ -1,6 +1,6 @@
 import { QueryCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { docClient } from "./dynamo.js";
-import { valkeyClient, tripSeqKey, raiseOnlySet } from "./valkey.js";
+import { tripSeqKey, getSeq, raiseOnlySet } from "./seq.js";
 
 const TABLE = process.env.TABLE_NAME!;
 const CHANGES_INDEX = "changes";
@@ -11,6 +11,8 @@ interface MaintenanceEvent {
   action: "status" | "seed" | "backfill";
   trip?: string;
   dryRun?: boolean;
+  /** seed only: raise to max(dynamoMax, floor), e.g. to carry over a prior counter value. */
+  floor?: number;
 }
 
 // Yields all items for a trip from the changes GSI in serverUpdatedAt ascending order.
@@ -51,13 +53,14 @@ async function queryDynamoMax(doc: ReturnType<typeof docClient>, pk: string): Pr
 }
 
 async function runStatus(doc: ReturnType<typeof docClient>, trip: string) {
-  const key = tripSeqKey(trip);
-  const valkey = valkeyClient();
-  const [raw, dbMax] = await Promise.all([valkey.get(key), queryDynamoMax(doc, trip)]);
+  const [counterValue, dbMax] = await Promise.all([
+    getSeq(doc, tripSeqKey(trip)),
+    queryDynamoMax(doc, trip),
+  ]);
   return {
     action: "status",
     trip,
-    valkeyValue: raw !== null ? Number(raw) : null,
+    counterValue,
     dynamoMax: dbMax,
   };
 }
@@ -67,30 +70,22 @@ async function runSeed(
   trip: string,
   dryRun: boolean,
   knownMax?: number,
+  floor = 0,
 ) {
   const key = tripSeqKey(trip);
-  const valkey = valkeyClient();
-  const [raw, dbMax] = await Promise.all([
-    valkey.get(key),
+  const [before, dbMax] = await Promise.all([
+    getSeq(doc, key),
     knownMax !== undefined ? Promise.resolve(knownMax) : queryDynamoMax(doc, trip),
   ]);
-  const before = raw !== null ? Number(raw) : null;
+  const target = Math.max(dbMax, floor);
 
   if (dryRun) {
-    return { action: "seed", trip, dryRun, before, dynamoMax: dbMax, after: null, wrote: false };
+    return { action: "seed", trip, dryRun, before, dynamoMax: dbMax, floor, after: null, wrote: false };
   }
 
-  const wrote = await raiseOnlySet(valkey, key, dbMax);
-  const afterRaw = await valkey.get(key);
-  return {
-    action: "seed",
-    trip,
-    dryRun,
-    before,
-    dynamoMax: dbMax,
-    after: afterRaw !== null ? Number(afterRaw) : null,
-    wrote,
-  };
+  const wrote = await raiseOnlySet(doc, key, target);
+  const after = await getSeq(doc, key);
+  return { action: "seed", trip, dryRun, before, dynamoMax: dbMax, floor, after, wrote };
 }
 
 async function runBackfill(doc: ReturnType<typeof docClient>, trip: string, dryRun: boolean) {
@@ -143,7 +138,7 @@ export async function handler(event: MaintenanceEvent) {
     case "status":
       return runStatus(doc, trip);
     case "seed":
-      return runSeed(doc, trip, dryRun);
+      return runSeed(doc, trip, dryRun, undefined, event.floor ?? 0);
     case "backfill":
       return runBackfill(doc, trip, dryRun);
     default:

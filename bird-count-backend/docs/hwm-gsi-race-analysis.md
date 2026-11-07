@@ -24,7 +24,7 @@ of code silently borrowing a consistency guarantee that was never granted.
 | Component | Consistency guarantee | What it's used for |
 |---|---|---|
 | DynamoDB **base table**, keyed by `pk`/`sk` | Strongly consistent per-item reads and conditional writes (`ConditionExpression`, `ReturnValuesOnConditionCheckFailure`) | `putObservation`'s LWW conditional put (`dynamo.ts:58`); the source of truth for "does this record exist / what's its `updatedAt`" |
-| **Valkey** `tripSeqKey` counter | Single-threaded, atomic `INCR` — a true total order with no gaps in *assignment* | `guardedIncr` (`valkey.ts:26`) hands out the next `observationNumber`; this is the one place in the system with a real, race-free sequence |
+| **DynamoDB seq table** `tripSeqKey` counter | Single-item conditional `ADD` — atomic and serialized, a true total order with no gaps in *assignment* | `guardedIncr` (`seq.ts`) hands out the next `observationNumber`; this is the one place in the system with a real, race-free sequence |
 | DynamoDB **GSI** `gsi_observationNumber` | **Eventually consistent only** — AWS does not offer `ConsistentRead` on GSIs, and propagation order across concurrent writes to different items is not guaranteed to match write order | `queryByNumber` (`dynamo.ts:144`), the read path every client's incremental pull depends on |
 
 The design already shows awareness that the base-table write and the
@@ -42,7 +42,7 @@ up to here has been seen," which only holds if visibility is ordered.
 
 There's also direct evidence the original design anticipated needing a
 safety net here and didn't finish wiring it up: `pull()` already fetches
-`tripSequenceHighWater` from Valkey and returns it on every response
+`tripSequenceHighWater` from the seq counter and returns it on every response
 (`sync.ts:84-91`), and the wire schema spells out the intent in plain
 language:
 
@@ -64,7 +64,7 @@ Two independent issues compound into permanent record loss:
 `sync.ts:127-155`:
 1. `putObservation` — `PutCommand` with the record, **`observationNumber`
    explicitly stripped** (`toStored`, `sync.ts:39`)
-2. `guardedIncr` — Valkey `INCR`, then `setObservationNumber` — a
+2. `guardedIncr` — seq-table atomic `ADD`, then `setObservationNumber` — a
    **second**, independent `UpdateCommand` that stamps the number on
 
 Between (1) and (2), and again between (2) landing on the base table and
@@ -137,7 +137,7 @@ is consistent with why a solo, single-device user would never see it.
 ## Fix plan
 
 The guiding constraint: keep leaning on the parts that are actually
-strongly consistent (base-table conditional writes, Valkey `INCR`), and
+strongly consistent (base-table conditional writes, seq-table atomic `ADD`), and
 stop treating the GSI's query result as proof of "nothing lower remains."
 Ship in three stages, independently deployable.
 
@@ -147,7 +147,7 @@ Assign the number **before** the conditional put and write it in the
 same `PutCommand`, instead of a separate follow-up `UpdateCommand`:
 
 ```ts
-const n = await guardedIncr(valkey, seqKey);           // still the single atomic authority
+const n = await guardedIncr(doc, seqKey);           // still the single atomic authority
 if (n === -1) throw new SeqUnavailableError(...);
 const stored = toStored(change, observerSub, stamp, request.schemaVersion, n);
 const putResult = await putObservation(doc, stored);    // observationNumber included from the start
@@ -206,12 +206,12 @@ If retry-driven catch-up (Stage 2) proves too slow or chatty in the field,
 move the gap logic server-side so clients only ever see a hwm that's
 provably safe to trust immediately:
 
-- Track a second Valkey value, `tripSeqSettled`, representing the highest
+- Track a second seq-table value, `tripSeqSettled`, representing the highest
   `n` such that every number `1..n` is confirmed present in DynamoDB.
 - After a successful single-phase write of number `n`
   (post Stage 1), attempt to advance `tripSeqSettled`: if `n ==
   tripSeqSettled + 1`, bump it and keep walking forward through any
-  higher numbers already durably written (a small Valkey sorted-set of
+  higher numbers already durably written (a small seq-table set of
   "written but not yet folded into the settled watermark" makes this
   O(1) amortized).
 - `queryByNumber` truncates its returned page (and the `cursor`/hwm it
@@ -242,7 +242,7 @@ should resolve the vast majority of cases invisibly to the user.
   regression of the two-phase write window reappearing.
 - **Field verification**: land Stage 1+2 behind normal deploy, then
   spot-check `seqMaintenance status` on a live shared trip during/after a
-  busy group count to confirm `dynamoMax` and `valkeyValue` stay aligned
+  busy group count to confirm `dynamoMax` and `counterValue` stay aligned
   and no growing permanent gap appears in practice.
 
 ## Rollout notes

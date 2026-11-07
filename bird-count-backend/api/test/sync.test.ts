@@ -1,27 +1,17 @@
 // Sync push/pull against DynamoDB Local (docker).
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { execSync } from "node:child_process";
 import { CreateTableCommand, DynamoDBClient } from "@aws-sdk/client-dynamodb";
 
-// In-memory Valkey stub so sync tests run without a Redis container.
-let seq = 0;
-const fakeClient = { get: async (_key: string) => String(seq) };
-vi.mock("../src/valkey.js", () => ({
-  valkeyClient: () => fakeClient,
-  tripSeqKey: (trip: string) => `trip:${trip}:seq`,
-  guardedIncr: async (_client: unknown, _key: string) => ++seq,
-  raiseOnlySet: async (_client: unknown, _key: string, value: number) => {
-    if (value > seq) { seq = value; return true; }
-    return false;
-  },
-}));
 
 process.env.TABLE_NAME = "birdcount-data-test";
+process.env.SEQ_TABLE_NAME = "birdcount-seq-test";
 const PORT = 8123;
 const ENDPOINT = `http://localhost:${PORT}`;
 
 const { docClient } = await import("../src/dynamo.js");
 const { sync, pull } = await import("../src/sync.js");
+const { tripSeqKey, getSeq, guardedIncr, raiseOnlySet } = await import("../src/seq.js");
 
 const doc = docClient(ENDPOINT);
 let containerId = "";
@@ -96,12 +86,21 @@ beforeAll(async () => {
           ],
         }),
       );
+      await client.send(
+        new CreateTableCommand({
+          TableName: "birdcount-seq-test",
+          BillingMode: "PAY_PER_REQUEST",
+          AttributeDefinitions: [{ AttributeName: "pk", AttributeType: "S" }],
+          KeySchema: [{ AttributeName: "pk", KeyType: "HASH" }],
+        }),
+      );
       break;
     } catch (err) {
       if (i > 40) throw err;
       await new Promise((r) => setTimeout(r, 250));
     }
   }
+  await raiseOnlySet(doc, tripSeqKey("shared"), 0);
 }, 60_000);
 
 afterAll(() => {
@@ -278,5 +277,31 @@ describe("sync push + pull", () => {
       cursor = p.cursor;
     }
     expect(seen.size).toBeGreaterThanOrEqual(17);
+  });
+});
+
+describe("seq counter", () => {
+  it("guardedIncr refuses an unseeded key", async () => {
+    const key = tripSeqKey("unseeded");
+    expect(await guardedIncr(doc, key)).toBe(-1);
+    expect(await getSeq(doc, key)).toBeNull();
+  });
+
+  it("raiseOnlySet only raises, and guardedIncr counts up from the seed", async () => {
+    const key = tripSeqKey("raise");
+    expect(await raiseOnlySet(doc, key, 10)).toBe(true);
+    expect(await raiseOnlySet(doc, key, 5)).toBe(false);
+    expect(await raiseOnlySet(doc, key, 10)).toBe(false);
+    expect(await getSeq(doc, key)).toBe(10);
+    expect(await guardedIncr(doc, key)).toBe(11);
+    expect(await guardedIncr(doc, key)).toBe(12);
+  });
+
+  it("concurrent increments hand out distinct numbers", async () => {
+    const key = tripSeqKey("concurrent");
+    await raiseOnlySet(doc, key, 0);
+    const ns = await Promise.all(Array.from({ length: 20 }, () => guardedIncr(doc, key)));
+    expect(new Set(ns).size).toBe(20);
+    expect(Math.max(...ns)).toBe(20);
   });
 });
